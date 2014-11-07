@@ -185,6 +185,7 @@ Axiom map_indom_update_inv : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
 Axiom map_indom_update_already : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
   j \indom m -> j \indom (m\(i:=v)).
 
+(* TEMPORARY {Inhab B} not needed in the following axioms, I think *)
 Axiom binds_def : forall A `{Inhab B} (M:map A B) x v,
   binds M x v = (x \indom M /\ M\(x) = v).
 Axiom binds_inv : forall A `{Inhab B} (M:map A B) x v,
