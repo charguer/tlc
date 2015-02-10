@@ -88,14 +88,15 @@ tactics: $(TACTICS:.v=.vo)
 depend: .depend
 
 .v.vo : .depend
-	$(COQC) $<
+	$(COQC) -R . TLC $<
 
 
 #######################################################
 #DEPENDENCIES
 
 .depend : $(ALL)
-	$(COQDEP) -I . $(ALL) > .depend
+	$(COQDEP) -R . TLC $(ALL) > .depend
+
 
 ifeq ($(findstring $(MAKECMDGOALS),depend clean),)
 include .depend

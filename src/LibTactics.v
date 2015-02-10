@@ -562,7 +562,7 @@ Definition eq' := @eq.
 Hint Unfold eq'.
 
 Notation "x '='' y" := (@eq' _ x y) 
-  (at level 70, arguments at next level).
+  (at level 70, y at next level).
 
 
 (* ********************************************************************** *)
@@ -1408,13 +1408,12 @@ Tactic Notation "logic" constr(E) :=
     argument, then the entire goal is replaced by an evar. *)
 
 Section equatesLemma.
-Variables 
-  (A0 A1 : Type)
-  (A2 : forall (x1 : A1), Type) 
-  (A3 : forall (x1 : A1) (x2 : A2 x1), Type)
-  (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type)
-  (A5 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3), Type)
-  (A6 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4), Type).
+Variables (A0 A1 : Type).
+Variables (A2 : forall (x1 : A1), Type).
+Variables (A3 : forall (x1 : A1) (x2 : A2 x1), Type).
+Variables (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type).
+Variables (A5 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3), Type).
+Variables (A6 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4), Type).
 
 Lemma equates_0 : forall (P Q:Prop),
   P -> P = Q -> Q.
@@ -2146,29 +2145,29 @@ Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) hyp(H4) :=
 
 (** [unfolds P1,..,PN] is a shortcut for [unfold P1,..,PN in *]. *)
 
-Tactic Notation "unfolds" reference(F1) :=
+Tactic Notation "unfolds" constr(F1) :=
   unfold F1 in *.
-Tactic Notation "unfolds" reference(F1) "," reference(F2) :=
+Tactic Notation "unfolds" constr(F1) "," constr(F2) :=
   unfold F1,F2 in *.
-Tactic Notation "unfolds" reference(F1) "," reference(F2) 
- "," reference(F3) :=
+Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+ "," constr(F3) :=
   unfold F1,F2,F3 in *.
-Tactic Notation "unfolds" reference(F1) "," reference(F2) 
- "," reference(F3) "," reference(F4) :=
+Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+ "," constr(F3) "," constr(F4) :=
   unfold F1,F2,F3,F4 in *.
-Tactic Notation "unfolds" reference(F1) "," reference(F2) 
- "," reference(F3) "," reference(F4) "," reference(F5) :=
+Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+ "," constr(F3) "," constr(F4) "," constr(F5) :=
   unfold F1,F2,F3,F4,F5 in *.
-Tactic Notation "unfolds" reference(F1) "," reference(F2) 
- "," reference(F3) "," reference(F4) "," reference(F5) "," reference(F6) :=
+Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+ "," constr(F3) "," constr(F4) "," constr(F5) "," constr(F6) :=
   unfold F1,F2,F3,F4,F5,F6 in *.
-Tactic Notation "unfolds" reference(F1) "," reference(F2) 
- "," reference(F3) "," reference(F4) "," reference(F5) 
- "," reference(F6) "," reference(F7) :=
+Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+ "," constr(F3) "," constr(F4) "," constr(F5) 
+ "," constr(F6) "," constr(F7) :=
   unfold F1,F2,F3,F4,F5,F6,F7 in *.
-Tactic Notation "unfolds" reference(F1) "," reference(F2) 
- "," reference(F3) "," reference(F4) "," reference(F5) 
- "," reference(F6) "," reference(F7) "," reference(F8) :=
+Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+ "," constr(F3) "," constr(F4) "," constr(F5) 
+ "," constr(F6) "," constr(F7) "," constr(F8) :=
   unfold F1,F2,F3,F4,F5,F6,F7,F8 in *.
 
 (** [folds P1,..,PN] is a shortcut for [fold P1 in *; ..; fold PN in *]. *)
@@ -2198,15 +2197,15 @@ Tactic Notation "simpls" :=
 (** [simpls P1,..,PN] is a shortcut for 
     [simpl P1 in *; ..; simpl PN in *]. *)
 
-Tactic Notation "simpls" reference(F1) :=
+Tactic Notation "simpls" constr(F1) :=
   simpl F1 in *.
-Tactic Notation "simpls" reference(F1) "," reference(F2) :=
+Tactic Notation "simpls" constr(F1) "," constr(F2) :=
   simpls F1; simpls F2.
-Tactic Notation "simpls" reference(F1) "," reference(F2) 
- "," reference(F3) :=
+Tactic Notation "simpls" constr(F1) "," constr(F2) 
+ "," constr(F3) :=
   simpls F1; simpls F2; simpls F3.
-Tactic Notation "simpls" reference(F1) "," reference(F2) 
- "," reference(F3) "," reference(F4) :=
+Tactic Notation "simpls" constr(F1) "," constr(F2) 
+ "," constr(F3) "," constr(F4) :=
   simpls F1; simpls F2; simpls F3; simpls F4.
 
 (** [unsimpl E] replaces all occurence of [X] by [E], where [X] is 
@@ -3415,10 +3414,13 @@ Ltac auto_star_default := try solve [ auto | eauto | intuition eauto ].
   (* TODO: should be jauto *)
 Ltac auto_star := auto_star_default.
 
+
+Tactic Notation "auto" :=
+  auto.
+
 (** [auto~] is a notation for tactic [auto_tilde]. It may be followed
     by lemmas (or proofs terms) which auto will be able to use
     for solving the goal. *)
-
 Tactic Notation "auto" "~" :=
   auto_tilde.
 Tactic Notation "auto" "~" constr(E1) :=
@@ -3457,6 +3459,9 @@ Tactic Notation "auto_false" "~" :=
 Tactic Notation "auto_false" "*" :=
    auto_false_base ltac:(fun tt => auto_star).
 
+Tactic Notation "dauto" :=
+  dintuition eauto.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Definitions for parsing compatibility *)
@@ -3468,6 +3473,14 @@ Tactic Notation "constructor" :=
 Tactic Notation "simple" :=
   simpl.
 
+
+Tactic Notation "split" :=
+  split.
+
+Tactic Notation "right" :=
+  right.
+Tactic Notation "left" :=
+  left.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Parsing for light automation *)
@@ -3663,14 +3676,14 @@ Tactic Notation "intros_all" "~" :=
 
 Tactic Notation "unfolds" "~" :=
   unfolds; auto_tilde.
-Tactic Notation "unfolds" "~" reference(F1) :=
+Tactic Notation "unfolds" "~" constr(F1) :=
   unfolds F1; auto_tilde.
-Tactic Notation "unfolds" "~" reference(F1) "," reference(F2) :=
+Tactic Notation "unfolds" "~" constr(F1) "," constr(F2) :=
   unfolds F1, F2; auto_tilde.
-Tactic Notation "unfolds" "~" reference(F1) "," reference(F2) "," reference(F3) :=
+Tactic Notation "unfolds" "~" constr(F1) "," constr(F2) "," constr(F3) :=
   unfolds F1, F2, F3; auto_tilde.
-Tactic Notation "unfolds" "~" reference(F1) "," reference(F2) "," reference(F3) ","  
- reference(F4) :=
+Tactic Notation "unfolds" "~" constr(F1) "," constr(F2) "," constr(F3) ","  
+ constr(F4) :=
   unfolds F1, F2, F3, F4; auto_tilde.
 
 Tactic Notation "simple" "~" :=
@@ -4041,14 +4054,14 @@ Tactic Notation "intros_all" "*" :=
 
 Tactic Notation "unfolds" "*" :=
   unfolds; auto_star.
-Tactic Notation "unfolds" "*" reference(F1) :=
+Tactic Notation "unfolds" "*" constr(F1) :=
   unfolds F1; auto_star.
-Tactic Notation "unfolds" "*" reference(F1) "," reference(F2) :=
+Tactic Notation "unfolds" "*" constr(F1) "," constr(F2) :=
   unfolds F1, F2; auto_star.
-Tactic Notation "unfolds" "*" reference(F1) "," reference(F2) "," reference(F3) :=
+Tactic Notation "unfolds" "*" constr(F1) "," constr(F2) "," constr(F3) :=
   unfolds F1, F2, F3; auto_star.
-Tactic Notation "unfolds" "*" reference(F1) "," reference(F2) "," reference(F3) ","  
- reference(F4) :=
+Tactic Notation "unfolds" "*" constr(F1) "," constr(F2) "," constr(F3) ","  
+ constr(F4) :=
   unfolds F1, F2, F3, F4; auto_star.
 
 Tactic Notation "simple" "*" :=
@@ -4834,5 +4847,9 @@ Tactic Notation "let_name_all" "as" ident(x) :=
   | H: context [ let_binding ?v ?K ] |- _ => 
      let_name_all in H as x
   end.
+
+
+
+
 
 

@@ -37,13 +37,13 @@ Notation "'<>' x" := (fun y => y <> x)
 (** ** Dependent functional extensionality *)
 
 Section FuncExtDep.
-Variables
-  (A1 : Type) 
-  (A2 : forall (x1 : A1), Type) 
-  (A3 : forall (x1 : A1) (x2 : A2 x1), Type)
-  (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type)
-  (A5 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3), Type)
-  (A6 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4), Type).
+
+Variables (A1 : Type).
+Variables (A2 : forall (x1 : A1), Type).
+Variables (A3 : forall (x1 : A1) (x2 : A2 x1), Type).
+Variables (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type).
+Variables (A5 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3), Type).
+Variables (A6 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4), Type).
 
 Lemma func_ext_dep_1 : forall (f g : forall (x1:A1), A2 x1),
   (forall x1, f x1 = g x1) -> f = g.
@@ -118,13 +118,12 @@ Hint Rewrite func_eta_1 func_eta_2 func_eta_3 func_eta_4 : rew_eta.
 (** ** Dependend predicates *)
 
 Section PropExt.
-Variables
-  (A1 : Type) 
-  (A2 : forall (x1 : A1), Type) 
-  (A3 : forall (x1 : A1) (x2 : A2 x1), Type)
-  (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type)
-  (A5 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3), Type)
-  (A6 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4), Type).
+Variables (A1 : Type).
+Variables (A2 : forall (x1 : A1), Type).
+Variables (A3 : forall (x1 : A1) (x2 : A2 x1), Type).
+Variables (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type).
+Variables (A5 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3), Type).
+Variables (A6 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4), Type).
 
 Lemma prop_ext_1 : forall (P Q : forall (x1:A1), Prop),
   (forall x1, P x1 <-> Q x1) -> P = Q.

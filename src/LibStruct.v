@@ -45,6 +45,7 @@ Proof.
 Qed.
 End MonoidInst.
 
+(*
 (* Examples of common monoids. *)
 
 Instance monoid_plus_zero:
@@ -53,3 +54,4 @@ Proof.
   constructor; repeat intro; omega.
 Qed.
 
+*)

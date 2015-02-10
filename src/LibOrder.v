@@ -187,7 +187,7 @@ Lemma total_order_le_is_large_lt :
 Proof.
   extens. intros. unfold large, strict. iff H.
   tests~: (x = y).
-  destruct H. auto*. subst*.
+  destruct H. auto*. subst*. dintuition eauto.
 Qed. 
 
 Lemma total_order_ge_is_large_gt : 
@@ -195,7 +195,7 @@ Lemma total_order_ge_is_large_gt :
 Proof.
   extens. intros. unfold large, flip, strict. iff H.
   tests~: (x = y).
-  destruct H. auto*. subst*.
+  destruct H. auto*. subst*. dintuition eauto.
 Qed. 
 
 Lemma total_order_lt_or_eq_or_gt : forall x y,

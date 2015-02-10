@@ -489,7 +489,8 @@ Hint Resolve eq_equiv.
 Lemma flip_equiv : forall A (E:binary A),
   equiv E -> equiv (flip E).
 Proof.
-  introv Equi. unfold flip. constructor; intros_all*.
+  introv Equi. unfold flip. constructor; intros_all; 
+    dintuition eauto.
 Qed.
 
 (** Product of two equivalences is an equivalence *)
@@ -498,10 +499,11 @@ Lemma prod2_equiv : forall A1 A2 (E1:binary A1) (E2:binary A2),
   equiv E1 -> equiv E2 -> equiv (prod2 E1 E2).
 Proof.
   introv Equi1 Equi2. constructor.
-  intros [x1 x2]. simple*.
-  intros [x1 x2] [y1 y2]. simple*.
-  intros [x1 x2] [y1 y2] [z1 z2]. simple*.
+  intros [x1 x2]. simpl. dintuition.
+  intros [x1 x2] [y1 y2]. simpl. dintuition.
+  intros [x1 x2] [y1 y2] [z1 z2]. simpl. dintuition eauto.
 Qed.
+(* NEWCOQ: clean above *)
 
 (* todo: other arities of Prod *)
 
@@ -665,3 +667,4 @@ Hint Resolve stclosure_step stclosure_sym stclosure_trans.
 Lemma stclosure_le : forall A (R1 R2 : binary A),
   incl R1 R2 -> incl (stclosure R1) (stclosure R2).
 Proof. unfolds incl. introv Le H. induction* H. Qed.
+
