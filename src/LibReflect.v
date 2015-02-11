@@ -28,13 +28,13 @@ Coercion istrue (b : bool) : Prop := (b = true).
 
 Lemma istrue_def : forall b, 
   istrue b = (b = true). 
-Proof. reflexivity. Qed.
+Proof using. reflexivity. Qed.
 
 Lemma istrue_true_eq : istrue true = True. 
-Proof. rewrite istrue_def. extens*. Qed.
+Proof using. rewrite istrue_def. extens*. Qed.
 
 Lemma istrue_false_eq : istrue false = False. 
-Proof. rewrite istrue_def. extens. iff; auto_false. Qed.
+Proof using. rewrite istrue_def. extens. iff; auto_false. Qed.
 
 (** Update of the unfolding tactics to go through the coercion
     [istrue] (see LibTactics). *)
@@ -57,25 +57,25 @@ Global Opaque istrue.
 (** Proving the goals [true] and [~ false] *) 
 
 Lemma istrue_true : true. 
-Proof. reflexivity. Qed.
+Proof using. reflexivity. Qed.
 
 Hint Resolve istrue_true.
 
 Lemma istrue_not_false : ~ false. 
-Proof. rewrite istrue_false_eq. intuition. Qed.
+Proof using. rewrite istrue_false_eq. intuition. Qed.
 
 Hint Resolve istrue_not_false.
 
 (** Proving the goal [false] and [False] *)
 
 Lemma False_to_false : False -> false.
-Proof. intros K. false. Qed.
+Proof using. intros K. false. Qed.
 
 Hint Extern 1 (istrue false) => 
   apply False_to_false.
 
 Lemma false_to_False : false -> False.
-Proof. intros K. rewrite~ istrue_false_eq in K. Qed.
+Proof using. intros K. rewrite~ istrue_false_eq in K. Qed.
 
 Hint Extern 1 (False) => match goal with
   | H: istrue false |- _ => apply (istrue_not_false H) end.
@@ -93,13 +93,13 @@ Definition isTrue (P : Prop) : bool :=
 
 Lemma isTrue_def : forall P,
   isTrue P = If P then true else false.
-Proof. reflexivity. Qed.
+Proof using. reflexivity. Qed.
 
 Lemma isTrue_True : isTrue True = true.
-Proof. unfolds. case_if; auto_false~. Qed.
+Proof using. unfolds. case_if; auto_false~. Qed.
 
 Lemma isTrue_False : isTrue False = false.
-Proof. unfolds. case_if; auto_false~. Qed.
+Proof using. unfolds. case_if; auto_false~. Qed.
 
 (** Notation for comparison in [bool] are [x '= y] and [x '<> y] *)
 
@@ -120,14 +120,14 @@ Open Scope comp_scope.
 
 Lemma bool_ext : forall b1 b2 : bool,
   (b1 <-> b2) -> b1 = b2.
-Proof.
+Proof using.
   destruct b1; destruct b2; intros; auto_false.
   destruct H. false H; auto.
   destruct H. false H0; auto.
 Qed.
 
 Instance bool_extensional : Extensional bool.
-Proof. apply (@Build_Extensional bool iff bool_ext). Defined.
+Proof using. apply (@Build_Extensional bool iff bool_ext). Defined.
 
 
 (* ********************************************************************** *)
@@ -142,23 +142,23 @@ Implicit Types P : Prop.
 
 Lemma istrue_isTrue_iff : forall (P : Prop),
   istrue (isTrue P) <-> P.
-Proof. intros. rewrite isTrue_def. case_if; auto_false*. Qed.
+Proof using. intros. rewrite isTrue_def. case_if; auto_false*. Qed.
 
 Lemma istrue_isTrue : forall P,
   istrue (isTrue P) = P.
-Proof. extens. rewrite* istrue_isTrue_iff. Qed.
+Proof using. extens. rewrite* istrue_isTrue_iff. Qed.
 
 Lemma istrue_neg : forall b,
   istrue (!b) = ~ (istrue b).
-Proof. extens. tautob*. Qed.
+Proof using. extens. tautob*. Qed.
 
 Lemma istrue_and : forall b1 b2,
   istrue (b1 && b2) = (istrue b1 /\ istrue b2).
-Proof. extens. tautob*. Qed.
+Proof using. extens. tautob*. Qed.
 
 Lemma istrue_or : forall b1 b2,
   istrue (b1 || b2) = (istrue b1 \/ istrue b2).
-Proof. extens. tautob*. Qed.
+Proof using. extens. tautob*. Qed.
 
 End DistribIstrue.
 
@@ -171,23 +171,23 @@ Implicit Types P : Prop.
 
 Lemma isTrue_istrue : forall b,
   isTrue (istrue b) = b.
-Proof. extens. rewrite* istrue_isTrue_iff. Qed.
+Proof using. extens. rewrite* istrue_isTrue_iff. Qed.
 
 Lemma isTrue_not : forall P,
   isTrue (~ P) = ! isTrue P.
-Proof. extens. do 2 rewrite isTrue_def. do 2 case_if; auto_false*. Qed.
+Proof using. extens. do 2 rewrite isTrue_def. do 2 case_if; auto_false*. Qed.
 
 Lemma isTrue_and : forall P1 P2,
   isTrue (P1 /\ P2) = (isTrue P1 && isTrue P2).
-Proof. extens. do 3 rewrite isTrue_def. do 3 case_if; auto_false*. Qed.
+Proof using. extens. do 3 rewrite isTrue_def. do 3 case_if; auto_false*. Qed.
 
 Lemma isTrue_or : forall P1 P2,
   isTrue (P1 \/ P2) = (isTrue P1 || isTrue P2).
-Proof. extens. do 3 rewrite isTrue_def. do 3 case_if; auto_false*. Qed.
+Proof using. extens. do 3 rewrite isTrue_def. do 3 case_if; auto_false*. Qed.
 
 Lemma isTrue_if : forall P1 P2 P3,
   isTrue (If P1 then P2 else P3) = if isTrue P1 then isTrue P2 else isTrue P3.
-Proof.
+Proof using.
   extens. do 4 rewrite isTrue_def.
   destruct (classicT P1).
     destruct* (classicT P2).
@@ -201,11 +201,11 @@ End DistribIsTrue.
 
 Lemma istrue_neg_isTrue : forall P,
   istrue (! isTrue P) = ~ P.
-Proof. intros. rewrite istrue_neg. rewrite~ istrue_isTrue. Qed.
+Proof using. intros. rewrite istrue_neg. rewrite~ istrue_isTrue. Qed.
 
 Lemma isTrue_not_istrue : forall b,
   isTrue (~ istrue b) = !b.
-Proof. intros. rewrite isTrue_not. rewrite~ isTrue_istrue. Qed.
+Proof using. intros. rewrite isTrue_not. rewrite~ isTrue_istrue. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -298,35 +298,35 @@ Tactic Notation "rew_refl" "*" "in" hyp(H) :=
 
 Lemma isTrue_true : forall (P:Prop),
   P -> isTrue P = true.
-Proof. intros. rewrite isTrue_def. case_if*. Qed.
+Proof using. intros. rewrite isTrue_def. case_if*. Qed.
 
 Lemma isTrue_false : forall (P:Prop),
   ~ P -> isTrue P = false.
-Proof. intros. rewrite isTrue_def. case_if*. Qed.
+Proof using. intros. rewrite isTrue_def. case_if*. Qed.
 
 Lemma eqb_eq : forall A (x y:A),
   x = y -> (x '= y) = true.
-Proof. intros. subst. apply~ isTrue_true. Qed.
+Proof using. intros. subst. apply~ isTrue_true. Qed.
 
 Lemma eqb_self : forall A (x:A),
   (x '= x) = true.
-Proof. intros. apply~ eqb_eq. Qed.
+Proof using. intros. apply~ eqb_eq. Qed.
 
 Lemma eqb_neq : forall A (x y:A),
   x <> y -> (x '= y) = false.
-Proof. intros. subst. apply~ isTrue_false. Qed.
+Proof using. intros. subst. apply~ isTrue_false. Qed.
 
 Lemma neqb_eq : forall A (x y:A),
   x = y -> (x '<> y) = false.
-Proof. intros. subst. rewrite~ isTrue_false. Qed.
+Proof using. intros. subst. rewrite~ isTrue_false. Qed.
 
 Lemma neqb_neq : forall A (x y:A),
   x <> y -> (x '<> y) = true.
-Proof. intros. subst. rewrite~ isTrue_true. Qed.
+Proof using. intros. subst. rewrite~ isTrue_true. Qed.
 
 Lemma neqb_self : forall A (x:A),
   (x '<> x) = false.
-Proof. intros. apply~ neqb_eq. Qed.
+Proof using. intros. apply~ neqb_eq. Qed.
 
 
 (* ********************************************************************** *)
@@ -343,60 +343,60 @@ Variables (b : bool).
 
 Lemma bool_eq_true :
   b -> b = true.
-Proof. auto. Qed.
+Proof using. auto. Qed.
 
 Lemma eq_true_l : 
   true = b -> b.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma eq_true_r :
   b = true -> b.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma eq_false_l :
   false = b -> !b.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma eq_false_r : 
   b = false -> !b.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma eq_true_l_back : 
   b -> true = b.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma eq_true_r_back :
   b -> b = true.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma eq_false_l_back :
   !b -> false = b.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma eq_false_r_back : 
   !b -> b = false.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma eq_false_r_back_not : 
   (~b) -> b = false.
-Proof. destruct b; auto_false. Qed. (*todo:tautob~.*)
+Proof using. destruct b; auto_false. Qed. (*todo:tautob~.*)
 
 Lemma neg_neg_back : 
   b -> !!b.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma neg_neg_forward : 
   !!b -> b.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma eq_bool_prove : forall b' : bool,
   (b -> b') -> (b' -> b) -> b = b'.
-Proof. lets: false_to_False. tautob~; tryfalse~. Qed.
+Proof using. lets: false_to_False. tautob~; tryfalse~. Qed.
   (* todo: simplify *)
 
 Lemma eq_bool_iff : forall b' : bool,
   b = b' -> (b <-> b').
-Proof. tautob*. Qed.
+Proof using. tautob*. Qed.
 
 End FoldingBool.
 
@@ -427,73 +427,73 @@ Variables (P : Prop) (b : bool).
 
 Lemma istrue_isTrue_back :
   P -> istrue (isTrue P).
-Proof. rewrite~ istrue_isTrue. Qed.
+Proof using. rewrite~ istrue_isTrue. Qed.
 
 Lemma istrue_isTrue_forw :
   istrue (isTrue P) -> P.
-Proof. rewrite~ istrue_isTrue. Qed.
+Proof using. rewrite~ istrue_isTrue. Qed.
 
 Lemma istrue_not_isTrue_back :
   ~ P -> istrue (! isTrue P).
-Proof. rewrite~ istrue_neg_isTrue. Qed.
+Proof using. rewrite~ istrue_neg_isTrue. Qed.
 
 Lemma istrue_not_isTrue_forw :
   istrue (! isTrue P) -> ~ P.
-Proof. rewrite~ istrue_neg_isTrue. Qed.
+Proof using. rewrite~ istrue_neg_isTrue. Qed.
 
 Lemma prop_eq_True_forw :
   (P = True) -> P.
-Proof. intros. subst~. Qed.
+Proof using. intros. subst~. Qed.
 
 Lemma prop_eq_True_back :
   P -> (P = True).
-Proof. intros. extens*. Qed.
+Proof using. intros. extens*. Qed.
 
 Lemma prop_eq_False_forw :
   (P = False) -> ~ P.
-Proof. intro. subst*. Qed.
+Proof using. intro. subst*. Qed.
 
 Lemma prop_eq_False_back :
   ~ P -> (P = False).
-Proof. intros. extens*. Qed.
+Proof using. intros. extens*. Qed.
 
 Lemma prop_neq_True_forw :
   (P <> True) -> ~ P.
-Proof. intros_all. apply H. extens*. Qed.
+Proof using. intros_all. apply H. extens*. Qed.
 
 Lemma prop_neq_True_back :
   ~ P -> (P <> True).
-Proof. intros_all. subst~. Qed.
+Proof using. intros_all. subst~. Qed.
 
 Lemma prop_neq_False_forw :
   (P <> False) -> P.
-Proof.
+Proof using.
   intros_all. apply not_not_elim.
   intros_all. apply H. extens*.
 Qed.
 
 Lemma prop_neq_False_back :
   P -> (P <> False).
-Proof. introv M K. rewrite~ <- K. Qed.
+Proof using. introv M K. rewrite~ <- K. Qed.
 
 Lemma not_istrue_isTrue_forw : 
   ~ istrue (isTrue P) -> ~ P.
-Proof. apply contrapose_intro. rewrite~ istrue_isTrue. Qed.
+Proof using. apply contrapose_intro. rewrite~ istrue_isTrue. Qed.
 
 Lemma not_istrue_not_isTrue_forw : 
   ~ istrue (! isTrue P) -> P.
-Proof.
+Proof using.
   rewrite <- (@not_not P). apply contrapose_intro.
   rewrite~ istrue_neg_isTrue. 
 Qed. (* todo: missing lemma from lib logic about ~A->B *)
 
 Lemma not_istrue_isTrue_back : 
   ~ P -> ~ istrue (isTrue P).
-Proof. apply contrapose_intro. rewrite~ istrue_isTrue. Qed.
+Proof using. apply contrapose_intro. rewrite~ istrue_isTrue. Qed.
 
 Lemma not_istrue_not_isTrue_back : 
   P -> ~ istrue (! isTrue P).
-Proof. 
+Proof using. 
   rewrite <- (@not_not P). apply contrapose_intro.
   rewrite~ istrue_neg_isTrue. 
 Qed.
@@ -549,16 +549,16 @@ Ltac tests_dispatch E H1 H2 ::=
 
 Lemma bool_cases : forall (b : bool), 
   b \/ !b.
-Proof. tautob*. Qed.
+Proof using. tautob*. Qed.
 
 Lemma bool_cases_eq : forall (b : bool), 
   b = true \/ b = false.
-Proof. tautob*. Qed.
+Proof using. tautob*. Qed.
 
 Lemma xor_cases : forall (b1 b2 : bool), 
   xor b1 b2 -> (b1 = true /\ b2 = false)
             \/ (b1 = false /\ b2 = true).
-Proof. tautob; auto_false*. Qed.
+Proof using. tautob; auto_false*. Qed.
 
 Implicit Arguments xor_cases [b1 b2].
 
@@ -594,14 +594,14 @@ Notation "'ifb' P 'then' v1 'else' v2" :=
     it cannot be extracted to executable code. *)
 
 Lemma prop_decidable : forall (P:Prop), Decidable P.
-Proof. intros. applys~ decidable_make (isTrue P). Qed.
+Proof using. intros. applys~ decidable_make (isTrue P). Qed.
 
 (** In constructive logic, any proposition with a proof of 
     that is constructively true or false is decidable. *)
 
 Lemma sumbool_decidable : forall (P:Prop),  
   {P}+{~P} -> Decidable P.
-Proof.
+Proof using.
   introv H. applys decidable_make
     (match H with left _ => true | right _ => false end).
   rewrite isTrue_def. destruct H; case_if; tryfalse; auto.
@@ -612,7 +612,7 @@ Qed.
 Lemma Decidable_dec : forall (P:Prop) {H: Decidable P} (A:Type) (x y:A),  
   exists (Q : {P}+{~P}),
   (if decide P then x else y) = (if Q then x else y).
-Proof.
+Proof using.
   intros. exists (classicT P). 
   rewrite decide_spec.
   tautotest P; case_if as C; case_if as C';
@@ -640,34 +640,34 @@ Ltac case_if_on_tactic_core E Eq ::=
 
 Lemma istrue_decide : forall `{Decidable P},
   istrue (decide P) = P.
-Proof. intros. rew_refl~. Qed.
+Proof using. intros. rew_refl~. Qed.
 
 Lemma decide_prove : forall `{Decidable P},
   P -> istrue (decide P).
-Proof. intros. rewrite~ istrue_decide. Qed.
+Proof using. intros. rewrite~ istrue_decide. Qed.
 
 Lemma decide_def : forall `{Decidable P},
   (decide P) = (If P then true else false).
-Proof. intros. rewrite decide_spec. rewrite isTrue_def. case_if*. Qed.
+Proof using. intros. rewrite decide_spec. rewrite isTrue_def. case_if*. Qed.
 
 Lemma decide_cases : forall `{Decidable P},
   (P /\ decide P = true) \/ (~ P /\ decide P = false).
-Proof. intros. rewrite decide_spec. rewrite isTrue_def. case_if*. Qed.
+Proof using. intros. rewrite decide_spec. rewrite isTrue_def. case_if*. Qed.
 
 (** Dedicability instances *)
 
 Global Instance true_decidable : Decidable True.
-Proof. applys decidable_make true. rew_refl~. Qed.
+Proof using. applys decidable_make true. rew_refl~. Qed.
 
 Global Instance false_decidable : Decidable False.
-Proof. applys decidable_make false. rew_refl~. Qed.
+Proof using. applys decidable_make false. rew_refl~. Qed.
 
 Global Instance bool_decidable : forall (b : bool), Decidable (b).
-Proof. introv. applys (@decidable_make (istrue b) b). rew_refl~. Qed.
+Proof using. introv. applys (@decidable_make (istrue b) b). rew_refl~. Qed.
 
 Global Instance not_decidable : forall (P : Prop),
   Decidable P -> Decidable (~ P).
-Proof.
+Proof using.
   (* todo: cleanup proof *)
   introv [dec spec]. applys decidable_make (neg dec).
   rew_refl. rewrite~ spec.
@@ -676,7 +676,7 @@ Qed.
 Global Instance or_decidable : forall (P Q : Prop),
   Decidable P -> Decidable Q ->
   Decidable (P \/ Q).
-Proof.
+Proof using.
   intros. applys decidable_make (decide P || decide Q).
   rew_refl. subst~.
 Qed.
@@ -684,7 +684,7 @@ Qed.
 Global Instance and_decidable : forall P Q,
   Decidable P -> Decidable Q ->
   Decidable (P /\ Q).
-Proof.
+Proof using.
   intros. applys decidable_make (decide P && decide Q).
   rew_refl. subst~.
 Qed.
@@ -692,7 +692,7 @@ Qed.
 Global Instance If_dec : forall P Q R,
   Decidable P -> Decidable Q -> Decidable R ->
   Decidable (If P then Q else R).
-Proof.
+Proof using.
   intros. applys decidable_make (if decide P then decide Q else decide R).
   rew_refl. subst~.
 Qed.
@@ -715,7 +715,7 @@ Extraction Inline comparable.
     it cannot be extracted to executable code. *)
 
 Lemma type_comparable : forall (A:Type), Comparable A.
-Proof. constructor. intros. applys~ prop_decidable. Qed.
+Proof using. constructor. intros. applys~ prop_decidable. Qed.
 
 (** [Comparable] can be proved by exhibiting a boolean
     comparison function *)
@@ -723,7 +723,7 @@ Proof. constructor. intros. applys~ prop_decidable. Qed.
 Lemma comparable_beq : forall A (f:A->A->bool),
   (forall x y, (istrue (f x y)) <-> (x = y)) ->
   Comparable A.
-Proof.
+Proof using.
   introv H. constructors. intros. 
   applys decidable_make (f x y). 
   rewrite isTrue_def. extens.
@@ -738,7 +738,7 @@ Extraction Inline comparable_beq.
 Lemma comparable_of_dec : forall (A:Type),
   (forall x y : A, {x = y} + {x <> y}) ->
   Comparable A.
-Proof.
+Proof using.
   introv H. constructors. intros.
   applys decidable_make (if H x y then true else false).
   rewrite isTrue_def. destruct (H x y); case_if*.
@@ -747,7 +747,7 @@ Qed.
 (** Comparison for booleans *)
 
 Instance bool_comparable : Comparable bool.
-Proof.
+Proof using.
   applys (comparable_beq Bool.eqb).
   destruct x; destruct y; simpl; rew_refl; auto_false*.
 Qed.
@@ -755,7 +755,7 @@ Qed.
 Global Instance prop_eq_decidable : forall P Q,
   Decidable P -> Decidable Q ->
   Decidable (P = Q).
-Proof.
+Proof using.
   intros. applys decidable_make (decide (decide P = decide Q)).
   extens. rew_refl.
   iff E.
@@ -787,7 +787,7 @@ Extraction Inline pick.
 
 Global Instance eq_pickable : forall (A : Type) (a : A), (* todo: use `{Inhab A} *)
   Pickable (eq a).
-Proof.
+Proof using.
   (* todo: clean up proof *)
   introv. applys pickable_make a.
   intro. reflexivity.

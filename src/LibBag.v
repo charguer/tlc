@@ -118,25 +118,25 @@ Definition foreach `{BagIn A T} (P:A->Prop) (E:T) :=
 
 
 Instance int_index : BagIndex int int.
-Proof. intros. constructor. exact (fun n (i:int) => 0 <= i < n). Defined.
+Proof using. intros. constructor. exact (fun n (i:int) => 0 <= i < n). Defined.
 
 Lemma int_index_def : forall (n i : int),
   index n i = (0 <= i < n).
-Proof. auto. Qed. 
+Proof using. auto. Qed. 
 
 Global Opaque int_index.
 
 Lemma int_index_le : forall i n m : int,
   index n i -> n <= m -> index m i.
-Proof. introv. do 2 rewrite @int_index_def. math. Qed.
+Proof using. introv. do 2 rewrite @int_index_def. math. Qed.
 
 Lemma int_index_prove : forall (n i : int),
   0 <= i -> i < n -> index n i.
-Proof. intros. rewrite~ int_index_def. Qed.
+Proof using. intros. rewrite~ int_index_def. Qed.
 
 Lemma int_index_succ : forall n i, n >= 0 ->
   index (n + 1) i = (index n i \/ i = n).
-Proof.
+Proof using.
   introv P. do 2 rewrite int_index_def. extens. iff H.   
   apply classic_left. math.
   destruct H; math. 
@@ -337,93 +337,93 @@ Class Card_union_le `{BagUnion T, BagCard T} :=
 Instance in_empty_from_in_empty_eq : 
   forall `{BagIn A T, BagEmpty T},
   In_empty_eq -> In_empty.
-Proof. constructor. introv I. rewrite~ in_empty_eq in I. Qed.
+Proof using. constructor. introv I. rewrite~ in_empty_eq in I. Qed.
 
 Instance in_single_from_in_single_eq : 
   forall `{BagSingle A T, BagIn A T},
   In_single_eq -> In_single.
-Proof. constructor. introv I. rewrite~ in_single_eq in I. Qed.
+Proof using. constructor. introv I. rewrite~ in_single_eq in I. Qed.
 
 Instance in_single_self_from_in_single_eq : 
   forall `{BagSingle A T, BagIn A T},
   In_single_eq -> In_single_self.
-Proof. constructor. intros. rewrite~ in_single_eq. Qed.
+Proof using. constructor. intros. rewrite~ in_single_eq. Qed.
 
 Instance in_union_r_from_in_union_eq : 
   forall `{BagIn A T, BagUnion T},
   In_union_eq -> In_union_r.
-Proof. constructor. introv I. rewrite in_union_eq. rew_reflect*. Qed.
+Proof using. constructor. introv I. rewrite in_union_eq. rew_reflect*. Qed.
 
 Instance in_union_l_from_in_union_eq : 
   forall `{BagIn A T, BagUnion T},
   In_union_eq -> In_union_l.
-Proof. constructor. introv I. rewrite in_union_eq. rew_reflect*. Qed.
+Proof using. constructor. introv I. rewrite in_union_eq. rew_reflect*. Qed.
 
 Instance in_union_inv_from_in_union_eq : 
   forall `{BagIn A T, BagUnion T},
   In_union_eq -> In_union_inv.
-Proof. constructor. introv I. rewrite~ @in_union_eq in I. Qed.
+Proof using. constructor. introv I. rewrite~ @in_union_eq in I. Qed.
 
 Instance in_inter_from_in_inter_eq : 
   forall `{BagIn A T, BagInter T},
   In_inter_eq -> In_inter.
-Proof. constructor. introv I1 I2. rewrite in_inter_eq. rew_reflect*. Qed. 
+Proof using. constructor. introv I1 I2. rewrite in_inter_eq. rew_reflect*. Qed. 
 
 (** Union *)
 
 Instance union_empty_r_from_union_empty_l : 
   forall `{BagUnion T, BagEmpty T},
   Union_empty_l -> Union_comm -> Union_empty_r.
-Proof. constructor. intros_all. rewrite union_comm. apply union_empty_l. Qed.
+Proof using. constructor. intros_all. rewrite union_comm. apply union_empty_l. Qed.
 
 (** Intersection *)
 
 Instance inter_empty_r_from_inter_empty_l : 
   forall `{BagInter T, BagEmpty T},
   Inter_empty_l -> Inter_comm -> Inter_empty_r.
-Proof. constructor. intros_all. rewrite inter_comm. apply inter_empty_l. Qed.
+Proof using. constructor. intros_all. rewrite inter_comm. apply inter_empty_l. Qed.
 
 (* Inclusion *)
 
 Instance incl_refl_from_incl_order :
   forall `{BagIncl T},
   Incl_order -> Incl_refl.
-Proof. constructor. apply order_refl. apply incl_order. Qed.
+Proof using. constructor. apply order_refl. apply incl_order. Qed.
 
 Instance incl_trans_from_incl_order :
   forall `{BagIncl T},
   Incl_order -> Incl_trans.
-Proof. constructor. apply order_trans. apply incl_order. Qed.
+Proof using. constructor. apply order_trans. apply incl_order. Qed.
 
 Instance double_incl_from_incl_order :
   forall `{BagIncl T},
   Incl_order -> Double_incl.
-Proof. constructor. apply order_antisym. apply incl_order. Qed.
+Proof using. constructor. apply order_antisym. apply incl_order. Qed.
 
 Instance incl_empty_inv_from_incl_empty :
   forall `{BagEmpty T, BagIncl T},
   Incl_empty -> Incl_empty_inv.
-Proof. constructor. introv I. rewrite~ incl_empty in I. Qed.
+Proof using. constructor. introv I. rewrite~ incl_empty in I. Qed.
 
 Instance incl_union_r_from_incl_union_l :
   forall `{BagUnion T, BagIncl T},
   Incl_union_l -> Union_comm -> Incl_union_r.
-Proof. constructor. introv I. rewrite union_comm. apply~ incl_union_l. Qed.
+Proof using. constructor. introv I. rewrite union_comm. apply~ incl_union_l. Qed.
 
 Instance union_incl_from_union_incl_eq :
   forall `{BagUnion T, BagIncl T},
   Union_incl_eq -> Union_incl_eq.
-Proof. constructor. intros_all. rewrite union_incl_eq. rew_reflect*. Qed.
+Proof using. constructor. intros_all. rewrite union_incl_eq. rew_reflect*. Qed.
 
 Instance union_incl_inv_from_union_incl_eq :
   forall `{BagUnion T, BagIncl T},
   Union_incl_eq -> Union_incl_inv.
-Proof. constructor. introv I. rewrite union_incl_eq in I. destruct* I. Qed.
+Proof using. constructor. introv I. rewrite union_incl_eq in I. destruct* I. Qed.
 
 Instance in_double_eq_from_in_double :
   forall `{BagIn A T},
   In_double -> In_double_eq.
-Proof. constructor. introv I. apply in_double. intros. rewrite* I. Qed.
+Proof using. constructor. introv I. apply in_double. intros. rewrite* I. Qed.
 
 (** Union and inter from Extensionality *)
 
@@ -440,20 +440,20 @@ Context `{BagIn A T, BagUnion T}.
 
 Global Instance union_assoc_from_in_union :
   In_double -> In_union_eq -> Union_assoc.
-Proof. constructor. contain_by_in_double. Qed.
+Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance union_comm_from_in_union :
   In_double -> In_union_eq -> Union_comm.
-Proof. constructor. contain_by_in_double. Qed.
+Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance union_empty_l_from_in_union : 
   forall `{BagEmpty T},
   In_double -> In_union_eq -> In_empty_eq -> Union_empty_l.
-Proof. constructor. contain_by_in_double. Qed.
+Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance union_self_from_in_union :
   In_double -> In_union_eq -> Union_self.
-Proof. constructor. contain_by_in_double. Qed.
+Proof using. constructor. contain_by_in_double. Qed.
 
 End UnionDouble.
 
@@ -462,26 +462,26 @@ Context `{BagIn A T, BagInter T}.
 
 Global Instance inter_assoc_from_in_inter :
   In_double -> In_inter_eq -> Inter_assoc.
-Proof. constructor. contain_by_in_double. Qed.
+Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance inter_comm_from_in_inter :
   In_double -> In_inter_eq -> Inter_comm.
-Proof. constructor. contain_by_in_double. Qed.
+Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance inter_empty_l_from_in_inter :
   forall `{BagEmpty T},
   In_double -> In_inter_eq -> In_empty_eq -> Inter_empty_l.
-Proof. constructor. contain_by_in_double. Qed.
+Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance inter_self_from_in_inter :
   In_double -> In_inter_eq -> Inter_self.
-Proof. constructor. contain_by_in_double. Qed.
+Proof using. constructor. contain_by_in_double. Qed.
 
 End InterDouble.
 
 Instance union_comm_assoc_from_assoc_and_comm 
   `{Union_assoc} {UH: Union_comm} : Union_comm_assoc.
-Proof. 
+Proof using. 
   constructor. intros_all. do 2 rewrite union_assoc. 
   rewrite (union_comm _ x). auto. 
 Qed.

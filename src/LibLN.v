@@ -204,7 +204,7 @@ Tactic Notation "apply_empty" "*" constr(H) :=
 
 Lemma list_map_nth : forall A (f : A -> A) (d : A) (l : list A) (n : nat),
   f d = d -> f (List.nth n l d) = List.nth n (LibList.map f l) d.
-Proof. induction l; introv E; destruct n; simpl; auto. Qed.
+Proof using. induction l; introv E; destruct n; simpl; auto. Qed.
 
 (** Property over lists of given length *)
 
@@ -217,7 +217,7 @@ Lemma list_for_n_concat : forall (A : Set) (P : A -> Prop) n1 n2 L1 L2,
   list_for_n P n1 L1 -> 
   list_for_n P n2 L2 ->
   list_for_n P (n1+n2) (L1 ++ L2).
-Proof.
+Proof using.
   unfold list_for_n. introv [? ?] [? ?]. split.
   rew_length~.
   apply* Forall_app.

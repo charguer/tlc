@@ -63,23 +63,23 @@ Variables (A B C D : Type).
 
 Lemma compose_id_l : forall (f:A->B),
   id \o f = f. 
-Proof. intros. apply~ func_ext_1. Qed.
+Proof using. intros. apply~ func_ext_1. Qed.
 
 Lemma compose_id_r : forall (f:A->B),
   f \o id = f. 
-Proof. intros. apply~ func_ext_1. Qed.
+Proof using. intros. apply~ func_ext_1. Qed.
 
 Lemma compose_assoc : forall (f:C->D) (g:B->C) (h:A->B), 
   (f \o g) \o h = f \o (g \o h).
-Proof. intros. apply~ func_ext_1. Qed.
+Proof using. intros. apply~ func_ext_1. Qed.
 
 Lemma compose_eq_l : forall (f:B->C) (g1 g2:A->B),
   g1 = g2 -> f \o g1 = f \o g2.
-Proof. intros. subst~. Qed.
+Proof using. intros. subst~. Qed.
 
 Lemma compose_eq_r : forall (f:A->B) (g1 g2:B->C),
   g1 = g2 -> g1 \o f = g2 \o f.
-Proof. intros. subst~. Qed.
+Proof using. intros. subst~. Qed.
 
 End Combinators.
 

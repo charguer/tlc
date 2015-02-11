@@ -13,7 +13,7 @@ Require Import LibTactics LibLogic LibOperation.
 (** ** Inhabited *)
 
 Instance bool_inhab : Inhab bool.
-Proof. constructor. apply (prove_Inhab true). Qed.
+Proof using. constructor. apply (prove_Inhab true). Qed.
 
 (** For [Extensional bool] and [Comparable bool], see file LibReflect:
     These results are not in [LibBool] because they depend on definition
@@ -132,61 +132,61 @@ Tactic Notation "tautob" "*" :=
 (* todo: rename those lemmas according to convention (e.g. and_neutral_l) *)
 
 Lemma or_same : idempotent2 or.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma and_same : idempotent2 and.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma neutral_l_and : neutral_l and true.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma neutral_r_and : neutral_r and true.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma absorb_l_and : absorb_l and false.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma absorb_r_and : absorb_r and false.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma neutral_l_or : neutral_l or false.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma neutral_r_or : neutral_r or false.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma absorb_l_or : absorb_l or true.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma absorb_r_or : absorb_r or true.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma comm_or : comm or.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma comm_and : comm and.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma assoc_and : assoc and. 
-Proof. tautob*. Qed.
+Proof using. tautob*. Qed.
 
 Lemma assoc_or : assoc or. 
-Proof. tautob*. Qed.
+Proof using. tautob*. Qed.
 
 Lemma neg_false : ! false = true.
-Proof. auto. Qed.
+Proof using. auto. Qed.
 
 Lemma neg_true : ! true = false.
-Proof. auto. Qed. 
+Proof using. auto. Qed. 
 
 Lemma neg_and : @automorphism bool neg and or.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma neg_or : @automorphism bool neg or and.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma neg_neg : idempotent neg.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -198,31 +198,31 @@ Implicit Types x y z : bool.
 
 Lemma if_t_x_y : forall x y,
   (if true then x else y) = x.
-Proof. auto. Qed.
+Proof using. auto. Qed.
 
 Lemma if_f_x_y : forall x y,
   (if false then x else y) = y.
-Proof. auto. Qed.
+Proof using. auto. Qed.
 
 Lemma if_x_y_y : forall x y,
   (if x then y else y) = y.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma if_x_t_f : forall x,
   (if x then true else false) = x.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma if_x_f_t : forall x,
   (if x then false else true) = !x.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma if_x_t_y : forall x y,
   (if x then true else y) = x || y.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 Lemma if_x_y_f : forall x y,
   (if x then y else false) = x && y.
-Proof. tautob~. Qed.
+Proof using. tautob~. Qed.
 
 End PropertiesIf.
 

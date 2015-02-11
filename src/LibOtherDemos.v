@@ -93,7 +93,7 @@ End Tree_induct.
 
 Lemma tree_map_pred_succ_1 : forall t,
   tree_map pred (tree_map S t) = t.
-Proof.
+Proof using.
   intros. pattern t. match goal with |- ?F _ => sets P: F end.
   eapply tree_induct_gen with (Q := Forall P); subst P; simpl; intros.
   fequals.
@@ -110,7 +110,7 @@ Lemma tree_induct_forall : forall (P : tree -> Prop),
   (forall n : nat, P (leaf n)) ->
   (forall ts : list tree, Forall P ts -> P (node ts)) ->
   forall t : tree, P t.
-Proof.
+Proof using.
   introv Hl Hn. eapply tree_induct_gen with (Q := Forall P); intros.
   auto. auto. constructors~. constructors~.
 Qed.
@@ -120,7 +120,7 @@ Qed.
 
 Lemma tree_map_pred_succ_2 : forall t,
   tree_map pred (tree_map S t) = t.
-Proof.
+Proof using.
   intros. induction t using tree_induct_forall; simpl.
   fequals.
   fequals. induction ts; simpl.
@@ -135,7 +135,7 @@ Lemma tree_induct_mem : forall (P : tree -> Prop),
   (forall ts : list tree, 
     (forall t, Mem t ts -> P t) -> P (node ts)) ->
   forall t : tree, P t.
-Proof.
+Proof using.
   introv Hl Hn. eapply tree_induct_gen with (Q := fun ts =>
     forall t, Mem t ts -> P t); intros.
   auto. auto. inverts H. inverts~ H1. 
@@ -148,7 +148,7 @@ Hint Constructors Mem.
 
 Lemma tree_map_pred_succ_3 : forall t,
   tree_map pred (tree_map S t) = t.
-Proof.
+Proof using.
   intros. induction t using tree_induct_mem; simpl.
   fequals.
   fequals. induction ts; simpl.
@@ -172,7 +172,7 @@ Hint Constructors subtree.
 (** Proof of well-foundedness of the subtree relation *)
 
 Lemma subtree_wf : wf subtree.
-Proof.
+Proof using.
   intros t. induction t using tree_induct_mem;
   constructor; introv K; inversions~ K.
 Qed.
@@ -182,7 +182,7 @@ Qed.
 
 Lemma tree_map_pred_succ_4 : forall t,
   tree_map pred (tree_map S t) = t.
-Proof.
+Proof using.
   intros. induction_wf IH: subtree_wf t.
   destruct t as [|ts]; simpl.
   fequals.
@@ -210,7 +210,7 @@ Implicit Types x y : var.
 
 Lemma test_notin_solve_1 : forall x E F G,
   x \notin E \u F -> x \notin G -> x \notin (E \u G).
-Proof. 
+Proof using. 
   intros. dup. 
   notin_simpl. notin_solve. notin_solve.
   notin_solve.
@@ -219,25 +219,25 @@ Qed.
 Lemma test_notin_solve_2 : forall x y E F G,
   x \notin E \u \{y} \u F -> x \notin G ->
   x \notin \{y} /\ y \notin \{x}.
-Proof.
+Proof using.
   split. notin_solve. notin_solve.
 Qed.
 
 Lemma test_notin_solve_3 : forall x y,
   x <> y -> x \notin \{y} /\ y \notin \{x}.
-Proof.
+Proof using.
   split. notin_solve. notin_solve.
 Qed.
 
 Lemma test_notin_solve_4 : forall x y,
   x \notin \{y} -> x <> y /\ y <> x.
-Proof.
+Proof using.
   split. notin_solve. notin_solve.
 Qed.
 
 Lemma test_notin_false_1 : forall x y E F G,
   x \notin (E \u \{x} \u F) -> y \notin G.
-Proof. 
+Proof using. 
   intros. dup 3.
     false. notin_false.
     notin_false.
@@ -246,14 +246,14 @@ Qed.
 
 Lemma test_notin_false_2 : forall x y : var,
   x <> x -> y = x.
-Proof. 
+Proof using. 
   intros. notin_false.
 Qed.
 
 Lemma test_neq_solve : forall x y E F,
   x \notin (E \u \{y} \u F) -> y \notin E ->
   y <> x /\ x <> y.
-Proof.
+Proof using.
   split. notin_solve. notin_solve.
 Qed.
 
@@ -262,25 +262,25 @@ Qed.
 
 Lemma test_fresh_solve_1 : forall xs L1 L2 n,
   fresh (L1 \u L2) n xs -> fresh L1 n xs.
-Proof. 
+Proof using. 
   intros. fresh_solve.
 Qed.
 
 Lemma test_fresh_solve_2 : forall xs L1 L2 n,
  fresh (L1 \u L2) n xs -> fresh L2 n xs.
-Proof. 
+Proof using. 
   intros. fresh_solve.
 Qed.
 
 Lemma test_fresh_solve_3 : forall xs L1 L2 n,
  fresh (L1 \u L2) n xs -> fresh \{} n xs.
-Proof. 
+Proof using. 
   intros. fresh_solve.
 Qed.
 
 Lemma test_fresh_solve_4 : forall xs L1 L2 n,
  fresh (L1 \u L2) n xs -> fresh L1 (length xs) xs.
-Proof. 
+Proof using. 
   intros. fresh_solve.
 Qed.
 
@@ -288,7 +288,7 @@ Lemma test_fresh_solve_5 : forall xs L1 n m,
   m = n ->
   fresh L1 m xs -> 
   fresh L1 n xs.
-Proof. 
+Proof using. 
   intros. fresh_solve.
 Qed.
 
@@ -296,7 +296,7 @@ Lemma test_fresh_solve_6 : forall xs L1 L2 n m,
   m = n ->
   fresh (L1 \u L2) n xs -> 
   fresh L1 m xs.
-Proof. 
+Proof using. 
   intros. fresh_solve.
 Qed.
 
@@ -304,7 +304,7 @@ Lemma test_fresh_solve_7 : forall xs L1 L2 n m,
   n = m ->
   fresh (L1 \u L2) n xs -> 
   fresh L1 m xs.
-Proof. 
+Proof using. 
   intros. fresh_solve.
 Qed.
 
@@ -318,21 +318,21 @@ Qed.
 
 Lemma test_notin_by_auto : forall x E F G,
   x \notin E \u F -> x \notin G -> x \notin (E \u G).
-Proof. auto. Qed.
+Proof using. auto. Qed.
 
 Lemma test_neq_by_auto : forall x y E,
   x \notin E \u \{y} -> y <> x.
-Proof. auto. Qed.
+Proof using. auto. Qed.
 
 Lemma test_notin_false_by_hand : forall x,
   ~ x \notin \{x}.
-Proof. intros_all. notin_false. Qed.
+Proof using. intros_all. notin_false. Qed.
 
 Hint Extern 1 (~ _ \notin _) => intros_all; notin_false.
 
 Lemma test_notin_false_by_auto : forall x,
   ~ x \notin \{x}.
-Proof. intros_all. notin_false. Qed.
+Proof using. intros_all. notin_false. Qed.
 
 (* Comment: using the following hint is a bad idea because it will
             lead to very inefficient proof scripts.
@@ -356,7 +356,7 @@ Ltac pick_fresh Y :=
 
 Lemma test_pick_fresh :
   forall (x y z : var) (L1 L2 L3 : vars) (t1 t2 : trm), True.
-Proof.
+Proof using.
   intros. pick_fresh a.
 Admitted.
 

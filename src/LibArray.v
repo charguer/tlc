@@ -69,23 +69,23 @@ Global Opaque array read_inst update_inst binds_inst.
 (** ** Index for arrays *)
 
 Instance array_index : forall A, BagIndex (array A) int.
-Proof. intros. constructor. exact (fun t i => index (length t) i). Defined.
+Proof using. intros. constructor. exact (fun t i => index (length t) i). Defined.
 
 Lemma array_index_def : forall A (t:array A) i,
   index t i = index (length t) i.
-Proof. auto. Qed. 
+Proof using. auto. Qed. 
 
 Lemma array_index_bounds : forall A (t:array A) i,
   index t i = (0 <= i < length t).
-Proof. auto. Qed. 
+Proof using. auto. Qed. 
 
 Lemma array_index_prove : forall A (t:array A) i,
   0 <= i < length t -> index t i.
-Proof. intros. rewrite~ array_index_def. Qed.
+Proof using. intros. rewrite~ array_index_def. Qed.
 
 Lemma index_array_length : forall A (t : array A) n i,
   index n i -> n = length t -> index t i.
-Proof. intros. subst. rewrite~ array_index_def. Qed.
+Proof using. intros. subst. rewrite~ array_index_def. Qed.
 
 Global Opaque array_index.
 
@@ -166,13 +166,13 @@ Transparent map empty_inst single_bind_inst binds_inst
  union_inst dom_inst disjoint_inst.
 
 Global Instance map_union_empty_l : Union_empty_l (T:=map A B).
-Proof. 
+Proof using. 
   constructor. intros_all. simpl.
   unfold union_impl, empty_impl, map. simpl. extens~.
 Qed.
 
 Global Instance map_union_assoc : Union_assoc (T:=map A B).
-Proof. 
+Proof using. 
   constructor. intros M N P. simpl.
   unfold union_impl, map. extens.
   intros k. destruct~ (M k).
@@ -210,7 +210,7 @@ Parameter count_bounds : forall `{Inhab A} (t:array A) (f:A->Prop),
 Lemma array_count_upto : forall `{Inhab A} (P:A->Prop) (t:array A) n i v,
   ~ P (t\(i)) -> P v -> length t <= n ->
   upto n (count P (t\(i:=v))) (count P t).
-Proof.
+Proof using.
   introv Ni Pv Le. forwards K: (count_bounds (t\(i:=v)) P). split.
   rewrite length_update in K. math.
   lets M: (@count_update A _). rewrite M. clear M. 

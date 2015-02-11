@@ -17,7 +17,7 @@ Implicit Arguments None [[A]].
 (** * Inhabited and comparable *)
 
 Instance option_inhab : forall A, Inhab (option A).
-Proof. intros. apply (prove_Inhab None). Qed.
+Proof using. intros. apply (prove_Inhab None). Qed.
 
 Definition option_compare `{Comparable A} (o1 o2 : option A) :=
   match o1, o2 with
@@ -28,7 +28,7 @@ Definition option_compare `{Comparable A} (o1 o2 : option A) :=
 
 Global Instance option_comparable : forall `{Comparable A}, 
   Comparable (option A).
-Proof.
+Proof using.
   intros.
   applys (comparable_beq option_compare).
   destruct x; destruct y; simpl; rew_refl; iff; auto_false*; congruence.
@@ -99,21 +99,21 @@ Definition apply_on A B o (f : A -> option B) :=
 Lemma apply_on_inv : forall A B (f : A->option B) x y, 
   apply_on x f = Some y -> 
   exists z, x = Some z /\ f z = Some y.
-Proof. destruct x; simpl; introv H; inverts* H. Qed.
+Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 
 Implicit Arguments apply_on_inv [A B f x y].
 
 Lemma map_inv : forall A B (f : A->B) x y, 
   map f x = Some y -> 
   exists z, x = Some z /\ y = f z.
-Proof. destruct x; simpl; introv H; inverts* H. Qed.
+Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 
 Implicit Arguments map_inv [A B f x y].
 
 Lemma map_on_inv : forall A B (f : A->B) x y, 
   map_on x f = Some y -> 
   exists z, x = Some z /\ y = f z.
-Proof. destruct x; simpl; introv H; inverts* H. Qed.
+Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 
 Implicit Arguments map_on_inv [A B f x y].
 

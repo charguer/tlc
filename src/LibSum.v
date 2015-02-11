@@ -18,12 +18,12 @@ Implicit Arguments inr [[A] [B]].
 (** * Inhabited *)
 
 Instance sum_inhab_left : forall `{Inhab A} B, Inhab (A + B).
-Proof. intros. apply (prove_Inhab (inl arbitrary)). Qed.
+Proof using. intros. apply (prove_Inhab (inl arbitrary)). Qed.
 Instance sum_inhab_right : forall `{Inhab B} A, Inhab (A + B).
-Proof. intros. apply (prove_Inhab (inr arbitrary)). Qed.
+Proof using. intros. apply (prove_Inhab (inr arbitrary)). Qed.
 
 Definition sum_inhab : forall `{Inhab A, Inhab B}, Inhab (A + B).
-Proof. typeclass. Qed. 
+Proof using. typeclass. Qed. 
 
 
 (* ********************************************************************** *)
@@ -47,11 +47,11 @@ Definition is_inr x :=
 
 Lemma is_inl_neg_is_inr : forall x,
   is_inl x = ! (is_inr x).
-Proof. intros x. destruct~ x. Qed.
+Proof using. intros x. destruct~ x. Qed.
 
 Lemma is_inr_neg_is_inl : forall x,
   is_inr x = ! (is_inl x).
-Proof. intros x. destruct~ x. Qed.
+Proof using. intros x. destruct~ x. Qed.
 
 End IsIn.
 

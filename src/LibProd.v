@@ -11,7 +11,7 @@ Generalizable Variables A B.
 (** * Inhabited *)
 
 Global Instance prod_inhab : forall `{Inhab A, Inhab B}, Inhab (A * B).
-Proof. intros. apply (prove_Inhab (arbitrary, arbitrary)). Qed.
+Proof using. intros. apply (prove_Inhab (arbitrary, arbitrary)). Qed.
 
 
 (* ********************************************************************** *)
@@ -23,7 +23,7 @@ Definition prod_compare {A B : Type} `{Comparable A} `{Comparable B} (x y : A * 
 
 Global Instance prod_comparable : forall A B : Type,
   Comparable A -> Comparable B -> Comparable (A * B).
-Proof.
+Proof using.
   introv CA CB. applys comparable_beq (@prod_compare A B _ _). intros x y.
   destruct x; destruct y; simpl; rew_refl; iff H; inverts~ H;
    tryfalse; auto; try congruence.
@@ -37,7 +37,7 @@ Qed.
 
 Lemma tuple2_from_proj : forall A1 A2 (x:A1*A2), 
   (fst x, snd x) = x.
-Proof. intros. destruct~ x. Qed.
+Proof using. intros. destruct~ x. Qed.
 
 (** Structural equality *)
 
@@ -45,15 +45,15 @@ Section Properties.
 Variables (A1 A2 A3 A4 : Type). 
 Lemma eq_prod2 : forall (x1 y1:A1) (x2 y2:A2),
   x1 = y1 -> x2 = y2 -> (x1, x2) = (y1, y2).
-Proof. intros. subst~. Qed.
+Proof using. intros. subst~. Qed.
 
 Lemma eq_prod3 : forall (x1 y1:A1) (x2 y2:A2) (x3 y3:A3),
   x1 = y1 -> x2 = y2 -> x3 = y3 -> (x1, x2, x3) = (y1, y2, y3).
-Proof. intros. subst~. Qed.
+Proof using. intros. subst~. Qed.
 
 Lemma eq_prod4 : forall (x1 y1:A1) (x2 y2:A2) (x3 y3:A3) (x4 y4:A4),
   x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> (x1, x2, x3, x4) = (y1, y2, y3, y4).
-Proof. intros. subst~. Qed.
+Proof using. intros. subst~. Qed.
 
 End Properties.
 

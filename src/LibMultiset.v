@@ -46,7 +46,7 @@ Definition card_impl A (E:multiset A) :=
 (** ** Notation through typeclasses *)
 
 Lemma in_inst : forall A, BagIn A (multiset A).
-Proof. constructor. exact (@in_impl A). Defined.
+Proof using. constructor. exact (@in_impl A). Defined.
 Hint Extern 1 (BagIn _ (multiset _)) => apply in_inst
   : typeclass_instances.
 
@@ -67,7 +67,7 @@ Global Opaque multiset empty_inst single_inst in_inst
  union_inst incl_inst fold_inst card_inst.
 
 Instance multiset_inhab : forall A, Inhab (multiset A).
-Proof. intros. apply (prove_Inhab (@empty_impl A)). Qed.
+Proof using. intros. apply (prove_Inhab (@empty_impl A)). Qed.
 
 
 (* ********************************************************************** *)
@@ -86,59 +86,59 @@ Transparent multiset empty_inst single_inst in_inst
  union_inst incl_inst fold_inst card_inst.
 
 Global Instance multiset_in_empty_inst : In_empty_eq (A:=A) (T:=multiset A).
-Proof. 
+Proof using. 
   constructor. intros. extens. simpl.
   unfold empty_impl, in_impl. autos*.
 Qed.
 
 Global Instance multiset_in_single_inst : In_single_eq (A:=A) (T:=multiset A).
-Proof.
+Proof using.
   constructor. intros. extens. simpl.
   unfold single_impl, in_impl. case_if*. 
 Qed.
 
 Global Instance multiset_in_union_inst : In_union_eq (A:=A) (T:=multiset A).
-Proof.
+Proof using.
   constructor. intros. extens. simpl.
   unfold single_impl, union_impl, in_impl. 
   iff. tests: (E x = 0). right~. left~. destruct H; math.
 Qed.
 
 Global Instance multiset_union_empty_l : Union_empty_l (T:=multiset A).
-Proof. 
+Proof using. 
   constructor. intros_all. simpl.
   unfold union_impl, empty_impl, multiset. simpl. extens~.
 Qed.
 
 Global Instance multiset_union_comm : Union_comm (T:=multiset A).
-Proof. 
+Proof using. 
   constructor. intros_all. simpl.
   unfold union_impl, multiset. simpl. extens~.
 Qed.
 
 Global Instance multiset_union_assoc : Union_assoc (T:=multiset A).
-Proof. 
+Proof using. 
   constructor. intros_all. simpl.
   unfold union_impl, multiset. simpl. extens~.
 Qed.
 
 Global Instance multiset_card_empty : Card_empty (T:=multiset A).
-Proof. skip. (*TODO: under construction *) Qed.
+Proof using. skip. (*TODO: under construction *) Qed.
 
 Global Instance multiset_card_single : Card_single (A:=A) (T:=multiset A).
-Proof. skip. (*TODO: under construction *) Qed.
+Proof using. skip. (*TODO: under construction *) Qed.
 
 Global Instance multiset_card_union : Card_union (T:=multiset A).
-Proof. skip. (*TODO: under construction *) Qed.
+Proof using. skip. (*TODO: under construction *) Qed.
 
 Global Instance multiset_empty_incl : Empty_incl (T:=multiset A).
-Proof. 
+Proof using. 
   constructor. intros_all. simpl.
   unfold incl_impl, empty_impl, multiset. simpl. math.
 Qed.
 
 Global Instance multiset_union_empty_inv : Union_empty_inv (T:=multiset A).
-Proof. 
+Proof using. 
   constructor. simpl. unfolds union_impl, empty_impl, multiset.
   intros_all. split; extens; intros x; lets: (func_same_1 x H); math.
 Qed.
@@ -162,22 +162,22 @@ Implicit Types E F : multiset A.
 
 Lemma foreach_empty : forall P,
   @foreach A (multiset A) _ P \{}. 
-Proof. intros_all. Admitted.
+Proof using. intros_all. Admitted.
 (* TODO: false* @in_empty. typeclass. *)
 
 Lemma foreach_single : forall P X,
   P X -> @foreach A (multiset A) _ P (\{ X }). 
-Proof. intros_all. rewrite~ (in_single H0). Qed.
+Proof using. intros_all. rewrite~ (in_single H0). Qed.
 
 Lemma foreach_union : forall P E F,
   foreach P E -> foreach P F -> foreach P (E \u F).
-Proof. intros_all. destruct~ (in_union_inv H1). Qed.
+Proof using. intros_all. destruct~ (in_union_inv H1). Qed.
 
 Hint Resolve foreach_empty foreach_single foreach_union.
 
 Lemma foreach_union_inv : forall P E F,
   foreach P (E \u F) -> foreach P E /\ foreach P F.
-Proof.
+Proof using.
   introv H. split; introv K.
   apply H. rewrite~ @in_union_eq. typeclass.
   apply H. rewrite~ @in_union_eq. typeclass.
@@ -185,14 +185,14 @@ Qed.
 
 Lemma foreach_union_eq : forall P E F,
   foreach P (E \u F) = (foreach P E /\ foreach P F).
-Proof.
+Proof using.
   intros. extens. iff.
   apply~ foreach_union_inv. apply* foreach_union.
 Qed.
 
 Lemma foreach_single_eq : forall P X,
   foreach P (\{X}:multiset A) = P X.
-Proof.
+Proof using.
   intros. extens. iff.
   apply H. apply in_single_self.
   apply~ foreach_single.
@@ -200,7 +200,7 @@ Qed.
 
 Lemma foreach_weaken : forall P Q E,
   foreach P E -> pred_le P Q -> foreach Q E.
-Proof. introv H L K. apply~ L. Qed.
+Proof using. introv H L K. apply~ L. Qed.
 
 End ForeachProp.
 
@@ -226,19 +226,19 @@ Tactic Notation "rew_foreach" "*" constr(H) :=
 (* todo: doc *)
 
 Lemma for_multiset_union_assoc : forall A, assoc (union (T:=multiset A)).
-Proof. intros. apply union_assoc. Qed.
+Proof using. intros. apply union_assoc. Qed.
 
 Lemma for_multiset_union_comm : forall A, comm (union (T:=multiset A)).
-Proof. intros. apply union_comm. Qed.
+Proof using. intros. apply union_comm. Qed.
 
 Lemma for_multiset_union_empty_l : forall A (E:multiset A), \{} \u E = E.
-Proof. intros. apply union_empty_l. Qed.
+Proof using. intros. apply union_empty_l. Qed.
 
 Lemma for_multiset_union_empty_r : forall A (E:multiset A), E \u \{} = E.
-Proof. intros. apply union_empty_r. Qed.
+Proof using. intros. apply union_empty_r. Qed.
 
 Lemma for_multiset_empty_incl : forall A (E:multiset A), \{} \c E.
-Proof. intros. apply empty_incl. Qed.
+Proof using. intros. apply empty_incl. Qed.
 
 Hint Rewrite <- for_multiset_union_assoc : rew_permut_simpl.
 Hint Rewrite for_multiset_union_empty_l for_multiset_union_empty_r : rew_permut_simpl.
@@ -253,68 +253,68 @@ Implicit Types l : multiset A.
 
 Lemma permut_get_1 : forall l1 l2,
   (l1 \u l2) = (l1 \u l2).
-Proof. intros. auto. Qed.
+Proof using. intros. auto. Qed.
 
 Lemma permut_get_2 : forall l1 l2 l3,
   (l1 \u l2 \u l3) = (l2 \u l1 \u l3).
-Proof. intros. apply union_comm_assoc. Qed.
+Proof using. intros. apply union_comm_assoc. Qed.
 (* rewrite (union_comm _ l1). auto. Qed. *)
 
 Lemma permut_get_3 : forall l1 l2 l3 l4,
   (l1 \u l2 \u l3 \u l4) = (l2 \u l3 \u l1 \u l4).
-Proof.
+Proof using.
   intros. do 2 rewrite (union_assoc l2). apply permut_get_2.
 Qed.
 
 Lemma permut_get_4 : forall l1 l2 l3 l4 l5,
     (l1 \u l2 \u l3 \u l4 \u l5)
   = (l2 \u l3 \u l4 \u l1 \u l5).
-Proof.
+Proof using.
   intros. do 2 rewrite (union_assoc l2). apply permut_get_3.
 Qed.
 
 Lemma permut_get_5 : forall l1 l2 l3 l4 l5 l6,
     (l1 \u l2 \u l3 \u l4 \u l5 \u l6) 
   = (l2 \u l3 \u l4 \u l5 \u l1 \u l6).
-Proof.
+Proof using.
   intros. do 2 rewrite (union_assoc l2). apply permut_get_4.
 Qed.
 
 Lemma permut_get_6 : forall l1 l2 l3 l4 l5 l6 l7,
     (l1 \u l2 \u l3 \u l4 \u l5 \u l6 \u l7) 
   = (l2 \u l3 \u l4 \u l5 \u l6 \u l1 \u l7).
-Proof.
+Proof using.
   intros. do 2 rewrite (union_assoc l2). apply permut_get_5.
 Qed.
 
 Lemma permut_get_7 : forall l1 l2 l3 l4 l5 l6 l7 l8,
     (l1 \u l2 \u l3 \u l4 \u l5 \u l6 \u l7 \u l8) 
   = (l2 \u l3 \u l4 \u l5 \u l6 \u l7 \u l1 \u l8).
-Proof.
+Proof using.
   intros. do 2 rewrite (union_assoc l2). apply permut_get_6.
 Qed.
 
 Lemma permut_get_8 : forall l1 l2 l3 l4 l5 l6 l7 l8 l9,
     (l1 \u l2 \u l3 \u l4 \u l5 \u l6 \u l7 \u l8 \u l9) 
   = (l2 \u l3 \u l4 \u l5 \u l6 \u l7 \u l8 \u l1 \u l9).
-Proof.
+Proof using.
   intros. do 2 rewrite (union_assoc l2). apply permut_get_7.
 Qed.
 
 
 Lemma permut_tactic_setup : forall C l1 l2,
    C (\{} \u l1 \u \{}) (l2 \u \{}) -> C l1 l2.
-Proof. intros. rews_permut_simpl. eauto. Qed.
+Proof using. intros. rews_permut_simpl. eauto. Qed.
 
 Lemma permut_tactic_keep : forall C l1 l2 l3 l4,
   C ((l1 \u l2) \u l3) l4 ->
   C (l1 \u (l2 \u l3)) l4.
-Proof. intros. rews_permut_simpl. eauto. Qed.
+Proof using. intros. rews_permut_simpl. eauto. Qed.
 
 
 Lemma permut_tactic_trans : forall C l1 l2 l3,
   l3 = l2 -> C l1 l3 -> C l1 l2.
-Proof. intros. subst~. Qed.
+Proof using. intros. subst~. Qed.
 
 End PermutationTactic.
 
@@ -394,7 +394,7 @@ Ltac permut_simpl_for permut_tactic_simpl :=
 Lemma permut_tactic_simpl_eq : forall A (l1 l2 l3 l4:multiset A),
   (l1 \u l3) = l4 ->
   (l1 \u (l2 \u l3)) = (l2 \u l4).
-Proof. intros. subst. apply permut_get_2. Qed.
+Proof using. intros. subst. apply permut_get_2. Qed.
 
 Lemma permut_tactic_simpl_incl : forall A (l1 l2 l3 l4:multiset A),
   (l1 \u l3) \c l4 ->
@@ -424,7 +424,7 @@ Implicit Types l : multiset A.
 Lemma demo_multiset_union_permut_simpl_1 : 
   forall l1 l2 l3 : multiset A,
   (l1 \u l2 \u l3) = (l3 \u l2 \u l1).
-Proof.
+Proof using.
   intros.
   permut_simpl_prepare.
   permut_simpl_once.
@@ -438,7 +438,7 @@ Lemma demo_multiset_union_permut_simpl_2 :
   forall 
   (x:A) l1 l2 l3 l4,
   (l1 \u \{x} \u l3 \u l2) \c (l1 \u l2 \u l4 \u (\{x} \u l3)).
-Proof.
+Proof using.
   intros.
   permut_simpl_prepare.
   permut_simpl_once.
@@ -453,7 +453,7 @@ Lemma demo_multiset_union_permut_simpl_3 : forall (x y:A) l1 l1' l2 l3 l4,
   l1 \c l4 \u l1' ->
   (l1 \u (\{x} \u l2) \u \{x} \u (\{y} \u l3)) \c
   (\{y} \u \{x} \u (l1' \u l2 \u l4) \u (\{x} \u l3)).
-Proof.
+Proof using.
   intros. dup.
   (* details *)
   permut_simpl_prepare.
@@ -486,23 +486,23 @@ Implicit Types l : multiset A.
 
 Lemma in_union_get_1 : forall x l1 l2,
   x \in l1 -> x \in (l1 \u l2).
-Proof. intros. apply in_union_l. auto. Qed.
+Proof using. intros. apply in_union_l. auto. Qed.
 
 Lemma in_union_get_2 : forall x l1 l2 l3,
   x \in l2 -> x \in (l1 \u l2 \u l3).
-Proof. intros. apply in_union_r. apply~ in_union_get_1. Qed.
+Proof using. intros. apply in_union_r. apply~ in_union_get_1. Qed.
 
 Lemma in_union_get_3 : forall x l1 l2 l3 l4,
   x \in l3 -> x \in (l1 \u l2 \u l3 \u l4).
-Proof. intros. apply in_union_r. apply~ in_union_get_2. Qed.
+Proof using. intros. apply in_union_r. apply~ in_union_get_2. Qed.
 
 Lemma in_union_get_4 : forall x l1 l2 l3 l4 l5,
   x \in l4 -> x \in (l1 \u l2 \u l3 \u l4 \u l5).
-Proof. intros. apply in_union_r. apply~ in_union_get_3. Qed.
+Proof using. intros. apply in_union_r. apply~ in_union_get_3. Qed.
 
 Lemma in_union_get_5 : forall x l1 l2 l3 l4 l5 l6,
   x \in l5 -> x \in (l1 \u l2 \u l3 \u l4 \u l5 \u l6).
-Proof. intros. apply in_union_r. apply~ in_union_get_4. Qed.
+Proof using. intros. apply in_union_r. apply~ in_union_get_4. Qed.
 
 End InUnionGet.
 
@@ -542,23 +542,23 @@ Implicit Types l : multiset A.
 
 Lemma in_union_extract_1 : forall x l1,
   x \in (\{x} \u l1).
-Proof. intros. apply in_union_get_1. apply in_single_self. Qed.
+Proof using. intros. apply in_union_get_1. apply in_single_self. Qed.
 
 Lemma in_union_extract_2 : forall x l1 l2,
   x \in (l1 \u \{x} \u l2).
-Proof. intros. apply in_union_get_2. apply in_single_self. Qed.
+Proof using. intros. apply in_union_get_2. apply in_single_self. Qed.
 
 Lemma in_union_extract_3 : forall x l1 l2 l3,
   x \in (l1 \u l2 \u \{x} \u l3).
-Proof. intros. apply in_union_get_3. apply in_single_self. Qed.
+Proof using. intros. apply in_union_get_3. apply in_single_self. Qed.
 
 Lemma in_union_extract_4 : forall x l1 l2 l3 l4,
   x \in (l1 \u l2 \u l3 \u \{x} \u l4).
-Proof. intros. apply in_union_get_4. apply in_single_self. Qed.
+Proof using. intros. apply in_union_get_4. apply in_single_self. Qed.
 
 Lemma in_union_extract_5 : forall x l1 l2 l3 l4 l5,
   x \in (l1 \u l2 \u l3 \u l4 \u \{x} \u l5).
-Proof. intros. apply in_union_get_5. apply in_single_self. Qed.
+Proof using. intros. apply in_union_get_5. apply in_single_self. Qed.
 
 End InUnionExtract.
 
@@ -593,13 +593,13 @@ Implicit Types l : multiset A.
 Implicit Types x : A.
 Lemma empty_eq_single_inv_1 : forall x l1 l2,
   l1 = l2 -> x \notin l1 -> x \in l2 -> False.
-Proof. intros. subst*. Qed.
+Proof using. intros. subst*. Qed.
 Lemma empty_eq_single_inv_2 : forall x l1 l2,
   l1 = l2 -> x \notin l2 -> x \in l1 -> False.
-Proof. intros. subst*. Qed.
+Proof using. intros. subst*. Qed.
 Lemma notin_empty : forall x,
   x \notin (\{}:multiset A).
-Proof. intros. unfold notin. rewrite in_empty_eq. auto. Qed. 
+Proof using. intros. unfold notin. rewrite in_empty_eq. auto. Qed. 
 End InversionsTactic.
 Hint Resolve notin_empty.
 
@@ -645,15 +645,15 @@ Implicit Types l : multiset A.
 
 Lemma in_empty_inv : forall x,
   x \in (\{}:multiset A) -> False.
-Proof. introv. apply notin_empty. Qed.
+Proof using. introv. apply notin_empty. Qed.
 
 Lemma in_single_inv : forall x y : A,
   x \in (\{y}:multiset A) -> x = y.
-Proof. intros. rewrite @in_single_eq in H. auto. typeclass. Qed.
+Proof using. intros. rewrite @in_single_eq in H. auto. typeclass. Qed.
 
 Lemma in_union_inv : forall x l1 l2,
   x \in (l1 \u l2) -> x \in l1 \/ x \in l2.
-Proof. introv H. rewrite @in_union_eq in H. auto. typeclass. Qed.
+Proof using. introv H. rewrite @in_union_eq in H. auto. typeclass. Qed.
 
 End InUnionInv.
 
@@ -679,7 +679,7 @@ Tactic Notation "multiset_in" constr(H) :=
 
 Lemma union_empty_inv_multiset : forall A (l1 l2:multiset A),
   l1 \u l2 = \{} -> l1 = \{} /\ l2 = \{}.
-Proof. intros. apply union_empty_inv. auto. Qed.
+Proof using. intros. apply union_empty_inv. auto. Qed.
 
 Implicit Arguments union_empty_inv_multiset [A l1 l2].
 

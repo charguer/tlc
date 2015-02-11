@@ -156,7 +156,7 @@ Admitted.
 
 Lemma dom_empty :
   dom (@empty K V) = \{}.
-Proof. auto. Qed.
+Proof using. auto. Qed.
 
 Lemma binds_equiv_read : forall h k,
   indom h k -> (forall v, (binds h k v) = (read h k = v)).
@@ -164,21 +164,21 @@ Admitted.
 
 Lemma dom_write : forall h r v,
   dom (write h r v) = dom h \u \{r}.
-Proof. intros. unfold dom, write. rew_list. auto. Qed.
+Proof using. intros. unfold dom, write. rew_list. auto. Qed.
 
 Lemma binds_write_eq : forall h k v,
   binds (write h k v) k v.
-Proof. unfolds @binds, @write. intros. constructors. Qed.
+Proof using. unfolds @binds, @write. intros. constructors. Qed.
 
 Lemma binds_write_neq : forall h k v k' v',
   binds h k v -> k <> k' -> 
   binds (write h k' v') k v.
-Proof. unfolds @binds, @write. intros. constructors~. Qed.
+Proof using. unfolds @binds, @write. intros. constructors~. Qed.
 
 Lemma binds_write_inv : forall h k v k' v',
   binds (write h k' v') k v -> 
   (k = k' /\ v = v') \/ (k <> k' /\ binds h k v). 
-Proof. unfolds @binds, @write. introv M. inverts* M. Qed.
+Proof using. unfolds @binds, @write. introv M. inverts* M. Qed.
 
 Lemma binds_rem : forall h k k' v,
   binds h k v -> k <> k' -> binds (rem h k') k v.
@@ -200,7 +200,7 @@ Admitted. (* TODO: prove *)
 
 Lemma binds_equiv_read_option : forall h k v,
   (binds h k v) = (read_option h k = Some v).
-Proof.
+Proof using.
   unfolds @binds. introv. extens.
   induction h as [|(x&v0)].
    splits ; intro N ; invert* N.
@@ -213,7 +213,7 @@ Qed.
 
 Lemma not_indom_equiv_read_option : forall h k,
   (~ indom h k) = (read_option h k = None).
-Proof.
+Proof using.
   introv. apply* not_cancel. rew_logic. rewrite indom_equiv_binds.
   splits ; intro N.
    lets (v & B): rm N.
@@ -225,7 +225,7 @@ Qed.
 
 Lemma read_option_def : forall h k,
   read_option h k = (If indom h k then Some (read h k) else None).
-Proof.
+Proof using.
   introv. cases_if.
    rewrite* <- binds_equiv_read_option. rewrite* binds_equiv_read.
    rewrite* <- not_indom_equiv_read_option.
@@ -244,7 +244,7 @@ Definition indom_dec `{Comparable K} V (h:heap K V) (k:K) : bool :=
 
 Lemma indom_dec_spec : forall `{Comparable K} V (h:heap K V) k, 
   indom_dec h k = isTrue (indom h k).
-Proof.
+Proof using.
   intros. unfold indom, dom, indom_dec.
   induction h as [|[k' v'] h]; simpl.
   rewrite in_empty_eq. rew_refl~. 
@@ -256,7 +256,7 @@ End HeapAxioms.
 
 Lemma indom_decidable : forall `{Comparable K} V (h:heap K V) k,
   Decidable (indom h k).
-Proof.
+Proof using.
   intros. applys decidable_make (indom_dec h k).
   applys indom_dec_spec.
 Qed.
@@ -270,7 +270,7 @@ Export HeapList.
 (** Facts *)
 
 Global Instance heap_inhab : forall (K V : Type), Inhab (heap K V).
-Proof. introv. apply (prove_Inhab empty). Qed.
+Proof using. introv. apply (prove_Inhab empty). Qed.
 
 Section HeapFacts.
 Context `{HK:Comparable K} `{HV:Inhab V}.
@@ -280,17 +280,17 @@ Implicit Types h : heap K V.
 
 Lemma indom_binds : forall h k, 
   indom h k -> exists v, binds h k v.
-Proof. introv H. rewrite~ @indom_equiv_binds in H. Qed.
+Proof using. introv H. rewrite~ @indom_equiv_binds in H. Qed.
 
 Lemma binds_indom : forall h k v, 
   binds h k v -> indom h k.
-Proof. introv H. rewrite* @indom_equiv_binds. Qed.
+Proof using. introv H. rewrite* @indom_equiv_binds. Qed.
 
 (** binds-func *)
 
 Lemma binds_func : forall h k v v',
   binds h k v -> binds h k v' -> v = v'.
-Proof.
+Proof using HK HV.
   introv B1 B2. forwards: binds_indom B1. forwards: binds_indom B2.
   rewrite binds_equiv_read in B1,B2; congruence.
 Qed.
@@ -299,21 +299,21 @@ Qed.
 
 Lemma binds_read : forall h k v,
   binds h k v -> read h k = v.
-Proof. introv H. rewrite~ <- binds_equiv_read. apply* binds_indom. Qed.
+Proof using. introv H. rewrite~ <- binds_equiv_read. apply* binds_indom. Qed.
 
 Lemma read_binds : forall h k v,
   read h k = v -> indom h k -> binds h k v.
-Proof. introv H D. rewrite~ binds_equiv_read. Qed.
+Proof using. introv H D. rewrite~ binds_equiv_read. Qed.
 
 (** read-write *)
 
 Lemma read_write_eq : forall h k v, 
   read (write h k v) k = v.
-Proof. introv. apply binds_read. apply binds_write_eq. Qed.
+Proof using. introv. apply binds_read. apply binds_write_eq. Qed.
 
 Lemma read_write_neq : forall h k k' v', 
   indom h k -> k <> k' -> read (write h k' v') k = read h k.
-Proof.
+Proof using.
   introv. rewrite indom_equiv_binds. introv [v B] N.
   rewrite (binds_read B).
   forwards B': @binds_write_neq B N. rewrite~ (binds_read B'). 
@@ -323,14 +323,14 @@ Qed.
 
 Lemma indom_write_eq : forall h k v,
   indom (write h k v) k.
-Proof. 
+Proof using. 
   intros. rewrite indom_equiv_binds. exists v.
   apply* @binds_write_eq.
 Qed.
 
 Lemma indom_write : forall h k k' v',
   indom h k -> indom (write h k' v') k.
-Proof.
+Proof using.
   introv. do 2 rewrite indom_equiv_binds.
   introv [v B]. tests: (k = k').
     subst. exists v'. apply* @binds_write_eq.
@@ -339,7 +339,7 @@ Qed.
 
 Lemma indom_write_inv : forall h k k' v',
   indom (write h k' v') k -> k <> k' -> indom h k.
-Proof.
+Proof using.
   introv. do 2 rewrite indom_equiv_binds.
   introv [v B] N. lets [[? ?]|[? ?]]: @binds_write_inv B.
   false. eauto.
@@ -349,13 +349,13 @@ Qed.
 
 Lemma binds_write_eq_inv : forall h k v v',
   binds (write h k v') k v -> v = v'.
-Proof.
+Proof using.
   introv B. lets [[? ?]|[? ?]]: @binds_write_inv B; auto_false.
 Qed.
 
 Lemma binds_write_neq_inv : forall h k v k' v',
   binds (write h k' v') k v -> k <> k' -> binds h k v. 
-Proof.
+Proof using.
   introv B. lets [[? ?]|[? ?]]: @binds_write_inv B; auto_false.
 Qed.
 
@@ -363,14 +363,14 @@ Qed.
 
 Lemma indom_rem : forall h k k',
   indom h k -> k <> k' -> indom (rem h k') k.
-Proof.
+Proof using.
   introv. do 2 rewrite indom_equiv_binds.
   introv [v B] N. exists v. apply* @binds_rem.
 Qed.
 
 Lemma indom_rem_inv : forall h k k',
   indom (rem h k) k' -> k <> k' /\ indom h k'.
-Proof.
+Proof using.
   introv. do 2 rewrite indom_equiv_binds.
   introv [v B]. lets [? ?]: @binds_rem_inv B. eauto.
 Qed.
@@ -379,7 +379,7 @@ Qed.
 
 Lemma read_rem_neq : forall h k k',
   indom h k -> k <> k' -> read (rem h k') k = read h k.
-Proof.
+Proof using HK HV.
   introv. rewrite indom_equiv_binds. introv [v B] N.
   rewrite (binds_read B).
   forwards B': @binds_rem B N. rewrite~ (binds_read B'). 
@@ -389,35 +389,35 @@ Qed.
 
 Lemma not_indom_empty : forall k,
   ~ indom (@empty K V) k.
-Proof. introv H. unfold indom in H. rewrite dom_empty in H. 
+Proof using HV. introv H. unfold indom in H. rewrite dom_empty in H. 
   skip. (* TODO: add an instance for in_empty_eq in LibSet.
   apply* in_empty_eq. *) Qed.
 
 Lemma not_binds_empty : forall k v,
   ~ binds (@empty K V) k v.
-Proof. introv H. eapply not_indom_empty. apply* binds_indom. Qed.
+Proof using HV. introv H. eapply not_indom_empty. apply* binds_indom. Qed.
 
 
 (** binds--read_option **)
 
 Lemma binds_read_option : forall h k v,
   binds h k v -> read_option h k = Some v.
-Proof. introv. rewrite* <- @binds_equiv_read_option. Qed.
+Proof using. introv. rewrite* <- @binds_equiv_read_option. Qed.
 
 Lemma read_option_binds : forall h k v,
   read_option h k = Some v -> binds h k v.
-Proof. introv R. rewrite* <- @binds_equiv_read_option in R. Qed.
+Proof using. introv R. rewrite* <- @binds_equiv_read_option in R. Qed.
 
 
 (** indom--read_option **)
 
 Lemma not_indom_read_option : forall h k,
   ~ indom h k -> read_option h k = None.
-Proof. introv. rewrite not_indom_equiv_read_option. autos*. Qed.
+Proof using. introv. rewrite not_indom_equiv_read_option. autos*. Qed.
 
 Lemma read_option_not_indom : forall h k,
   read_option h k = None -> ~ indom h k.
-Proof. introv. rewrite not_indom_equiv_read_option. autos*. Qed.
+Proof using. introv. rewrite not_indom_equiv_read_option. autos*. Qed.
 
 End HeapFacts.
 

@@ -30,17 +30,24 @@ Class Monoid_neutral_r := {
 End MonoidProp.
 
 Section MonoidInst.
-Context {A:Type} {m:monoid_def A} {M:Monoid m}.
-Global Instance Monoid_Monoid_assoc : Monoid_assoc (m:=m).
-Proof.
+(* TODO: use M as explicit hypothesis *)
+Context {A:Type} {m:monoid_def A}.
+Global Instance Monoid_Monoid_assoc : 
+  forall {M:Monoid m},
+  Monoid_assoc (m:=m).
+Proof using.
   constructor. destruct M as [U ? ?]. destruct m. simpl. apply U.
 Qed.
-Global Instance Monoid_Monoid_neutral_l : Monoid_neutral_l (m:=m).
-Proof.
+Global Instance Monoid_Monoid_neutral_l :
+  forall {M:Monoid m},
+  Monoid_neutral_l (m:=m).
+Proof using.
   constructor. destruct M as [? U ?]. destruct m. simpl. apply U.
 Qed.
-Global Instance Monoid_Monoid_neutral_r : Monoid_neutral_r (m:=m).
-Proof.
+Global Instance Monoid_Monoid_neutral_r : 
+  forall {M:Monoid m},
+  Monoid_neutral_r (m:=m).
+Proof using.
   constructor. destruct M as [? ? U]. destruct m. simpl. apply U.
 Qed.
 End MonoidInst.
@@ -50,7 +57,7 @@ End MonoidInst.
 
 Instance monoid_plus_zero:
   Monoid (monoid_ plus 0).
-Proof.
+Proof using.
   constructor; repeat intro; omega.
 Qed.
 

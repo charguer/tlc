@@ -28,7 +28,7 @@ Definition per_dom A (R:binary A) :=
 Lemma per_empty:
   forall A,
   per (@LibRelation.empty A).
-Proof.
+Proof using.
   unfold LibRelation.empty.
   constructor.
   unfold sym. eauto.
@@ -38,7 +38,7 @@ Qed.
 Lemma per_dom_empty:
   forall A,
   per_dom (@LibRelation.empty A) = empty.
-Proof.
+Proof using.
   reflexivity.
 Qed.
 
@@ -60,11 +60,11 @@ Definition per_add_edge A (B:binary A) (x y:A) :=
 
 Lemma per_add_edge_le : forall A (B:binary A) a b,
   Rel.incl B (per_add_edge B a b).
-Proof. introv. intros x y H. apply stclosure_step. left~. Qed.
+Proof using. introv. intros x y H. apply stclosure_step. left~. Qed.
 
 Lemma add_edge_already : forall A (B:binary A) a b,
   per B -> B a b -> per_add_edge B a b = B.
-Proof.
+Proof using.
   introv P H. extens. intros x y. iff M.
   induction M.
     destruct H0. auto. destruct H0. subst~.
@@ -76,7 +76,7 @@ Qed.
 
 Lemma per_add_edge_per : forall A (R : binary A) a b,
   per R -> per (per_add_edge R a b).
-Proof.
+Proof using.
   introv [Rs Rt]. unfold per_add_edge. constructor.
   introv H. induction* H.
   introv H1. gen z. induction* H1. 
@@ -85,7 +85,7 @@ Qed.
 Lemma per_dom_add_edge : forall A (B:binary A) x y,
   per B -> x \in per_dom B -> y \in per_dom B -> 
   per_dom (per_add_edge B x y) = per_dom B \u \{x} \u \{y}.
-Proof.
+Proof using.
   introv [Sy Tr] Bx By. unfold per_add_edge. apply set_ext. intros z.
   unfold Rel.union. unfold per_dom. unfold per_single.
   do 2 rewrite in_union_eq, in_set. do 2 rewrite in_single_eq.
@@ -101,7 +101,7 @@ Qed.
 
 Lemma per_add_node_per : forall A (B:binary A) r,
   per B -> per (per_add_node B r).
-Proof.
+Proof using.
   introv [Sy Tr]. unfold per_add_node, per_single, Rel.union.
   constructors.
   intros_all. hnf in Sy. intuition.  
@@ -110,7 +110,7 @@ Qed.
 
 Lemma per_dom_add_node : forall A (B:binary A) x,
   per_dom (per_add_node B x) = per_dom B \u \{x}.
-Proof.
+Proof using.
   intros. unfold per_add_node. apply set_ext. intros y.
   unfold Rel.union. unfold per_dom. unfold per_single.
   rewrite in_union_eq. rewrite in_single_eq. do 2 rewrite in_set. 

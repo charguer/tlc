@@ -46,10 +46,10 @@ Module Export Variables : VariablesType.
 Definition var := nat.
 
 Lemma var_inhab : Inhab var.
-Proof. apply (prove_Inhab 0). Qed.
+Proof using. apply (prove_Inhab 0). Qed.
 
 Lemma var_comp : Comparable var.
-Proof. apply nat_comparable. Qed.
+Proof using. apply nat_comparable. Qed.
 
 Instance var_comparable : Comparable var := var_comp.
 
@@ -60,7 +60,7 @@ Definition var_gen_list (l : list nat) :=
 
 Lemma var_gen_list_spec : forall n l,
   n \in from_list l -> n < var_gen_list l.
-Proof.
+Proof using.
   unfold var_gen_list. induction l; introv I.
   rewrite from_list_nil in I. false (in_empty_elim I).
   rewrite from_list_cons in I. rew_list.
@@ -73,14 +73,14 @@ Definition var_gen (E : vars) : var :=
   var_gen_list (epsilon (fun l => E = from_list l)).
 
 Lemma var_gen_spec : forall E, (var_gen E) \notin E.
-Proof.
+Proof using.
   intros. unfold var_gen. spec_epsilon as l.
   applys fset_finite. rewrite Hl. introv H.
   forwards M: var_gen_list_spec H. nat_math.
 Qed.
 
 Lemma var_fresh : forall (L : vars), { x : var | x \notin L }.
-Proof. intros L. exists (var_gen L). apply var_gen_spec. Qed.
+Proof using. intros L. exists (var_gen L). apply var_gen_spec. Qed.
 
 End Variables.
 
@@ -103,7 +103,7 @@ Hint Extern 1 (fresh _ _ _) => simpl.
 
 Lemma var_freshes : forall L n, 
   { xs : list var | fresh L n xs }.
-Proof.
+Proof using.
   intros. gen L. induction n; intros L.
   exists* (nil : list var).
   destruct (var_fresh L) as [x Fr].
@@ -185,39 +185,39 @@ Implicit Types x : var.
 
 Lemma notin_singleton_r : forall x y,
   x \notin \{y} -> x <> y.
-Proof. intros. rewrite~ <- notin_singleton. Qed.
+Proof using. intros. rewrite~ <- notin_singleton. Qed.
 
 Lemma notin_singleton_l : forall x y,
   x <> y -> x \notin \{y}.
-Proof. intros. rewrite~ notin_singleton. Qed.
+Proof using. intros. rewrite~ notin_singleton. Qed.
 
 Lemma notin_singleton_swap : forall x y,
   x \notin \{y} -> y \notin \{x}.
-Proof.
+Proof using.
   intros. apply notin_singleton_l.
   apply sym_not_eq. apply~ notin_singleton_r.
 Qed.
 
 Lemma notin_union_r : forall x E F,
   x \notin (E \u F) -> (x \notin E) /\ (x \notin F).
-Proof. intros. rewrite~ <- notin_union. Qed.
+Proof using. intros. rewrite~ <- notin_union. Qed.
 
 Lemma notin_union_r1 : forall x E F,
   x \notin (E \u F) -> (x \notin E).
-Proof. introv. rewrite* notin_union. Qed.
+Proof using. introv. rewrite* notin_union. Qed.
 
 Lemma notin_union_r2 : forall x E F,
   x \notin (E \u F) -> (x \notin F).
-Proof. introv. rewrite* notin_union. Qed.
+Proof using. introv. rewrite* notin_union. Qed.
 
 Lemma notin_union_l : forall x E F,
   x \notin E -> x \notin F -> x \notin (E \u F).
-Proof. intros. rewrite~ notin_union. Qed.
+Proof using. intros. rewrite~ notin_union. Qed.
 
 Lemma notin_var_gen : forall E F,
   (forall x, x \notin E -> x \notin F) ->
   (var_gen E) \notin F.
-Proof. intros. autos~ var_gen_spec. Qed.
+Proof using. intros. autos~ var_gen_spec. Qed.
 
 Implicit Arguments notin_singleton_r    [x y].
 Implicit Arguments notin_singleton_l    [x y].
@@ -331,7 +331,7 @@ LATER:
 
 Lemma fresh_union_r : forall xs L1 L2 n,
   fresh (L1 \u L2) n xs -> fresh L1 n xs /\ fresh L2 n xs.
-Proof.
+Proof using.
   induction xs; simpl; intros; destruct n;
   tryfalse*. auto.
   destruct H. split; split; auto.
@@ -345,15 +345,15 @@ Qed.
 
 Lemma fresh_union_r1 : forall xs L1 L2 n,
   fresh (L1 \u L2) n xs -> fresh L1 n xs.
-Proof. intros. forwards*: fresh_union_r. Qed.
+Proof using. intros. forwards*: fresh_union_r. Qed.
 
 Lemma fresh_union_r2 : forall xs L1 L2 n,
   fresh (L1 \u L2) n xs -> fresh L2 n xs.
-Proof. intros. forwards*: fresh_union_r. Qed.
+Proof using. intros. forwards*: fresh_union_r. Qed.
 
 Lemma fresh_union_l : forall xs L1 L2 n,
   fresh L1 n xs -> fresh L2 n xs -> fresh (L1 \u L2) n xs.
-Proof.
+Proof using.
   induction xs; simpl; intros; destruct n; tryfalse*. auto.
   destruct H. destruct H0. split~.
   forwards~ K: (@IHxs (L1 \u \{a}) (L2 \u \{a}) n). 
@@ -367,14 +367,14 @@ Qed.
 
 Lemma fresh_empty : forall L n xs,
   fresh L n xs -> fresh \{} n xs.
-Proof.
+Proof using.
   intros. rewrite <- (union_empty_r L) in H.
   destruct* (fresh_union_r _ _ _ _ H).
 Qed.
 
 Lemma fresh_length : forall L n xs,
   fresh L n xs -> n = length xs.
-Proof.
+Proof using.
   intros. gen n L. induction xs; simpl; intros n L Fr;
     destruct n; tryfalse*. 
   auto.
@@ -383,13 +383,13 @@ Qed.
 
 Lemma fresh_resize : forall L n xs,
   fresh L n xs -> forall m, m = n -> fresh L m xs.
-Proof.
+Proof using.
   introv Fr Eq. subst~.
 Qed.
 
 Lemma fresh_resize_length : forall L n xs,
   fresh L n xs -> fresh L (length xs) xs.
-Proof.
+Proof using.
   introv Fr. rewrite* <- (fresh_length _ _ _ Fr).
 Qed.
 
@@ -405,7 +405,7 @@ Implicit Arguments fresh_resize_length [L n xs].
 Lemma fresh_single_notin : forall x xs n,
   fresh \{x} n xs ->
   x \notin from_list xs.
-Proof.
+Proof using.
   induction xs; destruct n; introv F; simpl in F; tryfalse.
   rewrite~ from_list_nil.
   destruct F as [Fr F']. lets [? ?]: (fresh_union_r F').

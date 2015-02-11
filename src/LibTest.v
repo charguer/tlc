@@ -111,29 +111,29 @@ Variables (H : forall x y : A, x = y).
 Variables (H' : forall x : A, x <> x).
 
 Lemma lem1 : forall x y : A, x = y.
-Proof. apply H. Qed.
+Proof using. apply H. Qed.
 
 Lemma lem2 : forall x y : A, x = y.
-Proof. apply H. Admitted.
+Proof using. apply H. Admitted.
 
 (* version to be used in normal mode:
    starts the proof with using, whose effect
    is to keep only the section variables mentioned
    directly or indirectly via a dependency *)
 Lemma lem3 : forall x y : A, x = y.
-Proof. using H. apply H. Qed.
+Proof using. using H. apply H. Qed.
 
 (* version to be used in precompilation mode:
    keeps only the "using" tactic and replace
    the rest of the proof with "skip". *)
 Lemma lem4 : forall x y : A, x = y.
-Proof. using H. skip. Qed.
+Proof using. using H. skip. Qed.
 
 Lemma lem5 : forall x y : A, x = y.
-Proof. using. skip. Qed.
+Proof using. using. skip. Qed.
 
 Lemma lem6 : forall x y : A, x = y.
-Proof. using H H'. skip. Qed.
+Proof using. using H H'. skip. Qed.
 
 End Sec.
 

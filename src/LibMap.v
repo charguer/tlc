@@ -86,7 +86,7 @@ Instance disjoint_inst : forall A B, BagDisjoint (map A B).
   constructor. rapply (fun M N : map A B => disjoint (dom M) (dom N)). Defined.
 
 Instance map_inhab : forall A, Inhab (map A B).
-Proof. intros. apply (prove_Inhab (@empty_impl A B)). Qed.
+Proof using. intros. apply (prove_Inhab (@empty_impl A B)). Qed.
 
 Global Opaque dom_inst disjoint_inst.
 
@@ -94,11 +94,11 @@ Global Opaque dom_inst disjoint_inst.
 (** [index] *)
 
 Instance map_index : forall A B, BagIndex (map A B) A.
-Proof. intros. constructor. exact (fun m k => k \in (dom m : set A)). Defined.
+Proof using. intros. constructor. exact (fun m k => k \in (dom m : set A)). Defined.
 
 Lemma map_index_def : forall A B (m:map A B) k,
   index m k = (k \in (dom m : set A)).
-Proof. auto. Qed. 
+Proof using. auto. Qed. 
 
 Global Opaque map_index_def.
 
@@ -112,7 +112,7 @@ Transparent dom_inst binds_inst empty_inst.
 
 Lemma dom_empty : forall A B,
   dom (\{} : map A B) = (\{} : set A).
-Proof.
+Proof using.
   intros. simpl. unfold dom_impl. simpl. unfold binds_impl, empty_impl.
   apply set_ext. intros x. rewrite in_set. iff [v Hv] H; false.
 Qed.
@@ -120,13 +120,13 @@ Qed.
 Lemma in_dom_empty : forall A B x,
   x \indom (\{} : map A B) ->
   False.
-Proof.
+Proof using.
   intros. rewrite dom_empty in *. eapply in_empty; typeclass.
 Qed.
 
 Lemma no_binds_empty : forall (A B : Type) (M : map A B),
   (forall x k, ~ binds M x k) -> M = \{}.
-Proof.
+Proof using.
   intros A B M. simpl. unfold empty_impl, binds_impl.
   Require Import Coq.Logic.FunctionalExtensionality. (* TEMPORARY ok? *)
   intro h. extensionality x. case_eq (M x); try reflexivity. intros v Mxv. false.
@@ -135,7 +135,7 @@ Qed.
 
 Lemma dom_empty_inv : forall A B (M : map A B),
   dom M = \{} -> M = \{}.
-Proof.
+Proof using.
   intros A B M. simpl. unfold dom_impl, empty_impl.
   intro h. extensionality x. case_eq (M x); try reflexivity. intros v Mxv. false.
   assert (there: x \in (\{} : set A)).
@@ -167,7 +167,7 @@ Implicit Arguments dom_restrict_in [A B [H]].
 
 Lemma map_update_as_union : forall A B (M:map A B) x v,
   M\(x:=v) = M \u (x \:= v).
-Proof. auto. Qed.
+Proof using. auto. Qed.
 
 Axiom map_split : forall A (E:set A) B (M:map A B),
   M = (M \- E) \u (M \| E).
@@ -175,7 +175,7 @@ Axiom map_restrict_single : forall A (x:A) B `{Inhab B} (M:map A B),
   M \| \{x} = (x \:= (M\(x))).
 Lemma map_split_single : forall A (x:A) B `{Inhab B} (M:map A B),
   M = (M \- \{x}) \u (x \:= (M\(x))).
-Proof. intros. rewrite~ <- map_restrict_single. apply map_split. Qed.
+Proof using. intros. rewrite~ <- map_restrict_single. apply map_split. Qed.
 
 
 
@@ -210,7 +210,7 @@ Hint Resolve binds_update_rem.
 
 Lemma is_repr_rem_node : forall M r c x y,
   r \notin (dom M:set _) -> is_repr (M\(r:=c)) x y -> is_repr M x y.
-Proof. introv N H. induction H; constructors*. Qed. 
+Proof using. introv N H. induction H; constructors*. Qed. 
 *)
 
 Axiom binds_get : forall A `{Inhab B} (M:map A B) x v,
@@ -240,7 +240,7 @@ Axiom map_indom_update : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
   j \indom (m\(i:=v)) = (j = i \/ j \indom m).
 Lemma map_indom_update_self : forall A `{Inhab B} (m:map A B) (i:A) (v:B),
   i \indom (m\(i:=v)).
-Proof. intros. rewrite~ map_indom_update. Qed.
+Proof using. intros. rewrite~ map_indom_update. Qed.
 
 Hint Resolve map_indom_update_self.
 
@@ -297,14 +297,14 @@ Transparent map empty_inst single_bind_inst binds_inst
  union_inst dom_inst disjoint_inst.
 
 Global Instance map_union_empty_l : Union_empty_l (T:=map A B).
-Proof. 
+Proof using. 
   constructor. intros m. simpl.
   unfold union_impl, empty_impl, map. extens.
   intros x. destruct~ (m x).
 Qed.
 
 Global Instance map_union_assoc : Union_assoc (T:=map A B).
-Proof. 
+Proof using. 
   constructor. intros M N P. simpl.
   unfold union_impl, map. extens.
   intros k. destruct~ (P k).

@@ -16,11 +16,11 @@ Generalizable Variables A B.
 
 (* TODO: inline the lemma? *)
 Lemma Inhab_witness : forall `{Inhab A}, { x : A | True }.
-Proof. intros. destruct H as [H]. apply~ indefinite_description. Qed.
+Proof using. intros. destruct H as [H]. apply~ indefinite_description. Qed.
 
 Lemma epsilon_def : forall `{Inhab A} (P : A->Prop), 
   { x : A | (exists y, P y) -> P x }.
-Proof.
+Proof using.
   intros A I P. destruct (classicT (exists y, P y)) as [H|H].
     apply indefinite_description. destruct H. exists~ x.
     destruct (@Inhab_witness _ I) as [x _].
@@ -35,24 +35,24 @@ Definition epsilon `{Inhab A} (P : A -> Prop) : A
 
 Lemma epsilon_spec_exists : forall `{Inhab A} (P : A->Prop),
   (exists x, P x) -> P (epsilon P).
-Proof. intros. apply~ (proj2_sig (epsilon_def P)). Qed.
+Proof using. intros. apply~ (proj2_sig (epsilon_def P)). Qed.
 
 Lemma epsilon_elim_exists : forall `{Inhab A} (P Q : A->Prop),
   (exists x, P x) -> (forall x, P x -> Q x) -> Q (epsilon P).
-Proof. introv E M. apply M. apply~ epsilon_spec_exists. Qed.
+Proof using. introv E M. apply M. apply~ epsilon_spec_exists. Qed.
 
 Lemma epsilon_spec : forall `{Inhab A} (P : A->Prop) x,
   P x -> P (epsilon P).
-Proof. intros. apply* (epsilon_spec_exists). Qed.
+Proof using. intros. apply* (epsilon_spec_exists). Qed.
 
 Lemma epsilon_elim : forall `{Inhab A} (P Q : A->Prop) x,
   P x -> (forall x, P x -> Q x) -> Q (epsilon P).
-Proof. introv Px W. apply W. apply* epsilon_spec_exists. Qed.
+Proof using. introv Px W. apply W. apply* epsilon_spec_exists. Qed.
 
 Lemma epsilon_eq : forall A {I:Inhab A} (P P':A->Prop),
   (forall x, P x <-> P' x) -> 
   epsilon P = epsilon P'.
-Proof. introv H. fequals. apply~ prop_ext_1. Qed.
+Proof using. introv H. fequals. apply~ prop_ext_1. Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics to work with [epsilon] *)
@@ -61,11 +61,11 @@ Proof. introv H. fequals. apply~ prop_ext_1. Qed.
 
 Lemma epsilon_spec' : forall A (P:A->Prop) (x:A),
   forall (H:P x) {IA:Inhab A}, P (epsilon P).
-Proof. intros. applys* epsilon_spec. Qed.
+Proof using. intros. applys* epsilon_spec. Qed.
 
 Lemma epsilon_spec_exists' : forall A (P : A->Prop) {IA:Inhab A},
   (exists x, P x) -> P (epsilon P).
-Proof. intros. applys* epsilon_spec_exists. Qed.
+Proof using. intros. applys* epsilon_spec_exists. Qed.
 
 Ltac find_epsilon cont :=
   match goal with 

@@ -108,9 +108,9 @@ Notation "P /\ Q" := (and P Q) : type_scope.
 Hint Constructors and : core.
 
 Lemma proj1 : forall (P Q : Prop), P /\ Q -> P.
-Proof. autos*. Qed.
+Proof using. autos*. Qed.
 Lemma proj2 : forall (P Q : Prop), P /\ Q -> Q.
-Proof. autos*. Qed.
+Proof using. autos*. Qed.
 
 (** Definition of disjunction, [or], written [P \/ Q]. *)
 
