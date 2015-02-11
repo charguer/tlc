@@ -118,9 +118,9 @@ Tactic Notation "tautob" :=
     end in go tt.
 
 Tactic Notation "tautob" "~" := 
-   tautob; auto.
+   tautob; auto_tilde.
 Tactic Notation "tautob" "*" := 
-   tautob; auto*.
+   tautob; auto_star.
 
 
 (* ********************************************************************** *)
@@ -257,13 +257,13 @@ Tactic Notation "rew_bool" "in" hyp(H) :=
 Tactic Notation "rew_bool" "in" "*":=
   autorewrite with bool_rew in *.
 Tactic Notation "rew_bool" "~" :=
-  rew_bool; auto~.
+  rew_bool; auto_tilde.
 Tactic Notation "rew_bool" "*" :=
-  rew_bool; auto*.
+  rew_bool; auto_star.
 Tactic Notation "rew_bool" "~" "in" "*":=
-  rew_bool in *; auto~.
+  rew_bool in *; auto_tilde.
 Tactic Notation "rew_bool" "*" "in" "*":=
-  rew_bool in *; auto*.
+  rew_bool in *; auto_star.
 
 
 (** Making definitions opaque ensures that the [simpl] tactic does

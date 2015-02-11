@@ -165,7 +165,7 @@ Lemma inter_finite : forall U V : set A,
   finite U -> finite V -> finite (inter U V).
 Proof.
   introv [L1 E1] [L2 E2]. exists (L1 ++ L2). intros x.
-  rewrite in_inter_eq. rewrite Mem_app_or_eq. auto*.
+  rewrite in_inter_eq. rewrite Mem_app_or_eq. autos*.
 Qed.
 
 Definition inter (E F : fset A) :=
@@ -241,23 +241,23 @@ Proof. intros. apply fset_extens_eq. extens*. Qed.
 
 Lemma in_empty : forall x,
   x \in \{} = False.
-Proof. unfold mem, empty. simpl. intros. rewrite in_empty_eq. auto*. Qed.
+Proof. unfold mem, empty. simpl. intros. rewrite in_empty_eq. autos*. Qed.
 
 Lemma in_singleton : forall x y,
   x \in \{y} = (x = y).
-Proof. unfold mem, singleton. simpl. intros. rewrite in_single_eq. auto*. Qed.
+Proof. unfold mem, singleton. simpl. intros. rewrite in_single_eq. autos*. Qed.
 
 Lemma in_union : forall x E F,
   x \in (E \u F) = ((x \in E) \/ (x \in F)).
-Proof. unfold mem, union. simpl. intros. rewrite in_union_eq. auto*. Qed.
+Proof. unfold mem, union. simpl. intros. rewrite in_union_eq. autos*. Qed.
 
 Lemma in_inter : forall x E F,
   x \in (E \n F) = ((x \in E) /\ (x \in F)).
-Proof. unfold mem, inter. simpl. intros. rewrite in_inter_eq. auto*. Qed.
+Proof. unfold mem, inter. simpl. intros. rewrite in_inter_eq. autos*. Qed.
 
 Lemma in_remove : forall x E F,
   x \in (E \- F) = ((x \in E) /\ (x \notin F)).
-Proof. unfold mem, remove. simpl. intros. rewrite in_remove_eq. auto*. Qed.
+Proof. unfold mem, remove. simpl. intros. rewrite in_remove_eq. autos*. Qed.
 
 Lemma from_list_spec : forall x L,
   x \in from_list L = Mem x L.
@@ -340,7 +340,7 @@ Proof.
   intros. apply fset_extens; 
    intros x; rewrite_all in_union.
     intros [ H | H ]. false. rewrite~ in_empty in H. auto.
-    auto*.
+    autos*.
 Qed.
 
 Lemma union_empty_r : forall E,
@@ -468,7 +468,7 @@ Lemma union_remove : forall E F G,
   (E \u F) \- G = (E \- G) \u (F \- G).
 Proof.
   intros. apply fset_extens; intros x;
-  repeat (first [ rewrite in_remove | rewrite in_union ]); auto*.
+  repeat (first [ rewrite in_remove | rewrite in_union ]); autos*.
 Qed.
 
 End Properties.

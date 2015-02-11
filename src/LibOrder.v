@@ -22,11 +22,11 @@ Implicit Arguments preorder_trans [A R p x z].
 
 Lemma preorder_flip : forall A (R:binary A),
   preorder R -> preorder (flip R).
-Proof. introv [Re Tr]. constructor; auto~ flip_trans. Qed. 
+Proof. introv [Re Tr]. constructor; autos~ flip_trans. Qed. 
 
 Lemma preorder_large : forall A (R:binary A),
   preorder R -> preorder (large R).
-Proof. introv [Re Tr]. constructor; auto~ large_refl large_trans. Qed.
+Proof. introv [Re Tr]. constructor; autos~ large_refl large_trans. Qed.
 
 
 (**************************************************************************)
@@ -58,11 +58,11 @@ Hint Resolve total_preorder_to_preorder.
 
 Lemma total_preorder_flip : forall A (R:binary A),
   total_preorder R -> total_preorder (flip R).
-Proof. introv [Tr To]. constructor; auto~ flip_trans flip_total. Qed.
+Proof. introv [Tr To]. constructor; autos~ flip_trans flip_total. Qed.
 
 Lemma total_preorder_large : forall A (R:binary A),
   total_preorder R -> total_preorder (large R).
-Proof. introv [Re Tr]. constructor; auto~ large_trans large_total. Qed.
+Proof. introv [Re Tr]. constructor; autos~ large_trans large_total. Qed.
 
 (** Properties *)
 
@@ -95,7 +95,10 @@ Implicit Arguments order_antisym [A R o x y].
 
 Coercion order_to_preorder (A:Type) (R:binary A) 
   (O:order R) : preorder R.
-Proof. destruct* O. Qed.
+Proof. destruct* O.
+skip.
+(* TODO *)
+Qed.
 
 Hint Resolve order_to_preorder.
 
@@ -105,14 +108,14 @@ Lemma order_flip : forall A (R:binary A),
   order R -> order (flip R).
 Proof. 
   introv [Re Tr An]. constructor; 
-  auto~ flip_trans flip_antisym. 
+  autos~ flip_trans flip_antisym. 
 Qed.
 
 Lemma order_large : forall A (R:binary A),
   order R -> order (large R).
 Proof. 
   introv [Re Tr An]. constructor; 
-  auto~ large_refl large_trans large_antisym. 
+  autos~ large_refl large_trans large_antisym. 
 Qed.
 
 (** Properties *)
@@ -149,7 +152,10 @@ Qed.
 
 Coercion total_order_to_total_preorder (A:Type) (R:binary A) 
   (O:total_order R) : total_preorder R.
-Proof. destruct* O. Qed.
+Proof. destruct* O.
+skip.
+(*TODO*)
+ Qed.
 
 Definition total_order_to_order := total_order_order.
 
@@ -161,14 +167,14 @@ Lemma total_order_flip : forall A (R:binary A),
   total_order R -> total_order (flip R).
 Proof. 
   introv [Or To]. constructor; 
-  auto~ flip_total order_flip.
+  autos~ flip_total order_flip.
 Qed.
 
 Lemma total_order_large : forall A (R:binary A),
   total_order R -> total_order (large R).
 Proof. 
   introv [Or To]. constructor; 
-  auto~ large_total order_large.
+  autos~ large_total order_large.
 Qed.
 
 (** Properties *)
@@ -187,7 +193,7 @@ Lemma total_order_le_is_large_lt :
 Proof.
   extens. intros. unfold large, strict. iff H.
   tests~: (x = y).
-  destruct H. auto*. subst*. dintuition eauto.
+  destruct H. autos*. subst*. dintuition eauto.
 Qed. 
 
 Lemma total_order_ge_is_large_gt : 
@@ -195,7 +201,7 @@ Lemma total_order_ge_is_large_gt :
 Proof.
   extens. intros. unfold large, flip, strict. iff H.
   tests~: (x = y).
-  destruct H. auto*. subst*. dintuition eauto.
+  destruct H. autos*. subst*. dintuition eauto.
 Qed. 
 
 Lemma total_order_lt_or_eq_or_gt : forall x y,
@@ -247,7 +253,7 @@ Lemma strict_order_flip : forall A (R:binary A),
   strict_order R -> strict_order (flip R).
 Proof. 
   introv [Ir As Tr]. constructor; 
-  auto~ flip_antisym flip_trans flip_asym.
+  autos~ flip_antisym flip_trans flip_asym.
 Qed.
 
 Lemma strict_order_strict : forall (A:Type) (R:binary A),
@@ -257,7 +263,8 @@ Proof.
   destruct* H. 
   applys* antisym_elim.
   split. applys* As. intros_all. subst. applys* antisym_elim.
-Qed.
+Admitted.
+(* NEWCOQ_BUG *)
 
 Lemma order_from_strict : forall (A:Type) (R:binary A),
   strict_order R -> order (large R).
@@ -319,7 +326,7 @@ Coercion strict_total_order_to_strict_order A (R:binary A)
   (O:strict_total_order R) : strict_order R.
 Proof.
   lets [M _]: O. constructor;
-  auto~ strict_total_order_irrefl strict_total_order_asym. 
+  autos~ strict_total_order_irrefl strict_total_order_asym. 
 Qed.
 
 Hint Resolve strict_total_order_to_strict_order.
@@ -623,6 +630,8 @@ Class Lt_SLt_false `{Le A} : Prop :=
 Section Instances.
 Context `{Le A}.
 
+Ltac auto_star ::= try solve [ dauto ].
+
 (** derived structures *)
 
 Global Instance le_preorder_from_le_order :
@@ -789,7 +798,7 @@ Proof. constructor. intros. rew_to_le_lt. unfold flip. apply ngt_as_sle. Qed.
 Global Instance nle_as_gt_from : Le_total_order -> NLe_As_Gt.
 Proof.
   constructor. intros. rew_to_le_lt. unfold flip.
-  rewrite* <- ngt_as_sle. rewrite~ not_not. 
+  rewrite <- ngt_as_sle. rewrite~ not_not. 
 Qed.
 
 Global Instance nge_as_lt_from : Le_total_order -> NGe_As_Lt. 
@@ -824,7 +833,10 @@ Global Instance case_eq_lt_gt_from : Le_total_order -> Case_Eq_Lt_Gt.
 Proof.
   constructor. intros.
   branches (total_order_lt_or_eq_or_gt le_total_order x y);
-  hnf in *; auto *.
+  hnf in *; autos*.
+skip.
+skip. 
+(*TODO*)
 Qed.
 
 Global Instance case_eq_lt_slt_from : Le_total_order -> Case_Eq_Lt_SLt.
@@ -837,14 +849,18 @@ Global Instance case_le_gt_from : Le_total_order -> Case_Le_Gt.
 Proof.
   constructor. intros.
   branches (total_order_le_or_gt le_total_order x y);
-  hnf in *; auto *.
+  hnf in *; autos*.
+skip.
+(*TODO*)
 Qed.
 
 Global Instance case_eq_lt_ge_from : Le_total_order -> Case_Lt_Ge. 
 Proof. 
   constructor. intros.
   branches (total_order_lt_or_ge le_total_order x y);
-  hnf in *; auto *.
+  hnf in *; autos*. 
+skip.
+(*TODO*)
 Qed.
 
 Global Instance case_le_slt_from : Le_total_order -> Case_Le_SLt. 
@@ -897,6 +913,7 @@ Proof.
 Qed.
 
 End Instances.
+
 
 Implicit Arguments nle_to_sle [[A] [H] [NLe_to_SLe] x y].
 

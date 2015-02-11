@@ -452,7 +452,7 @@ Implicit Types E F : env A.
 
 Lemma env_case : forall E,
   E = empty \/ exists x v E', E = E' & x ~ v.
-Proof. intros. induction E using env_ind; auto*. Qed.
+Proof. intros. induction E using env_ind; autos*. Qed.
 
 Lemma concat_empty_r : forall E,
   E & empty = E.
@@ -851,14 +851,14 @@ Proof. intros. unfolds binds. rewrite get_push. case_if~. Qed.
 Lemma binds_push_eq_inv : forall x v1 v2 E,
   binds x v1 (E & x ~ v2) -> v1 = v2.
 Proof.
-  introv H. forwards [|]: binds_push_inv H. auto*. intros [? _]. false.
+  introv H. forwards [|]: binds_push_inv H. autos*. intros [? _]. false.
 Qed.
 
 Lemma binds_push_neq_inv : forall x1 x2 v1 v2 E,
   binds x1 v1 (E & x2 ~ v2) -> x1 <> x2 -> binds x1 v1 E.
 Proof.
   introv H. forwards [|]: binds_push_inv H.
-  intros [? ?] ?. false. auto*.
+  intros [? ?] ?. false. autos*.
 Qed.
 
 Lemma binds_tail : forall x v E,

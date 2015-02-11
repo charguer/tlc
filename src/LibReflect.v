@@ -618,7 +618,7 @@ Proof.
   tautotest P; case_if as C; case_if as C';
   first [ rewrite isTrue_True in C
         | rewrite isTrue_False in C
-        | idtac ]; auto*; false*.
+        | idtac ]; autos*; false*.
 Qed.
 
 Ltac case_if_on_tactic_core E Eq ::=

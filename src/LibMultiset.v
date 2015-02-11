@@ -88,7 +88,7 @@ Transparent multiset empty_inst single_inst in_inst
 Global Instance multiset_in_empty_inst : In_empty_eq (A:=A) (T:=multiset A).
 Proof. 
   constructor. intros. extens. simpl.
-  unfold empty_impl, in_impl. auto*.
+  unfold empty_impl, in_impl. autos*.
 Qed.
 
 Global Instance multiset_in_single_inst : In_single_eq (A:=A) (T:=multiset A).
@@ -211,9 +211,9 @@ Tactic Notation "rew_foreach" hyp(H) := autorewrite with rew_foreach in H.
 Tactic Notation "rew_foreach" := autorewrite with rew_foreach.
 
 Tactic Notation "rew_foreach" "~" constr(H) :=
-  rew_foreach H; auto~.
+  rew_foreach H; auto_tilde.
 Tactic Notation "rew_foreach" "*" constr(H) :=
-  rew_foreach H; auto*.
+  rew_foreach H; auto_star.
 
 
 

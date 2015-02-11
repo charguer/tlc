@@ -413,11 +413,11 @@ Proof. introv R. rewrite* <- @binds_equiv_read_option in R. Qed.
 
 Lemma not_indom_read_option : forall h k,
   ~ indom h k -> read_option h k = None.
-Proof. introv. rewrite not_indom_equiv_read_option. auto*. Qed.
+Proof. introv. rewrite not_indom_equiv_read_option. autos*. Qed.
 
 Lemma read_option_not_indom : forall h k,
   read_option h k = None -> ~ indom h k.
-Proof. introv. rewrite not_indom_equiv_read_option. auto*. Qed.
+Proof. introv. rewrite not_indom_equiv_read_option. autos*. Qed.
 
 End HeapFacts.
 

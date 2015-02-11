@@ -26,12 +26,12 @@ Instance nat_comparable : Comparable nat.
 Proof.
   applys (comparable_beq nat_compare).
   induction x; destruct y; simpl.
-  auto*.
+  autos*.
   auto_false.
   auto_false.
   asserts_rewrite ((S x = S y) = (x = y)).
     extens. iff; omega.
-  auto*.
+  autos*.
 Qed.
 
 

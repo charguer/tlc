@@ -147,7 +147,7 @@ Definition const1 := FixValMod (@bisimilar nat) Const1.
 
 Lemma const1_fix : const1 === Const1 const1.
 Proof. 
-  applys (FixValMod_fix (stream_family nat)); auto~. typeclass.
+  applys~ (FixValMod_fix (stream_family nat)). typeclass.
   intros i s1 s2 H. simpls. destruct~ i.
   unfolds. simpl. constructor~. apply* H.
 Qed.
@@ -163,7 +163,7 @@ Definition const := FixFunMod (@bisimilar nat) Const.
 Lemma const_fix : forall n, const n === Const const n.
 Proof.
   intros. 
-  applys (FixFunMod_corec (stream_family nat) (@pred_true nat)); auto*.
+  applys (FixFunMod_corec (stream_family nat) (@pred_true nat)); autos*.
   apply stream_cofe.
   clear n. intros i n s1 s2 _ H. simpls. destruct~ i.
   unfolds. simpl. constructor~. apply* H. 
@@ -231,7 +231,7 @@ Lemma nats_fix : forall (n:nat),
   nats n === Nats nats n.
 Proof.
   intros. 
-  applys (FixFunMod_corec (stream_family nat) (@pred_true nat)); auto*.
+  applys (FixFunMod_corec (stream_family nat) (@pred_true nat)); autos*.
   apply stream_cofe.
   clears n. intros i n s1 s2 _ H. simpls. destruct~ i.
   unfolds. simpl. constructor~. apply* H. 
@@ -334,7 +334,7 @@ Lemma log_grows : forall n m,
 Proof.
   induction n using peano_induction. introv Le.
   do 2 rewrite fix_log. unfolds Log.
-  (do 2 case_if); auto*.
+  (do 2 case_if); autos*.
   rew_nat. apply H. apply* div2_lt. apply~ div2_grows. 
 Qed.
 
@@ -744,8 +744,8 @@ Proof.
   hnf in H. gen t1 t2. cofix IH.
    intros t1 t2. destruct t1; destruct t2;
     introv H; lets H1: (H 1); simpl in H1; inversions H1; constructor.
-      apply IH. intros i. lets_simpl HSi: (H (S i)). auto*.
-      apply IH. intros i. lets_simpl HSi: (H (S i)). auto*.
+      apply IH. intros i. lets_simpl HSi: (H (S i)). autos*.
+      apply IH. intros i. lets_simpl HSi: (H (S i)). autos*.
 Qed.
 
 
@@ -845,7 +845,7 @@ Notation "'##' P '##' v" := (asserts P v) (at level 69).
 Tactic Notation "case_asserts" := 
   unfold asserts; case_if.
 Tactic Notation "case_asserts" "~" := 
-  case_asserts; auto~.
+  case_asserts; auto_tilde.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1156,7 +1156,7 @@ Qed.
 Lemma parse_fix : forall p, parse_dom p ->
   parse p = Parse parse p.
 Proof.
-  apply (FixFun_fix_partial' (P:=parse_dom) (R:=parse_arg_sub) (f':=parse')); auto~.
+  applys~ (FixFun_fix_partial' (P:=parse_dom) (R:=parse_arg_sub) (f':=parse')).
   applys Parse_contractive_for_parse'. apply parse'_fix_Parse.
 Qed.
 

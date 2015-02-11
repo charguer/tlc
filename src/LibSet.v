@@ -119,7 +119,7 @@ Lemma to_list_empty :
   to_list_impl (\{}:set A) = nil.
 Proof. 
   unfold to_list_impl. spec_epsilon as l.
-  exists (@nil A). split. constructor. auto*.
+  exists (@nil A). split. constructor. autos*.
   inverts Hl. simpls. unfolds empty_inst, empty_impl, const.
    destruct l. auto. false. eapply H0. constructor~.
 Qed.
@@ -130,7 +130,7 @@ Proof.
   intros. unfold to_list_impl. spec_epsilon as l.
   exists (x::nil). split. constructor*. constructor*.
   unfold single_inst, single_impl. simple~.
-    iff H. destruct* H. auto*. 
+    iff H. destruct* H. autos*. 
   inverts Hl. 
   unfolds single_inst, single_impl. simpls~.
     destruct l. destruct (H0 x). false~ H2.
@@ -195,14 +195,14 @@ Global Instance set_incl_in_inst : Incl_in (A:=A) (T:=set A).
 Proof.
   constructor. intros. 
   unfolds incl, incl_inst, incl_impl, pred_le, is_in, in_inst, in_impl. 
-  auto*.
+  autos*.
 Qed.
 
 Global Instance set_in_incl_inst : In_incl (A:=A) (T:=set A).
 Proof.
   constructor. intros. 
   unfolds incl, incl_inst, incl_impl, pred_le, is_in, in_inst, in_impl. 
-  auto*.
+  autos*.
 Qed.
 
 Global Instance set_incl_union_l_inst : Incl_union_l (T:=set A).
@@ -210,7 +210,7 @@ Proof.
   constructor. intros. 
   unfolds incl, incl_inst, incl_impl, pred_le,
           union, union_inst, union_impl, pred_or.
-  auto*.
+  autos*.
 Qed.
 
 Global Instance set_incl_order_inst : Incl_order (T:=set A).
@@ -238,19 +238,19 @@ Qed.
 Global Instance set_union_comm : Union_comm (T:=set A).
 Proof.
   constructor. intros_all. apply prop_ext_1.
-  simpl. unfold union_impl, pred_or. auto*.
+  simpl. unfold union_impl, pred_or. autos*.
 Qed.
 
 Global Instance set_union_assoc : Union_assoc (T:=set A).
 Proof. 
   constructor. intros_all. apply prop_ext_1.
-  simpl. unfold union_impl, pred_or. auto*.
+  simpl. unfold union_impl, pred_or. autos*.
 Qed.
 
 Global Instance set_union_self : Union_self (T:=set A).
 Proof. 
   constructor. intros_all. apply prop_ext_1.
-  simpl. unfold union_impl, pred_or. auto*.
+  simpl. unfold union_impl, pred_or. autos*.
 Qed.
 
 Global Instance set_in_remove_inst : In_remove_eq (A:=A) (T:=set A).
@@ -400,13 +400,13 @@ Tactic Notation "rew_foreach" "in" "*" :=
   autorewrite with rew_foreach in *.
 
 Tactic Notation "rew_foreach" "~" :=
-  rew_foreach; auto~.
+  rew_foreach; auto_tilde.
 Tactic Notation "rew_foreach" "*" :=
-  rew_foreach; auto*.
+  rew_foreach; auto_star.
 Tactic Notation "rew_foreach" "~" "in" constr(H) :=
-  rew_foreach in H; auto~.
+  rew_foreach in H; auto_tilde.
 Tactic Notation "rew_foreach" "*" "in" constr(H) :=
-  rew_foreach in H; auto*.
+  rew_foreach in H; auto_star.
 
 
 (* ********************************************************************** *)
@@ -853,4 +853,4 @@ Tactic Notation "eq_set" :=
   let H := fresh "TEMP" in 
   apply set_ext; iff H; set_in H; in_union_get.
 Tactic Notation "eq_set" "*" :=
-  eq_set; auto*.
+  eq_set; auto_star.

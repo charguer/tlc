@@ -283,7 +283,7 @@ Lemma strict_large : forall R,
 Proof.
   intros. unfold large, strict. apply prop_ext_2.
   intros_all. split; intros K.
-  auto*.
+  autos*.
   split. left*. apply* irrefl_neq. 
 Qed.
 
@@ -292,7 +292,7 @@ Lemma large_strict : forall R,
 Proof. 
   intros. unfold large, strict. apply prop_ext_2. 
   intros_all. split; intros K.
-  destruct K. auto*. subst*.
+  destruct K. autos*. subst*.
   destruct (classic (x1 = x2)). subst. right*. left*.
   (* todo: cases *)
 Qed.
@@ -570,7 +570,7 @@ Hint Constructors tclosure rtclosure equiv.
 
 Lemma rtclosure_once : forall x y,
   R x y -> rtclosure x y.
-Proof. auto*. Qed.
+Proof. autos*. Qed.
 
 Hint Resolve rtclosure_once.
 
@@ -616,7 +616,7 @@ Lemma tclosure_tclosure_rtclosure : forall y x z,
 Proof. intros. induction* H. Qed. 
 
 Lemma tclosure_trans : trans tclosure.
-Proof. intros_all. auto* tclosure_tclosure_rtclosure. Qed.
+Proof. intros_all. autos* tclosure_tclosure_rtclosure. Qed.
 
 
 (* ---------------------------------------------------------------------- *)

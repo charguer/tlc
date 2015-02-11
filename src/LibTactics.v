@@ -597,6 +597,9 @@ Ltac jauto_set :=
 (* ---------------------------------------------------------------------- *)
 (** ** Application *)
 
+Ltac old_refine f := 
+  refine f; shelve_unifiable.
+
 (** [rapply] is a tactic similar to [eapply] except that it is
     based on the [refine] tactics, and thus is strictly more 
     powerful (at least in theory :). In short, it is able to perform
@@ -606,22 +609,22 @@ Ltac jauto_set :=
 Tactic Notation "rapply" constr(t) :=
   first  (* todo: les @ sont inutiles *)
   [ eexact (@t)
-  | refine (@t)
-  | refine (@t _) 
-  | refine (@t _ _) 
-  | refine (@t _ _ _)
-  | refine (@t _ _ _ _)
-  | refine (@t _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t)
+  | old_refine (@t _) 
+  | old_refine (@t _ _) 
+  | old_refine (@t _ _ _)
+  | old_refine (@t _ _ _ _)
+  | old_refine (@t _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _ _)
   ].
 
 (** The tactics [applys_N T], where [N] is a natural number,
@@ -630,27 +633,27 @@ Tactic Notation "rapply" constr(t) :=
     the arity of function [T]. *)
 
 Tactic Notation "rapply_0" constr(t) :=
-  refine (@t).
+  old_refine (@t).
 Tactic Notation "rapply_1" constr(t) :=
-  refine (@t _).
+  old_refine (@t _).
 Tactic Notation "rapply_2" constr(t) :=
-  refine (@t _ _).
+  old_refine (@t _ _).
 Tactic Notation "rapply_3" constr(t) :=
-  refine (@t _ _ _).
+  old_refine (@t _ _ _).
 Tactic Notation "rapply_4" constr(t) :=
-  refine (@t _ _ _ _).
+  old_refine (@t _ _ _ _).
 Tactic Notation "rapply_5" constr(t) :=
-  refine (@t _ _ _ _ _).
+  old_refine (@t _ _ _ _ _).
 Tactic Notation "rapply_6" constr(t) :=
-  refine (@t _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _).
 Tactic Notation "rapply_7" constr(t) :=
-  refine (@t _ _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _ _).
 Tactic Notation "rapply_8" constr(t) :=
-  refine (@t _ _ _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _ _ _).
 Tactic Notation "rapply_9" constr(t) :=
-  refine (@t _ _ _ _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _ _ _ _).
 Tactic Notation "rapply_10" constr(t) :=
-  refine (@t _ _ _ _ _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _ _ _ _ _).
 
 (** [lets_base H E] adds an hypothesis [H : T] to the context, where [T] is 
     the type of term [E]. If [H] is an introduction pattern, it will
@@ -3356,6 +3359,26 @@ Tactic Notation "solve_typeclass" :=
 (* ********************************************************************** *)
 (** * Tactics to invoke automation *)
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Definitions for parsing compatibility *)
+
+Tactic Notation "f_equal" :=
+  f_equal.
+Tactic Notation "constructor" := 
+  constructor.
+Tactic Notation "simple" :=
+  simpl.
+
+Tactic Notation "split" :=
+  split.
+
+Tactic Notation "right" :=
+  right.
+Tactic Notation "left" :=
+  left.
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** [hint] to add hints local to a lemma *)
 
@@ -3415,32 +3438,29 @@ Ltac auto_star_default := try solve [ auto | eauto | intuition eauto ].
 Ltac auto_star := auto_star_default.
 
 
-Tactic Notation "auto" :=
-  auto.
-
-(** [auto~] is a notation for tactic [auto_tilde]. It may be followed
+(** [autos~] is a notation for tactic [auto_tilde]. It may be followed
     by lemmas (or proofs terms) which auto will be able to use
     for solving the goal. *)
-Tactic Notation "auto" "~" :=
+Tactic Notation "autos" "~" :=
   auto_tilde.
-Tactic Notation "auto" "~" constr(E1) :=
+Tactic Notation "autos" "~" constr(E1) :=
   lets: E1; auto_tilde.
-Tactic Notation "auto" "~" constr(E1) constr(E2) :=
+Tactic Notation "autos" "~" constr(E1) constr(E2) :=
   lets: E1; lets: E2; auto_tilde.
-Tactic Notation "auto" "~" constr(E1) constr(E2) constr(E3) :=
+Tactic Notation "autos" "~" constr(E1) constr(E2) constr(E3) :=
   lets: E1; lets: E2; lets: E3; auto_tilde.
 
-(** [auto*] is a notation for tactic [auto_star]. It may be followed
+(** [autos*] is a notation for tactic [auto_star]. It may be followed
     by lemmas (or proofs terms) which auto will be able to use
     for solving the goal. *)
 
-Tactic Notation "auto" "*" :=
+Tactic Notation "autos" "*" :=
   auto_star.
-Tactic Notation "auto" "*" constr(E1) :=
+Tactic Notation "autos" "*" constr(E1) :=
   lets: E1; auto_star.
-Tactic Notation "auto" "*" constr(E1) constr(E2) :=
+Tactic Notation "autos" "*" constr(E1) constr(E2) :=
   lets: E1; lets: E2; auto_star.
-Tactic Notation "auto" "*" constr(E1) constr(E2) constr(E3) :=
+Tactic Notation "autos" "*" constr(E1) constr(E2) constr(E3) :=
   lets: E1; lets: E2; lets: E3; auto_star.
 
 (** [auto_false] is a version of [auto] able to spot some contradictions.
@@ -3463,24 +3483,6 @@ Tactic Notation "dauto" :=
   dintuition eauto.
 
 
-(* ---------------------------------------------------------------------- *)
-(** ** Definitions for parsing compatibility *)
-
-Tactic Notation "f_equal" :=
-  f_equal.
-Tactic Notation "constructor" := 
-  constructor.
-Tactic Notation "simple" :=
-  simpl.
-
-
-Tactic Notation "split" :=
-  split.
-
-Tactic Notation "right" :=
-  right.
-Tactic Notation "left" :=
-  left.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Parsing for light automation *)
@@ -3496,13 +3498,13 @@ Tactic Notation "left" :=
    For these, notation such as [simpl~] will not be available. *)
 
 Tactic Notation "equates" "~" constr(E) :=
-   equates E; auto~.
+   equates E; auto_tilde.
 Tactic Notation "equates" "~" constr(n1) constr(n2) :=
-  equates n1 n2; auto~.
+  equates n1 n2; auto_tilde.
 Tactic Notation "equates" "~" constr(n1) constr(n2) constr(n3) :=
-  equates n1 n2 n3; auto~.
+  equates n1 n2 n3; auto_tilde.
 Tactic Notation "equates" "~" constr(n1) constr(n2) constr(n3) constr(n4) :=
-  equates n1 n2 n3 n4; auto~.
+  equates n1 n2 n3 n4; auto_tilde.
 
 Tactic Notation "applys_eq" "~" constr(H) constr(E) :=
   applys_eq H E; auto_tilde.

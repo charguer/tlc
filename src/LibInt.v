@@ -465,8 +465,8 @@ Proof. math. Qed.
 Lemma succ_abs : forall n : int,
   n >= 0 -> S (abs n) = abs (1 + n) :> nat.
 Proof.
-  applys (@measure_induction _ abs). intros n IH Pos.
-  rewrite <- Zabs_nat_Zsucc. fequals. math. math. 
+  intros n. pattern n. applys (@measure_induction _ abs). clear n.
+  intros n IH Pos. rewrite <- Zabs_nat_Zsucc. fequals. math. math. 
 Qed.
 
 Lemma abs_spos : forall n : int,
@@ -536,7 +536,7 @@ Hint Rewrite abs_plus abs_1 abs_pos abs_pos_nat : rew_abs_pos.
 Tactic Notation "rew_abs_pos" :=
   autorewrite with rew_abs_pos.
 Tactic Notation "rew_abs_pos" "~" :=
-  autorewrite with rew_abs_pos; try math; auto~.
+  autorewrite with rew_abs_pos; try math; autos~.
 
 Lemma mod_eq_prove : forall k a b n,
   a = b + k * n -> a mod n = b mod n.
@@ -691,7 +691,7 @@ Lemma eq_gt_induction_2 : forall (P1 P2 : (nat->Prop) -> Prop),
 Proof.
   introv H1 H2 R.
   cuts M: (forall n, P1 (eq n) /\ P2 (eq n)).
-    split; intros n; specializes M n; auto*.
+    split; intros n; specializes M n; autos*.
   induction n using peano_induction. apply R;
     match goal with K: eq_gt_implies ?Pi |- ?Pi _ =>
       apply K; intros; forwards*: H; try math end.
@@ -709,7 +709,7 @@ Lemma eq_gt_induction_5 : forall (P1 P2 P3 P4 P5 : (nat->Prop) -> Prop),
 Proof. 
   introv H1 H2 H3 H4 H5 R.
   cuts M: (forall n, P1 (eq n) /\ P2 (eq n) /\ P3 (eq n) /\ P4 (eq n) /\ P5 (eq n)).
-    splits; intros n; specializes M n; auto*.
+    splits; intros n; specializes M n; autos*.
   induction n using peano_induction. apply R;
     match goal with K: eq_gt_implies ?Pi |- ?Pi _ =>
       apply K; intros; forwards*: H; try math end.

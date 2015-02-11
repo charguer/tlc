@@ -142,7 +142,7 @@ Lemma omniscient_func_unique_choice :
   exists f, forall x, (exists! y, R x y) -> R x (f x).
 Proof.
   intros. destruct (omniscient_func_choice R) as [f F].
-  exists f. introv (y&Hy&Uy). auto*.
+  exists f. introv (y&Hy&Uy). autos*.
 Qed.
 
 

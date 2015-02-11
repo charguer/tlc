@@ -1182,7 +1182,7 @@ Proof.
   destruct p as [i x]. intros H.
   split.
   intros j y Le Px. destruct Le as [Le|Eq].
-    destruct (IH (j,y)) as [K _]; auto~. (* TODO: bug forwards *)
+    destruct (IH (j,y)) as [K _]; autos~. (* TODO: bug forwards *)
       intros [k z] Le'. apply H. apply~ lexico2_trans. apply tclosure_trans. apply Le'.
    inversions Eq.
    forwards~ [K _]: (>> Cont i x f1 f2). intros y j Py Lt.
@@ -1783,7 +1783,7 @@ Lemma FixFun_fix : forall A (R:binary A) B {IB:Inhab B} (F:(A->B)->(A->B))
   (forall x, f x = F f x).
 Proof.
   intros. apply FixFun_fix_partial with (IB:=IB) (R:=R) (P:=pred_true); auto.
-  hnf; auto*.
+  hnf; autos*.
 Qed. 
 
 Implicit Arguments FixFun_fix [A B [IB] F f].
@@ -1877,7 +1877,7 @@ Lemma FixFunMod_corec_inv : forall I A B (M:family I B)
 Proof.
   introv Deff SimE Cofe Conti Contr.
   eapply FixFunMod_mixed_partial_inv with (S:=fun i x y => S i y) (R:=@empty A); 
-   auto~. 
+   autos~. 
 Qed.
 
 (** Without invariant *)
@@ -1896,7 +1896,7 @@ Lemma FixFunMod_corec : forall I A B (M:family I B)
   (forall x, P x -> E (f x) (F f x)).
 Proof.
   introv Deff SimE Cofe Contr.
-  forwards H _: (@FixFunMod_corec_inv I A B M P post_true _ E F); auto~.
+  forwards H _: (@FixFunMod_corec_inv I A B M P post_true _ E F); autos~.
   intros_all~. split~. applys* Contr f1 f2. intros. forwards*: H0.
   subst~.
 Qed.
@@ -1975,7 +1975,7 @@ Lemma FixFun2_fix_partial_inv : forall A1 A2 (R:binary (A1*A2)) (P:A1->A2->Prop)
   (forall x1 x2, P x1 x2 -> f x1 x2 = F f x1 x2) /\ 
   (forall x1 x2, P x1 x2 -> S x1 x2 (f x1 x2)).
 Proof.
-  intros. eapply FixFun2Mod_fix_partial with (E:=eq) (R:=R); auto~.
+  intros. eapply FixFun2Mod_fix_partial with (E:=eq) (R:=R); autos~.
     intros_all. subst~.
 Qed.
 
@@ -1987,7 +1987,7 @@ Lemma FixFun2_fix_partial : forall A1 A2 (R:binary (A1*A2)) (P:A1->A2->Prop)
      F f1 x1 x2 = F f2 x1 x2) ->
   (forall x1 x2, P x1 x2 -> f x1 x2 = F f x1 x2).
 Proof.
-  intros. forwards [K _]: (@FixFun2_fix_partial_inv A1 A2 R P B (fun _ _ _ => True) _ F); auto~.
+  intros. forwards [K _]: (@FixFun2_fix_partial_inv A1 A2 R P B (fun _ _ _ => True) _ F); autos~.
   intros_all. split~. applys~ H1 f1 f2. intros. forwards*: H4.
   subst~. 
 Qed.

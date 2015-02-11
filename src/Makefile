@@ -77,11 +77,12 @@ ALL= $(LIB) $(DEMO)
 #######################################################
 # TARGETS
 
-.SUFFIXES: .v .vo
+.SUFFIXES: .v .vo .vio
 .PHONY: all lib tactics demo depend
 
 all: $(ALL:.v=.vo) 
 lib: $(LIB:.v=.vo) 
+spec: $(ALL:.v=.vio) 
 demo: $(DEMO:.v=.vo) 
 tactics: $(TACTICS:.v=.vo)
 
@@ -90,7 +91,10 @@ depend: .depend
 .v.vo : .depend
 	$(COQC) -R . TLC $<
 
-
+.v.vio : .depend
+	$(COQC) -quick -R . TLC $<
+	
+	
 #######################################################
 #DEPENDENCIES
 
@@ -112,3 +116,5 @@ clean:
 
 
 
+
+# -async-proofs-j

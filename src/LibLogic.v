@@ -125,7 +125,7 @@ Proof. intros. case_if*. Qed.
 Lemma If_eq : forall (A : Type) (P P' : Prop) (x x' y y' : A),
   (P <-> P') -> (P -> x = x') -> (~P -> y = y') ->
   (If P then x else y) = (If P' then x' else y').
-Proof. intros. do 2 case_if; auto*. Qed.
+Proof. intros. do 2 case_if; autos*. Qed.
 
 (** A simpler version of the above lemma *)
 
@@ -678,7 +678,7 @@ Hint Unfold pred_true pred_false.
 
 Lemma pred_conj_forall_distrib : forall A (P Q: A->Prop), 
   ((forall x, P x) /\ (forall x, Q x)) = (forall x, P x /\ Q x).
-Proof. intros. apply prop_ext. iff H. auto*. split; intros x; apply* (H x). Qed.
+Proof. intros. apply prop_ext. iff H. autos*. split; intros x; apply* (H x). Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Order on predicates *)
@@ -772,15 +772,15 @@ Definition at_most_one_upto (A : Type) (E : A -> A -> Prop) (P : A -> Prop) :=
 (** ** Changing the order of branches *)
 
 Lemma conj_swap: forall (P Q: Prop), P -> Q -> Q /\ P.
-Proof. auto*. Qed.
+Proof. autos*. Qed.
 
 Lemma conj_dup_r : forall P Q : Prop,
   Q -> (Q -> P) -> P /\ Q.
-Proof. auto*. Qed.
+Proof. autos*. Qed.
 
 Lemma conj_dup_l : forall P Q : Prop,
   P -> (P -> Q) -> P /\ Q.
-Proof. auto*. Qed.
+Proof. autos*. Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Parallel strengthening of a conjunction *)
@@ -788,22 +788,22 @@ Proof. auto*. Qed.
 Lemma conj_strengthen_2 : forall (Q1 Q2 P1 P2 : Prop),
   (Q1 -> P1) -> (Q2 -> P2) -> 
   (Q1 /\ Q2) -> (P1 /\ P2).
-Proof. auto*. Qed.
+Proof. autos*. Qed.
 
 Lemma conj_strengthen_3 : forall (Q1 Q2 Q3 P1 P2 P3 : Prop),
   (Q1 -> P1) -> (Q2 -> P2) -> (Q3 -> P3) -> 
   (Q1 /\ Q2 /\ Q3) -> (P1 /\ P2 /\ P3).
-Proof. auto*. Qed.
+Proof. autos*. Qed.
 
 Lemma conj_strengthen_4 : forall (Q1 Q2 Q3 Q4 P1 P2 P3 P4 : Prop),
   (Q1 -> P1) -> (Q2 -> P2) -> (Q3 -> P3) -> (Q4 -> P4) -> 
   (Q1 /\ Q2 /\ Q3 /\ Q4) -> (P1 /\ P2 /\ P3 /\ P4).
-Proof. auto*. Qed.
+Proof. autos*. Qed.
 
 Lemma conj_strengthen_5 : forall (Q1 Q2 Q3 Q4 Q5 P1 P2 P3 P4 P5 : Prop),
   (Q1 -> P1) -> (Q2 -> P2) -> (Q3 -> P3) -> (Q4 -> P4) -> (Q5 -> P5) ->
   (Q1 /\ Q2 /\ Q3 /\ Q4 /\ Q5) -> (P1 /\ P2 /\ P3 /\ P4 /\ P5).
-Proof. auto*. Qed.
+Proof. autos*. Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Projections of lemmas concluding on a conjunction *)
