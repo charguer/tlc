@@ -168,17 +168,17 @@ Proof. intros. unfold dom, write. rew_list. auto. Qed.
 
 Lemma binds_write_eq : forall h k v,
   binds (write h k v) k v.
-Proof. unfolds binds, write. intros. constructors. Qed.
+Proof. unfolds @binds, @write. intros. constructors. Qed.
 
 Lemma binds_write_neq : forall h k v k' v',
   binds h k v -> k <> k' -> 
   binds (write h k' v') k v.
-Proof. unfolds binds, write. intros. constructors~. Qed.
+Proof. unfolds @binds, @write. intros. constructors~. Qed.
 
 Lemma binds_write_inv : forall h k v k' v',
   binds (write h k' v') k v -> 
   (k = k' /\ v = v') \/ (k <> k' /\ binds h k v). 
-Proof. unfolds binds, write. introv M. inverts* M. Qed.
+Proof. unfolds @binds, @write. introv M. inverts* M. Qed.
 
 Lemma binds_rem : forall h k k' v,
   binds h k v -> k <> k' -> binds (rem h k') k v.
@@ -201,7 +201,7 @@ Admitted. (* TODO: prove *)
 Lemma binds_equiv_read_option : forall h k v,
   (binds h k v) = (read_option h k = Some v).
 Proof.
-  unfolds binds. introv. extens.
+  unfolds @binds. introv. extens.
   induction h as [|(x&v0)].
    splits ; intro N ; invert* N.
    simpl. cases_if.

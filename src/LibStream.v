@@ -14,7 +14,7 @@ Require Import LibTactics LibLogic LibInt LibList LibRelation LibWf.
 (* ---------------------------------------------------------------------- *)
 (** ** Definition *)
 
-CoInductive stream (A:Type) :=
+CoInductive stream (A:Type) : Type :=
   | stream_intro : A -> stream A -> stream A.
 
 Notation "x ::: s" := (stream_intro x s) (at level 35).
@@ -110,11 +110,11 @@ Lemma bisimilar_mod_equiv : forall A (E:binary A),
   equiv E -> equiv (bisimilar_mod E).
 Proof.
   introv Equiv. constructor.
-  unfolds. cofix IH. destruct x. constructor*.
+  unfolds. cofix IH. destruct x. constructor; dauto.
   unfolds. cofix IH. destruct x; destruct y; introv M.
-   inversions M. constructor*.
+   inversions M. constructor; dauto.
   unfolds. cofix IH. destruct x; destruct y; destruct z; introv M1 M2.
-   inversions M1. inversions M2. constructor*.
+   inversions M1. inversions M2. constructor; dauto.
 Qed.
 
 Lemma bisimilar_equiv : forall A,
@@ -140,7 +140,7 @@ Lemma bisimilar_mod_upto_equiv : forall A (E:binary A) n,
   equiv E -> equiv (bisimilar_mod_upto E n).
 Proof.
   introv Equiv. unfold bisimilar_mod_upto.
-  lets: (list_equiv_equiv Equiv). constructor; unfolds*.
+  lets: (list_equiv_equiv Equiv). constructor; unfolds; dauto.
 Qed.
 
 (** Bisimilarity implies bisimilarity at any index *)
@@ -182,7 +182,7 @@ Lemma bisimilar_mod_upto_succ : forall A (E:binary A) n s1 s2,
 Proof.
   introv Equiv Bis Equ. unfolds bisimilar_mod_upto.
   gen s1 s2. induction n; intros; destruct s1; destruct s2.
-  simpls. subst. constructor*.
+  simpls. subst. constructor; dauto.
   set_eq m: (S n). simpls.
   inversions Bis. constructor~. apply~ IHn.
 Qed.

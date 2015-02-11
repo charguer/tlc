@@ -217,7 +217,7 @@ Proof. intros. rewrite~ notin_union. Qed.
 Lemma notin_var_gen : forall E F,
   (forall x, x \notin E -> x \notin F) ->
   (var_gen E) \notin F.
-Proof. intros. auto~ var_gen_spec. Qed.
+Proof. intros. autos~ var_gen_spec. Qed.
 
 Implicit Arguments notin_singleton_r    [x y].
 Implicit Arguments notin_singleton_l    [x y].

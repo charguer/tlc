@@ -56,7 +56,9 @@ LIB=\
 	LibEnv.v \
 	LibLN.v \
 	LibHeap.v \
-	LibCore.v \
+	LibCore.v
+
+MORE=\
 	LibFix.v \
 	LibStream.v 
 
@@ -71,7 +73,7 @@ TACTICS=\
 	LibTactics.v \
 	LibTacticsDemos.v 
 
-ALL= $(LIB) $(DEMO)
+ALL= $(LIB) $(MORE) $(DEMO)
 
 
 #######################################################
@@ -109,8 +111,11 @@ endif
 #######################################################
 #CLEAN
 
+clean_spec:
+	@rm -f *.vio || echo ok
+
 clean:
-	@rm -f *.vo || echo ok
+	@rm -f *.vo *.vio || echo ok
 	@rm -f .depend || echo ok
 
 

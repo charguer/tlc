@@ -129,7 +129,7 @@ Lemma Forall_permut : forall (P:A->Prop) l1 l2,
 Proof.
   introv F1 Per. gen F1. induction Per.
   auto. 
-  auto* Forall_permut_one.
+  autos* Forall_permut_one.
 Qed. 
 
 End Permutation.

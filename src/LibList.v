@@ -1445,7 +1445,7 @@ Hint Constructors Forall.
 Ltac forall_to_conj_prove :=
   extens; iff H;
   repeat (match goal with H: Forall _ _ |- _ => inversion H end); 
-  repeat (first [constructor | auto* ]).
+  repeat (first [constructor | auto_star ]).
 
 Lemma Forall_to_conj_1 : forall x1,
   Forall P (x1::nil) = (P x1).
@@ -1794,10 +1794,10 @@ Lemma list_equiv_equiv : forall A (E:binary A),
   equiv E -> equiv (list_equiv E).
 Proof.
   introv Equiv. unfold list_equiv. constructor.
-  unfolds. induction x. auto. constructor*.
-  unfolds. induction x; destruct y; introv H; inversions* H.
+  unfolds. induction x. auto. constructor; dauto.
+  unfolds. induction x; destruct y; introv H; inversions H; dauto.
   unfolds. induction y; destruct x; destruct z; introv H1 H2;
-   inversions H1; inversions* H2.
+   inversions H1; inversions H2; dauto.
 Qed.
 
 End ListEquiv.

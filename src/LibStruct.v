@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibOperation.
+Require Import LibTactics LibLogic LibOperation Omega.
 Generalizable Variables A B.
 
 (* ********************************************************************** *)
@@ -45,7 +45,7 @@ Proof.
 Qed.
 End MonoidInst.
 
-(*
+
 (* Examples of common monoids. *)
 
 Instance monoid_plus_zero:
@@ -54,4 +54,3 @@ Proof.
   constructor; repeat intro; omega.
 Qed.
 
-*)

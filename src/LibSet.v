@@ -120,7 +120,7 @@ Lemma to_list_empty :
 Proof. 
   unfold to_list_impl. spec_epsilon as l.
   exists (@nil A). split. constructor. autos*.
-  inverts Hl. simpls. unfolds empty_inst, empty_impl, const.
+  inverts Hl. simpls. unfolds empty_inst, empty_impl, @const.
    destruct l. auto. false. eapply H0. constructor~.
 Qed.
 
@@ -187,29 +187,29 @@ Qed.
 Global Instance set_in_double_inst : In_double_eq (A:=A) (T:=set A).
 Proof.
   constructor. intros. apply prop_ext_1.
-  unfolds is_in, in_inst, in_impl.
+  unfolds @is_in, in_inst, in_impl.
   intros. rewrite* H.
 Qed.
 
 Global Instance set_incl_in_inst : Incl_in (A:=A) (T:=set A).
 Proof.
   constructor. intros. 
-  unfolds incl, incl_inst, incl_impl, pred_le, is_in, in_inst, in_impl. 
+  unfolds @incl, incl_inst, incl_impl, pred_le, @is_in, in_inst, in_impl. 
   autos*.
 Qed.
 
 Global Instance set_in_incl_inst : In_incl (A:=A) (T:=set A).
 Proof.
   constructor. intros. 
-  unfolds incl, incl_inst, incl_impl, pred_le, is_in, in_inst, in_impl. 
+  unfolds @incl, incl_inst, incl_impl, pred_le, @is_in, in_inst, in_impl. 
   autos*.
 Qed.
 
 Global Instance set_incl_union_l_inst : Incl_union_l (T:=set A).
 Proof.
   constructor. intros. 
-  unfolds incl, incl_inst, incl_impl, pred_le,
-          union, union_inst, union_impl, pred_or.
+  unfolds @incl, incl_inst, incl_impl, pred_le,
+          @union, union_inst, union_impl, pred_or.
   autos*.
 Qed.
 
@@ -269,8 +269,7 @@ Global Instance set_card_single : Card_single (T:=set A).
 Proof.
   constructor. simpl. unfold card_impl. intros a.
   generalize fold_single; intro h. simpl in h.
-  rewrite h by eauto with typeclass_instances.
-  reflexivity.
+  rewrite h. auto. typeclass.
 Qed.
 
 End Instances.
@@ -296,13 +295,13 @@ Notation "\set{ x '\in' E | P }" := (@set_st _ (fun x => x \in E /\ P))
 
 Notation "\set{= e | x '\in' E }" := 
   (@set_st _ (fun a => exists_ x \in E, a = e ))
-  (at level 0, x ident, P at level 200).
+  (at level 0, x ident, E at level 200).
 Notation "\set{= e | x '\in' E , y ''\in' F }" := 
   (@set_st _ (fun a => exists_ x \in E, exists_ y \in F, a = e ))
-  (at level 0, x ident, P at level 200).
+  (at level 0, x ident, F at level 200).
 Notation "\set{= e | x y '\in' E }" := 
   (@set_st _ (fun a => exists_ x y \in E, a = e ))
-  (at level 0, x ident, y ident, P at level 200).
+  (at level 0, x ident, y ident, E at level 200).
 
 (* ---------------------------------------------------------------------- *)
 (** ** Notation for domains that are sets *)

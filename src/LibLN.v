@@ -115,9 +115,9 @@ Tactic Notation "do_rew" "<-" constr(E) tactic(T) :=
   rewrite E; T; try rewrite <-  E.
 
 Tactic Notation "do_rew" "*" constr(E) tactic(T) :=
-  rewrite <- E; T; auto*; try rewrite* E.
+  rewrite <- E; T; auto_star; try rewrite* E.
 Tactic Notation "do_rew" "*" "<-" constr(E) tactic(T) :=
- rewrite E; T; auto*; try rewrite* <- E.
+ rewrite E; T; auto_star; try rewrite* <- E.
 
 (** [do_rew_2] is like [do_rew] but it rewrites twice *)
 
