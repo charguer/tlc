@@ -84,7 +84,7 @@ ALL= $(LIB) $(MORE) $(DEMO)
 
 all: $(ALL:.v=.vo) 
 lib: $(LIB:.v=.vo) 
-spec: $(ALL:.v=.vio) 
+quick: $(ALL:.v=.vio) 
 demo: $(DEMO:.v=.vo) 
 tactics: $(TACTICS:.v=.vo)
 
@@ -111,7 +111,7 @@ endif
 #######################################################
 #CLEAN
 
-clean_spec:
+clean_quick:
 	@rm -f *.vio || echo ok
 
 clean:

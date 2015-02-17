@@ -219,6 +219,8 @@ Notation "'exists' ! x : A , P" :=
 (* ********************************************************************** *)
 (** * Specif -- move to LibLogic *)
 
+(*
+
 (* ---------------------------------------------------------------------- *)
 (** ** Subset-type *)
 
@@ -239,6 +241,7 @@ Section SigProj.
 Variables (A : Type) (P : A -> Prop).
 Definition sig_1 (e:sig P) : A := 
   let (a,_) := e in a.
+
 Definition sig_2 (e:sig P) : P (sig_1 e) := 
   let (_,b) := e in b.
 End SigProj.
@@ -301,3 +304,6 @@ Inductive Acc (A : Type) (R : A -> A -> Prop) (x : A) : Prop :=
 
 Definition wf (A : Type) (R : A -> A -> Prop) := 
   forall a, Acc R a.
+
+
+*)
