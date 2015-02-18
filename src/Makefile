@@ -1,12 +1,8 @@
 
 ############################################################################
-# You can define your own path to COQBIN by creating a file called
-# "settings.sh" and placing the right definitions into it, e.g.
-#     COQBIN=/var/tmp/charguer/v8.4/bin/
-# Note the use of a leading slash.
-
-
-COQBIN=
+# To specify the location of coq binaries, create a file  called
+# "settings.sh" and define the variable COQBIN (with trailing slash), e.g.
+#    COQBIN=/var/tmp/coq/bin/
 
 -include settings.sh
 
@@ -14,7 +10,7 @@ COQBIN=
 ############################################################################
 # Files
 
-LIB :=\
+SRC :=\
 	LibTactics.v \
 	LibAxioms.v \
 	LibEqual.v \
@@ -52,25 +48,12 @@ LIB :=\
 	LibEnv.v \
 	LibLN.v \
 	LibHeap.v \
-	LibCore.v
-
-
-MORE :=\
+	LibCore.v  \
 	LibFix.v \
-	LibStream.v 
-
-DEMO :=\
+	LibStream.v  \
 	LibTacticsDemos.v \
 	LibFixDemos.v \
 	LibOtherDemos.v 
-
-#	LibCoreDemos.v \
-
-TACTICS :=\
-	LibTactics.v \
-	LibTacticsDemos.v 
-
-ALL := $(LIB) $(MORE) $(DEMO)
 
 
 ############################################################################
@@ -78,8 +61,8 @@ ALL := $(LIB) $(MORE) $(DEMO)
 
 all: check
 
-COQINCLUDE := -R . HERE
-V := $(ALL)
+COQINCLUDE := -R . TLC
+V := $(SRC)
 
 include Makefile.coq
 

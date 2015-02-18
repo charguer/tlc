@@ -102,13 +102,14 @@ Proof using. auto. Qed.
 
 Global Opaque map_index_def.
 
+(* TODO: missing a lemma for extensional equality *)
 
 (* ********************************************************************** *)
 (** * Properties of maps *)
 (*TODO: under construction *)
 
 Section Properties.
-Transparent dom_inst binds_inst empty_inst.
+Transparent map dom_inst binds_inst empty_inst.
 
 Lemma dom_empty : forall A B,
   dom (\{} : map A B) = (\{} : set A).
@@ -128,22 +129,20 @@ Lemma no_binds_empty : forall (A B : Type) (M : map A B),
   (forall x k, ~ binds M x k) -> M = \{}.
 Proof using.
   intros A B M. simpl. unfold empty_impl, binds_impl.
-  Require Import Coq.Logic.FunctionalExtensionality. (* TEMPORARY ok? *)
-  intro h. extensionality x. case_eq (M x); try reflexivity. intros v Mxv. false.
-  unfold not in h. eauto.
+  intros H. apply func_ext_1. intros x. cases (M x); auto_false*.
 Qed.
 
 Lemma dom_empty_inv : forall A B (M : map A B),
   dom M = \{} -> M = \{}.
 Proof using.
   intros A B M. simpl. unfold dom_impl, empty_impl.
-  intro h. extensionality x. case_eq (M x); try reflexivity. intros v Mxv. false.
-  assert (there: x \in (\{} : set A)).
-    rewrite <- h. rewrite in_set. exists v. eauto.
-  eauto using set_in_empty_inv.
-Qed.
+  intro H.
+  (* todo: use lemma above and binds_dom *)
+Admitted.
+
 
 End Properties.
+
 
 Axiom restrict_read : forall A `{Inhab B} (M:map A B) i j,
   i <> j -> (M\--i)\(j) = M\(j).
@@ -311,5 +310,3 @@ Proof using.
 Qed.
 
 End Instances.
-
-
