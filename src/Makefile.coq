@@ -5,7 +5,7 @@
 # Variables to bind for using this makefile:
 # COQBIN
 # COQINCLUDE
-# (optional) V, VD, VIO, VK, VO
+# (optional) V, VD, VIO, VQ, VO
 
 
 ############################################################################
@@ -92,7 +92,7 @@ ide:
 # Clean
 
 clean:
-	rm -f *.vio *.v.d *.vo *.vk *.aux .*.aux *.glob
+	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob
 	rm -Rf .coq-native
 
 
