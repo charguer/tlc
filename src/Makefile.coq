@@ -53,12 +53,11 @@ proof_vo: $(VO)
 
 %.v.d: %.v 
 	$(COQDEP) $(COQINCLUDE) $< > $@
-	@sed -i -e "s/^\(.*\)\.vo\(.*\):/\1TEMPORARYvo\2:/g" -e "s/\.vo/.vio/g" -e "s/TEMPORARYvo/.vo/g" $@ 
 
 %.vo: %.vio
 	$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $(patsubst .vio,,$<) > /dev/null 2>&1 
 
-%.vio: %.v
+%.vio: %.v .coqide
 	$(COQC) -quick $(COQINCLUDE) $<
 
 %.vq: %.vio
@@ -67,10 +66,14 @@ proof_vo: $(VO)
 
 # ==> TODO remove when verbosity bug is fixed
 
-%.vkdbg: %.vio
+%.vqdbg: %.vio
 	$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< 
 	@touch $@
 
+# be careful dependencies not respected for vodirect
+%.vodirect: %.v 
+	$(COQC) $(COQINCLUDE) $<
+	@touch $@
 
 
 ############################################################################
@@ -84,6 +87,10 @@ endif
 ############################################################################
 # IDE
 
+.coqide:
+	@echo '$(COQIDE) $(COQINCLUDE) $$*' > .coqide
+	@chmod +x .coqide
+
 ide:
 	$(COQIDE) $(COQINCLUDE)
 
@@ -92,13 +99,15 @@ ide:
 # Clean
 
 # Do not delete intermediate files.
-.SECONDARY: *.v.d *.vio
+.SECONDARY: %.v.d %.vio
+.PRECIOUS: %.v.d %.vio
 
-clean:
+clean::
 	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob
-	rm -Rf .coq-native
+	rm -Rf .coq-native .coqide
 
 
+############################################################################
 ############################################################################
 # Notes
 
@@ -117,3 +126,7 @@ clean:
 #
 #%.vk: %.vo
 #	$(COQCHK) $(COQINCLUDE) $<
+#
+#
+# Used to replace dependency from vo to vio
+# 	@sed -i -e "s/^\(.*\)\.vo\(.*\):/\1TEMPORARYvo\2:/g" -e "s/\.vo/.vio/g" -e "s/TEMPORARYvo/.vo/g" $@ 

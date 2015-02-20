@@ -50,7 +50,9 @@ SRC :=\
 	LibHeap.v \
 	LibCore.v  \
 	LibFix.v \
-	LibStream.v  \
+	LibStream.v
+
+DEMOS :=\
 	LibTacticsDemos.v \
 	LibFixDemos.v \
 	LibOtherDemos.v 
@@ -60,6 +62,8 @@ SRC :=\
 # Compilation
 
 all: proof
+full: all demos
+demos: $(DEMOS:.v=.vq)
 
 COQINCLUDE := -R . TLC
 V := $(SRC)
