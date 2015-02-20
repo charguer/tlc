@@ -198,13 +198,14 @@ Lemma not_indom_rem : forall h k,
   ~ indom (rem h k) k.
 Admitted. (* TODO: prove *)
 
+
 Lemma binds_equiv_read_option : forall h k v,
   (binds h k v) = (read_option h k = Some v).
 Proof using.
   unfolds @binds. introv. extens.
   induction h as [|(x&v0)].
    splits ; intro N ; invert* N.
-   simpl. cases_if.
+   simpl. case_if.
      subst. splits ; intro N ; inverts* N. constructors.
      splits ; intro N.
       inverts* N.

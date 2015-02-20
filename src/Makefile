@@ -59,7 +59,7 @@ SRC :=\
 ############################################################################
 # Compilation
 
-all: check
+all: proof
 
 COQINCLUDE := -R . TLC
 V := $(SRC)

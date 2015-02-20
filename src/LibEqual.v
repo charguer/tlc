@@ -606,6 +606,41 @@ Proof using. intros. subst~. Qed.
 
 End FuncSame.
 
+(* ---------------------------------------------------------------------- *)
+(** ** Generalization *)
+
+Section FuncEqual.
+Variables (A1 A2 A3 A4 A5 B : Type).
+
+Lemma func_equal_1 : forall (f g:A1->B) x1 y1,
+  f = g ->
+  x1 = y1 -> 
+  f x1 = g y1.
+Proof using. intros. subst~. Qed.
+
+Lemma func_equal_2 : forall (f g:A1->A2->B) x1 y1 x2 y2,
+  f = g -> x1 = y1 -> x2 = y2 -> 
+  f x1 x2 = f y1 y2.
+Proof using. intros. subst~. Qed.
+
+Lemma func_equal_3 : forall (f g:A1->A2->A3->B) x1 y1 x2 y2 x3 y3,
+  f = g -> x1 = y1 -> x2 = y2 -> x3 = y3 -> 
+  f x1 x2 x3 = f y1 y2 y3.
+Proof using. intros. subst~. Qed.
+
+Lemma func_equal_4 : forall (f g:A1->A2->A3->A4->B) x1 y1 x2 y2 x3 y3 x4 y4,
+  f = g -> x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> 
+  f x1 x2 x3 x4 = f y1 y2 y3 y4.
+Proof using. intros. subst~. Qed.
+
+Lemma func_equal_5 : forall (f g:A1->A2->A3->A4->A5->B) x1 y1 x2 y2 x3 y3 x4 y4 x5 y5,
+  f = g -> x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> x5 = y5 -> 
+  f x1 x2 x3 x4 x5 = f y1 y2 y3 y4 y5.
+Proof using. intros. subst~. Qed.
+
+End FuncEqual.
+
+
 
 (* ********************************************************************** *)
 (** * General definition of extensionality *)

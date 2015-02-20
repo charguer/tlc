@@ -480,8 +480,7 @@ Proof using.  (* todo: factorise with map_app *)
    induction l2; intros; simpl.
      auto. 
      case_if. fequals. rewrite IHl2. rewrite~ app_cons. fequals.
- skip. skip. (* TODO*)
-    case_if. fequals. rewrite IHl1. rewrite~ app_cons. skip. (* TODO *) apply IHl1.
+     case_if. fequals. rewrite IHl1. rewrite~ app_cons. apply IHl1.
   specializes H (@nil A). rewrite~ app_nil_r in H.
 Qed.
 Lemma filter_last : forall x l,
@@ -1474,11 +1473,11 @@ Proof using.  (*todo: optimize proof *)
     (fold_left (fun a b => and b (decide (P a))) true l).
   tests: (Forall P l).
    rewrite~ isTrue_true. fold_bool.
-    induction~ C. simpl. cases_if~.
+    induction~ C. simpl. case_if~.
    rewrite~ isTrue_false. fold_bool.
     induction~ l.
      false C. constructor~.
-     simpl. cases_if~.
+     simpl. case_if~.
       apply~ IHl. intro F; apply C. constructor~.
       clear C IHl. induction* l.
 Qed.

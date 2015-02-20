@@ -2775,8 +2775,8 @@ Tactic Notation "cases_if_on" constr(E) "as" simple_intropattern(Eq) :=
 
 Tactic Notation "cases_if" "as" simple_intropattern(Eq) :=
   match goal with 
-  | |- context [if ?B then _ else _] => case_if_on B as Eq
-  | K: context [if ?B then _ else _] |- _ => case_if_on B as Eq
+  | |- context [if ?B then _ else _] => cases_if_on B as Eq
+  | K: context [if ?B then _ else _] |- _ => cases_if_on B as Eq
   end.
 
 Tactic Notation "cases_if" "in" hyp(H) "as" simple_intropattern(Eq) :=
@@ -4855,3 +4855,54 @@ Tactic Notation "let_name_all" "as" ident(x) :=
 
 
 
+
+Section FuncEq.
+Variables (A1 A2 A3 A4 A5 B : Type).
+
+Lemma func_eq_1 : forall (f:A1->B) x1 y1,
+  x1 = y1 -> 
+  f x1 = f y1.
+Proof using. intros. subst~. Qed.
+
+Lemma func_eq_2 : forall (f:A1->A2->B) x1 y1 x2 y2,
+  x1 = y1 -> x2 = y2 -> 
+  f x1 x2 = f y1 y2.
+Proof using. intros. subst~. Qed.
+
+Lemma func_eq_3 : forall (f:A1->A2->A3->B) x1 y1 x2 y2 x3 y3,
+  x1 = y1 -> x2 = y2 -> x3 = y3 -> 
+  f x1 x2 x3 = f y1 y2 y3.
+Proof using. intros. subst~. Qed.
+
+Lemma func_eq_4 : forall (f:A1->A2->A3->A4->B) x1 y1 x2 y2 x3 y3 x4 y4,
+  x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> 
+  f x1 x2 x3 x4 = f y1 y2 y3 y4.
+Proof using. intros. subst~. Qed.
+
+Lemma func_eq_5 : forall (f:A1->A2->A3->A4->A5->B) x1 y1 x2 y2 x3 y3 x4 y4 x5 y5,
+  x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> x5 = y5 -> 
+  f x1 x2 x3 x4 x5 = f y1 y2 y3 y4 y5.
+Proof using. intros. subst~. Qed.
+
+End FuncEq.
+
+Ltac f_equal_fixed :=
+  try (
+    first 
+    [ apply func_eq_1
+    | apply func_eq_2
+    | apply func_eq_3
+    | apply func_eq_4
+    | apply func_eq_5 ]; 
+    try reflexivity).
+  
+
+Ltac fequal_base ::=
+  let go := f_equal_fixed; [ fequal_base | ] in
+  match goal with
+  | |- (_,_,_) = (_,_,_) => go
+  | |- (_,_,_,_) = (_,_,_,_) => go
+  | |- (_,_,_,_,_) = (_,_,_,_,_) => go
+  | |- (_,_,_,_,_,_) = (_,_,_,_,_,_) => go
+  | |- _ => f_equal_fixed
+  end.

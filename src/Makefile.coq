@@ -91,6 +91,9 @@ ide:
 ############################################################################
 # Clean
 
+# Do not delete intermediate files.
+.SECONDARY: *.v.d *.vio
+
 clean:
 	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob
 	rm -Rf .coq-native
