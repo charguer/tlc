@@ -79,7 +79,7 @@ endif
 	@echo '$(COQIDE) $(COQINCLUDE) $$*' > .coqide
 	@chmod +x .coqide
 
-ide:
+ide: _CoqProject
 	$(COQIDE) $(COQINCLUDE)
 
 ############################################################################
@@ -92,6 +92,7 @@ ide:
 .PHONY: clean
 
 clean::
+	rm -f *~
 	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob
 	rm -rf .coq-native .coqide
 
