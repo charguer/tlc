@@ -60,6 +60,9 @@ QUIET := 2>&1 | (grep -v "Checking task" || true)
 	$(COQC) $(COQINCLUDE) $<
 	@touch $@
 
+_CoqProject:
+	echo $(COQINCLUDE) > $@
+
 ############################################################################
 # Dependencies
 
