@@ -209,6 +209,15 @@ Proof.
   split; eauto using binds_update_neq, binds_update_neq_inv'.
 Qed.
 
+Lemma binds_update_analysis: forall A B i j v w (M:map A B),
+  binds (M\(j:=w)) i v ->
+  i = j /\ v = w \/
+  i <> j /\ binds M i v.
+Proof.
+  intros.
+  forwards [ ? ? ]: binds_inv. (* COQBUG eexact H. *)
+Admitted.
+
 Axiom binds_inj : forall A i `{Inhab B} v1 v2 (M:map A B),
   binds M i v1 -> binds M i v2 -> v1 = v2.
 
