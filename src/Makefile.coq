@@ -48,7 +48,7 @@ QUIET := 2>&1 | (grep -v "Checking task" || true)
 %.vo: %.vio
 	$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* $(QUIET)
 
-%.vio: %.v .coqide
+%.vio: %.v
 	$(COQC) $(COQINCLUDE) -quick $<
 
 %.vq: %.vio
