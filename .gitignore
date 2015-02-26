@@ -1,3 +1,8 @@
 *.vo
+*.vio
+*.vq
 *.glob
+*.v.d
 .depend
+.coq-native
+.coqide
