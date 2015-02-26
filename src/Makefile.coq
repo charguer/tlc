@@ -2,11 +2,19 @@
 # Configuration
 #
 #
-# Variables to bind for using this makefile:
-# COQBIN
-# COQINCLUDE
-# (optional) V, VD, VIO, VQ, VO
+# This Makefile relies on the following variables:
+# COQBIN     (default: empty)
+# COQINCLUDE (default: empty)
+# V          (default: *.v)
 
+ifndef V
+	V := $(wildcard *.v)
+endif
+
+VD := $(patsubst %.v,%.v.d,$(V))
+VIO := $(patsubst %.v,%.vio,$(V))
+VQ := $(patsubst %.v,%.vq,$(V))
+VO := $(patsubst %.v,%.vo,$(V))
 
 ############################################################################
 # Binaries
@@ -16,65 +24,41 @@ COQDEP := $(COQBIN)coqdep
 COQIDE := $(COQBIN)coqide
 COQCHK := $(COQBIN)coqchk
 
-
 ############################################################################
 # Targets
 
-ifndef V
-	V := $(wildcard *.v)
-endif
+.PHONY: proof depend quick proof_vo
 
-ifndef VD
-	VD := $(patsubst %.v,%.v.d,$(V))
-endif
-
-ifndef VIO
-	VIO := $(patsubst %.v,%.vio,$(V))
-endif
-
-ifndef VQ
-	VQ := $(patsubst %.v,%.vq,$(V))
-endif
-
-ifndef VO
-	VO := $(patsubst %.v,%.vo,$(V))
-endif
-
+proof: $(VQ)
 depend: $(VD)
 quick: $(VIO)
-proof: $(VQ)
 proof_vo: $(VO)
 
+############################################################################
+# Verbosity filter. (Remove when verbosity bug in Coq is fixed.)
+
+QUIET := 2>&1 | (grep -v "Checking task" || true)
 
 ############################################################################
 # Rules
 
-# We patch coqdep using sed so that it returns dependencies from vo to vio (and not to vo).
-
-%.v.d: %.v 
+%.v.d: %.v
 	$(COQDEP) $(COQINCLUDE) $< > $@
 
 %.vo: %.vio
-	$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $(patsubst .vio,,$<) > /dev/null 2>&1 
+	$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* $(QUIET)
 
 %.vio: %.v .coqide
-	$(COQC) -quick $(COQINCLUDE) $<
+	$(COQC) $(COQINCLUDE) -quick $<
 
 %.vq: %.vio
-	$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< > /dev/null 2>&1 
-	@touch $@
-
-# ==> TODO remove when verbosity bug is fixed
-
-%.vqdbg: %.vio
-	$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< 
+	$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< $(QUIET)
 	@touch $@
 
 # be careful dependencies not respected for vodirect
 %.vodirect: %.v 
 	$(COQC) $(COQINCLUDE) $<
 	@touch $@
-
 
 ############################################################################
 # Dependencies
@@ -83,9 +67,10 @@ ifeq ($(findstring $(MAKECMDGOALS),depend clean),)
 -include $(VD)
 endif
 
-
 ############################################################################
 # IDE
+
+.PHONY: ide
 
 .coqide:
 	@echo '$(COQIDE) $(COQINCLUDE) $$*' > .coqide
@@ -94,7 +79,6 @@ endif
 ide:
 	$(COQIDE) $(COQINCLUDE)
 
-
 ############################################################################
 # Clean
 
@@ -102,10 +86,11 @@ ide:
 .SECONDARY: %.v.d %.vio
 .PRECIOUS: %.v.d %.vio
 
+.PHONY: clean
+
 clean::
 	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob
-	rm -Rf .coq-native .coqide
-
+	rm -rf .coq-native .coqide
 
 ############################################################################
 ############################################################################
@@ -128,5 +113,6 @@ clean::
 #	$(COQCHK) $(COQINCLUDE) $<
 #
 #
+# We patch coqdep using sed so that it returns dependencies from vo to vio (and not to vo).
 # Used to replace dependency from vo to vio
 # 	@sed -i -e "s/^\(.*\)\.vo\(.*\):/\1TEMPORARYvo\2:/g" -e "s/\.vo/.vio/g" -e "s/TEMPORARYvo/.vo/g" $@ 
