@@ -54,6 +54,9 @@ QUIET := 2>&1 | (grep -v "Checking task" || true)
 %.vq: %.vio
 	$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< $(QUIET)
 	@touch $@
+# TEMPORARY
+# I think we are missing dependencies: %.vq should depend on other %.vio
+# files.
 
 # be careful dependencies not respected for vodirect
 %.vodirect: %.v 
