@@ -217,7 +217,7 @@ Axiom binds_get : forall A `{Inhab B} (M:map A B) x v,
 Axiom binds_dom : forall A `{Inhab B} (M:map A B) x v,
   binds M x v -> x \indom M.
 
-Axiom dom_update_notin : forall A i `{Inhab B} v (M:map A B),
+Axiom dom_update_notin : forall A B i v (M:map A B),
   i \notin (dom M : set _) -> dom (M\(i:=v)) = dom M \u \{i}.
 
 Axiom binds_index : forall A i `{Inhab B} v (M:map A B),
