@@ -191,13 +191,23 @@ Axiom binds_inv : forall A `{Inhab B} (M:map A B) x v,
 Axiom binds_prove : forall A `{Inhab B} (M:map A B) x v,
   x \indom M -> M\(x) = v -> binds M x v.
 
-Axiom binds_update_neq : forall A i j `{Inhab B} v w (M:map A B),
+Axiom binds_update_neq : forall A B i j v w (M:map A B),
   j \notin (dom M : set _) -> binds M i v -> binds (M\(j:=w)) i v.
-Axiom binds_update_eq : forall A i `{Inhab B} v (M:map A B),
+
+Axiom binds_update_eq : forall A B i v (M:map A B),
   binds (M\(i:=v)) i v.
 
-Axiom binds_update_neq_inv : forall A i j `{Inhab B} v w (M:map A B),
+Axiom binds_update_neq_inv : forall A B i j v w (M:map A B),
   binds (M\(j:=w)) i v -> i <> j -> binds M i v.
+Axiom binds_update_neq_inv' : forall A B i j v w (M:map A B),
+  binds (M\(j:=w)) i v -> j \notin (dom M : set _) -> binds M i v.
+
+Lemma binds_update_neq_iff: forall A B i j v w (M:map A B),
+  j \notin (dom M : set _) ->
+  (binds M i v <-> binds (M\(j:=w)) i v).
+Proof.
+  split; eauto using binds_update_neq, binds_update_neq_inv'.
+Qed.
 
 Axiom binds_inj : forall A i `{Inhab B} v1 v2 (M:map A B),
   binds M i v1 -> binds M i v2 -> v1 = v2.
@@ -206,10 +216,6 @@ Axiom binds_inj : forall A i `{Inhab B} v1 v2 (M:map A B),
 Axiom binds_update_rem : forall A i j `{Inhab B} v w (M:map A B),
   j \notindom' M -> binds (M\(j:=w)) i v -> binds M i v.
 Hint Resolve binds_update_rem.
-
-Lemma is_repr_rem_node : forall M r c x y,
-  r \notin (dom M:set _) -> is_repr (M\(r:=c)) x y -> is_repr M x y.
-Proof using. introv N H. induction H; constructors*. Qed. 
 *)
 
 Axiom binds_get : forall A `{Inhab B} (M:map A B) x v,
