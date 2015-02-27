@@ -192,7 +192,7 @@ Axiom binds_prove : forall A `{Inhab B} (M:map A B) x v,
   x \indom M -> M\(x) = v -> binds M x v.
 
 Axiom binds_update_neq : forall A B i j v w (M:map A B),
-  j \notin (dom M : set _) -> binds M i v -> binds (M\(j:=w)) i v.
+  i <> j -> binds M i v -> binds (M\(j:=w)) i v.
 
 Axiom binds_update_eq : forall A B i v (M:map A B),
   binds (M\(i:=v)) i v.
@@ -234,6 +234,7 @@ Axiom binds_dom : forall A `{Inhab B} (M:map A B) x v,
 
 Axiom dom_update_notin : forall A B i v (M:map A B),
   i \notin (dom M : set _) -> dom (M\(i:=v)) = dom M \u \{i}.
+  (* TEMPORARY semble vrai aussi sans l'hypothèse? *)
 
 Axiom binds_index : forall A i `{Inhab B} v (M:map A B),
   binds M i v -> index M i.
