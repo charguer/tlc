@@ -153,6 +153,16 @@ Axiom restrict_update : forall A `{Inhab B} (M:map A B) i j v,
 Axiom dom_update_in : forall A i `{Inhab B} v (M:map A B),
   index M i -> dom (M\(i:=v)) = dom M.
 
+Lemma dom_update_in_variant:
+  forall A `{Inhab B} (M M' : map A B) (D : set A) x v,
+  M' = M\(x:=v) ->
+  D = dom M ->
+  x \in D ->
+  D = dom M'.
+Proof.
+  intros. subst. rewrite dom_update_in; eauto.
+Qed.
+
 Axiom dom_restrict_in : forall A i j `{Inhab B} (M:map A B),
   index M j -> i <> j -> index (M\--i) j.
 
@@ -202,22 +212,6 @@ Axiom binds_update_neq_inv : forall A B i j v w (M:map A B),
 Axiom binds_update_neq_inv' : forall A B i j v w (M:map A B),
   binds (M\(j:=w)) i v -> j \notin (dom M : set _) -> binds M i v.
 
-Lemma binds_update_neq_iff: forall A B i j v w (M:map A B),
-  j \notin (dom M : set _) ->
-  (binds M i v <-> binds (M\(j:=w)) i v).
-Proof.
-  split; eauto using binds_update_neq, binds_update_neq_inv'.
-Qed.
-
-Lemma binds_update_analysis: forall A B i j v w (M:map A B),
-  binds (M\(j:=w)) i v ->
-  i = j /\ v = w \/
-  i <> j /\ binds M i v.
-Proof.
-  intros.
-  forwards [ ? ? ]: binds_inv. (* COQBUG eexact H. *)
-Admitted.
-
 Axiom binds_inj : forall A i `{Inhab B} v1 v2 (M:map A B),
   binds M i v1 -> binds M i v2 -> v1 = v2.
 
@@ -247,8 +241,37 @@ Axiom map_indom_update_already_inv : forall A `{Inhab B} (m:map A B) (i j:A) (v:
 Global Opaque binds_inst. 
 
 
+Lemma binds_update_neq_iff: forall A `{Inhab B} i j v w (M:map A B),
+  j \notin (dom M : set _) ->
+  (binds M i v <-> binds (M\(j:=w)) i v).
+Proof.
+  split; intros.
+  { eapply binds_update_neq; [ | eauto ].
+    assert (i \indom M). { eapply binds_index; eauto. }
+    intro. subst. unfold notin in *. tauto. }
+  { eauto using binds_update_neq_inv'. }
+Qed.
 
+Lemma binds_update_analysis: forall A B i j v w (M:map A B),
+  binds (M\(j:=w)) i v ->
+  i <> j /\ binds M i v \/
+  i = j /\ v = w.
+Proof.
+  intros.
+  forwards [ ? ? ]: binds_inv. (* COQBUG eexact H. *)
+Admitted.
 
+Lemma binds_update_indom_iff:
+  forall A B (M : map A B) a1 a2 b1 b2,
+  (a2 <> a1 /\ binds M a2 b2 \/ a2 = a1 /\ b2 = b1)
+  <->
+  binds (M\(a1:=b1)) a2 b2.
+Proof.
+  split. introv [ [ ? ? ] | [ ? ? ] ].
+  { eauto using binds_update_neq. }
+  { subst. eapply binds_update_eq. }
+  { eauto using binds_update_analysis. }
+Qed.
 
 (* todo *)
 Axiom map_indom_update : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
