@@ -6,6 +6,8 @@
 # COQBIN     (default: empty)
 # COQINCLUDE (default: empty)
 # V          (default: *.v)
+# SERIOUS    (default: undefined)
+#            (if defined, coqc is used to produce .vo files in the old way)
 
 ifndef V
 	V := $(wildcard *.v)
@@ -45,6 +47,8 @@ QUIET := 2>&1 | (grep -v "Checking task" || true)
 %.v.d: %.v
 	$(COQDEP) $(COQINCLUDE) $< > $@
 
+ifndef SERIOUS
+
 %.vo: %.vio
 	$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* $(QUIET)
 
@@ -58,10 +62,14 @@ QUIET := 2>&1 | (grep -v "Checking task" || true)
 # I think we are missing dependencies: %.vq should depend on other %.vio
 # files.
 
-# be careful dependencies not respected for vodirect
-%.vodirect: %.v 
+endif
+
+ifdef SERIOUS
+
+%.vo: %.v 
 	$(COQC) $(COQINCLUDE) $<
-	@touch $@
+
+endif
 
 _CoqProject:
 	echo $(COQINCLUDE) > $@
@@ -103,11 +111,6 @@ clean::
 ############################################################################
 # Notes
 
-# Alternative for vo construction:
-# %.vo: %.v
-#	$(COQC) $(COQINCLUDE) $<
-#
-#
 # Later: checking
 #
 # ifndef VK
