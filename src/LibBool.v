@@ -185,7 +185,7 @@ Proof using. tautob~. Qed.
 Lemma neg_or : @automorphism bool neg or and.
 Proof using. tautob~. Qed.
 
-Lemma neg_neg : idempotent neg.
+Lemma neg_neg : involutive neg.
 Proof using. tautob~. Qed.
 
 

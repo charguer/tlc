@@ -88,10 +88,24 @@ Definition absorb_r f a := forall x,
 
 (** Idempotence *)
 
-Definition idempotent i := forall x, 
+Definition idempotent i := forall x,
+  i (i x) = i x.
+
+Lemma use_idempotent : forall i x y,
+  idempotent i ->
+  y = i x ->
+  i y = y.
+  (* Expanded statement, for easier use by [eauto]. *)
+Proof.
+  intros. subst. eauto.
+Qed.
+
+(** Idempotence *)
+
+Definition involutive i := forall x, 
   i (i x) = x.
 
-(** Idempotence for binary operators *)
+(** Idempotence for binary operators *) (* TEMPORARY strange terminology! *)
 
 Definition idempotent2 f := forall x, 
   f x x = x.
