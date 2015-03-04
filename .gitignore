@@ -3,6 +3,7 @@
 *.vq
 *.glob
 *.v.d
+.*.aux
 .depend
 .coq-native
 .coqide

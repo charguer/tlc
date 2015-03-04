@@ -61,7 +61,12 @@ DEMOS :=\
 ############################################################################
 # Compilation
 
+ifndef SERIOUS
 all: proof
+else
+all: proof_vo
+endif
+
 full: all demos
 demos: $(DEMOS:.v=.vq)
 
