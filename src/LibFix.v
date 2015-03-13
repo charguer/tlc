@@ -992,8 +992,7 @@ Proof using.
   intros x f1 f2. simpl. intros H. split.
     intros x' Px' Rx'x. apply~ Cont. intros y Py Ryx'. 
     forwards~ (M1&M2&M3): (H y). destruct Rx'x as [Rx'x|Ex'x]. 
-      apply* tclosure_trans. apply~ tclosure_once.
-      subst. apply~ tclosure_once.
+      apply* tclosure_trans. apply~ tclosure_once. subst~.
     intros Px. forwards [M1 M2]: Cont f1 f1 Px.
       introv Py Ryx. forwards (M1&M2&M3): H y. apply~ tclosure_once.
        splits~. apply~ equiv_refl.
