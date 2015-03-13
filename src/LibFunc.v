@@ -53,7 +53,13 @@ Definition compose {A B C} (g : B -> C) (f : A -> B) :=
 Notation "f1 \o f2" := (compose f1 f2) 
   (at level 49, right associativity) : fun_scope.
 
+(** Function update *)
+
+Definition fupdate A B (f : A -> B) (a : A) (b : B) : A -> B :=
+  fun x => If (x = a) then b else f x.
+
 Open Scope fun_scope.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of combinators *)
@@ -82,6 +88,28 @@ Lemma compose_eq_r : forall (f:A->B) (g1 g2:B->C),
 Proof using. intros. subst~. Qed.
 
 End Combinators.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of function update *)
+
+(* TODO rename to fupdate_eq and _neq *)
+(* TODO simplify proofs using case_if *)
+
+Lemma fupdate_new : forall A B (f:A->B) a b x,
+  x = a ->
+  fupdate f a b x = b.
+Proof using.
+  unfold fupdate. intros. rewrite If_l by assumption. congruence.
+Qed.
+
+Lemma fupdate_old : forall A B (f:A->B) a b x,
+  x <> a ->
+  fupdate f a b x = f x.
+Proof using.
+  unfold fupdate. intros. rewrite If_r by congruence. congruence.
+Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactic for simplifying function compositions *)

@@ -272,6 +272,9 @@ Proof using.
   rewrite h. auto. typeclass.
 Qed.
 
+Global Instance set_card_union_le : Card_union_le (T:=set A).
+Proof using. admit. Qed.
+
 End Instances.
 
 

@@ -75,7 +75,8 @@ Definition incl R1 R2 :=
 
 (** Equality between relations *)
 
-(* TEMPORARY already called binary_extensional above? *)
+(* TODO move further down in the file *)
+(* TODO already called binary_extensional above? *)
 Lemma rel_eq_intro : forall R1 R2,
   (forall x y, R1 x y <-> R2 x y) -> R1 = R2.
 Proof using. intros. extens*. Qed.
@@ -85,6 +86,16 @@ Lemma rel_eq_elim : forall R1 R2,
 Proof using. intros. subst*. Qed.
 
 End Properties.
+
+
+(** Inclusion between a function and a relation. *)
+(* TODO: maybe use longer name? *)
+
+Definition incl_fr A B (f : A -> B) (R : A -> B -> Prop) :=
+  forall x, R x (f x).
+Definition incl_rf A B (R : A -> B -> Prop) (f : A -> B) :=
+  forall x y, R x y -> y = f x.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Constructions *)
@@ -301,6 +312,12 @@ Lemma double_incl : forall R1 R2,
   incl R1 R2 -> incl R2 R1 -> R1 = R2.
 Proof using. unfolds incl. intros. apply* prop_ext_2. Qed. 
 
+Lemma rel_incl_trans : forall R1 R2 R3,
+  incl R1 R2 -> incl R2 R3 -> incl R1 R3.
+Proof using.
+  unfold incl. eauto.
+Qed.
+
 Lemma flip_injective : injective (@flip A).
 Proof using.
   intros R1 R2 E. apply prop_ext_2. intros x y.
@@ -354,13 +371,13 @@ Lemma strict_large_trans : forall A y x z (R:binary A),
   trans R -> R x y -> large R y z -> R x z.
 Proof using. introv T H [E|H']; subst*. Qed.
 
-(** Properties about [functional] *)
+(* ---------------------------------------------------------------------- *)
+(** ** Properties about [functional] *)
 
 (* A relation [R] is functional if and only if [flip R] composed
    with [R] is a subset of the diagonal relation [eq]. *)
 
-Lemma functional_characterization:
-  forall (A:Type) (R : binary A),
+Lemma functional_characterization : forall A (R : binary A),
   functional R <->
   incl (sequence (flip R) R) eq.
 Proof using.
@@ -370,10 +387,57 @@ Proof using.
     eauto.
 Qed.
 
+(* The empty relation is functional. *)
+
+Lemma functional_empty : forall A,
+  functional (@empty A).
+Proof using.
+  unfold empty. repeat intro. tauto.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties about [union] *)
+
+(* TODO: rename lemmas *)
+
+Lemma prove_rel_union_left : forall A (R1 R2 : binary A) x y,
+  R1 x y ->
+  union R1 R2 x y.
+Proof using.
+  unfold union. eauto.
+Qed.
+
+Lemma prove_rel_union_right : forall A (R1 R2 : binary A) x y,
+  R2 x y ->
+  union R1 R2 x y.
+Proof using.
+  unfold union. eauto.
+Qed.
+
+Lemma union_covariant : forall A (R1 R2 S1 S2 : binary A),
+  incl R1 S1 ->
+  incl R2 S2 ->
+  incl (union R1 R2) (union S1 S2).
+Proof using.
+  unfold incl, union. intuition eauto.
+Qed.
+
+Lemma union_refl_left : forall A (R S : binary A),
+  refl R ->
+  refl (union R S).
+Proof using.
+  unfold refl, union. eauto.
+Qed.
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of inclusion *)
 
-(* TEMPORARY there is something by the same name in [LibBag]. *)
+(* TODO change hypothesis names in proofs *)
+(* TODO decide whether to use a tactic exploit functional *)
+
+(* TODO there is something by the same name in [LibBag]. *)
 Lemma incl_refl : forall A (R:binary A), incl R R.
 Proof using. unfolds incl. auto. Qed.
 
@@ -386,6 +450,44 @@ Proof using.
   introv I1 I2. intros [x1 x2] [y1 y2] [H1|[H1 H2]].
   left~. subst. right~.
 Qed.
+
+(* If [R] is defined, [S] is functional, and [R] is a subset of [S],
+   then [R] equals [S]. In that case, [R] and [S] represent the graph
+   of a total function. *)
+
+Lemma defined_incl_functional:
+  forall (A : Type) (R S : binary A),
+  defined R ->
+  functional S ->
+  incl R S ->
+  R = S.
+Proof using.
+  introv hdef hfun hincl. eapply binary_extensional. intros v w. split; intros H; eauto.
+  forwards [ w' M1 ]: hdef v.
+  forwards M2: hincl. eauto.
+  forwards: hfun H M2. subst*.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Inclusion between a function and a relation. *)
+
+(* If the relation [R] is functional and if [f] is included in [R],
+   then [R] is included in [f], i.e., they coincide. *)
+
+(* TODO: currently limited to the case where B = A, but it shouldn't be *)
+
+Lemma incl_fr_functional:
+  forall A (f : A -> A) (R : A -> A -> Prop),
+  incl_fr f R ->
+  functional R ->
+  incl_rf R f.
+Proof.
+  introv h1 h2. intros a b H. forwards M: h1 a. forwards*: h2 H M.
+Qed.
+
+(* Note: [incl_fr f R] implies [defined R]
+         [incl_rf R f] implies [functional R] *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -511,6 +613,8 @@ Qed.
 (**************************************************************************)
 (* * Closures *)
 
+(* TODO: eliminate the use of the section variable R *)
+
 Section Closures.
 Variables (A : Type) (R : binary A).
 
@@ -549,18 +653,6 @@ Inductive stclosure (A:Type) (R:binary A) : binary A :=
   | stclosure_trans : forall y x z,
       stclosure R x y -> stclosure R y z -> stclosure R x z.
 
-(* TODO Reflexive-symmetric-transitive closure ( R== ) 
-
-Inductive equiv : binary A :=
-  | equiv_step : forall x y,
-      R x y -> equiv x y
-  | equiv_refl : forall x,
-      equiv x x
-  | equiv_sym : forall x y, 
-      equiv x y -> equiv y x
-  | equiv_trans : forall y x z,
-      equiv x y -> equiv y z -> equiv x z.
-*)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -651,6 +743,19 @@ Qed.
 
 End Closures.
 
+(** Star induction principle with transitivity hypothesis *)
+
+Lemma tclosure_ind_trans : forall A (R:binary A) (P : A -> A -> Prop),
+  (forall x y : A, R x y -> P x y) ->
+  (forall y x z : A, tclosure R x y -> P x y -> tclosure R y z -> P y z -> P x z) ->
+  forall x y : A, tclosure R x y -> P x y.
+Proof using.
+  Hint Resolve tclosure_once.
+  introv Hstep Htrans S. inverts S as HR S. gen x. induction S; introv HR.
+    autos*.
+    applys* Htrans. constructors*.
+Qed.
+
 Hint Resolve rtclosure_refl rtclosure_step rtclosure_once : rtclosure.
 (* TODO: should rename and complete the [closure] database *)
 (* TODO: should not need to re-export the following version *)
@@ -668,3 +773,196 @@ Lemma stclosure_le : forall A (R1 R2 : binary A),
   incl R1 R2 -> incl (stclosure R1) (stclosure R2).
 Proof using. unfolds incl. introv Le H. induction* H. Qed.
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Additional definitions *)
+
+(* TODO: move above once section has been eliminated *)
+(* A theory of [rstclosure]. *)
+
+Inductive rstclosure (A : Type) (R : binary A) : binary A :=
+  | rstclosure_step : forall x y,
+      R x y -> rstclosure R x y
+  | rstclosure_refl : forall x,
+      rstclosure R x x
+  | rstclosure_sym : forall x y, 
+      rstclosure R x y -> rstclosure R y x
+  | rstclosure_trans : forall y x z,
+      rstclosure R x y -> rstclosure R y z -> rstclosure R x z.
+
+(** Symmetric closure *)
+
+Definition sclosure (A:Type) (R:binary A) : binary A :=
+  fun x y => R x y \/ R y x.
+
+(* ---------------------------------------------------------------------- *)
+(** ** Hints *)
+
+Hint Constructors tclosure : tclosure.
+Hint Constructors rstclosure : rstclosure.
+Hint Constructors stclosure : stclosure.
+Hint Unfold sclosure : sclosure.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Additional properties *)
+
+(* TODO: check name of lemmas below, and sort lemmas *)
+
+Lemma rtclosure_refl_contrapositive : forall A (R : binary A) x y,
+  ~ rtclosure R x y ->
+  x <> y.
+Proof using.
+  intros. intro. subst. eauto using rtclosure_refl.
+Qed.
+
+Lemma rtclosure_rstclosure : forall A (R : binary A) x y,
+  rtclosure R x y -> rstclosure R x y.
+Proof using.
+  induction 1; eauto with rstclosure.
+Qed.
+
+Lemma stclosure_rstclosure : forall A (R : binary A) x y,
+  stclosure R x y -> rstclosure R x y.
+Proof using.
+  induction 1; eauto with rstclosure.
+Qed.
+
+Lemma stclosure_is_rstclosure : forall A (R : binary A),
+  refl R ->
+  stclosure R = rstclosure R.
+Proof using.
+  intros. eapply binary_extensional. intros x y.
+  split; eauto using stclosure_rstclosure.
+  gen x y. induction 1; eauto with stclosure.
+Qed.
+
+Lemma refl_rstclosure : forall A (R : binary A),
+  refl (rstclosure R).
+Proof using.
+  unfold refl. eauto with rstclosure.
+Qed.
+
+Lemma rstclosure_covariant : forall A (R S : binary A),
+  incl R S ->
+  incl (rstclosure R) (rstclosure S).
+Proof using.
+  unfold incl. induction 2; eauto with rstclosure.
+Qed.
+
+Lemma rstclosure_inflationary: forall A (R : binary A),
+  incl R (rstclosure R).
+Proof using.
+  unfold incl. eauto with rstclosure.
+Qed.
+
+Lemma prove_rstclosure_incl : forall A (R S : binary A),
+  incl R (rstclosure S) ->
+  incl (rstclosure R) (rstclosure S).
+Proof using.
+  unfold incl. induction 2; eauto with rstclosure.
+Qed.
+
+Lemma rstclosure_union : forall A (R S : binary A),
+  incl (union (rstclosure R) (rstclosure S))
+       (rstclosure (union R S)).
+Proof using.
+  unfold incl, union. intros ? ? ? x y H. 
+  destruct H; gen x y;
+  induction 1; eauto with rstclosure.
+Qed.
+
+
+Lemma sym_sclosure : forall A (R : binary A),
+  sym (sclosure R).
+Proof.
+  unfold sym, sclosure. tauto.
+Qed.
+
+Lemma sclosure_is_a_closure_operator : forall A (R1 R2 : binary A),
+  incl R1 (sclosure R2) ->
+  incl (sclosure R1) (sclosure R2).
+Proof.
+  unfold sclosure, incl. introv h. introv H.
+  destruct H.
+  { eauto. }
+  { forwards M: h. eauto. destruct M; tauto. }
+Qed.
+
+Lemma sclosure_covariant : forall A (R1 R2 : binary A),
+  incl R1 R2 ->
+  incl (sclosure R1) (sclosure R2).
+Proof.
+  unfold sclosure, incl. introv M H. destruct H; eauto.
+Qed.
+
+Lemma rtclosure_covariant : forall A (R1 R2 : binary A),
+  incl R1 R2 ->
+  incl (rtclosure R1) (rtclosure R2).
+Proof.
+  unfold incl. induction 2; eauto with rtclosure.
+Qed.
+
+Lemma tclosure_covariant : forall A (R1 R2 : binary A),
+  incl R1 R2 ->
+  incl (tclosure R1) (tclosure R2).
+Proof.
+  unfold incl. inversion 2; subst. econstructor.
+  eauto.
+  eapply rtclosure_covariant; eauto.
+Qed.
+
+Lemma tclosure_last : forall A (R : binary A) y x z,
+  tclosure R x y -> R y z -> tclosure R x z.
+Proof using.
+  inversion 1; intros; subst.
+  eauto using rtclosure_last with tclosure.
+Qed.
+
+(* If a relation is symmetric, then so is its transitive closure. *)
+
+Lemma sym_rtclosure : forall A (R : binary A),
+  sym R ->
+  sym (rtclosure R).
+Proof.
+  unfold sym. induction 2; eauto using rtclosure_last with rtclosure.
+Qed.
+
+Lemma sym_tclosure : forall A (R : binary A),
+  sym R ->
+  sym (tclosure R).
+Proof.
+  unfold sym. inversion 2; subst. 
+  eapply tclosure_rtclosure_step.
+  eapply sym_rtclosure; eauto.
+  eauto.
+Qed.
+
+Lemma sclosure_incl_stclosure : forall A (R : binary A),
+  incl (sclosure R) (stclosure R).
+Proof.
+  unfold incl. inversion 1; eauto with stclosure.
+Qed.
+
+Lemma tclosure_incl_stclosure : forall A (R1 R2 : binary A),
+  incl R1 (stclosure R2) ->
+  incl (tclosure R1) (stclosure R2).
+Proof.
+  introv H M. induction M using tclosure_ind_trans.
+  applys* H.
+  applys* stclosure_trans.
+Qed.
+
+Lemma stclosure_is_tclosure_sclosure : forall A (R : binary A),
+  stclosure R = tclosure (sclosure R).
+Proof.
+  extens. intros x y. split.
+  { gen x y. induction 1.
+    { eauto with tclosure sclosure rtclosure. }
+    { eapply sym_tclosure. eapply sym_sclosure. eauto. }
+    { eapply tclosure_trans; eauto. }
+  }
+  { intros.
+    eapply tclosure_incl_stclosure; [ | eassumption ].
+    eapply sclosure_incl_stclosure. }
+Qed.

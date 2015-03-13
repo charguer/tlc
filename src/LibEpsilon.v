@@ -132,3 +132,67 @@ Tactic Notation "spec_epsilon" "*" "in" hyp(H) "as" ident(X) simple_intropattern
 Tactic Notation "spec_epsilon" "*" "in" hyp(H) "as" ident(X) :=
   spec_epsilon in H as X; auto_star.
 
+
+(* ********************************************************************** *)
+(** * Conversion from relations to functions *)
+
+Section Choose.
+
+(* Let [R] be an arbitrary binary relation at type [A -> B -> Prop]. *)
+
+Variable A B : Type.
+Variable R : A -> B -> Prop.
+Context `{IB:Inhab B}.
+
+(* We turn it into a function, which ostensibly is a total function of type
+   [A -> B], but in reality is well-defined only in the domain of [R]. *)
+
+Definition choose (a : A) : B :=
+  epsilon (fun b => R a b).
+
+(* TODO choose_spec and choose_unique could be reformulated using
+   incl_fr and incl_rf *)
+
+(* Every [a] in the domain of [R] is related by [R] with [choose a]. *)
+
+Lemma choose_spec:
+  forall a,
+  ~ (forall b, ~ R a b) ->
+  R a (choose a).
+Proof using IB.
+  intros.
+  (* Since [a] is not a root, it has a parent [b]. *)
+  forwards [ b ? ]: exists_from_not. eauto.
+  (* By definition of [choose], there follows that [choose a] is
+     well-defined, hence there is an edge from [a] to [choose a]. *)
+  unfold choose. eapply epsilon_spec. eauto.
+Qed.
+
+(* If the relation [R] is functional, then [choose a] is unique.
+   The existence of an edge from [a] to [b] implies that [b] is
+   [choose a]. *)
+
+Variable functional_R:
+  forall a b1 b2, R a b1 -> R a b2 -> b1 = b2.
+  (* TODO: use a definition of functional, and inline in the lemma below *)
+
+Lemma choose_unique:
+  forall a b,
+  R a b ->
+  choose a = b.
+Proof using IB functional_R. 
+  intros.
+  (* [R a b] implies that [a] is in the domain of [R].
+     Hence there is an edge from [a] to [choose a]. *)
+  forwards: choose_spec. rewrite not_forall_not. eauto.
+  (* The result follows from the hypothesis that [R] is functional. *)
+  eauto.
+Qed.
+
+End Choose.
+
+(* In the special case where [B] is [A], the inhabitation witness
+   can be constructed out of [a]. *)
+
+Definition choose_ A (R : A -> A -> Prop) (a : A) : A :=
+  @choose A A R (prove_Inhab a) a.

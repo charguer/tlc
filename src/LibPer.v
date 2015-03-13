@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibBool LibLogic LibRelation LibSet.
+Require Import LibTactics LibLogic LibBool LibLogic LibRelation LibBag LibSet.
 Module Rel := LibRelation.
 
 (* ********************************************************************** *)
@@ -115,4 +115,35 @@ Proof using.
   unfold Rel.union. unfold per_dom. unfold per_single.
   rewrite in_union_eq. rewrite in_single_eq. do 2 rewrite in_set. 
   intuition. 
+Qed.
+
+(* TODO: rename lemma *)
+Lemma prove_per_single : forall A (x y : A),
+  (per_single x y) x y.
+Proof using.
+  unfold per_single. eauto.
+Qed.
+
+(* TODO: move instance *)
+Global Instance binary_incl : forall A, BagIncl (binary A).
+Proof. constructor. rapply (@LibRelation.incl A). Defined.
+
+
+Lemma per_add_edge_covariant : forall A (B1 B2 : binary A) x y,
+  incl B1 B2 ->
+  incl (per_add_edge B1 x y) (per_add_edge B2 x y).
+Proof using.
+  unfold binary_incl. unfold per_add_edge.
+  (* TODO: was     eauto using stclosure_le, union_covariant. *)
+  introv M. applys stclosure_le. applys* union_covariant.
+Qed.
+
+Lemma per_add_edge_symmetric : forall A (B : binary A) x y,
+  per_add_edge B y x = per_add_edge B x y.
+Proof.
+  unfold per_add_edge. intros.
+  (* If two relations have the same symmetric closure, then
+     they have the same symmetric-transitive closure. *)
+  do 2 rewrite stclosure_is_tclosure_sclosure. f_equal.
+  unfold sclosure, Rel.union, per_single. extens. tauto.
 Qed.

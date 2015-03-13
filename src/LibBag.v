@@ -490,3 +490,6 @@ Qed.
 
 
 
+
+
+(* TODO maybe define an instance of BagUpdate for functions *)

@@ -241,6 +241,9 @@ Axiom map_indom_update_already_inv : forall A `{Inhab B} (m:map A B) (i j:A) (v:
 Global Opaque binds_inst. 
 
 
+Axiom map_update_read_if : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
+  (m\(i:=v))\(j) = If i = j then v else m\(j).
+
 Lemma binds_update_neq_iff: forall A `{Inhab B} i j v w (M:map A B),
   j \notin (dom M : set _) ->
   (binds M i v <-> binds (M\(j:=w)) i v).
@@ -349,3 +352,21 @@ Proof using.
 Qed.
 
 End Instances.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties *)
+
+(* The following lemma is actually not used, because [discriminate] does the
+   job. Perhaps this will fail someday if [binds] becomes opaque? *)
+
+(* TODO use an instance *)
+
+Goal
+  forall A B a b,
+  binds (\{} : map A B) a b ->
+  False.
+Proof using.
+  intros. discriminate. (* ? *)
+Qed.
+
