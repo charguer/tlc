@@ -55,13 +55,15 @@ QUIET := 2>&1 | (grep -v "Checking task" || true)
 ifndef SERIOUS
 
 %.vo: %.vio
-	$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* $(QUIET)
+	@echo "Compiling $*..."
+	@$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* $(QUIET)
 
 %.vio: %.v
 	$(COQC) $(COQINCLUDE) -quick $<
 
 %.vq: %.vio
-	$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< $(QUIET)
+	@echo "Checking $*..."
+	@$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< $(QUIET)
 	@touch $@
 # TEMPORARY
 # I think we are missing dependencies: %.vq should depend on other %.vio
