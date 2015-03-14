@@ -49,6 +49,10 @@ QUIET := 2>&1 | (grep -v "Checking task" || true)
 ############################################################################
 # Rules
 
+# If B uses A, then the dependencies produced by coqdep are:
+# B.vo:  B.v A.vo
+# B.vio: B.v A.vio
+
 %.v.d: %.v
 	$(COQDEP) $(COQINCLUDE) $< > $@
 
@@ -65,9 +69,6 @@ ifndef SERIOUS
 	@echo "Checking $*..."
 	@$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< $(QUIET)
 	@touch $@
-# TEMPORARY
-# I think we are missing dependencies: %.vq should depend on other %.vio
-# files.
 
 endif
 
