@@ -115,22 +115,3 @@ clean::
 	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob
 	rm -rf .coq-native .coqide
 
-############################################################################
-############################################################################
-# Notes
-
-# Later: checking
-#
-# ifndef VK
-# 	VK := $(patsubst %.v,%.vk,$(V))
-# endif
-#
-# check: $(VK)
-#
-#%.vk: %.vo
-#	$(COQCHK) $(COQINCLUDE) $<
-#
-#
-# We patch coqdep using sed so that it returns dependencies from vo to vio (and not to vo).
-# Used to replace dependency from vo to vio
-# 	@sed -i -e "s/^\(.*\)\.vo\(.*\):/\1TEMPORARYvo\2:/g" -e "s/\.vo/.vio/g" -e "s/TEMPORARYvo/.vo/g" $@ 
