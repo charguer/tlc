@@ -49,23 +49,26 @@ QUIET := 2>&1 | (grep -v "Checking task" || true)
 ############################################################################
 # Rules
 
+# If B uses A, then the dependencies produced by coqdep are:
+# B.vo:  B.v A.vo
+# B.vio: B.v A.vio
+
 %.v.d: %.v
 	$(COQDEP) $(COQINCLUDE) $< > $@
 
 ifndef SERIOUS
 
 %.vo: %.vio
-	$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* $(QUIET)
+	@echo "Compiling $*..."
+	@$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* $(QUIET)
 
 %.vio: %.v
 	$(COQC) $(COQINCLUDE) -quick $<
 
 %.vq: %.vio
-	$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< $(QUIET)
+	@echo "Checking $*..."
+	@$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< $(QUIET)
 	@touch $@
-# TEMPORARY
-# I think we are missing dependencies: %.vq should depend on other %.vio
-# files.
 
 endif
 
@@ -112,22 +115,3 @@ clean::
 	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob
 	rm -rf .coq-native .coqide
 
-############################################################################
-############################################################################
-# Notes
-
-# Later: checking
-#
-# ifndef VK
-# 	VK := $(patsubst %.v,%.vk,$(V))
-# endif
-#
-# check: $(VK)
-#
-#%.vk: %.vo
-#	$(COQCHK) $(COQINCLUDE) $<
-#
-#
-# We patch coqdep using sed so that it returns dependencies from vo to vio (and not to vo).
-# Used to replace dependency from vo to vio
-# 	@sed -i -e "s/^\(.*\)\.vo\(.*\):/\1TEMPORARYvo\2:/g" -e "s/\.vo/.vio/g" -e "s/TEMPORARYvo/.vo/g" $@ 
