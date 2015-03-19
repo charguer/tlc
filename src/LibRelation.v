@@ -482,7 +482,7 @@ Lemma incl_fr_functional:
   incl_fr f R ->
   functional R ->
   incl_rf R f.
-Proof.
+Proof using.
   introv h1 h2. intros a b H. forwards M: h1 a. forwards*: h2 H M.
 Qed.
 
@@ -875,14 +875,14 @@ Qed.
 
 Lemma sym_sclosure : forall A (R : binary A),
   sym (sclosure R).
-Proof.
+Proof using.
   unfold sym, sclosure. tauto.
 Qed.
 
 Lemma sclosure_is_a_closure_operator : forall A (R1 R2 : binary A),
   incl R1 (sclosure R2) ->
   incl (sclosure R1) (sclosure R2).
-Proof.
+Proof using.
   unfold sclosure, incl. introv h. introv H.
   destruct H.
   { eauto. }
@@ -892,21 +892,21 @@ Qed.
 Lemma sclosure_covariant : forall A (R1 R2 : binary A),
   incl R1 R2 ->
   incl (sclosure R1) (sclosure R2).
-Proof.
+Proof using.
   unfold sclosure, incl. introv M H. destruct H; eauto.
 Qed.
 
 Lemma rtclosure_covariant : forall A (R1 R2 : binary A),
   incl R1 R2 ->
   incl (rtclosure R1) (rtclosure R2).
-Proof.
+Proof using.
   unfold incl. induction 2; eauto with rtclosure.
 Qed.
 
 Lemma tclosure_covariant : forall A (R1 R2 : binary A),
   incl R1 R2 ->
   incl (tclosure R1) (tclosure R2).
-Proof.
+Proof using.
   unfold incl. inversion 2; subst. econstructor.
   eauto.
   eapply rtclosure_covariant; eauto.
@@ -924,14 +924,14 @@ Qed.
 Lemma sym_rtclosure : forall A (R : binary A),
   sym R ->
   sym (rtclosure R).
-Proof.
+Proof using.
   unfold sym. induction 2; eauto using rtclosure_last with rtclosure.
 Qed.
 
 Lemma sym_tclosure : forall A (R : binary A),
   sym R ->
   sym (tclosure R).
-Proof.
+Proof using.
   unfold sym. inversion 2; subst. 
   eapply tclosure_rtclosure_step.
   eapply sym_rtclosure; eauto.
@@ -940,14 +940,14 @@ Qed.
 
 Lemma sclosure_incl_stclosure : forall A (R : binary A),
   incl (sclosure R) (stclosure R).
-Proof.
+Proof using.
   unfold incl. inversion 1; eauto with stclosure.
 Qed.
 
 Lemma tclosure_incl_stclosure : forall A (R1 R2 : binary A),
   incl R1 (stclosure R2) ->
   incl (tclosure R1) (stclosure R2).
-Proof.
+Proof using.
   introv H M. induction M using tclosure_ind_trans.
   applys* H.
   applys* stclosure_trans.
@@ -955,7 +955,7 @@ Qed.
 
 Lemma stclosure_is_tclosure_sclosure : forall A (R : binary A),
   stclosure R = tclosure (sclosure R).
-Proof.
+Proof using.
   extens. intros x y. split.
   { gen x y. induction 1.
     { eauto with tclosure sclosure rtclosure. }

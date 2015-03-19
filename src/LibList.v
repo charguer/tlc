@@ -699,8 +699,8 @@ Proof using.
     asserts N: (forall A B (f:A->B) (x y:A), x = y -> f x <> f y -> False).
       introv Q D. apply D. apply M. auto.
     applys N (@length A) E.
-    rewrite length_take. skip. skip. skip. (*TODO: under construction *)
-Admitted.
+    rewrite length_take. admit. admit. admit. (*TODO: under construction *)
+Qed.
 
 (* end hide *)
 

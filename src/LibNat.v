@@ -239,7 +239,7 @@ Proof using.
   do 2 (destruct m; try solve [omega]).
   do 2 destruct~ m. simpl. cuts~: (div2 m < S n). apply H.
   nat_math. nat_math. auto. 
-*) skip.
+*) admit.
 Qed.
 
 Lemma div2_grows : forall n m, m <= n -> div2 m <= div2 n.

@@ -96,7 +96,7 @@ Implicit Arguments order_antisym [A R o x y].
 Coercion order_to_preorder (A:Type) (R:binary A) 
   (O:order R) : preorder R.
 Proof using. destruct* O.
-skip.
+admit.
 (* TODO *)
 Qed.
 
@@ -153,7 +153,7 @@ Qed.
 Coercion total_order_to_total_preorder (A:Type) (R:binary A) 
   (O:total_order R) : total_preorder R.
 Proof using. destruct* O.
-skip.
+admit.
 (*TODO*)
  Qed.
 
@@ -265,11 +265,10 @@ Lemma strict_order_strict : forall (A:Type) (R:binary A),
   order R -> strict_order (strict R).
 Proof using.
   introv [Re As Tr]. unfold strict. constructor; intros_all; simpls.
-  destruct* H. 
-  applys* antisym_elim.
-  split. applys* As. intros_all. subst. applys* antisym_elim.
-Admitted.
-(* NEWCOQ_BUG *)
+  destruct* H.
+  applys* antisym_elim x y.
+  split. applys* As. intros E. subst. applys* antisym_elim y z.
+Qed.
 
 Lemma order_from_strict : forall (A:Type) (R:binary A),
   strict_order R -> order (large R).
@@ -841,7 +840,7 @@ Proof using.
   branches (total_order_lt_or_eq_or_gt le_total_order x y).
   hnf in *; autos*.
 *)
-skip.
+admit.
 (*TODO*)
 Qed.
 
@@ -858,7 +857,7 @@ Proof using.
   branches (total_order_le_or_gt le_total_order x y);
   hnf in *; autos*.
 *)
-skip.
+admit.
 (*TODO*)
 Qed.
 
@@ -869,7 +868,7 @@ Proof using.
   branches (total_order_lt_or_ge le_total_order x y);
   hnf in *; autos*. 
 *)
-skip.
+admit.
 (*TODO*)
 Qed.
 

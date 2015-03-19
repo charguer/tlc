@@ -163,7 +163,7 @@ Lemma fold_union : forall B (m:monoid_def B) (f:A->B) (E F : set A),
   fold m f (E \u F) = monoid_oper m (fold m f E) (fold m f F).
 Proof using.
   intros. unfold fold, fold_inst, fold_impl.
-  skip. (* todo: under development *)
+  admit. (* todo: under development *)
 Qed.
 
 Global Instance set_in_empty_inst : In_empty_eq (A:=A) (T:=set A).

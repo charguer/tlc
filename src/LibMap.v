@@ -137,8 +137,8 @@ Lemma dom_empty_inv : forall A B (M : map A B),
 Proof using.
   intros A B M. simpl. unfold dom_impl, empty_impl.
   intro H.
-  (* todo: use lemma above and binds_dom *)
-Admitted.
+  admit.   (* todo: use lemma above and binds_dom *)
+Qed.
 
 
 End Properties.
@@ -159,7 +159,7 @@ Lemma dom_update_in_variant:
   D = dom M ->
   x \in D ->
   D = dom M'.
-Proof.
+Proof using.
   intros. subst. rewrite dom_update_in; eauto.
 Qed.
 
@@ -247,7 +247,7 @@ Axiom map_update_read_if : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
 Lemma binds_update_neq_iff: forall A `{Inhab B} i j v w (M:map A B),
   j \notin (dom M : set _) ->
   (binds M i v <-> binds (M\(j:=w)) i v).
-Proof.
+Proof using.
   split; intros.
   { eapply binds_update_neq; [ | eauto ].
     assert (i \indom M). { eapply binds_index; eauto. }
@@ -259,7 +259,7 @@ Lemma binds_update_analysis: forall A B i j v w (M:map A B),
   binds (M\(j:=w)) i v ->
   i <> j /\ binds M i v \/
   i = j /\ v = w.
-Proof.
+Proof using.
   intros.
   forwards [ ? ? ]: binds_inv. (* COQBUG eexact H. *)
 Admitted.
@@ -269,7 +269,7 @@ Lemma binds_update_indom_iff:
   (a2 <> a1 /\ binds M a2 b2 \/ a2 = a1 /\ b2 = b1)
   <->
   binds (M\(a1:=b1)) a2 b2.
-Proof.
+Proof using.
   split. introv [ [ ? ? ] | [ ? ? ] ].
   { eauto using binds_update_neq. }
   { subst. eapply binds_update_eq. }

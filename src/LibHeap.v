@@ -147,11 +147,13 @@ Implicit Arguments empty [[K] [V]].
 
 
 Section HeapAxioms.
-Context `{Comparable K} `{Inhab V}.
+Context `{HK: Comparable K} `{IV: Inhab V}.
 Implicit Types h : heap K V.
+(* TODO: do the right proof using *)
 
 Lemma indom_equiv_binds : forall h k,
   indom h k = (exists v, binds h k v).
+Proof using.
 Admitted.
 
 Lemma dom_empty :
@@ -160,32 +162,35 @@ Proof using. auto. Qed.
 
 Lemma binds_equiv_read : forall h k,
   indom h k -> (forall v, (binds h k v) = (read h k = v)).
+Proof.
 Admitted.
 
 Lemma dom_write : forall h r v,
   dom (write h r v) = dom h \u \{r}.
-Proof using. intros. unfold dom, write. rew_list. auto. Qed.
+Proof. intros. unfold dom, write. rew_list. auto. Qed.
 
 Lemma binds_write_eq : forall h k v,
   binds (write h k v) k v.
-Proof using. unfolds @binds, @write. intros. constructors. Qed.
+Proof. unfolds @binds, @write. intros. constructors. Qed.
 
 Lemma binds_write_neq : forall h k v k' v',
   binds h k v -> k <> k' -> 
   binds (write h k' v') k v.
-Proof using. unfolds @binds, @write. intros. constructors~. Qed.
+Proof. unfolds @binds, @write. intros. constructors~. Qed.
 
 Lemma binds_write_inv : forall h k v k' v',
   binds (write h k' v') k v -> 
   (k = k' /\ v = v') \/ (k <> k' /\ binds h k v). 
-Proof using. unfolds @binds, @write. introv M. inverts* M. Qed.
+Proof. unfolds @binds, @write. introv M. inverts* M. Qed.
 
 Lemma binds_rem : forall h k k' v,
   binds h k v -> k <> k' -> binds (rem h k') k v.
+Proof using HK.
 Admitted.
 
 Lemma binds_rem_inv : forall h k v k',
   binds (rem h k') k v -> k <> k' /\ binds h k v.
+Proof using HK.
 Admitted.
 
 (* TODO: need to add the instance BagRemove to LibSet
@@ -196,12 +201,13 @@ For now, we used this derived form:
 
 Lemma not_indom_rem : forall h k,
   ~ indom (rem h k) k.
+Proof using HK.
 Admitted. (* TODO: prove *)
 
 
 Lemma binds_equiv_read_option : forall h k v,
   (binds h k v) = (read_option h k = Some v).
-Proof using.
+Proof.
   unfolds @binds. introv. extens.
   induction h as [|(x&v0)].
    splits ; intro N ; invert* N.
@@ -214,7 +220,7 @@ Qed.
 
 Lemma not_indom_equiv_read_option : forall h k,
   (~ indom h k) = (read_option h k = None).
-Proof using.
+Proof.
   introv. apply* not_cancel. rew_logic. rewrite indom_equiv_binds.
   splits ; intro N.
    lets (v & B): rm N.
@@ -226,7 +232,7 @@ Qed.
 
 Lemma read_option_def : forall h k,
   read_option h k = (If indom h k then Some (read h k) else None).
-Proof using.
+Proof.
   introv. cases_if.
    rewrite* <- binds_equiv_read_option. rewrite* binds_equiv_read.
    rewrite* <- not_indom_equiv_read_option.
@@ -245,7 +251,7 @@ Definition indom_dec `{Comparable K} V (h:heap K V) (k:K) : bool :=
 
 Lemma indom_dec_spec : forall `{Comparable K} V (h:heap K V) k, 
   indom_dec h k = isTrue (indom h k).
-Proof using.
+Proof.
   intros. unfold indom, dom, indom_dec.
   induction h as [|[k' v'] h]; simpl.
   rewrite in_empty_eq. rew_refl~. 
@@ -257,7 +263,7 @@ End HeapAxioms.
 
 Lemma indom_decidable : forall `{Comparable K} V (h:heap K V) k,
   Decidable (indom h k).
-Proof using.
+Proof.
   intros. applys decidable_make (indom_dec h k).
   applys indom_dec_spec.
 Qed.

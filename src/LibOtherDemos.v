@@ -358,7 +358,7 @@ Lemma test_pick_fresh :
   forall (x y z : var) (L1 L2 L3 : vars) (t1 t2 : trm), True.
 Proof using.
   intros. pick_fresh a.
-Admitted.
+Admitted. (* demo *)
 
 End LibVarDemo.
 End LibVarDemos.

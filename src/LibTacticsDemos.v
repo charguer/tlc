@@ -723,7 +723,7 @@ Parameter lemma_hide : forall n, n + 0 = n.
 Lemma demo_hide_hyps : forall x:nat, x + 0 = x.
 Proof using.
   intros.
-  (* Any term admits the type [Something] *)
+  (* Any term has the type [Something] *)
   generalize (lemma_hide : Something). intros H.
   generalize (lemma_hide : Something). intros H'.
   (* [show_hyp H] unfolds the definition of [Something] *)
@@ -755,7 +755,7 @@ Proof using.
   hide_def y.
   unfold y.
   show_def.
-Admitted.
+Admitted. (* demo *)
 
 Lemma demo_hide_generic : forall x:nat, 
    let y := x + x + x + x in let z := y in y + 0 = y.
@@ -791,7 +791,7 @@ Proof using.
   show_term.
   (* typically used in a pattern matching *)
   match goal with |- ?T = _ => hide_term T end.
-Admitted.
+Admitted. (* demo *)
 
 Lemma demo_clears : forall (x y z : nat) (A B : Prop),
   (x > 0) ->
@@ -836,12 +836,12 @@ Lemma demo_skip : forall n m p : nat,
   n > m -> m >= p -> n > p.
 Proof using.
   intros. dup 6. 
-  (* [skip H: E] is used to admit a new fact *)
+  (* [skip H: E] is used to accept a new fact *)
   skip R1: (m = m). skip.
   skip R1 R2: (m = m /\ n > m+1). skip.
   skip q Q: (exists q, q > p). skip.
   skip: (m <> n). skip.
-  (* [skip_rewrite E] is used to admit a fact E and rewrite it *)
+  (* [skip_rewrite E] is used to accept a fact E and rewrite it *)
   skip_rewrite (m = n) in H0. skip.
   (* [skip_induction] is used to do an induction and cheat on the
      induction hypothesis, by having it as strong as the initial goal *)
@@ -857,7 +857,7 @@ Proof using.
      which forbits [Qed] to be written at the end of the proof *)
   skip'.
   skip'.
-Admitted.
+Admitted. (* demo *)
 
 
 (* ********************************************************************** *)
@@ -1059,7 +1059,7 @@ Proof using.
      evars should be introduced in place of arguments;
      the indices are to be counted from the right. *)
   equates 2. skip. skip.
-Admitted.
+Admitted. (* demo *)
 
 Lemma demo_equates_non_dep : forall (P:nat->nat->nat->Prop) x y z,
   P x y z.
@@ -1071,7 +1071,7 @@ Proof using.
   (* multiple [equates] are allowed *)
   equates 1 2. skip. skip. skip.
   equates (>> 1 2). skip. skip. skip.
-Admitted.
+Admitted. (* demo *)
 
 Lemma demo_equates_dep : forall (P:nat->forall A, A->Prop) x (T:Type) z,
   P x T z.
@@ -1082,7 +1082,7 @@ Proof using.
   try equates 2.
   equates 3. skip. skip.
   equates 1 3. skip. skip. skip.
-Admitted.
+Admitted. (* demo *)
 
 
 (* ********************************************************************** *)
@@ -1176,7 +1176,7 @@ Proof using.
   (* [exists___] without arguments is the same as [exists __ ... __].
      Contrary to [exists ___], it does not unfold definitions. *)
   exists___. skip.
-Admitted.
+Admitted. (* demo *)
 
 
 (* ********************************************************************** *)

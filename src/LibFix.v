@@ -1027,7 +1027,7 @@ Proof using.
   exists (Build_partial f P). destruct Fixf as [Fixf _]. split~. 
   unfolds in Fixf. intros [f' P']. simpls. rewrite~ Equ.
 TODO: COQBUG : compiles in coqide but not with coqc *)
-skip.
+admit.
 Qed.
 
 (** Moreover, we prove that such a unique fixed point is 
@@ -1247,7 +1247,7 @@ Proof using.
      intros [f' P']. simpls~.
     intros. apply~ (Qf (i,x)).
 *)
-skip.
+admit.
 Qed.
 
 (** General consistency of a fixed point *)
@@ -2041,7 +2041,7 @@ Lemma FixFun3_fix_partial : forall A1 A2 A3 (R:binary (A1*A2*A3)) (P:A1->A2->A3-
     (forall y1 y2 y3, P y1 y2 y3 -> R (y1,y2,y3) (x1,x2,x3) -> f1 y1 y2 y3 = f2 y1 y2 y3) ->
      F f1 x1 x2 x3 = F f2 x1 x2 x3) ->
   (forall x1 x2 x3, P x1 x2 x3 -> f x1 x2 x3 = F f x1 x2 x3).
-Admitted. (* TODO: copy-paste the above *)
+Admitted. (* TODO: same as above, only the arity changes *)
 
 Implicit Arguments FixFun3_fix_partial [A1 A2 A3 B IB F f].
 
@@ -2056,7 +2056,7 @@ Lemma FixFun4_fix_partial : forall A1 A2 A3 A4 (R:binary (A1*A2*A3*A4)) (P:A1->A
     (forall y1 y2 y3 y4, P y1 y2 y3 y4 -> R (y1,y2,y3,y4) (x1,x2,x3,x4) -> f1 y1 y2 y3 y4 = f2 y1 y2 y3 y4) ->
      F f1 x1 x2 x3 x4 = F f2 x1 x2 x3 x4) ->
   (forall x1 x2 x3 x4, P x1 x2 x3 x4 -> f x1 x2 x3 x4 = F f x1 x2 x3 x4).
-Admitted.
+Admitted. (* TODO: same as above, only the arity changes *)
 
 Implicit Arguments FixFun4_fix_partial [A1 A2 A3 A4 B IB F f].
 
@@ -2071,7 +2071,7 @@ Lemma FixFun5_fix_partial : forall A1 A2 A3 A4 A5 (R:binary (A1*A2*A3*A4*A5)) (P
     (forall y1 y2 y3 y4 y5, P y1 y2 y3 y4 y5 -> R (y1,y2,y3,y4,y5) (x1,x2,x3,x4,x5) -> f1 y1 y2 y3 y4 y5 = f2 y1 y2 y3 y4 y5) ->
      F f1 x1 x2 x3 x4 x5 = F f2 x1 x2 x3 x4 x5) ->
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5 -> f x1 x2 x3 x4 x5 = F f x1 x2 x3 x4 x5).
-Admitted.
+Admitted. (* TODO: same as above, only the arity changes *)
 
 Implicit Arguments FixFun5_fix_partial [A1 A2 A3 A4 A5 B IB F f].
 

@@ -501,7 +501,7 @@ Qed.
 Lemma div_2_parts : forall n n1 n2,
   n >= 4 -> n1 = Zdiv n 2 -> n2 = n - n1 ->
   2 <= n1 /\ n1 < n /\ 2 <= n2 /\ n2 < n.
-Proof using. skip. Qed. (*TODO: under construction *)
+Proof using. admit. Qed. (*TODO: under construction *)
 
 (* TODO: basic lemmas about abs.
    See library file Coq.ZArith.Znat *)
@@ -581,7 +581,7 @@ Lemma div2_bounds : forall m n,
   m = n / 2 -> 2 * m <= n /\ n <= 2 * m + 1.
 Proof using. 
   intros. forwards K: (Z_div_mod_eq n 2). math.
-  destruct (mod2_bound n). subst m. skip. (* TODO math. *)
+  destruct (mod2_bound n). subst m. admit. (* TODO math. *)
 Qed.
 
 Implicit Arguments div2_bounds [m n].

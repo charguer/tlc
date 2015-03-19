@@ -126,7 +126,7 @@ Qed.
 
 (* TODO: move instance *)
 Global Instance binary_incl : forall A, BagIncl (binary A).
-Proof. constructor. rapply (@LibRelation.incl A). Defined.
+Proof using. constructor. rapply (@LibRelation.incl A). Defined.
 
 
 Lemma per_add_edge_covariant : forall A (B1 B2 : binary A) x y,
@@ -140,7 +140,7 @@ Qed.
 
 Lemma per_add_edge_symmetric : forall A (B : binary A) x y,
   per_add_edge B y x = per_add_edge B x y.
-Proof.
+Proof using.
   unfold per_add_edge. intros.
   (* If two relations have the same symmetric closure, then
      they have the same symmetric-transitive closure. *)

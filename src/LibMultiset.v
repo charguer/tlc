@@ -123,13 +123,13 @@ Proof using.
 Qed.
 
 Global Instance multiset_card_empty : Card_empty (T:=multiset A).
-Proof using. skip. (*TODO: under construction *) Qed.
+Proof using. admit. (*TODO: under construction *) Qed.
 
 Global Instance multiset_card_single : Card_single (A:=A) (T:=multiset A).
-Proof using. skip. (*TODO: under construction *) Qed.
+Proof using. admit. (*TODO: under construction *) Qed.
 
 Global Instance multiset_card_union : Card_union (T:=multiset A).
-Proof using. skip. (*TODO: under construction *) Qed.
+Proof using. admit. (*TODO: under construction *) Qed.
 
 Global Instance multiset_empty_incl : Empty_incl (T:=multiset A).
 Proof using. 
@@ -162,8 +162,8 @@ Implicit Types E F : multiset A.
 
 Lemma foreach_empty : forall P,
   @foreach A (multiset A) _ P \{}. 
-Proof using. intros_all. Admitted.
-(* TODO: false* @in_empty. typeclass. *)
+Proof using. intros_all. 
+Admitted. (* TODO: false* @in_empty. typeclass. *)
 
 Lemma foreach_single : forall P X,
   P X -> @foreach A (multiset A) _ P (\{ X }). 
@@ -399,8 +399,8 @@ Proof using. intros. subst. apply permut_get_2. Qed.
 Lemma permut_tactic_simpl_incl : forall A (l1 l2 l3 l4:multiset A),
   (l1 \u l3) \c l4 ->
   (l1 \u (l2 \u l3)) \c (l2 \u l4).
-(* todo: reason on inclusion *)
-Admitted.
+Admitted. (* todo: reason on inclusion *)
+
 
 Ltac get_premut_tactic_simpl tt :=
   match goal with

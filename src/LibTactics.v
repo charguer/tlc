@@ -4508,7 +4508,9 @@ Tactic Notation "clears_last" constr(N) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Skipping subgoals *)
 
-(** The [skip] tactic can be used at any time to admit the current
+(** DEPRECATED: the new "admit" tactics now works fine.
+
+    The [skip] tactic can be used at any time to admit the current
     goal. Using [skip] is much more efficient than using the [Focus] 
     top-level command to reach a particular subgoal. 
 
@@ -4547,6 +4549,8 @@ Tactic Notation "skip" :=
    skip_with_axiom. 
 Tactic Notation "skip'" := 
    skip_with_existential. 
+Tactic Notation "admit" := 
+   skip. 
 
 (** [skip H: T] adds an assumption named [H] of type [T] to the 
     current context, blindly assuming that it is true.

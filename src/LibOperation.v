@@ -96,7 +96,7 @@ Lemma use_idempotent : forall i x y,
   y = i x ->
   i y = y.
   (* Expanded statement, for easier use by [eauto]. *)
-Proof.
+Proof using.
   intros. subst. eauto.
 Qed.
 

@@ -45,7 +45,7 @@ Program Definition update_impl A (t:array A) (i:int) (v:A) : array A :=
 Next Obligation.
   destruct t as [t [Wp Wd]]. constructor; unfold length; simpl.
   auto.
-  skip. (* todo: dom udpate *)
+  admit. (* todo: dom udpate *)
 Defined.
 
 Definition binds_impl A (t:array A) (i:int) (v:A) := 
