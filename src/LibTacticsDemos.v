@@ -857,7 +857,7 @@ Proof using.
      which forbits [Qed] to be written at the end of the proof *)
   skip'.
   skip'.
-Admitted. (* demo *)
+Admitted.
 
 
 (* ********************************************************************** *)
@@ -1071,7 +1071,7 @@ Proof using.
   (* multiple [equates] are allowed *)
   equates 1 2. skip. skip. skip.
   equates (>> 1 2). skip. skip. skip.
-Admitted. (* demo *)
+Admitted.
 
 Lemma demo_equates_dep : forall (P:nat->forall A, A->Prop) x (T:Type) z,
   P x T z.
@@ -1082,7 +1082,7 @@ Proof using.
   try equates 2.
   equates 3. skip. skip.
   equates 1 3. skip. skip. skip.
-Admitted. (* demo *)
+Admitted.
 
 
 (* ********************************************************************** *)
@@ -1176,7 +1176,7 @@ Proof using.
   (* [exists___] without arguments is the same as [exists __ ... __].
      Contrary to [exists ___], it does not unfold definitions. *)
   exists___. skip.
-Admitted. (* demo *)
+Admitted.
 
 
 (* ********************************************************************** *)
