@@ -755,7 +755,8 @@ Proof using.
   hide_def y.
   unfold y.
   show_def.
-Admitted. (* demo *)
+  demo.
+Qed. 
 
 Lemma demo_hide_generic : forall x:nat, 
    let y := x + x + x + x in let z := y in y + 0 = y.
@@ -791,7 +792,8 @@ Proof using.
   show_term.
   (* typically used in a pattern matching *)
   match goal with |- ?T = _ => hide_term T end.
-Admitted. (* demo *)
+  demo.
+Qed.
 
 Lemma demo_clears : forall (x y z : nat) (A B : Prop),
   (x > 0) ->
@@ -857,7 +859,7 @@ Proof using.
      which forbits [Qed] to be written at the end of the proof *)
   skip'.
   skip'.
-Admitted.
+Admitted. (* demo *)
 
 
 (* ********************************************************************** *)
@@ -1047,7 +1049,7 @@ Qed.
 
 Lemma demo_ereplace_working : forall (P:nat->nat->Prop) x y,
   (forall n, P n n) -> (x > 0 -> x = y) -> (x > 0) -> P x y.
-Proof using.
+Proof.
   introv H E L. dup 3.
   (* here, the hypothesis [P n n] cannot be applied directly *)
   try apply H.
@@ -1071,7 +1073,7 @@ Proof using.
   (* multiple [equates] are allowed *)
   equates 1 2. skip. skip. skip.
   equates (>> 1 2). skip. skip. skip.
-Admitted.
+Admitted. (* demo *)
 
 Lemma demo_equates_dep : forall (P:nat->forall A, A->Prop) x (T:Type) z,
   P x T z.
@@ -1082,7 +1084,7 @@ Proof using.
   try equates 2.
   equates 3. skip. skip.
   equates 1 3. skip. skip. skip.
-Admitted.
+Admitted. (* demo *)
 
 
 (* ********************************************************************** *)

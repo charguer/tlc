@@ -4540,17 +4540,24 @@ Ltac skip_with_existential :=
   match goal with |- ?G => 
     let H := fresh in evar(H:G); eexact H end.
 
+(* TO BE DEPRECATED: *)
 Variable skip_axiom : False. 
   (* To obtain a safe development, change to [skip_axiom : True] *)
 Ltac skip_with_axiom :=
   elimtype False; apply skip_axiom.
 
 Tactic Notation "skip" := 
-   skip_with_axiom. 
+  skip_with_axiom. 
 Tactic Notation "skip'" := 
-   skip_with_existential. 
+  skip_with_existential.
+   
+(* For backward compatibility *)
 Tactic Notation "admit" := 
-   skip. 
+  skip. 
+
+(** [demo] is like [admit] but it documents the fact that admit is intended *)
+Tactic Notation "demo" := 
+  skip. 
 
 (** [skip H: T] adds an assumption named [H] of type [T] to the 
     current context, blindly assuming that it is true.
