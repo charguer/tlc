@@ -93,7 +93,7 @@ Global Opaque dom_inst disjoint_inst.
 
 (** [index] *)
 
-Instance map_index : forall A B, BagIndex (map A B) A.
+Instance map_index : forall A B, BagIndex A (map A B).
 Proof using. intros. constructor. exact (fun m k => k \in (dom m : set A)). Defined.
 
 Lemma map_index_def : forall A B (m:map A B) k,
