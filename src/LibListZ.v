@@ -1,6 +1,6 @@
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* Lists accessed with integers instead of natural numbers                 *
+* Lists accessed with integers (not nat) and using LibBag typeclasses     *
 **************************************************************************)
 
 Set Implicit Arguments. 
@@ -9,6 +9,8 @@ Require Import LibTactics LibLogic LibOperation LibReflect
   LibProd LibNat LibInt LibOption LibWf.
 Require Export LibList LibNat.
 Require Import LibInt.
+Require Export LibBag.
+
 Open Local Scope comp_scope.
 
 
@@ -31,13 +33,13 @@ Ltac auto_tilde ::= eauto with maths.
 (** Functions *)
 
 Definition znth `{Inhab A} (i:int) (l:list A) :=
-  nth (abs i) l. 
+  If i < 0 then arbitrary else nth (abs i) l. 
 
 Definition zupdate (i:int) (v:A) (l:list A) :=
-  update (abs i) v l.
+  If i < 0 then l else LibList.update (abs i) v l.
 
 Definition zmake (n:int) (v:A) :=
-  make (abs n) v.
+  If n < 0 then arbitrary else make (abs n) v.
 
 (** Predicates *)
 
@@ -197,66 +199,96 @@ End Zindices.
 (* ---------------------------------------------------------------------- *)
 (** ** Typeclasses read & update operations, binds and index predicates *)
 
+(** Note: we also define [card] as [length], but we use [length] everywhere
+    in the specifications. *)
+
+Definition card_impl A (l:list A) : nat :=
+  length l.
+
 Definition read_impl `{Inhab A} (l:list A) (i:int) : A :=
   znth i l.
 
-Definition update_impl A (l:list A) (i:int) (v:A) : array A :=
+Definition update_impl A (l:list A) (i:int) (v:A) : list A :=
   zupdate i v l.
 
-Definition binds_impl A (l:list A) (i:int) (v:A) := 
+Definition binds_impl A (l:list A) (i:int) (v:A) : Prop := 
   ZNth i l v.
 
-Definition index_impl A (l:list A) (i:int) =:
-  index (length l) i.
+Definition index_impl A (l:list A) (i:int) : Prop :=
+  index (LibList.length l : int) i.
 
+Instance card_inst : forall A, BagCard (list A).
+ constructor. rapply (@card_impl A). Defined.
 Instance read_inst : forall `{Inhab A}, BagRead int A (list A).
  constructor. rapply (@read_impl A H). Defined.
 Instance update_inst : forall A, BagUpdate int A (list A).
   constructor. rapply (@update_impl A). Defined.
 Instance binds_inst : forall A, BagBinds int A (list A).
   constructor. rapply (@binds_impl A). Defined.
-Instance index_inst : forall A, BagIndex (list A) int.
+Instance index_inst : forall A, BagIndex int (list A).
   constructor. rapply (@index_impl A). Defined.
 
-Global Opaque array read_inst update_inst binds_inst index_inst.
+Global Opaque card_inst read_inst update_inst binds_inst index_inst.
 
 
 (* ---------------------------------------------------------------------- *)
 (** * Properties of zmake *)
 
+Section MakeProperties.
+Transparent read_inst.
+
 Lemma read_zmake : forall `{Inhab A} (i n:int) (v:A),
   index n i -> (zmake n v)\(i) = v.
 Proof using.
-nth_make
+  introv N. rewrite int_index_def in N. unfold zmake, read_inst, read_impl, znth.
+  case_if. math. simpl. case_if. math.
+  applys nth_make. forwards: Zabs_nat_lt i n; try math.
 Qed.
 
-Lemma length_zmake : forall A n (v:A),
-  length (zmake n v) = n.
+Lemma length_zmake : forall A (n:int) (v:A),
+  n >= 0 ->
+  length (zmake n v) = n :> int.
 Proof using.
-length_make
+  introv N. unfold zmake. case_if. math.
+  rewrite length_make. rewrite~ abs_pos.
 Qed.
+
+End MakeProperties.
 
 
 (* ---------------------------------------------------------------------- *)
 (** * Properties of update *)
 
-Lemma length_update : forall (l:list A) (i:int) (v:A),
+Section UpdateProperties.
+Transparent index_inst read_inst update_inst.
+
+Lemma length_update : forall A (l:list A) (i:int) (v:A),
   length (l\(i:=v)) = length l.
 Proof using.
-length_update
+  intros. unfold update_inst, update_impl, zupdate. simpl.
+  case_if. math. rewrite~ length_update.
 Qed.
 
 Lemma read_update_eq : forall `{Inhab A} (l:list A) (i:int) (v:A),
   index l i -> (l\(i:=v))\(i) = v.
 Proof using. 
-nth_update_eq
+  introv. unfold index_inst, index_impl, update_inst, update_impl, zupdate,
+    read_inst, read_impl, znth. simpl. introv N. rewrite int_index_def in N.
+  case_if. math.
+  rewrite~ nth_update_eq. apply nat_int_lt. rewrite abs_pos; try math.
 Qed.
 
 Lemma read_update_neq : forall `{Inhab A} (l:list A) (i j:int) (v:A),
   index l j -> (i <> j) -> (l\(i:=v))\(j) = l\(j).
 Proof using.
-nth_update_neq
+  introv. unfold index_inst, index_impl, update_inst, update_impl, zupdate,
+    read_inst, read_impl, znth. simpl. introv N E. rewrite int_index_def in N.
+  case_if. math. case_if. auto.
+  rewrite~ nth_update_neq. apply nat_int_lt. rewrite abs_pos; try math.
+    apply nat_int_neq. rewrite abs_pos; try math. rewrite abs_pos; try math.
 Qed.
+
+End UpdateProperties.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -308,35 +340,38 @@ Tactic Notation "rew_array" "*" "in" hyp(H) :=
 (** * Valid index predicate *)
 
 Section IndexProperties.
-Transparent Opaque array_index.
+Transparent index_inst.
 
 Lemma index_def : forall A (l:list A) i,
-  index l i = index (length l) i.
+  index l i = index (length l : int) i.
 Proof using. auto. Qed. 
 
-Lemma index_length_eq : forall A (l:list A) i,
-  index (length l) i -> index l i.
+Lemma index_length_unfold : forall A (l:list A) i,
+  index (length l : int) i -> index l i.
 Proof using. introv H. rewrite* index_def. Qed.
+
+Lemma index_length_eq : forall A (l:list A) (n:int) i,
+  index n i -> n = length l -> index l i.
+Proof using. intros. subst. rewrite~ index_def. Qed.
 
 Lemma index_bounds : forall A (l:list A) i,
   index l i = (0 <= i < length l).
 Proof using. auto. Qed. 
 
-Lemma index_prove : forall A (l:list A) i,
+Lemma index_bounds_impl : forall A (l:list A) i,
   0 <= i < length l -> index l i.
-Proof using. intros. rewrite~ index_def. Qed.
+Proof using. intros. rewrite~ index_bounds. Qed.
 
-Lemma index_length : forall A (l:list A) n i,
-  index n i -> n = length l -> index l i.
-Proof using. intros. subst. rewrite~ index_def. Qed.
-
-Lemma index_update : forall `{Inhab A} (l:list A) i j (v:A),
+Lemma index_update : forall A (l:list A) i j (v:A),
   index l i -> index (l\(j:=v)) i.
-Proof using. intros. rewrite index_def in *. rewrite length_update. Qed.
+Proof using. intros. rewrite index_def in *. rewrite~ length_update. Qed.
 
-Lemma index_zmake : forall `{Inhab A} n i (v:A),
+Lemma index_zmake : forall A n i (v:A),
   index n i -> index (zmake n v) i.
-Proof using. intros.  Qed.
+Proof using.
+  introv H. rewrite index_def. rewrite int_index_def in H.
+  rewrite~ length_zmake. math.
+Qed.
 
 End IndexProperties.
 
@@ -358,8 +393,8 @@ Parameter count_make : forall A (f:A->Prop) n v,
 *)
 
 Parameter zcount_update : forall `{Inhab A} (P:A->Prop) (l:list A) (i:int) v,
-  index i l ->
-  zcount P (l\(i:=v)) = zcount f l
+  index l i ->
+  zcount P (l\(i:=v)) = zcount P l
     - (If P (l\(i)) then 1 else 0)
     + (If P v then 1 else 0).
 
@@ -372,12 +407,12 @@ Parameter zcount_bounds : forall `{Inhab A} (l:list A) (P:A->Prop),
     [P] in the sequence. *)
 
 Lemma zcount_upto : forall `{Inhab A} (P:A->Prop) (l:list A) (n i:int) (v:A),
-  ~ P (l\(i)) -> P v -> index i n -> length l <= n ->
+  ~ P (l\(i)) -> P v -> index n i -> (length l <= n)%Z ->
   upto n (zcount P (l\(i:=v))) (zcount P l).
 Proof using.
-  introv Ni Pv Hi Le. forwards K: (count_bounds (l\(i:=v)) P). split.
+  introv Ni Pv Hi Le. forwards K: (zcount_bounds (l\(i:=v)) P). split.
   rewrite length_update in K. math.
-  lets M: (@count_update A _). rewrite M. clear M. 
+  lets M: (@zcount_update A _). rewrite M. clear M. 
   do 2 (case_if; tryfalse). math.
 Qed.
 

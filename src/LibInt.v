@@ -460,9 +460,20 @@ Proof using.
   rewrite Zabs_eq. math. math.
 Qed.
 
+(* TODO: make names below more uniform *)
+
 Lemma eq_int_nat : forall n m : nat,
   n = m :> int -> n = m :> nat.
 Proof using. math. Qed.
+
+Lemma nat_int_lt : forall (x y:nat),
+  (x:int) < (y:int) -> (x < y)%nat.
+Proof using. math. Qed.
+
+Lemma nat_int_neq : forall (x y:nat),
+  (x:int) <> (y:int) -> (x <> y)%nat.
+Proof using. math. Qed.
+
 
 Lemma succ_abs : forall n : int,
   n >= 0 -> S (abs n) = abs (1 + n) :> nat.

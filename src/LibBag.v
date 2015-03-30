@@ -30,7 +30,7 @@ Class BagRemove T K := { remove : T -> K -> T }.
 Class BagFold I F T := { fold : monoid_def I -> F -> T -> I }.
 Class BagCard T := { card : T -> nat }.
 Class BagDom T Ks := { dom : T -> Ks }.
-Class BagIndex T A := { index : T -> A -> Prop }.
+Class BagIndex A T := { index : T -> A -> Prop }.
 
 Definition notin `{BagIn A T} x m :=
   ~ (is_in x m).

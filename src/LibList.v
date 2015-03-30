@@ -191,13 +191,13 @@ Fixpoint nth_def (d:A) (n:nat) (l:list A) : A :=
 
 Definition nth := nth_def arbitrary.
 
-Fixpoint update (n:nat) (v:A) (l:list A) : list A :=
+Fixpoint update (n:nat) (v:A) (l:list A) {struct l} : list A :=
   match l with
-  | nil => arbitrary
+  | nil => nil
   | x::l' => 
      match n with
      | 0 => v::l'
-     | S n' => update n' v l'
+     | S n' => x::update n' v l'
      end
   end.
 
@@ -205,7 +205,7 @@ Fixpoint make (n:nat) (v:A) : list A :=
    match n with
    | 0 => nil
    | S n' => v :: make n' v
-   end
+   end.
 
 End Operations.
 
@@ -797,24 +797,40 @@ Implicit Arguments nth_succ [A [IA]].
 (* ---------------------------------------------------------------------- *)
 (** * Update *)
 
-Lemma length_update : forall (l:list A) (i:int) (v:A),
+Lemma length_update : forall A (l:list A) (i:nat) (v:A),
   length (update i v l) = length l.
 Proof using. 
-  intros. induction i.
+  intros. gen i. induction l; intros.
+  simple~.
+  destruct i as [|i'].
+    simpl. do 2 rewrite length_cons. auto.
+    simpl. do 2 rewrite length_cons. rewrite~ IHl.
 Qed.
 
-Lemma nth_update_eq : forall `{Inhab A} (l:list A) (i:int) (v:A),
+Lemma nth_update_eq : forall `{Inhab A} (l:list A) (i:nat) (v:A),
   (i < length l)%nat ->
   nth i (update i v l) = v.
 Proof using. 
-  intros. induction i.
+  introv N. gen l. induction i; intros.
+  destruct l.
+    simpl in N. rewrite length_nil in N. math.
+    simple~.
+  destruct l. 
+    simpl in N. rewrite length_nil in N. math.
+    simpl. rewrite nth_succ. rewrite~ IHi. rewrite length_cons in N. math.
 Qed.
 
-Lemma nth_update_neq : forall `{Inhab A} (l:list A) (i j:int) (v:A),
+Lemma nth_update_neq : forall `{Inhab A} (l:list A) (i j:nat) (v:A),
   (j < length l)%nat -> (i <> j) -> 
-  nth j (update i v l) -> nth j l.
+  nth j (update i v l) = nth j l.
 Proof using. 
-  intros. induction i.
+  introv. gen l i. induction j; introv B N.
+  destruct i.
+    false.
+    destruct l. rewrite length_nil in B. math. simple~.
+  destruct l. rewrite length_nil in B. math. destruct i.  
+    simpl. do 2 rewrite nth_succ. auto.
+    simpl. do 2 rewrite nth_succ. apply~ IHj. rewrite length_cons in B. math.
 Qed.
 
 
@@ -823,16 +839,19 @@ Qed.
 
 Lemma nth_make : forall `{Inhab A} (i n:nat) (v:A),
   (i < n)%nat -> nth i (make n v) = v.
-Proof using. 
-  introv E. induction n.
+Proof using.
+  introv. gen n; induction i; introv E.
+  destruct n. math. auto.
+  destruct n. math. simpl. rewrite nth_succ. rewrite~ IHi. math.
 Qed.
 
 Lemma length_make : forall A (n:nat) (v:A),
   length (make n v) = n.
 Proof using. 
   intros. induction n.
+  auto.
+  simpl. rewrite length_cons. math.
 Qed.
-
 
 
 (* ********************************************************************** *)
