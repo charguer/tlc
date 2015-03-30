@@ -2059,6 +2059,7 @@ Tactic Notation "replaces" constr(E) "at" constr(K) "with" constr(F) "in" hyp(H)
    fail to perform its task. (Note that, [changes] is implemented
    using [rewrite], meaning that it might perform additional 
    beta-reductions compared with the original [change] tactic. *)
+(* TODO: support "changes (E1 = E2)" *)
 
 Tactic Notation "changes" constr(E1) "with" constr(E2) "in" hyp(H) :=
   asserts_rewrite (E1 = E2) in H; [ reflexivity | ].
@@ -2352,6 +2353,8 @@ Tactic Notation "pi_rewrite" constr(E) "in" hyp(H) :=
 
 (* ---------------------------------------------------------------------- *)
 (** ** Proving equalities *)
+
+(** Note: current implementation only supports up to arity 5 *)
 
 (** [fequal] is a variation on [f_equal] which has a better behaviour
     on equalities between n-ary tuples. *)
@@ -4638,6 +4641,7 @@ Tactic Notation "skip_rewrite_all" constr(T) :=
     It is useful to try and set up a proof by induction
     first, and fix the applications of the induction hypotheses
     during a second pass on the Proof using.  *)
+(* TODO: deprecated *)
 
 Tactic Notation "skip_induction" constr(E) :=
   let IH := fresh "IH" in skip_goal IH; destruct E.
@@ -4863,9 +4867,8 @@ Tactic Notation "let_name_all" "as" ident(x) :=
 
 
 
-
-
-
+(* ---------------------------------------------------------------------- *)
+(* Bugfix for [f_equal] and [fequals]; only supports up to arity 5 *)
 
 Section FuncEq.
 Variables (A1 A2 A3 A4 A5 B : Type).

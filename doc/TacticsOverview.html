@@ -11,7 +11,7 @@ ol { margin-top: 0.8em; }
 
 <h2>Overview of the tactics from LibTactics</h2>
 
-<p><i>Arthur Charguéraud</i>
+<p><i>Arthur Charguraud</i>
 
 <h3>Notation</h3>
 
@@ -38,19 +38,28 @@ sets_eq X: E         (introduces a name X and an equality X = E, and replaces oc
 <h3>Proof structure</h3>
 
 <pre>
-false             (replaces the goal by "False", and try to solve it with contradiction and discriminate)
-false E           (proves any goal by contradiction, using an absurd term E)
-tryfalse          (proves a goal by contradiction or discriminate, or do nothing)
 asserts I: E      (asserts statement E as first subgoal, destruct E as I in the second goal)
 cuts I: E         (asserts statement E as second subgoal, destruct E as I in the first goal)
 put X: E          (define X to be a name for E, synonymous of pose)
 lets I: E         (adds an hypothesis I whose type is the type of E)
 lets I1 .. IN: E  (a shortand for "lets [I1[..IN]]: E", useful to decompose conjunctions)
+sets_let X        (finds the first let-binding in the goal and name its body X)
 </pre>
 
-<h3>N-ary constructions</h3>
+<h3>Absurd goals</h3>
 
 <pre>
+false             (replaces the goal by "False", and try to solve it with contradiction and discriminate)
+false E           (proves any goal by contradiction, using an absurd term E)
+tryfalse          (proves a goal by contradiction or discriminate, or do nothing)
+false_invert      (try to invert hypotheses to find one that contradicts the goal)
+tryfalse_invert   (same as "false_invert" but leaves the goal if it can't be solved)
+</pre>
+
+<h3>Logical constructs</h3>
+
+<pre>
+iff as I1 I2     (tactic to prove an equivalence)
 splits           (splits an N-ary conjunction into N goals)
 splits N         (same as above, but unfolds if necessary to obtain N branches)
 destructs E      (destructs an N-ary conjunction E into N hypotheses)
@@ -60,25 +69,42 @@ branches E       (case analysis on an N-ary disjunction E)
 exists E1 .. EN  (to provide witnesses to an N-ary existential goal, wildcards are supported)
 </pre>
 
-<h3>Inversion and induction</h3>
+<h3>Case analysis and inversion</h3>
 
 <pre>
+cases E as I          (case analysis on E, remembering the equality as H)
+case_if as I          (case analysis on the first "if" statement in the goal)
+cases_if as I         (similar to "case_if", but performs additional substitutions)
 inverts H             (inversion followed with substitution of freshly introduced variables)
 inverts keep H        (same as above, but H is not cleared)
-invert H as I1..IN    (same as inverts H, but allows to name produced hypotheses)
+inverts H as I1..IN   (same as inverts H, but allows to name produced hypotheses)
+invert H              (same as inverts H, but leaves hypotheses in the goal)
 inversions H          (faster implementation of inverts H, but might substitute too many variables)
+</pre>
+
+<h3>Induction and co-induction</h3>
+
+<pre>
 inductions_wf X: E H  (applies the well-founded induction principle for a particular well-founded relation)
+gen_eq X: E           (generalize X as E and add "X = E" as hypothesis in the goal, useful for induction)
+cofixs IH             (like "cofix IH" but tugs the coinduction hypothesis using tactic "clear_coind")
 </pre>
 
 <h3>Working with equalities</h3>
 
 <pre>
-substs            (improved implementation of subst – does not fail on circular equalities)
-fequals           (improved implementation of f_equal – calls congruence, and better on tuples)
-decides_equality  (improved implementation of decide equality – ability to unfold definitions)
+substs            (improved implementation of subst  does not fail on circular equalities)
+subst_hyp H       (substitutes the equality described by H; supports equality between tuples)
+intro_subst       (shorthand for "intro H; subst_hyp H")
+fequals           (improved implementation of f_equal  calls congruence, and better on tuples)
+fequals_rec       (recursively apply fequals)           
+changes E1 with E2(behaves like "change" but works better ---it does not silently fail)
+decides_equality  (improved implementation of decide equality  ability to unfold definitions)
 rewrite_all E     (rewrites E as many time as possible)
 asserts_rewrite E (rewrites with E and generates E as first subgoal)
 cuts_rewrite E    (rewrites with E and generates E as second subgoal)
+pi_rewrite E      (replace E with an evar that describes a proof term justifying the same proposition; useful to exploit proof irrelevance)
+equates i1 .. iN  (introduces evars for arguments of the goal [P x1 .. xK] at the specified indices)
 </pre>
 
 <h3>Simplification and unfolding</h3>
@@ -100,6 +126,7 @@ skip             (admits the current goal - works even if it contains existentia
 skip I: E        (adds an hypothesis I of type E to the context, and assume it is true)
 skip_cuts E      (replaces the current goal with an arbitrary new goal E)
 skip_rewrite E   (rewrites with the equality E, admitting the statement E)
+skip_goal IH     (adds the goal as hypothesis; useful for setting up inductions)
 sort             (reorders hypotheses to get all the propositions at the bottom of the goal)
 </pre>
 
@@ -111,6 +138,10 @@ sort             (reorders hypotheses to get all the propositions at the bottom 
 - these default bindings may be customized locally in a development
 </pre>
 
+<pre>
+jauto                 ([jauto] like [intuition eauto] but with cheaper and less complete version of [intuition])
+hint H1 .. HN         (add lemmas in the context, documenting them as local hints)
+</pre>
 
 <h3>Advanced instantiation mode</h3>
 
@@ -128,6 +159,12 @@ specializes H (>> E1 ... EN)
 
 forwards I: H                          (instantiates a lemma, then "forwards" it)
 forwards I: (>> H E1 ... EN) 
+
+rewrites (>> H E1 ... EN)              (instantiates a lemma, then rewrite with it)
+
+applys_to H E                          (like: "lets H: (E H)")
+
+applys_eq H i1 .. iN                   (applys H up to equality on arguments of the goal at specified indices)
 </pre>
 
 <p>Note: "<code>forwards I: H</code>" is equivalent to "<code>lets I: (>> H __ __ .. __)</code>",<br>
@@ -135,3 +172,10 @@ which can also be abbreviated as "<code>lets I: (>> H ___)</code>", with a tripl
 
 <p>Note: any subterm can be of the form <code>rm X</code>, which indicates that the variable <code>X</code> should be cleared after the operation is complete.
 
+
+<h3>Demos</h3>
+
+<pre>
+dup    (duplicate the current goal, useful for demos)
+demo   (alias for "skip", useful for demos)
+</pre>
