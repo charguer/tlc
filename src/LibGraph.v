@@ -6,7 +6,7 @@
 (* under construction *)
 
 Set Implicit Arguments.
-Require Import LibCore LibArray LibSet.
+Require Import LibCore LibSet.
 
 (*-----------------------------------------------------------*)
 

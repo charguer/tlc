@@ -182,14 +182,30 @@ Fixpoint take_drop_last (l:list A) : (list A)*A :=
 Fixpoint nth_def (d:A) (n:nat) (l:list A) : A :=
   match l with
   | nil => d
-  | x::L' => 
+  | x::l' => 
      match n with
      | 0 => x
-     | S n' => nth_def d n' L'
+     | S n' => nth_def d n' l'
      end
   end.
 
 Definition nth := nth_def arbitrary.
+
+Fixpoint update (n:nat) (v:A) (l:list A) : list A :=
+  match l with
+  | nil => arbitrary
+  | x::l' => 
+     match n with
+     | 0 => v::l'
+     | S n' => update n' v l'
+     end
+  end.
+
+Fixpoint make (n:nat) (v:A) : list A :=
+   match n with
+   | 0 => nil
+   | S n' => v :: make n' v
+   end
 
 End Operations.
 
@@ -205,6 +221,8 @@ Implicit Arguments removes [[A]].
 Implicit Arguments take_drop_last [[A] [IA]].
 Implicit Arguments nth_def [[A]].
 Implicit Arguments nth [[A] [IA]].
+Implicit Arguments update [[A]].
+Implicit Arguments make [[A]].
 
 (* todo: implicit arguments for the other functions *)
 
@@ -774,6 +792,47 @@ End nthProperties.
 
 Implicit Arguments nth_zero [A [IA]].
 Implicit Arguments nth_succ [A [IA]].
+
+
+(* ---------------------------------------------------------------------- *)
+(** * Update *)
+
+Lemma length_update : forall (l:list A) (i:int) (v:A),
+  length (update i v l) = length l.
+Proof using. 
+  intros. induction i.
+Qed.
+
+Lemma nth_update_eq : forall `{Inhab A} (l:list A) (i:int) (v:A),
+  (i < length l)%nat ->
+  nth i (update i v l) = v.
+Proof using. 
+  intros. induction i.
+Qed.
+
+Lemma nth_update_neq : forall `{Inhab A} (l:list A) (i j:int) (v:A),
+  (j < length l)%nat -> (i <> j) -> 
+  nth j (update i v l) -> nth j l.
+Proof using. 
+  intros. induction i.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** * Make *)
+
+Lemma nth_make : forall `{Inhab A} (i n:nat) (v:A),
+  (i < n)%nat -> nth i (make n v) = v.
+Proof using. 
+  introv E. induction n.
+Qed.
+
+Lemma length_make : forall A (n:nat) (v:A),
+  length (make n v) = n.
+Proof using. 
+  intros. induction n.
+Qed.
+
 
 
 (* ********************************************************************** *)
