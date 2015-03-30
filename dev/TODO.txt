@@ -1,6 +1,15 @@
+
+
+- LibHeap LibSet LibMap LibMultiset
+
+- LibArray deprecate, push to LibListZ
+
+
+
+
 (* ---------------------------------------------------------------------- *)
 
-Petit bug report: dans l'implémentation de "protects ... do" il me semble
+Petit bug report: dans l'implmentation de "protects ... do" il me semble
 qu'il y a deux typos (confusion entre x et X).
 
 
@@ -446,9 +455,9 @@ Instance incl_empty_from_incl_in_def_and_in_empty_eq :
   forall `{BagIn A T, BagIncl T, BagEmpty T, Eqb T},
   Incl_in_def -> In_empty_eq -> Incl_empty.
 Admitted. (* TODO: complete proofs *)
-  (* todo: les deux précédents sont reliés entre eux; 
+  (* todo: les deux prcdents sont relis entre eux; 
      idem pour les deux suivants *)
-  (* todo: voir si on peut éviter Eqb *)
+  (* todo: voir si on peut viter Eqb *)
 
 
 Instance single_incl_from_incl_in_def_and_in_single_eq :

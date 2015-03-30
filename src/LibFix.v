@@ -1012,7 +1012,6 @@ Theorem rec_fixed_point : forall A B {IB:Inhab B}
   exists (f:A->B), partial_fixed_point E F (Build_partial f P)
                /\ (forall x, P x -> S x (f x)).
 Proof using.
-(*
   introv IB Equiv Comp WfR Cont. sets M: (rec_family E P R).
   sets Q: (fun x f => P x -> S x (f x)).
   forwards (f&Fixf&Qf): (>> cofe_fixed_point A (A->B) M F Q).
@@ -1023,11 +1022,9 @@ Proof using.
   apply~ rec_contractive_as_contractive.
   asserts Equ: (pfunc_equiv E P = similar M).
     apply func_ext_2. intros f1 f2. unfold M, similar, pfunc_equiv.
-    apply prop_ext. simpl. split~. 
-  exists (Build_partial f P). destruct Fixf as [Fixf _]. split~. 
+    apply prop_ext. simpl. split~.
+  exists (Build_partial f P). destruct Fixf as [Fixf _]. split~.
   unfolds in Fixf. intros [f' P']. simpls. rewrite~ Equ.
-TODO: COQBUG : compiles in coqide but not with coqc *)
-admit.
 Qed.
 
 (** Moreover, we prove that such a unique fixed point is 
@@ -1225,14 +1222,13 @@ Definition mixed_continuous I A B (M:family I B) (S:I->A->B->Prop) :=
 (** We can now state and prove the fixed point theorem *)
 
 Theorem mixed_fixed_point : 
-  forall I A B {IB:Inhab B} (M:family I B) (E:binary B) (P:A->Prop) 
+  forall I A B {IB:Inhab B} (M:family I B) (E:binary B) (P:A->Prop)
   (F:(A->B)->(A->B)) (R:binary A) (S:I->A->B->Prop),
-  COFE M -> wf R -> E = similar M -> 
+  COFE M -> wf R -> E = similar M ->
   mixed_continuous M S -> mixed_contractive M P F R S -> 
   exists (f:A->B), partial_fixed_point E F (Build_partial f P)
                /\ (forall i x, P x -> S i x (f x)).
 Proof using. 
-(* COQBUG
   introv IB Cofe WfR SimE Conti Contr.
   forwards (f&Fixf&Qf): 
    (@cofe_fixed_point (I*A) (A->B) _ (corec_rec_family M P R) F 
@@ -1241,13 +1237,11 @@ Proof using.
     introv Limu Qiui. unfolds in Limu. simpls. intros [i x] Kix Px.
      applys Conti. apply~ (Qiui (i,x)). intros j Rji.
      apply~ (>> Limu Kix j x).
-    apply~ mixed_contractive_as_contractive.  
+    apply~ mixed_contractive_as_contractive.
   exists (Build_partial f P). destruct Fixf as [Fixf _]. split. 
     unfolds in Fixf. rewrite corec_rec_similar in Fixf. rewrite SimE.
      intros [f' P']. simpls~.
     intros. apply~ (Qf (i,x)).
-*)
-admit.
 Qed.
 
 (** General consistency of a fixed point *)
@@ -2041,7 +2035,7 @@ Lemma FixFun3_fix_partial : forall A1 A2 A3 (R:binary (A1*A2*A3)) (P:A1->A2->A3-
     (forall y1 y2 y3, P y1 y2 y3 -> R (y1,y2,y3) (x1,x2,x3) -> f1 y1 y2 y3 = f2 y1 y2 y3) ->
      F f1 x1 x2 x3 = F f2 x1 x2 x3) ->
   (forall x1 x2 x3, P x1 x2 x3 -> f x1 x2 x3 = F f x1 x2 x3).
-Admitted. (* TODO: same as above, only the arity changes *)
+Admitted. (* Symmetric to the above, only the arity changes *)
 
 Implicit Arguments FixFun3_fix_partial [A1 A2 A3 B IB F f].
 
@@ -2056,7 +2050,7 @@ Lemma FixFun4_fix_partial : forall A1 A2 A3 A4 (R:binary (A1*A2*A3*A4)) (P:A1->A
     (forall y1 y2 y3 y4, P y1 y2 y3 y4 -> R (y1,y2,y3,y4) (x1,x2,x3,x4) -> f1 y1 y2 y3 y4 = f2 y1 y2 y3 y4) ->
      F f1 x1 x2 x3 x4 = F f2 x1 x2 x3 x4) ->
   (forall x1 x2 x3 x4, P x1 x2 x3 x4 -> f x1 x2 x3 x4 = F f x1 x2 x3 x4).
-Admitted. (* TODO: same as above, only the arity changes *)
+Admitted. (* Symmetric to the above, only the arity changes *)
 
 Implicit Arguments FixFun4_fix_partial [A1 A2 A3 A4 B IB F f].
 
@@ -2071,7 +2065,7 @@ Lemma FixFun5_fix_partial : forall A1 A2 A3 A4 A5 (R:binary (A1*A2*A3*A4*A5)) (P
     (forall y1 y2 y3 y4 y5, P y1 y2 y3 y4 y5 -> R (y1,y2,y3,y4,y5) (x1,x2,x3,x4,x5) -> f1 y1 y2 y3 y4 y5 = f2 y1 y2 y3 y4 y5) ->
      F f1 x1 x2 x3 x4 x5 = F f2 x1 x2 x3 x4 x5) ->
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5 -> f x1 x2 x3 x4 x5 = F f x1 x2 x3 x4 x5).
-Admitted. (* TODO: same as above, only the arity changes *)
+Admitted. (* Symmetric to the above, only the arity changes *)
 
 Implicit Arguments FixFun5_fix_partial [A1 A2 A3 A4 A5 B IB F f].
 

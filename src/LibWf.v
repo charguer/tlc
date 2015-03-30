@@ -510,9 +510,10 @@ End Wf_Transitive_Closure.
 
 *)
 
-Axiom tclosure_wf : forall A (R:binary A),
+Lemma tclosure_wf : forall A (R:binary A),
   wf R -> wf (tclosure R).
-(* need to copy proof from the standard library *)
+Proof using. 
+Admitted. (* need to copy proof from the standard library; see above *)
 
 (* end hide *)
 

@@ -397,8 +397,9 @@ Qed.
 Lemma not_indom_empty : forall k,
   ~ indom (@empty K V) k.
 Proof using HV. introv H. unfold indom in H. rewrite dom_empty in H. 
-  skip. (* TODO: add an instance for in_empty_eq in LibSet.
-  apply* in_empty_eq. *) Qed.
+  admit. (* TODO: add an instance for in_empty_eq in LibSet.
+  apply* in_empty_eq. *) 
+Qed.
 
 Lemma not_binds_empty : forall k v,
   ~ binds (@empty K V) k v.

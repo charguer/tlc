@@ -219,7 +219,7 @@ Implicit Types P Q : Prop.
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of true and false propositions *)
 
-(** Recall that the axiom [prop_ext] asserts that two equivalent 
+(** Recall that the lemma [prop_ext] asserts that two equivalent 
     propositions are equal, i.e. [(P <-> Q) -> (P = Q)]. *)
 
 (** Provable propositions are equal to [True], and contradictory

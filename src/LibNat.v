@@ -231,15 +231,9 @@ Tactic Notation "rew_nat" "*" "in" hyp(H) :=
 (** ** Div2 *)
 
 Lemma div2_lt : forall n m, m <= n -> n > 0 -> div2 m < n.
-Proof using.
-  nat_comp_to_peano.
-  induction n using peano_induction. introv Le Gt.
-(* todo: fix this proof that broken when migrating to v8.3
-  do 2 (destruct n; try solve [omega]). 
-  do 2 (destruct m; try solve [omega]).
-  do 2 destruct~ m. simpl. cuts~: (div2 m < S n). apply H.
-  nat_math. nat_math. auto. 
-*) admit.
+Proof using. (* using stdlib *)
+  nat_comp_to_peano. introv Le Gt.
+  forwards: Nat.div2_decr m (n-1). omega. omega.
 Qed.
 
 Lemma div2_grows : forall n m, m <= n -> div2 m <= div2 n.

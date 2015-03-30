@@ -443,6 +443,8 @@ Tactic Notation "rew_int" "*" "in" hyp(H) :=
 (************************************************************)
 (* * Relation with Nat *)
 
+(** Proofs below using stdlib *)
+
 Notation "'abs'" := Zabs_nat (at level 0).
 
 Global Opaque Zabs Zabs_nat.
@@ -496,36 +498,22 @@ Proof using.
   intros. nat_comp_to_peano. apply Zabs_nat_lt. math.
 Qed.
 
-(* begin hide *)
-
-Lemma div_2_parts : forall n n1 n2,
-  n >= 4 -> n1 = Zdiv n 2 -> n2 = n - n1 ->
-  2 <= n1 /\ n1 < n /\ 2 <= n2 /\ n2 < n.
-Proof using. admit. Qed. (*TODO: under construction *)
-
-(* TODO: basic lemmas about abs.
-   See library file Coq.ZArith.Znat *)
-Axiom abs_plus : forall a b : int,
+Lemma abs_plus : forall a b : int,
   (a >= 0) -> (b >= 0) -> 
   abs (a+b) = (abs a + abs b)%nat :> nat.
-Axiom abs_minus : forall a b : int,
+Proof using. intros. applys Zabs2Nat.inj_add; math. Qed.
+
+Lemma abs_minus : forall a b : int,
   (a >= b) -> (b >= 0) -> 
   abs (a-b) = (abs a - abs b)%nat :> nat.
-Axiom abs_le : forall (a:int) (b:nat),
-  (a <= b) -> (abs a <= b).
-Axiom abs_ge : forall (a:int) (b:nat),
-  (a >= b) -> (abs a >= b).
-Axiom abs_gt : forall (a:int) (b:nat),
-  (a > b) -> (abs a > b).
-Axiom plus_nat_int : forall a b : nat,
-  (a+b)%nat = (a:int) + (b:int) :> int.
-Axiom abs_pos_le : forall (n:int) (m:nat),
-  0 <= n -> n <= m -> abs n <= m.
-Axiom nat_int_eq : forall (n:int) (m:nat),
-  m = abs n -> m = n :> int.
-Implicit Arguments nat_int_eq [n m].
+Proof using. intros. applys Zabs2Nat.inj_sub; math. Qed.
 
-(* end hide *)
+Lemma plus_nat_int : forall a b : nat,
+  (a+b)%nat = (a:int) + (b:int) :> int.
+Proof using. 
+  Transparent my_Z_of_nat.
+  intros. unfold my_Z_of_nat. applys Nat2Z.inj_add.
+Qed.
 
 Hint Rewrite plus_nat_int : rew_maths.
 
@@ -570,23 +558,20 @@ Proof using. intros. symmetry. eapply Zdiv_unique with (r:=1); math. Qed.
 
 Lemma mod2_bound : forall n,
   0 <= n mod 2 < 2.
-Proof using.
+Proof using. (* using stdlib *)
   intros. forwards: (Z_mod_remainder n 2). math.
   destruct H as [[? ?]|[? ?]]; math.
 Qed.
 
-(* begin hide *)
-
 Lemma div2_bounds : forall m n,
   m = n / 2 -> 2 * m <= n /\ n <= 2 * m + 1.
-Proof using. 
-  intros. forwards K: (Z_div_mod_eq n 2). math.
-  destruct (mod2_bound n). subst m. admit. (* TODO math. *)
+Proof using. (* using stdlib *)
+  intros. lets K: (Z_div_mod_eq n 2) __. math. (* TODO: forwards shouldn't do simpl *)
+  rewrite <- H in K.
+  lets [E1 E2]: (mod2_bound n). math.
 Qed.
 
 Implicit Arguments div2_bounds [m n].
-
-(* end hide *)
 
 Hint Rewrite mod2_zero mod2_odd mod2_even div2_odd div2_even : rew_parity.
 

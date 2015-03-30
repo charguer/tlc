@@ -670,9 +670,10 @@ Implicit Types l : list A.
 Lemma take_cons_pred_int : forall x l (n:int), 
   n > 0 ->
   take (abs n) (x::l) = x :: (take (abs (n-1)) l).
-Proof using.
+Proof using. (* using stdlib *)
   introv Pos. rewrite take_cons_pred.
-  rewrite abs_minus; try math. auto. apply~ abs_gt. 
+  rewrite abs_minus; try math. auto.
+  forwards: Zabs_nat_lt 0 n; math.
 Qed.
 
 Lemma take_cons_int : forall x l (n:int), 
@@ -682,27 +683,6 @@ Proof using.
   introv Pos. rewrite~ abs_plus.
   rewrite~ plus_comm. math.
 Qed.
-
-(* begin hide *)
-
-Lemma take_last_int : forall l (n:int),
-  n > 0 -> n <= length l -> exists x,
-  take (abs n) l = (take (abs (n - 1)) l) & x.
-Proof using.
-  introv Gt Le.
-  destruct (take_struct (abs (n-1)) l) as (l'&L&E).
-  apply abs_le. math.
-  destruct l'.
-    false. rewrite app_nil_r in E.
-    asserts M: (forall A B (f:A->B) (x y:A), x = y -> f x = f y).
-      introv Q. rewrite~ Q.
-    asserts N: (forall A B (f:A->B) (x y:A), x = y -> f x <> f y -> False).
-      introv Q D. apply D. apply M. auto.
-    applys N (@length A) E.
-    rewrite length_take. admit. admit. admit. (*TODO: under construction *)
-Qed.
-
-(* end hide *)
 
 End Facts.
 End TakeInt.
