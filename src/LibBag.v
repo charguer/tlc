@@ -168,6 +168,11 @@ Class In_empty `{BagIn A T, BagEmpty T} :=
 
 Implicit Arguments in_empty [[A] [T] [H] [H0] [In_empty]].
 
+Class Notin_empty `{BagIn A T, BagEmpty T} :=
+  { notin_empty : forall x, x \notin \{} }.
+
+Implicit Arguments notin_empty [[A] [T] [H] [H0] [Notin_empty]].
+
 Class In_single_eq `{BagIn A T, BagSingle A T} :=
   { in_single_eq : forall x y, x \in \{y} = (x = y) }.
 Class In_single `{BagIn A T, BagSingle A T} :=
@@ -178,6 +183,11 @@ Class In_single_self `{BagIn A T, BagSingle A T} :=
 Implicit Arguments in_single_eq [[A] [T] [H] [H0] [In_single_eq]].
 Implicit Arguments in_single [[A] [T] [H] [H0] [In_single] x y].
 Implicit Arguments in_single_self [[A] [T] [H] [H0] [In_single_self]].
+
+Class Notin_eq `{BagIn A T, BagIn A T} :=
+  { notin_eq : forall x E, (x \notin E) = ~ (x \in E) }.
+
+Implicit Arguments notin_eq [[A] [T] [H] [H0] [Notin_eq]].
 
 Class In_union_eq `{BagIn A T, BagUnion T} :=
   { in_union_eq : forall x (E F : T), x \in (E \u F) = (x \in E \/ x \in F) }.
@@ -204,10 +214,27 @@ Implicit Arguments in_inter_eq [[A] [T] [H] [H0] [In_inter_eq]].
 Implicit Arguments in_inter [[A] [T] [H] [H0] [In_inter] x E F].
 Implicit Arguments in_inter_inv [[A] [T] [H] [H0] [In_inter_inv] x E F].
 
+Class Notin_inter_eq `{BagIn A T, BagInter T} :=
+  { notin_inter_eq : forall x E F, x \notin (E \n F) = (x \notin E \/ x \notin F) }.
+Class Notin_inter `{BagIn A T, BagInter T} :=
+  { notin_inter : forall x E F, x \notin E \/ x \notin F -> x \notin (E \n F) }.
+Class Notin_inter_inv `{BagIn A T, BagInter T} :=
+  { notin_inter_inv : forall x E F, x \notin (E \n F) -> x \notin E \/ x \notin F }.
+
+Implicit Arguments notin_inter_eq [[A] [T] [H] [H0] [Notin_inter_eq]].
+Implicit Arguments notin_inter [[A] [T] [H] [H0] [Notin_inter] x E F].
+Implicit Arguments notin_inter_inv [[A] [T] [H] [H0] [Notin_inter_inv] x E F].
+
 Class In_remove_eq `{BagIn A T, BagRemove T T} :=
   { in_remove_eq : forall x (E F : T), x \in (E \- F) = (x \in E /\ x \notin F) }.
+Class Remove_incl `{BagIncl T, BagRemove T T} :=
+  { remove_incl : forall (E F : T), (E \- F) \c E }.
+Class Remove_disjoint `{BagDisjoint T, BagRemove T T} :=
+  { remove_disjoint : forall (E F : T), F \# (E \- F) }.
 
 Implicit Arguments in_remove_eq [[A] [T] [H] [H0] [In_remove_eq]].
+Implicit Arguments remove_incl [[T] [H] [H0] [Remove_incl]].
+Implicit Arguments remove_disjoint [[T] [H] [H0] [Remove_disjoint]].
 
 Class In_double_eq `{BagIn A T} :=
   { in_double_eq : forall E F, (forall x, x \in E = x \in F) -> E = F }.
@@ -272,12 +299,15 @@ Class Union_incl `{BagUnion T, BagIncl T} :=
 Class Union_incl_inv `{BagUnion T, BagIncl T} :=
   { union_incl_inv : forall E F G, (E \u F) \c G -> E \c G /\ F \c G }.
 
-Class Incl_inter_b `{BagInter T, BagIncl T} :=
+Class Incl_inter_b `{BagInter T, BagIncl T} := (* TODO: rename ? *)
   { incl_inter_b : forall E F G, E \c (F \n G) = (E \c F /\ E \c G) }.
 Class Incl_inter `{BagInter T, BagIncl T} :=
   { incl_inter : forall E F G, E \c F -> E \c G -> E \c (F \n G) }.
 Class Incl_inter_inv `{BagInter T, BagIncl T} :=
   { incl_inter_inv : forall E F G, E \c (F \n G) -> E \c F /\ E \c G }.
+
+Class Inter_disjoint `{BagEmpty T, BagInter T, BagDisjoint T} :=
+  { inter_disjoint : forall E F, E \# F -> E \n F = \{} }.
 
 (** Union *)
 
@@ -315,6 +345,20 @@ Class Inter_self `{BagInter T} :=
 (** Removal *)
 
 (** Disjointness *)
+
+Class Disjoint_sym `{BagDisjoint T} :=
+  { disjoint_sym : sym disjoint }.
+Class Disjoint_prove `{BagIn A T, BagDisjoint T} :=
+  { disjoint_prove : forall E F, (forall x, x \in E -> x \in F -> False) -> E \# F }.
+Class Disjoint_single_l_eq `{BagIn A T, BagSingle A T, BagDisjoint T} :=
+  { disjoint_single_l_eq : forall x E, (\{x} \# E) = x \notin E }.
+Class Disjoint_single_r_eq `{BagIn A T, BagSingle A T, BagDisjoint T} :=
+  { disjoint_single_r_eq : forall x E, (E \# \{x}) = x \notin E }.
+
+Implicit Arguments disjoint_sym [[T] [H] [Disjoint_sym]].
+Implicit Arguments disjoint_prove [[A] [T] [H] [H0] [Disjoint_prove]].
+Implicit Arguments disjoint_single_l_eq [[A] [T] [H] [H0] [H1] [Disjoint_single_l_eq]].
+Implicit Arguments disjoint_single_r_eq [[A] [T] [H] [H0] [H1] [Disjoint_single_r_eq]].
 
 (** Restriction *)
 
@@ -368,6 +412,21 @@ Instance in_inter_from_in_inter_eq :
   forall `{BagIn A T, BagInter T},
   In_inter_eq -> In_inter.
 Proof using. constructor. introv I1 I2. rewrite in_inter_eq. rew_reflect*. Qed. 
+
+Instance in_inter_inv_from_in_inter_eq : 
+  forall `{BagIn A T, BagInter T},
+  In_inter_eq -> In_inter_inv.
+Proof using. constructor. introv I. rewrite~ <- in_inter_eq. Qed. 
+
+Instance notin_inter_from_notin_inter_eq : 
+  forall `{BagIn A T, BagInter T},
+  Notin_inter_eq -> Notin_inter.
+Proof using. constructor. introv I. rewrite~ notin_inter_eq. Qed. 
+
+Instance notin_inter_inv_from_notin_inter_eq : 
+  forall `{BagIn A T, BagInter T},
+  Notin_inter_eq -> Notin_inter_inv.
+Proof using. constructor. introv I. rewrite~ notin_inter_eq in I. Qed. 
 
 (** Union *)
 
@@ -485,6 +544,19 @@ Proof using.
   constructor. intros_all. do 2 rewrite union_assoc. 
   rewrite (union_comm _ x). auto. 
 Qed.
+
+(** Disjoint *)
+
+Instance disjoint_single_r_eq_from_disjoint_single_l : 
+  forall `{BagIn A T, BagSingle A T, BagDisjoint T},
+  Disjoint_single_l_eq -> Disjoint_sym -> Disjoint_single_r_eq.
+Proof using.
+  constructor. intros_all.
+  rewrite (sym_to_eq disjoint_sym). apply disjoint_single_l_eq.
+Qed.
+
+
+
 
 (* todo: comm_assoc_l and _r *)
 

@@ -4,28 +4,22 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic.
+Require Import LibTactics LibLogic LibBag LibSet.
 Generalizable Variables A.
 
 
 (* ********************************************************************** *)
-(** * Function combinators *)
-
-(* ---------------------------------------------------------------------- *)
-(** ** Definition of the combinators *)
-
-(** Indentity function *)
+(** ** Indentity function *)
 
 Definition id {A} (x : A) := 
   x.
 
-(** Constant function *)
+
+(* ********************************************************************** *)
+(** Constant functions *)
 
 Definition const {A B} (v : B) : A -> B := 
   fun _ => v.
-
-(** Constant function of higher arities *)
-
 Definition const1 := 
   @const.
 Definition const2 {A1 A2 B} (v:B) : A1->A2->B :=
@@ -37,6 +31,7 @@ Definition const4 {A1 A2 A3 A4 B} (v:B) : A1->A2->A3->A4->B :=
 Definition const5 {A1 A2 A3 A4 A5 B} (v:B) : A1->A2->A3->A4->A5->B :=
   fun _ _ _ _ _ => v.
 
+(* ********************************************************************** *)
 (** Function application *)
 
 Definition apply {A B} (f : A -> B) (x : A) :=
@@ -45,26 +40,18 @@ Definition apply {A B} (f : A -> B) (x : A) :=
 Definition apply_to (A : Type) (x : A) (B : Type) (f : A -> B) :=
   f x.
 
+
+(* ********************************************************************** *)
 (** Function composition *)
 
 Definition compose {A B C} (g : B -> C) (f : A -> B) := 
   fun x => g (f x).
 
 Notation "f1 \o f2" := (compose f1 f2) 
-  (at level 49, right associativity) : fun_scope.
-
-(** Function update *)
-
-Definition fupdate A B (f : A -> B) (a : A) (b : B) : A -> B :=
-  fun x => If (x = a) then b else f x.
-
-Open Scope fun_scope.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Properties of combinators *)
+  (at level 49, right associativity) : func_scope.
 
 Section Combinators.
+Open Scope func_scope.
 Variables (A B C D : Type).
 
 Lemma compose_id_l : forall (f:A->B),
@@ -89,30 +76,7 @@ Proof using. intros. subst~. Qed.
 
 End Combinators.
 
-
-(* ---------------------------------------------------------------------- *)
-(** ** Properties of function update *)
-
-(* TODO rename to fupdate_eq and _neq *)
-(* TODO simplify proofs using case_if *)
-
-Lemma fupdate_new : forall A B (f:A->B) a b x,
-  x = a ->
-  fupdate f a b x = b.
-Proof using.
-  unfold fupdate. intros. rewrite If_l by assumption. congruence.
-Qed.
-
-Lemma fupdate_old : forall A B (f:A->B) a b x,
-  x <> a ->
-  fupdate f a b x = f x.
-Proof using.
-  unfold fupdate. intros. rewrite If_r by congruence. congruence.
-Qed.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Tactic for simplifying function compositions *)
+(** Tactic for simplifying function compositions *)
 
 Hint Rewrite compose_id_l compose_id_r compose_assoc : rew_compose.
 Tactic Notation "rew_compose" := 
@@ -121,3 +85,79 @@ Tactic Notation "rew_compose" "in" "*" :=
   autorewrite with rew_compose in *.
 Tactic Notation "rew_compose" "in" hyp(H) := 
   autorewrite with rew_compose in H.
+
+
+(* ********************************************************************** *)
+(** ** Function update *)
+
+(** [fupdate f a b x] is like [f] except that it returns [b] for input [a] *)
+
+Definition fupdate A B (f : A -> B) (a : A) (b : B) : A -> B :=
+  fun x => If (x = a) then b else f x.
+
+Lemma fupdate_def : forall A B (f:A->B) a b x,
+  fupdate f a b x = If (x = a) then b else f x.
+Proof. auto. Qed.
+
+Lemma fupdate_eq : forall A B (f:A->B) a b x,
+  x = a ->
+  fupdate f a b x = b.
+Proof using. intros. unfold fupdate. case_if*. Qed.
+
+Lemma fupdate_neq : forall A B (f:A->B) a b x,
+  x <> a ->
+  fupdate f a b x = f x.
+Proof using. intros. unfold fupdate. case_if*. Qed.
+
+(* Opaque fupdate. -- could be added in the future *)
+
+
+(* ********************************************************************** *)
+(** ** Function image *)
+
+Section FunctionImage.
+Open Scope set_scope.
+
+Definition image A B (f : A -> B) (E : set A) : set B :=
+  \set{ y | exists_ x \in E, y = f x }.  
+
+Lemma finite_image:
+  forall A B (f : A -> B) (E : set A),
+  finite E ->
+  finite (image f E).
+Proof using.
+Admitted.
+
+Lemma image_covariant:
+  forall A B (f : A -> B) (E F : set A),
+  E \c F ->
+  image f E \c image f F.
+Proof using.
+Admitted.
+
+Lemma image_union:
+  forall A B (f : A -> B) (E F : set A),
+  image f (E \u F) = image f E \u image f F.
+Proof using.
+Admitted.
+
+Lemma image_singleton:
+  forall A B (f : A -> B) (x : A),
+  image f \{x} = \{f x}.
+Proof using.
+Admitted.
+
+End FunctionImage.
+
+
+
+(* ********************************************************************** *)
+(** ** Function preimage *)
+
+Section FunctionPreimage.
+Open Scope set_scope.
+
+Definition preimage A B (f : A -> B) (E : set B) : set A :=
+  \set{ x | exists_ y \in E, y = f x }.
+
+End FunctionPreimage.

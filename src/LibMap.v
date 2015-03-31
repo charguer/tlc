@@ -77,7 +77,7 @@ Global Opaque map empty_inst single_bind_inst binds_inst
 
 (** [dom] *)
 
-Definition dom_impl A B (M:map A B) := \set{ k : A | exists v, binds M k v}.
+Definition dom_impl A B (M:map A B) := set_st (fun k => exists v, binds M k v).
 
 Instance dom_inst : forall A B, BagDom (map A B) (set A).
   constructor. rapply (@dom_impl A B). Defined.
@@ -115,7 +115,7 @@ Lemma dom_empty : forall A B,
   dom (\{} : map A B) = (\{} : set A).
 Proof using.
   intros. simpl. unfold dom_impl. simpl. unfold binds_impl, empty_impl.
-  apply set_ext. intros x. rewrite in_set. iff [v Hv] H; false.
+  apply set_ext. intros x. rewrite in_set_st_eq. iff [v Hv] H; false.
 Qed.
 
 Lemma in_dom_empty : forall A B x,

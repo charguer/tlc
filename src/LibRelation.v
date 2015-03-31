@@ -395,6 +395,10 @@ Proof using.
   unfold empty. repeat intro. tauto.
 Qed.
 
+(* TODO: a tactic "functional_exploit R" that looks for two distinct
+   assumptions in the goal of the form [R ?x ?y] and produces [functional R]
+   as subgoal. *)
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties about [union] *)

@@ -10,6 +10,7 @@ Require Import LibTactics LibLogic LibReflect LibFunc LibEpsilon LibList
 Require Import Div2.
 Open Scope nat_scope.
 Open Scope comp_scope.
+Open Scope func_scope.
 
 (** Setting up of automation *)
 

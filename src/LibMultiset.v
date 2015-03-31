@@ -29,7 +29,7 @@ Definition single_impl x := fun y => If x = y then 1 else 0.
 Definition in_impl x E := E x > 0.
 Definition union_impl E F := fun x => (E x + F x)%nat.
 Definition incl_impl E F := forall x, E x <= F x.
-Definition dom_impl E := \set{ x | E x > 0 }.
+Definition dom_impl E := set_st (fun x => E x > 0).
 Definition list_repr_impl (E:multiset A) (l:list (A*nat)) :=
      no_duplicate (LibList.map (@fst _ _) l) 
   /\ forall n x, In (x,n) l <-> (n = E x /\ n > 0).

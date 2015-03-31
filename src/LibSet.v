@@ -6,7 +6,7 @@
 Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect LibList
-  LibOperation LibStruct LibNat LibEpsilon LibFunc.
+  LibOperation LibStruct LibNat LibEpsilon.
 Require Export LibBag.
 
 
@@ -21,7 +21,7 @@ Definition set (A : Type) := A -> Prop.
 Inductive no_duplicate A : list A -> Prop :=
   | no_duplicate_nil : no_duplicate nil
   | no_duplicate_cons : forall x l,
-      ~ (In x l) -> no_duplicate l -> no_duplicate (x::l).
+      ~ (Mem x l) -> no_duplicate l -> no_duplicate (x::l).
 
 Section Operations.
 Variables (A B : Type).
@@ -29,34 +29,45 @@ Implicit Types x : A.
 Implicit Types E F G : set A.
 
 Definition set_st (P:A->Prop) : set A := P.
-Definition empty_impl : set A := const False.
-Definition full_impl : set A := const True.
+Definition empty_impl : set A := (fun _ => False).
+Definition full_impl : set A := (fun _ => True).
 Definition single_impl x := (= x).
 Definition in_impl x E := E x.
-Definition compl_impl : set A -> set A := @pred_not A.
+Definition compl_impl : set A -> set A := @pred_not A. (* todo: as typeclass? *)
 Definition union_impl : set A -> set A -> set A := @pred_or A.
 Definition inter_impl : set A -> set A -> set A := @pred_and A.
 Definition remove_impl : set A -> set A -> set A := 
   fun E F x => E x /\ ~ F x.
 Definition incl_impl : set A -> set A -> Prop := @pred_le A.
 Definition list_repr_impl (E:set A) (l:list A) :=
-  no_duplicate l /\ forall x, In x l <-> E x.
+  no_duplicate l /\ forall x, Mem x l <-> E x.
 Definition to_list_impl (E:set A) := epsilon (list_repr_impl E).
-Definition finite (E:set A) := exists l, list_repr_impl E l.
+Definition finite (E:set A) := 
+  exists l, forall x, E x -> Mem x l.
 Definition fold_impl (m:monoid_def B) (f:A->B) (E:set A) := 
   LibList.fold_right (fun x acc => monoid_oper m (f x) acc)
     (monoid_neutral m) (to_list_impl E).
 End Operations.
 Definition card_impl A (E:set A) := 
-  fold_impl (monoid_ plus 0) (fun _ => 1) E.
+  LibList.length (to_list_impl E).
+  (* fold_impl (monoid_ plus 0) (fun _ => 1) E *)
+
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Inhabited *)
+
+Instance set_inhab : forall A, Inhab (set A).
+Proof using. intros. apply (prove_Inhab (@empty_impl A)). Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Notation through typeclasses *)
 
 Lemma in_inst : forall A, BagIn A (set A).
 Proof using. constructor. exact (@in_impl A). Defined.
-Hint Extern 1 (BagIn _ (set _)) => apply in_inst
-  : typeclass_instances.
+Hint Extern 1 (BagIn _ (set _)) => apply in_inst : typeclass_instances.
+(* TODO: why is this not an instance like others ? *)
 
 Instance empty_inst : forall A, BagEmpty (set A).
   constructor. apply (@empty_impl A). Defined.
@@ -77,68 +88,139 @@ Instance fold_inst : forall A B, BagFold B (A->B) (set A).
 Instance card_inst : forall A, BagCard (set A).
   constructor. rapply (@card_impl A). Defined.
 
-Global Opaque set empty_inst single_inst in_inst union_inst inter_inst  
+Global Opaque set finite in_inst empty_inst single_inst union_inst inter_inst  
   remove_inst incl_inst disjoint_inst card_inst fold_inst.
 
-Instance set_inhab : forall A, Inhab (set A).
-Proof using. intros. apply (prove_Inhab (@empty_impl A)). Qed.
+(* ---------------------------------------------------------------------- *)
+(** ** Notations to help the typechecker *)
+
+Notation "x \indom E" := (x \in (dom E : set _)) 
+  (at level 39) : container_scope.
+Notation "x \notindom E" := (x \notin ((dom E) : set _)) 
+  (at level 39) : container_scope.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Notations for building sets *)
+
+Notation "\set{ x | P }" := (@set_st _ (fun x => P))
+ (at level 0, x ident, P at level 200) : set_scope.
+Notation "\set{ x : A | P }" := (@set_st A (fun x => P))
+ (at level 0, x ident, P at level 200) : set_scope.
+Notation "\set{ x '\in' E | P }" := (@set_st _ (fun x => x \in E /\ P))
+ (at level 0, x ident, P at level 200) : set_scope.
+
+Notation "\set{= e | x '\in' E }" := 
+ (@set_st _ (fun a => exists_ x \in E, a = e ))
+ (at level 0, x ident, E at level 200) : set_scope.
+Notation "\set{= e | x '\in' E , y ''\in' F }" := 
+ (@set_st _ (fun a => exists_ x \in E, exists_ y \in F, a = e ))
+ (at level 0, x ident, F at level 200) : set_scope.
+Notation "\set{= e | x y '\in' E }" := 
+ (@set_st _ (fun a => exists_ x y \in E, a = e ))
+ (at level 0, x ident, y ident, E at level 200) : set_scope.
 
 
 (* ********************************************************************** *)
 (** * Properties of sets *)
 
+Section Instances.
+Variables (A:Type).
+Transparent set finite empty_inst single_inst single_impl in_inst incl_inst inter_inst 
+  union_inst card_inst fold_inst remove_inst disjoint_inst finite. 
+Hint Constructors Mem.
+
 (* ---------------------------------------------------------------------- *)
-(** ** Structural properties *)
+(** set_st *)
 
-(** Facts *)
-
-Lemma in_set : forall A (P:A->Prop) x,
+Lemma in_set_st_eq : forall A (P:A->Prop) x,
   x \in set_st P = P x.
 Proof using. intros. apply* prop_ext. Qed.
 
-(** Rewriting tactics *)
-
-Hint Rewrite in_set : rew_set.
-Tactic Notation "rew_set" :=
-  autorewrite with rew_set.
-Tactic Notation "rew_set" "in" hyp(H) :=
-  autorewrite with rew_set in H.
-Tactic Notation "rew_set" "in" "*" :=
-  autorewrite with rew_set in *.
-
-
 (* ---------------------------------------------------------------------- *)
-(** ** Structural properties *)
-
-Section Instances.
-Variables (A:Type).
-Transparent set empty_inst single_inst in_inst incl_inst inter_inst 
-  union_inst card_inst fold_inst remove_inst. 
+(** to_list *)
 
 Lemma to_list_empty : 
   to_list_impl (\{}:set A) = nil.
 Proof using. 
   unfold to_list_impl. spec_epsilon as l.
-  exists (@nil A). split. constructor. autos*.
-  inverts Hl. simpls. unfolds empty_inst, empty_impl, @const.
-   destruct l. auto. false. eapply H0. constructor~.
+  exists (@nil A). split. constructor. iff; false_invert. 
+  inverts Hl. simpls. unfolds empty_inst, empty_impl.
+   destruct l. auto. false. rewrite <- H0. simple~.
 Qed.
 
 Lemma to_list_single : forall (x:A), 
   to_list_impl (\{x}) = x::nil.
 Proof using.
   intros. unfold to_list_impl. spec_epsilon as l.
-  exists (x::nil). split. constructor*. constructor*.
+  exists (x::nil). split. constructor*. introv M. inverts M. constructor*.
   unfold single_inst, single_impl. simple~.
-    iff H. destruct* H. autos*. 
-  inverts Hl. 
+    iff H. inverts* H. inverts* H1. inverts* H.
   unfolds single_inst, single_impl. simpls~.
-    destruct l. destruct (H0 x). false~ H2.
-    lets [K _]:(>> H0 a). specializes K __. constructor~. subst.
-    fequal. destruct l. auto. 
-    lets [K _]: (>> H0 a). specializes K __. right. constructor~. subst.
-    inverts H as M. false M. constructor~.
+  inverts Hl as H H0. destruct (H0 x). specializes~ H2.
+  destruct l.
+    inverts H2.
+    tests E: (x = a).
+      fequals. destruct l. auto. forwards~: (proj1 (H0 a0)).
+       subst. inverts H as M1 M2. false* M1.
+      inverts H2. false. forwards~: (proj1 (H0 a)). false.
 Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** finite *)
+
+Lemma finite_empty : forall A,
+  finite (\{} : set A).
+Proof using.
+  intros. unfold finite. exists (@nil A). 
+  introv M. inverts M.
+Qed.
+
+Lemma finite_singleton : forall A (a : A),
+  finite \{a}.
+Proof using.
+  intros. unfold finite, single_inst, single_impl.
+  exists (a::nil). introv M. hnf in M. subst*.
+Qed.
+
+Lemma finite_union : forall A (E F : set A),
+  finite E ->
+  finite F ->
+  finite (E \u F).
+Proof using.
+  introv. unfold finite, union_inst, union, union_impl, pred_or.
+  introv (l1&E1) (l2&E2). exists (l1++l2). introv M. rewrite* Mem_app_or_eq.
+Qed.
+
+Lemma finite_inter : forall A (E F : set A),
+  finite E \/ finite F ->
+  finite (E \n F).
+Proof using.
+  introv. unfold finite, inter_inst, inter, inter_impl, pred_and.
+  introv [(l&H)|(l&H)]; exists l; introv (M1&M2); autos*.
+Qed.
+
+Lemma finite_incl : forall A (E F : set A),
+  E \c F ->
+  finite F ->
+  finite E.
+Proof using.
+  introv HI. unfold finite, incl_inst.
+  introv (l&H). exists l. introv M. autos*.
+Qed.
+
+Lemma finite_remove : forall A (E F : set A),
+  finite E ->
+  finite (E \- F).
+Proof using.
+  introv. unfold finite, remove_inst, remove_impl, remove.
+  introv (l&H). exists l. introv (M1&M2). autos*.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** fold *)
 
 Lemma fold_empty : forall B m (f:A->B),
   fold m f (\{}:set A) = monoid_neutral m.
@@ -166,8 +248,14 @@ Proof using.
   admit. (* todo: under development *)
 Qed.
 
-Global Instance set_in_empty_inst : In_empty_eq (A:=A) (T:=set A).
+(* ---------------------------------------------------------------------- *)
+(** set_in, incl *)
+
+Global Instance set_in_empty_eq_inst : In_empty_eq (A:=A) (T:=set A).
 Proof using. constructor. intros. apply* prop_ext. Qed.
+
+Global Instance set_notin_empty_inst : Notin_empty (A:=A) (T:=set A).
+Proof using. constructor. intros. intros H. rewrite in_empty_eq in H. auto. Qed.
 
 Global Instance set_in_single_inst : In_single_eq (A:=A) (T:=set A).
 Proof using. constructor. intros. apply* prop_ext. Qed.
@@ -218,6 +306,14 @@ Proof using.
   constructor. constructor; intros_all; auto. apply* prop_ext_1.
 Qed.
 
+Global Instance set_single_incl : Single_incl (A:=A) (T:=set A).
+Proof using.
+  constructor. intros. apply* prop_ext. 
+  unfolds @incl, incl_inst, incl_impl, @is_in, in_inst, in_impl, pred_le.
+  unfolds @single, single_inst, single_impl. iff M.
+  autos*. intros. subst*.
+Qed.
+
 Lemma set_ext_eq : forall (E F : set A), 
   (E = F) = (forall (x:A), x \in E <-> x \in F).
 Proof using.
@@ -227,6 +323,10 @@ Qed.
 Lemma set_ext : forall (E F : set A), 
   (forall (x:A), x \in E <-> x \in F) -> E = F.
 Proof using. intros. rewrite~ set_ext_eq. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** union *)
 
 Global Instance set_union_empty_l : Union_empty_l (T:=set A).
 Proof using.
@@ -253,88 +353,150 @@ Proof using.
   simpl. unfold union_impl, pred_or. autos*.
 Qed.
 
+
+(* ---------------------------------------------------------------------- *)
+(** inter *)
+
+Global Instance set_inter_comm : Inter_comm (T:=set A).
+Proof using.
+  constructor. intros_all. apply prop_ext_1.
+  simpl. unfold inter_impl, pred_and. autos*.
+Qed.
+
+Global Instance set_inter_disjoint : Inter_disjoint (T:=set A).
+Proof using. 
+  constructor. introv.
+  simpl. unfold inter_impl, empty_impl, pred_and. autos*.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** remove *)
+
 Global Instance set_in_remove_inst : In_remove_eq (A:=A) (T:=set A).
-Proof using. constructor. intros. 
+Proof using. 
+  constructor. intros. 
   unfold remove, remove_inst, is_in, in_inst, in_impl, remove_impl, pred_or. 
   apply* prop_ext.
 Qed.
 
+Global Instance set_remove_incl : Remove_incl (T:=set A).
+Proof using. 
+  constructor. intros. 
+  unfold remove, remove_inst, remove_impl, incl_inst, incl_impl. 
+  unfold incl, pred_le. autos*.
+Qed.
+
+Global Instance set_remove_disjoint : Remove_disjoint (T:=set A).
+Proof using. 
+  constructor. intros. 
+  unfold remove, remove_inst, remove_inst, remove_impl, disjoint_inst, disjoint.
+  unfold inter_inst, inter, inter_impl, pred_and. 
+  apply* prop_ext_1. intros x. iff M. false*. false*.
+Qed.
+
+(* ---------------------------------------------------------------------- *)
+(** disjoint *)
+
+Global Instance set_disjoint_sym : Disjoint_sym (T:=set A).
+Proof using. 
+  constructor. unfold disjoint, disjoint_inst.
+  introv M. rewrite* inter_comm.
+Qed.
+
+Global Instance set_disjoint_prove : Disjoint_prove (A:=A) (T:=set A).
+Proof using. 
+  constructor. unfold disjoint, disjoint_inst, inter_inst, inter_impl, inter, pred_and.
+  introv M. apply* prop_ext_1. intros x. iff (N1&N2) N.
+    false* M x. false N.
+Qed.
+
+(* TODO: move *)
+Lemma prop_eq_elim_l : forall (P Q:Prop), P = Q -> P -> Q.
+Proof. intros. subst*. Qed.
+Lemma prop_eq_elim_2 : forall (P Q:Prop), P = Q -> P -> Q.
+Proof. intros. subst*. Qed.
+
+
+Global Instance set_disjoint_single_l_eq : Disjoint_single_l_eq (A:=A) (T:=set A).
+Proof using. 
+  constructor. intros. apply* prop_ext. iff M. 
+  lets: inter_disjoint (rm M). introv N.
+  unfold inter, inter_inst, inter_impl, pred_and in *.
+  lets V: (@func_same_1 _ _ x _ _ H).
+  forwards* Z: prop_eq_elim_l V. splits*. hnfs*.
+  (* TODO: why is  in_inter_eq not available? *)
+  (* TODO: clean up *)
+  unfold disjoint_inst, disjoint, notin, in_inst, in_impl, is_in. 
+  unfold inter_inst, inter, inter_impl, pred_and in *. 
+  apply prop_ext_1. intros y. iff (N1&N2) N.
+    inverts N1. false*.
+    inverts N.
+Qed.
+
+(* TODO: disjoint should have a suggested definition
+   commonly defined in LibBag *)
+
+
+(* ---------------------------------------------------------------------- *)
+(** structural decomposition *)
+
+Lemma set_isolate : forall A (E : set A) x,
+  x \in E ->
+  E = \{x} \u (E \- \{x}).
+Proof using.
+  introv H. 
+  unfold in_inst, in_impl, is_in, union_inst, union_impl, union, pred_or,
+   remove_inst, remove_impl, remove, single, single_inst, single_impl in *.
+  apply prop_ext_1. intros y. iff M.
+    tests: (y = x). autos*. autos*.
+    destruct M. subst*. autos*.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** card *)
+
 Global Instance set_card_empty : Card_empty (T:=set A).
 Proof using.
-  constructor. simpl. unfold card_impl. 
+  constructor. simpl. unfold card_impl.
+  lets E: to_list_empty. unfold empty, empty_inst in E.
+  rewrite E. rew_list~.
+  (* TODO deprecated:
   generalize fold_empty; intro h. simpl in h. rewrite h. simpl. reflexivity.
+  *)
 Qed.
 
 Global Instance set_card_single : Card_single (T:=set A).
 Proof using.
-  constructor. simpl. unfold card_impl. intros a.
+  constructor. simpl. unfold card_impl. intros a. 
+  lets E: to_list_single a. unfold single, single_inst in E.
+  rewrite E. rew_list~.
+  (* TODO deprecated:
   generalize fold_single; intro h. simpl in h.
   rewrite h. auto. typeclass.
+  *)
 Qed.
 
 Global Instance set_card_union_le : Card_union_le (T:=set A).
 Proof using. admit. Qed.
+(* TODO *)
 
 End Instances.
 
 
-(* ********************************************************************** *)
-(** * Additional construction on sets *)
-
 (* ---------------------------------------------------------------------- *)
-(** ** Comprehension *)
+(** ** Structural properties *)
 
-Notation "\set{ x | P }" := (@set_st _ (fun x => P))
-  (at level 0, x ident, P at level 200).
+(** Rewriting tactics *)
 
-Notation "\set{ : A }" := (@set_st A (fun _ => True)) 
-  (at level 0).
-Notation "\set{ x : A | P }" := (@set_st A (fun x => P))
-  (at level 0, x ident, P at level 200).
-Notation "\set{ x | P }" := (@set_st _ (fun x => P))
-  (at level 0, x ident, P at level 200).
-Notation "\set{ x '\in' E | P }" := (@set_st _ (fun x => x \in E /\ P))
-  (at level 0, x ident, P at level 200).
-
-Notation "\set{= e | x '\in' E }" := 
-  (@set_st _ (fun a => exists_ x \in E, a = e ))
-  (at level 0, x ident, E at level 200).
-Notation "\set{= e | x '\in' E , y ''\in' F }" := 
-  (@set_st _ (fun a => exists_ x \in E, exists_ y \in F, a = e ))
-  (at level 0, x ident, F at level 200).
-Notation "\set{= e | x y '\in' E }" := 
-  (@set_st _ (fun a => exists_ x y \in E, a = e ))
-  (at level 0, x ident, y ident, E at level 200).
-
-(* ---------------------------------------------------------------------- *)
-(** ** Notation for domains that are sets *)
-
-(** These notations can be used to help the typechecker *)
-
-Notation "x \indom E" := (x \in (dom E : set _)) 
-  (at level 39) : container_scope.
-Notation "x \notindom E" := (x \notin ((dom E) : set _)) 
-  (at level 39) : container_scope.
-
-(* ---------------------------------------------------------------------- *)
-(** ** Sets of sets *)
-
-(* todo: typeclass for bigunion and bigintersection *)
-
-Definition bigunion_impl A (E : set (set A)) : set A := 
-  \set{ x | exists_ F \in E, x \in (F:set A) }.
-
-Definition biguinter_impl A (E : set (set A)) : set A := 
-  \set{ x | forall_ F \in E, x \in (F:set A) }.
-
-(* ---------------------------------------------------------------------- *)
-(** ** Image and pre-image *)
-
-Definition image A B (f : A -> B) (E : set A) : set B :=
-  \set{ y | exists_ x \in E, y = f x }.
-
-Definition preimage A B (f : A -> B) (E : set B) : set A :=
-  \set{ x | exists_ y \in E, y = f x }.
+Hint Rewrite in_set_st_eq : rew_set.
+Tactic Notation "rew_set" :=
+  autorewrite with rew_set.
+Tactic Notation "rew_set" "in" hyp(H) :=
+  autorewrite with rew_set in H.
+Tactic Notation "rew_set" "in" "*" :=
+  autorewrite with rew_set in *.
 
 
 
@@ -856,3 +1018,28 @@ Tactic Notation "eq_set" :=
   apply set_ext; iff H; set_in H; in_union_get.
 Tactic Notation "eq_set" "*" :=
   eq_set; auto_star.
+
+
+
+
+
+
+
+
+(* ---------------------------------------------------------------------- *)
+(* ---------------------------------------------------------------------- *)
+
+(* FUTURE
+  (** Sets of sets *)
+
+  (* todo: typeclass for bigunion and bigintersection *)
+
+  Definition bigunion_impl A (E : set (set A)) : set A := 
+    \set{ x | exists_ F \in E, x \in (F:set A) }.
+
+  Definition biguinter_impl A (E : set (set A)) : set A := 
+    \set{ x | forall_ F \in E, x \in (F:set A) }.
+
+*)
+
+
