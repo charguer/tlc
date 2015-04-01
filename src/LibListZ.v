@@ -407,12 +407,12 @@ Parameter zcount_bounds : forall `{Inhab A} (l:list A) (P:A->Prop),
     [P] in the sequence. *)
 
 Lemma zcount_upto : forall `{Inhab A} (P:A->Prop) (l:list A) (n i:int) (v:A),
-  ~ P (l\(i)) -> P v -> index n i -> (length l <= n)%Z ->
+  ~ P (l\(i)) -> P v -> index l i -> (length l <= n)%Z ->
   upto n (zcount P (l\(i:=v))) (zcount P l).
 Proof using.
   introv Ni Pv Hi Le. forwards K: (zcount_bounds (l\(i:=v)) P). split.
   rewrite length_update in K. math.
-  lets M: (@zcount_update A _). rewrite M. clear M. 
+  lets M: (@zcount_update A _). rewrite~ M. clear M. 
   do 2 (case_if; tryfalse). math.
 Qed.
 

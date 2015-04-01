@@ -6,118 +6,8 @@
 Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect LibList
-  LibOperation LibStruct LibNat LibEpsilon.
+  LibOperation LibStruct LibInt LibNat LibEpsilon.
 Require Export LibBag.
-
-
-(* todo: move to list *)
-
-Inductive no_duplicates A : list A -> Prop :=
-  | no_duplicates_nil : no_duplicates nil
-  | no_duplicates_cons : forall x l,
-      ~ (Mem x l) -> no_duplicates l -> no_duplicates (x::l).
-
-Definition filter A (P : A->Prop) :=
-  nosimpl (fold_right (fun x acc => If P x then x::acc else acc) (@nil A)).
-
-Section FilterProp.
-Variables (A:Type) (P : A -> Prop).
-Lemma filter_nil : 
-  filter P nil = nil.
-Proof using. auto. Qed.
-Lemma filter_cons : forall x l,
-  filter P (x::l) = If P x then x :: filter P l else filter P l.
-Proof using. auto. Qed.
-Lemma filter_app : forall l1 l2,
-  filter P (l1 ++ l2) = filter P l1 ++ filter P l2.
-Proof using.  (* todo: factorise with map_app *)
-  intros. unfold filter.
-  assert (forall accu,
-    fold_right (fun x acc => If P x then x::acc else acc) accu (l1 ++ l2) =
-    fold_right (fun x acc => If P x then x::acc else acc) nil l1 ++
-     fold_right (fun x acc => If P x then x::acc else acc) nil l2 ++ accu).
-  induction l1; intros; simpl. 
-   do 2 rewrite app_nil_l. gen accu.
-   induction l2; intros; simpl.
-     auto. 
-     case_if. fequals. rewrite IHl2. rewrite~ app_cons. fequals.
-     case_if. fequals. rewrite IHl1. rewrite~ app_cons. apply IHl1.
-  specializes H (@nil A). rewrite~ app_nil_r in H.
-Qed.
-Lemma filter_last : forall x l,
-  filter P (l & x) = filter P l ++ (If P x then x::nil else nil).
-Proof using. intros. rewrite~ filter_app. Qed.
-End FilterProp.
-
-Fixpoint remove_duplicates A (L:list A) :=
-  match L with
-  | nil => nil
-  | x::L' => x :: (filter (<> x) (remove_duplicates L'))
-  end.
-
-Lemma filter_neq : forall A x (L:list A), 
-  ~ Mem x (filter (<> x) L).
-Proof.
-  intros. induction L.
-  rewrite filter_nil. introv M. inverts M.
-  rewrite filter_cons. case_if.
-    introv M. inverts M; false.
-    auto.
-Qed.
-
-Lemma Mem_induct : forall (A : Type) (x : A) (P : list A -> Prop),
-  (forall l : list A, P (x :: l)) ->
-  (forall (y : A) (l : list A), Mem x l -> x <> y -> P l -> P (y :: l)) ->
-  (forall l : list A, Mem x l -> P l).
-Proof.
-  introv HH HN M. induction l.
-  inverts M.
-  tests: (x = a). auto. inverts M; auto_false*.
-Qed.
-
-Lemma filter_Mem : forall A x (L:list A) (P:A->Prop),
-  Mem x L -> P x -> Mem x (filter P L).
-Proof.
-  Hint Constructors Mem.
-  introv H Px. induction H using Mem_induct.
-  rewrite filter_cons. case_if*.
-  rewrite filter_cons. case_if*.
-Qed.
-
-Lemma filter_Mem_inv : forall A x (L:list A) P,
-  Mem x (filter P L) -> Mem x L /\ P x.
-Proof.
-  Hint Constructors Mem.
-  introv M. induction L.
-  rewrite filter_nil in M. inverts M.
-  rewrite filter_cons in M. case_if. inverts* M. autos*.
-Qed.
-
-Lemma no_duplicates_filter : forall A (L:list A) P, 
-  no_duplicates L -> no_duplicates (filter P L).
-Proof.
-  Hint Constructors no_duplicates.
-  introv H. induction H.
-  rewrite* filter_nil. 
-  rewrite filter_cons. case_if.
-    constructors*. introv N. false* filter_Mem_inv N.
-    auto.
-Qed.
-
-Lemma remove_duplicates_spec : forall A (L L':list A),
-  L' = remove_duplicates L ->
-  no_duplicates L' /\ (forall x, Mem x L' <-> Mem x L).
-Proof.
-  Hint Constructors no_duplicates.
-  introv. gen L'. induction L; introv E; simpls.
-  subst. splits*.
-  sets_eq L'': (remove_duplicates L). forwards~ [E' M]: IHL. splits~.
-    subst L'. constructors. applys filter_neq. applys* no_duplicates_filter.
-    subst L'. intros x. lets (M1&M2): M x. iff N.
-      inverts N as R. auto. lets: filter_Mem_inv R. constructors*.
-      lets [E|(H1&H2)]: Mem_inv N. subst*. constructors. applys* filter_Mem.
-Qed.
-
 
 
 (* ********************************************************************** *)
@@ -146,7 +36,7 @@ Definition remove_impl : set A -> set A -> set A :=
   fun E F x => E x /\ ~ F x.
 Definition incl_impl : set A -> set A -> Prop := @pred_le A.
 Definition list_repr_impl (E:set A) (l:list A) :=
-  no_duplicates l /\ forall x, Mem x l <-> E x.
+  No_duplicates l /\ forall x, Mem x l <-> E x.
 Definition to_list (E:set A) := epsilon (list_repr_impl E).
 Definition finite (E:set A) := exists l, list_repr_impl E l.
 Definition card_impl (E:set A) := LibList.length (to_list E).
@@ -252,7 +142,7 @@ Proof using. intros. apply* prop_ext. Qed.
 (** to_list *)
 
 Lemma to_list_spec : forall (E:set A) L,
-  L = to_list E -> finite E -> no_duplicates L /\ (forall x, Mem x L <-> E x).
+  L = to_list E -> finite E -> No_duplicates L /\ (forall x, Mem x L <-> x \in E).
 Proof.
   intros. unfolds to_list, finite. spec_epsilon~ as L' (HL'&EL'). subst*.
 Qed.
@@ -289,14 +179,14 @@ Qed.
 Lemma finite_prove : forall A (E:set A) L,
   (forall x, x \in E -> Mem x L) -> finite E.
 Proof using. 
-  introv M. sets_eq L1 EQL1: (remove_duplicates L).
-  forwards~ (HN&HM): remove_duplicates_spec EQL1.
-  sets L2: (filter (fun x => x \in E) L1).
+  introv M. sets_eq L1 EQL1: (Remove_duplicates L).
+  forwards~ (HN&HM): Remove_duplicates_spec EQL1.
+  sets L2: (Filter (fun x => x \in E) L1).
   exists L2. split. 
-    applys* no_duplicates_filter.
+    applys* Filter_No_duplicates.
     intros x. specializes M x. rewrite <- HM in M. unf. iff N.
-      subst L2. forwards*: filter_Mem_inv N.    
-      applys* filter_Mem.
+      subst L2. forwards*: Filter_Mem_inv N.    
+      applys* Filter_Mem.
 Qed.
 
 Lemma finite_prove_exists : forall A (E:set A),
@@ -411,16 +301,16 @@ Proof using. constructor. intros. rewrite* set_ext_eq. Qed.
 Global Instance in_empty_eq_inst : In_empty_eq (A:=A) (T:=set A).
 Proof using. constructor. intros. apply* prop_ext. Qed.
 
-Global Instance in_single_inst : In_single_eq (A:=A) (T:=set A).
+Global Instance in_single_eq_inst : In_single_eq (A:=A) (T:=set A).
 Proof using. constructor. intros. apply* prop_ext. Qed.
 
-Global Instance in_union_inst : In_union_eq (A:=A) (T:=set A).
+Global Instance in_union_eq_inst : In_union_eq (A:=A) (T:=set A).
 Proof using. constructor. intros. unf. apply* prop_ext. Qed.
 
-Global Instance in_inter_inst : In_inter_eq (A:=A) (T:=set A).
+Global Instance in_inter_eq_inst : In_inter_eq (A:=A) (T:=set A).
 Proof using. constructor. intros. unf. apply* prop_ext. Qed.
 
-Global Instance in_remove_inst : In_remove_eq (A:=A) (T:=set A).
+Global Instance in_remove_eq_inst : In_remove_eq (A:=A) (T:=set A).
 Proof using. constructor. intros. unf. applys* prop_ext. Qed.
 
 Global Instance incl_in_eq_inst : Incl_in_eq (A:=A) (T:=set A).
@@ -436,6 +326,11 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** card *)
 
+(* TODO: prove that 
+  card E = min_of (fun n => exists L, covers L E /\ n = length L)
+  where covers L E = forall_ x \in E, Mem x L
+*)
+
 Lemma card_is_length_to_list : forall (E:set A), 
   finite E -> card E = length (to_list E).
 Proof using. introv HF. unf. spec_epsilon* as L'. Qed.
@@ -450,10 +345,26 @@ Proof using.
   constructor. intros a. lets E: to_list_single a. unf. rewrite E. rew_list~. 
 Qed.
 
-Global Instance card_union_le_inst : Card_union_le (T:=set A).
-Proof using. 
-  constructor. intros. admit.
+Lemma set_card_union_le : forall (E F:set A), 
+  finite E -> finite F ->
+  card (E \u F) <= (card E + card F)%nat.
+Proof using.
+  Local Opaque union. hint finite_union.
+  introv FE FF. do 3 rewrite~ card_is_length_to_list.
+  forwards~ (NE&HE): to_list_spec E.
+  forwards~ (NF&HF): to_list_spec F.
+  forwards~ (NG&HG): to_list_spec (E \u F).
+  sets LE: (to_list E). sets LF: (to_list F).
+  sets G: (E \u F). sets LG: (to_list G).
+  asserts RG: (forall x : A, Mem x LG <-> (x \in E \/ x \in F)).   
+    intros. specializes HG x. subst G. rewrite in_union_eq in HG. auto.
+  clear HG. clearbody LG.
+  forwards~ M: No_duplicates_length_le LG (LE ++ LF).
+   introv N. apply Mem_app_or. rewrite HE, HF. rewrite <- RG. auto.
+  rew_length in M. auto.
+  Transparent union. (* should not be needed *)
 Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** structural decomposition *)
@@ -506,7 +417,7 @@ Proof using. intros_all. false. Qed.
 
 Lemma foreach_single : forall P X,
   P X -> @foreach A (set A) _ P (\{ X }). 
-Proof using. intros_all. rewrite~ (in_single H0). Qed.
+Proof using. intros_all. rewrite in_single_eq in H0. subst*. Qed.
 
 Lemma foreach_union : forall P E F,
   foreach P E -> foreach P F -> foreach P (E \u F).

@@ -30,8 +30,9 @@ Definition in_impl x E := E x > 0.
 Definition union_impl E F := fun x => (E x + F x)%nat.
 Definition incl_impl E F := forall x, E x <= F x.
 Definition dom_impl E := set_st (fun x => E x > 0).
+(* TODO: update these definitions to match those of finite sets *)
 Definition list_repr_impl (E:multiset A) (l:list (A*nat)) :=
-     no_duplicates (LibList.map (@fst _ _) l) 
+     No_duplicates (LibList.map (@fst _ _) l) 
   /\ forall n x, In (x,n) l <-> (n = E x /\ n > 0).
 Definition to_list_impl (E:multiset A) := epsilon (list_repr_impl E).
 Definition fold_impl (m:monoid_def B) (f:A->nat->B) (E:multiset A) := 
@@ -85,65 +86,74 @@ Hint Extern 1 (_ = _) => math.
 Transparent multiset empty_inst single_inst in_inst 
  union_inst incl_inst fold_inst card_inst.
 
-Global Instance multiset_in_empty_inst : In_empty_eq (A:=A) (T:=multiset A).
+Global Instance in_empty_eq_inst : In_empty_eq (A:=A) (T:=multiset A).
 Proof using. 
   constructor. intros. extens. simpl.
   unfold empty_impl, in_impl. autos*.
 Qed.
 
-Global Instance multiset_in_single_inst : In_single_eq (A:=A) (T:=multiset A).
+Global Instance in_single_eq_inst : In_single_eq (A:=A) (T:=multiset A).
 Proof using.
   constructor. intros. extens. simpl.
   unfold single_impl, in_impl. case_if*. 
 Qed.
 
-Global Instance multiset_in_union_inst : In_union_eq (A:=A) (T:=multiset A).
+Global Instance in_union_eq_inst : In_union_eq (A:=A) (T:=multiset A).
 Proof using.
   constructor. intros. extens. simpl.
   unfold single_impl, union_impl, in_impl. 
   iff. tests: (E x = 0). right~. left~. destruct H; math.
 Qed.
 
-Global Instance multiset_union_empty_l : Union_empty_l (T:=multiset A).
+Global Instance incl_inv_inst : Incl_inv (A:=A) (T:=multiset A).
+Proof using.
+  constructor. intros x. introv M N. 
+  unfold incl_inst, incl_impl,incl, in_inst, in_impl, is_in in *.
+  specializes M x. math.
+Qed.
+
+Global Instance union_empty_inv_inst : Union_empty_inv (T:=multiset A).
+Proof using. 
+  constructor. introv.
+  unfold union_inst, union_impl, union, empty_impl, 
+   empty_inst, empty, empty_impl, multiset. introv N.
+  split; extens~. 
+  intros x. lets: func_same_1 x N. math.
+  intros x. lets: func_same_1 x N. math.
+Qed.
+
+Global Instance union_empty_l_eq_inst : Union_empty_l (T:=multiset A).
 Proof using. 
   constructor. intros_all. simpl.
   unfold union_impl, empty_impl, multiset. simpl. extens~.
 Qed.
 
-Global Instance multiset_union_comm : Union_comm (T:=multiset A).
+Global Instance union_comm_eq_inst : Union_comm (T:=multiset A).
 Proof using. 
   constructor. intros_all. simpl.
   unfold union_impl, multiset. simpl. extens~.
 Qed.
 
-Global Instance multiset_union_assoc : Union_assoc (T:=multiset A).
+Global Instance union_assoc_eq_inst : Union_assoc (T:=multiset A).
 Proof using. 
   constructor. intros_all. simpl.
   unfold union_impl, multiset. simpl. extens~.
 Qed.
 
-Global Instance multiset_card_empty : Card_empty (T:=multiset A).
-Proof using. admit. (*TODO: under construction *) Qed.
-
-Global Instance multiset_card_single : Card_single (A:=A) (T:=multiset A).
-Proof using. admit. (*TODO: under construction *) Qed.
-
-(*
-Global Instance multiset_card_union : Card_union (T:=multiset A).
-Proof using. admit. (*TODO: under construction *) Qed.
-
-Global Instance multiset_empty_incl : Empty_incl (T:=multiset A).
+Global Instance empty_incl_inst : Empty_incl (T:=multiset A).
 Proof using. 
   constructor. intros_all. simpl.
-  unfold incl_impl, empty_impl, multiset. simpl. math.
+  unfold empty_impl, multiset. math.
 Qed.
 
-Global Instance multiset_union_empty_inv : Union_empty_inv (T:=multiset A).
-Proof using. 
-  constructor. simpl. unfolds union_impl, empty_impl, multiset.
-  intros_all. split; extens; intros x; lets: (func_same_1 x H); math.
-Qed.
-*)
+Global Instance card_empty_inst : Card_empty (T:=multiset A).
+Proof using. admit. (*TODO: under construction *) Qed.
+
+Global Instance card_single_inst : Card_single (A:=A) (T:=multiset A).
+Proof using. admit. (*TODO: under construction *) Qed.
+
+Global Instance card_union_le_inst : Card_union_le (T:=multiset A).
+Proof using. admit. (*TODO: under construction *) Qed.
 
 End Instances.
 
@@ -163,12 +173,11 @@ Implicit Types E F : multiset A.
 
 Lemma foreach_empty : forall P,
   @foreach A (multiset A) _ P \{}. 
-Proof using. intros_all. 
-Admitted. (* TODO: false* @in_empty. typeclass. *)
+Proof using. intros_all. rewrite in_empty_eq in H. false. Qed.
 
 Lemma foreach_single : forall P X,
   P X -> @foreach A (multiset A) _ P (\{ X }). 
-Proof using. intros_all.  admit. (* rewrite~ (in_single H0).*) Qed.
+Proof using. intros_all. rewrite in_single_eq in H0. subst*. Qed.
 
 Lemma foreach_union : forall P E F,
   foreach P E -> foreach P F -> foreach P (E \u F).
@@ -239,7 +248,7 @@ Lemma for_multiset_union_empty_r : forall A (E:multiset A), E \u \{} = E.
 Proof using. intros. apply union_empty_r. Qed.
 
 Lemma for_multiset_empty_incl : forall A (E:multiset A), \{} \c E.
-Proof using. intros.  admit. (* apply empty_incl.*) Qed.
+Proof using. intros. apply empty_incl. Qed.
 
 Hint Rewrite <- for_multiset_union_assoc : rew_permut_simpl.
 Hint Rewrite for_multiset_union_empty_l for_multiset_union_empty_r : rew_permut_simpl.
@@ -680,7 +689,7 @@ Tactic Notation "multiset_in" constr(H) :=
 
 Lemma union_empty_inv_multiset : forall A (l1 l2:multiset A),
   l1 \u l2 = \{} -> l1 = \{} /\ l2 = \{}.
-Proof using. intros. (* apply union_empty_inv. auto. *) admit. Qed.
+Proof using. intros. eapply union_empty_inv_inst. eauto. Qed.
 
 Implicit Arguments union_empty_inv_multiset [A l1 l2].
 

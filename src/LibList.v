@@ -89,9 +89,6 @@ Implicit Types x : A.
 Definition map (f : A -> C) :=
   nosimpl (fold_right (fun x acc => (f x)::acc) (@nil C)).
 
-Definition filter (f : predb A) :=
-  nosimpl (fold_right (fun x acc => if f x then x::acc else acc) (@nil A)).
-
 Definition append l1 l2 :=
   nosimpl (fold_right (fun x (acc:list A) => x::acc) l2 l1).
 
@@ -103,6 +100,9 @@ Definition rev :=
 
 Definition length :=
   nosimpl (fold_right (fun x acc => 1+acc) 0).
+
+Definition filter (f : predb A) :=
+  nosimpl (fold_right (fun x acc => if f x then x::acc else acc) (@nil A)).
 
 Definition for_all (f : predb A) := 
   nosimpl (fold_right (fun x acc => acc && (f x)) true).
@@ -482,9 +482,11 @@ Variable f : A -> bool.
 Lemma filter_nil : 
   filter f nil = nil.
 Proof using. auto. Qed.
+
 Lemma filter_cons : forall x l,
   filter f (x::l) = if f x then x :: filter f l else filter f l.
 Proof using. auto. Qed.
+
 Lemma filter_app : forall l1 l2,
   filter f (l1 ++ l2) = filter f l1 ++ filter f l2.
 Proof using.  (* todo: factorise with map_app *)
@@ -501,14 +503,13 @@ Proof using.  (* todo: factorise with map_app *)
      case_if. fequals. rewrite IHl1. rewrite~ app_cons. apply IHl1.
   specializes H (@nil A). rewrite~ app_nil_r in H.
 Qed.
+
 Lemma filter_last : forall x l,
   filter f (l & x) = filter f l ++ (if f x then x::nil else nil).
 Proof using. intros. rewrite~ filter_app. Qed.
-(*later:
-Lemma length_filter : forall l,
-  length (filter f l) <= length l.
-*)
+
 End FilterProp.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Mem *)
@@ -1329,12 +1330,11 @@ Qed.
 (** * Logical predicates *)
 
 Section LogicList.
-Variables A A1 A2 B C : Type.
 
 (** [Forall P L] asserts that all the elements in the list [L]
     satisfy the predicate [P]. *)
 
-Inductive Forall (P : A -> Prop) 
+Inductive Forall A (P : A -> Prop) 
   : list A -> Prop :=
   | Forall_nil : 
       Forall P nil
@@ -1346,7 +1346,7 @@ Inductive Forall (P : A -> Prop)
     have the same length and that elements at corresponding
     indices are related by the binary relation [P]. *)
 
-Inductive Forall2 (P : A -> B -> Prop) 
+Inductive Forall2 A B (P : A -> B -> Prop) 
   : list A -> list B -> Prop :=
   | Forall2_nil : 
       Forall2 P nil nil
@@ -1356,7 +1356,7 @@ Inductive Forall2 (P : A -> B -> Prop)
 
 (** Similar to [Forall2] except that it relates three lists *)
 
-Inductive Forall3 (P : A -> B -> C -> Prop) 
+Inductive Forall3 A B C (P : A -> B -> C -> Prop) 
   : list A -> list B -> list C -> Prop :=
   | Forall3_nil : 
       Forall3 P nil nil nil
@@ -1367,7 +1367,7 @@ Inductive Forall3 (P : A -> B -> C -> Prop)
 (** [exists P L] asserts that there exists a value in the
     list [L] that satisfied the predicate [P]. *)
 
-Inductive Exists (P : A -> Prop) 
+Inductive Exists A (P : A -> Prop) 
   : list A -> Prop :=
   | Exists_here : forall l x, 
       P x -> Exists P (x::l)
@@ -1379,7 +1379,7 @@ Inductive Exists (P : A -> Prop)
     such that the n-th element of [L1] and the n-th element
     of [L2] are related by the binary relation [P]. *)
 
-Inductive Exists2 (P : A1 -> A2 -> Prop) 
+Inductive Exists2 A1 A2 (P : A1 -> A2 -> Prop) 
   : list A1 -> list A2 -> Prop :=
   | Exists2_here : forall l1 l2 x1 x2,
       P x1 x2 -> Exists2 P (x1::l1) (x2::l2)
@@ -1387,10 +1387,17 @@ Inductive Exists2 (P : A1 -> A2 -> Prop)
       Exists2 P l1 l2 -> 
       Exists2 P (x1::l1) (x2::l2).
 
-(** [filters P L L'] asserts that [L'] is the sublist of [L]
+(** [filter P L] produces a list [L'] that is the sublist of [L]
     made exactly of the elements of [L] that satisfy [P]. *)
 
-Inductive Filters (P : A -> Prop) 
+Definition Filter A (P : A->Prop) :=
+  fold_right (fun x acc => If P x then x::acc else acc) (@nil A).
+
+(** [filters P L L'] asserts that [L'] is the sublist of [L]
+    made exactly of the elements of [L] that satisfy [P]. *)
+   (* DEPRECATED: use Filter instead *)
+
+Inductive Filters A (P : A -> Prop) 
   : list A -> list A -> Prop :=
   | Filters_nil : Filters P nil nil
   | Filters_cons_yes : forall l l' x,
@@ -1402,27 +1409,52 @@ Inductive Filters (P : A -> Prop)
 
 (** [Mem x l] asserts that [x] belongs to [M] *)
 
-Inductive Mem (x:A) : list A -> Prop :=
+Inductive Mem A (x:A) : list A -> Prop :=
   | Mem_here : forall l, 
       Mem x (x::l)
   | Mem_next : forall y l, 
       Mem x l -> 
       Mem x (y::l).
 
+(** [Remove_duplicates L] produces a list [L'] that is the sublist of [L]
+    obtained by keeping only the first occurence of every item. *)
+
+Fixpoint Remove_duplicates A (L:list A) :=
+  match L with
+  | nil => nil
+  | x::L' => x :: (Filter (<> x) (Remove_duplicates L'))
+  end.
+
+(** [No_duplicates L] asserts that [L] does not contain any
+    duplicated item. *)
+
+Inductive No_duplicates A : list A -> Prop :=
+  | No_duplicates_nil : No_duplicates nil
+  | No_duplicates_cons : forall x l,
+      ~ (Mem x l) -> No_duplicates l -> No_duplicates (x::l).
+
 (** [Nth n L x] asserts that the n-th element of the list [L]
     exists and is exactly [x] *)
 
-Inductive Nth : nat -> list A -> A -> Prop :=
+Inductive Nth A : nat -> list A -> A -> Prop :=
   | Nth_here : forall l x,
       Nth 0 (x::l) x
   | Nth_next : forall y n l x, 
       Nth n l x ->
       Nth (S n) (y::l) x.
 
+(** [Update n x L L'] asserts [L'] is the list obtained by substituting
+    in [L] the item at index [n] with [x]. *)
+
+Definition Update A (n:nat) (x:A) l l' :=
+    length l' = length l 
+  /\ (forall y m, Nth m l y -> m <> n -> Nth m l' y)
+  /\ Nth n l' x.
+
 (** [Assoc x v l] asserts that [(x,v)] the first pair of the 
     form [(x,_)] in [l] *)
 
-Inductive Assoc (x:A) (v:B) : list (A*B) -> Prop :=
+Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
   | Assoc_here : forall l , 
       Assoc x v ((x,v)::l)
   | Assoc_next : forall y l (w:B), 
@@ -1433,14 +1465,14 @@ Inductive Assoc (x:A) (v:B) : list (A*B) -> Prop :=
     index [n] such that the n-th element of [l1] is [x1]
     and the n-th element of [l2] is [x2] *)
 
-Definition has_pair x1 x2 l1 l2 :=
+Definition has_pair A1 A2 (x1:A1) (x2:A2) l1 l2 :=
   Exists2 (fun v1 v2 => v1 = x1 /\ v2 = x2) l1 l2.
 
-Lemma has_pair_here : forall x1 x2 l1 l2,
+Lemma has_pair_here : forall A1 A2 (x1:A1) (x2:A2) l1 l2,
   has_pair x1 x2 (x1::l1) (x2::l2).
 Proof using. intros. constructor~. Qed.
 
-Lemma has_pair_next : forall x1 x2 y1 y2 l1 l2,
+Lemma has_pair_next : forall A1 A2 (x1:A1) (x2:A2) y1 y2 l1 l2,
   has_pair x1 x2 l1 l2 ->
   has_pair x1 x2 (y1::l1) (y2::l2).
 Proof using. introv H. apply* Exists2_next. Qed.
@@ -1716,6 +1748,16 @@ End NthProperties.
 Section MemFacts.
 Hint Constructors Mem.
 
+Lemma Mem_induct : forall (A : Type) (x : A) (P : list A -> Prop),
+  (forall l : list A, P (x :: l)) ->
+  (forall (y : A) (l : list A), Mem x l -> x <> y -> P l -> P (y :: l)) ->
+  (forall l : list A, Mem x l -> P l).
+Proof.
+  introv HH HN M. induction l.
+  inverts M.
+  tests: (x = a). auto. inverts M; auto_false*.
+Qed.
+
 Lemma Mem_nil_eq : forall A (x:A),
   Mem x nil = False.
 Proof using. intros. extens. iff H; inverts H. Qed.
@@ -1769,13 +1811,137 @@ Qed.
 
 End MemFacts.
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** FilterProp *)
+
+Section FilterFacts.
+Variables (A:Type).
+Implicit Types P : A -> Prop.
+
+Lemma Filter_nil : forall P,
+  Filter P nil = nil.
+Proof using. auto. Qed.
+
+Lemma Filter_cons : forall x l P,
+  Filter P (x::l) = If P x then x :: Filter P l else Filter P l.
+Proof using. auto. Qed.
+
+Lemma Filter_app : forall l1 l2 P,
+  Filter P (l1 ++ l2) = Filter P l1 ++ Filter P l2.
+Proof using.  (* todo: factorise with map_app and above *)
+  intros. unfold Filter.
+  assert (forall accu,
+    fold_right (fun x acc => If P x then x::acc else acc) accu (l1 ++ l2) =
+    fold_right (fun x acc => If P x then x::acc else acc) nil l1 ++
+     fold_right (fun x acc => If P x then x::acc else acc) nil l2 ++ accu).
+  induction l1; intros; simpl. 
+   do 2 rewrite app_nil_l. gen accu.
+   induction l2; intros; simpl.
+     auto. 
+     case_if. fequals. rewrite IHl2. rewrite~ app_cons. fequals.
+     case_if. fequals. rewrite IHl1. rewrite~ app_cons. apply IHl1.
+  specializes H (@nil A). rewrite~ app_nil_r in H.
+Qed.
+
+Lemma Filter_last : forall x l P,
+  Filter P (l & x) = Filter P l ++ (If P x then x::nil else nil).
+Proof using. intros. rewrite~ Filter_app. Qed.
+
+Lemma Filter_neq : forall x (L:list A), 
+  ~ Mem x (Filter (<> x) L).
+Proof.
+  intros. induction L.
+  rewrite Filter_nil. introv M. inverts M.
+  rewrite Filter_cons. case_if.
+    introv M. inverts M; false.
+    auto.
+Qed.
+
+Lemma Filter_Mem : forall x (L:list A) (P:A->Prop),
+  Mem x L -> P x -> Mem x (Filter P L).
+Proof.
+  Hint Constructors Mem.
+  introv H Px. induction H using Mem_induct.
+  rewrite Filter_cons. case_if*.
+  rewrite Filter_cons. case_if*.
+Qed.
+
+Lemma Filter_Mem_inv : forall x (L:list A) P,
+  Mem x (Filter P L) -> Mem x L /\ P x.
+Proof.
+  Hint Constructors Mem.
+  introv M. induction L.
+  rewrite Filter_nil in M. inverts M.
+  rewrite Filter_cons in M. case_if. inverts* M. autos*.
+Qed.
+
+Lemma Filter_length_le : forall (L:list A) P,
+  (length (Filter P L) <= length L)%nat.
+Proof.
+  intros. induction L. 
+  rewrite Filter_nil. math.
+  rewrite Filter_cons. case_if; rew_length; math.
+Qed.
+
+Lemma Filter_neq_Mem_length : forall x (L:list A),
+  Mem x L -> (length (Filter (<> x) L) < length L)%nat.
+Proof.
+  introv M. induction L.
+  inverts M.
+  rewrite Filter_cons. case_if.
+    inverts M. false. rew_length. forwards~: IHL. math.   
+    lets: (Filter_length_le L (<> x)). rew_length. math.
+Qed.
+
+Lemma Filter_No_duplicates : forall (L:list A) P, 
+  No_duplicates L -> No_duplicates (Filter P L).
+Proof.
+  Hint Constructors No_duplicates.
+  introv H. induction H.
+  rewrite* Filter_nil. 
+  rewrite Filter_cons. case_if.
+    constructors*. introv N. false* Filter_Mem_inv N.
+    auto.
+Qed.
+
+End FilterFacts.
+
+(* ---------------------------------------------------------------------- *)
+(* ** Remove_duplicates and No_duplicates *)
+
+Lemma Remove_duplicates_spec : forall A (L L':list A),
+  L' = Remove_duplicates L ->
+  No_duplicates L' /\ (forall x, Mem x L' <-> Mem x L).
+Proof using.
+  Hint Constructors Mem No_duplicates.
+  introv. gen L'. induction L; introv E; simpls.
+  subst. splits*.
+  sets_eq L'': (Remove_duplicates L). forwards~ [E' M]: IHL. splits~.
+    subst L'. constructors. applys Filter_neq. applys* Filter_No_duplicates.
+    subst L'. intros x. lets (M1&M2): M x. iff N.
+      inverts N as R. auto. lets: Filter_Mem_inv R. constructors*.
+      lets [E|(H1&H2)]: Mem_inv N. subst*. constructors. applys* Filter_Mem.
+Qed.
+
+Lemma No_duplicates_length_le : forall A (L L':list A),
+  No_duplicates L ->
+  (forall x, Mem x L -> Mem x L') ->
+  (length L <= length L')%nat.
+Proof using.
+  Hint Constructors Mem.
+  introv NL ML. gen L'. induction L as [|a L]; intros.
+  rew_length. math.
+  rew_length. inverts NL as HM NL'.
+   sets_eq L'': (Filter (<> a) L').
+   forwards H: Filter_neq_Mem_length a L'. applys* ML.
+   rewrite <- EQL'' in H.
+   forwards~: IHL L''. introv N. tests: (x = a). subst L''. applys* Filter_Mem.
+   math.  
+Qed.
+
 (* ---------------------------------------------------------------------- *)
 (* ** Update of a functional list *)
-
-Definition Update A (n:nat) (x:A) l l' :=
-    length l' = length l 
-  /\ (forall y m, Nth m l y -> m <> n -> Nth m l' y)
-  /\ Nth n l' x.
 
 Section UpdateProp.
 Variables A : Type.

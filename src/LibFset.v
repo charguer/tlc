@@ -7,10 +7,7 @@ Set Implicit Arguments.
 Require Import LibTactics LibList.
 Require Import LibSet LibLogic LibEqual LibReflect.
 
-(** DISCLAIMER: for the time being, this file only contains the
-    operations for type fset, but not yet all the typeclasses 
-    associated with it. A module signature is currently used to
-    hide the implentation. *)
+(** DISCLAIMER: under construction *)
 
 (* ********************************************************************** *)
 (** * Abstract interface for finite sets *)
@@ -232,7 +229,7 @@ Lemma fset_extens_eq : forall E F,
   (forall x, x \in E = x \in F) -> E = F.
 Proof using.
   unfold mem. intros [U FU] [V FV] H. simpls.
-  apply exist_eq. apply in_double_eq. auto.
+  apply exist_eq. apply in_extens. intros. rewrite* H.
 Qed. 
 
 Lemma fset_extens : forall E F, 

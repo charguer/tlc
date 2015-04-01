@@ -88,7 +88,7 @@ Lemma per_dom_add_edge : forall A (B:binary A) x y,
 Proof using.
   introv [Sy Tr] Bx By. unfold per_add_edge. apply set_ext. intros z.
   unfold Rel.union. unfold per_dom. unfold per_single.
-  do 2 rewrite in_union_eq, in_set_eq. do 2 rewrite in_single_eq.
+  do 2 rewrite in_union_eq, in_set_st_eq. do 2 rewrite in_single_eq.
   iff H.
   set (a:=z) in H at 1. set (b := z) in H.
   asserts~ K: (a = z \/ b = z). clearbody a b. gen K.
@@ -113,7 +113,7 @@ Lemma per_dom_add_node : forall A (B:binary A) x,
 Proof using.
   intros. unfold per_add_node. apply set_ext. intros y.
   unfold Rel.union. unfold per_dom. unfold per_single.
-  rewrite in_union_eq. rewrite in_single_eq. do 2 rewrite in_set_eq. 
+  rewrite in_union_eq. rewrite in_single_eq. do 2 rewrite in_set_st_eq. 
   intuition. 
 Qed.
 
