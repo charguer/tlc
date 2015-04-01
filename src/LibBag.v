@@ -186,10 +186,10 @@ Class In_single :=
 Class In_single_self :=
   { in_single_self : forall x, x \in \{x} }.
 
-Class In_iff_eq :=
-  { in_iff_eq : forall E F, (forall x, x \in E = x \in F) -> E = F }.
-Class In_iff :=
-  { in_iff : forall E F, (forall x, x \in E <-> x \in F) -> E = F }.
+Class In_extens_eq :=
+  { in_extens_eq : forall E F, (forall x, x \in E = x \in F) -> E = F }.
+Class In_extens :=
+  { in_extens : forall E F, (forall x, x \in E <-> x \in F) -> E = F }.
 
 Class Is_empty_eq := 
   { is_empty_eq : forall E, (E = \{}) = (forall x, x \in E -> False) }.
@@ -248,10 +248,10 @@ Class Remove_disjoint :=
 
 Class Incl_in_eq :=
   { incl_in_eq : forall E F, (E \c F) = (forall x, x \in E -> x \in F) }.
-Class Incl_in :=
-  { incl_in : forall x E F, E \c F -> x \in E -> x \in F}.
-Class In_incl :=
-  { in_incl : forall E F, (forall x, x \in E -> x \in F) -> E \c F }.
+Class Incl_prove :=
+  { incl_prove : forall E F, (forall x, x \in E -> x \in F) -> E \c F }.
+Class Incl_inv :=
+  { incl_inv : forall x E F, E \c F -> x \in E -> x \in F}.
 
 Class Incl_refl :=
   { incl_refl : refl incl }.
@@ -337,7 +337,7 @@ Class Card_empty :=
 Class Card_single :=
   { card_single : forall X, card \{X} = 1%nat }.
 Class Card_union :=
-  { card_union : forall E F, card (E \u F) = (card E + card F)%nat }.
+  { card_union : forall E F, E \# F -> card (E \u F) = (card E + card F)%nat }.
 Class Card_union_le :=
   { card_union_le : forall E F, card (E \u F) <= (card E + card F)%nat }.
 
@@ -383,8 +383,8 @@ Implicit Arguments in_union_inv [[A] [T] [BI] [BU] [In_union_inv] x E F].
 Implicit Arguments notin_union [[A] [T] [BI] [BU] [Notin_union] x E F].
 Implicit Arguments notin_union_inv [[A] [T] [BI] [BU] [Notin_union_inv] x E F].
 
-Implicit Arguments incl_in [[A] [T] [BI] [BL] [Incl_in] x E F].
-Implicit Arguments in_incl [[A] [T] [BI] [BL] [In_incl] E F].
+Implicit Arguments incl_prove [[A] [T] [BI] [BL] [Incl_prove] E F].
+Implicit Arguments incl_inv [[A] [T] [BI] [BL] [Incl_inv] x E F].
 Implicit Arguments incl_trans [[T] [BL] [Incl_trans] x z].
 Implicit Arguments incl_empty_inv [[T] [BL] [Incl_empty_inv] E].
 
@@ -434,16 +434,16 @@ Global Instance in_single_self_from_in_single_eq :
   In_single_eq -> In_single_self.
 Proof using. constructor. intros. rewrite~ in_single_eq. Qed.
 
-Global Instance in_iff_eq_from_in_iff :
-  In_iff -> In_iff_eq.
-Proof using. constructor. introv I. apply in_iff. intros. rewrite* I. Qed.
+Global Instance in_extens_eq_from_in_extens :
+  In_extens -> In_extens_eq.
+Proof using. constructor. introv I. apply in_extens. intros. rewrite* I. Qed.
 
 Global Instance is_empty_eq_from_in_empty_eq :
-  In_iff -> In_empty_eq -> Is_empty_eq.
+  In_extens -> In_empty_eq -> Is_empty_eq.
 Proof using.
   constructor. intros. extens. iff M.
     subst. introv N. rewrite* in_empty_eq in N.
-    apply in_iff. iff N. false* M. rewrite* in_empty_eq in N.
+    apply in_extens. iff N. false* M. rewrite* in_empty_eq in N.
 Qed.
 
 Global Instance is_empty_prove_from_is_empty_eq :
@@ -455,11 +455,11 @@ Global Instance is_empty_inv_from_is_empty_eq :
 Proof using. constructor. introv I1 I2. rewrite* is_empty_eq in I1. Qed.
 
 Global Instance is_single_eq_from_in_single_eq :
-  In_iff -> In_single_eq -> Is_single_eq.
+  In_extens -> In_single_eq -> Is_single_eq.
 Proof using.
   constructor. intros. extens. iff M (M1&M2).
     subst. split. rewrite* in_single_eq. introv N. rewrite* in_single_eq in N.
-    apply in_iff. iff N.
+    apply in_extens. iff N.
       rewrite* (M2 x0). rewrite* in_single_eq.
       rewrite* in_single_eq in N. subst*.
 Qed.
@@ -516,6 +516,23 @@ Proof using. constructor. introv I. rewrite~ notin_union_eq in I. Qed.
 
 (** Incl *)
 
+Global Instance incl_prove_from_in_eq :
+  Incl_in_eq -> Incl_prove.
+Proof using. constructor. introv I. rewrite* incl_in_eq. Qed.
+
+Global Instance incl_inv_from_in_eq :
+  Incl_in_eq -> Incl_inv.
+Proof using. constructor. introv I1 I2. rewrite* incl_in_eq in I1. Qed.
+
+Global Instance incl_order_from_incl_in_eq :
+  Incl_in_eq -> In_extens -> Incl_order.
+Proof using.
+  constructor. constructor.  
+  intros x. rewrite* incl_in_eq. 
+  intros E F G I1 I2. rewrite incl_in_eq. rewrite incl_in_eq in I1,I2. autos*.
+  intros E F I1 I2. rewrite incl_in_eq in I1,I2. apply* in_extens.
+Qed.
+
 Global Instance incl_refl_from_incl_order :
   Incl_order -> Incl_refl.
 Proof using. constructor. apply order_refl. apply incl_order. Qed.
@@ -536,10 +553,10 @@ Proof using.
 Qed.
 
 Global Instance incl_empty_from_in_empty_eq_and_incl_in_eq :
-  In_iff -> In_empty_eq -> Incl_in_eq -> Incl_empty.
+  In_extens -> In_empty_eq -> Incl_in_eq -> Incl_empty.
 Proof using.
   constructor. intros. extens. rewrite incl_in_eq. iff M.
-    apply in_iff. iff N. applys* M. rewrite in_empty_eq in N. false.
+    apply in_extens. iff N. applys* M. rewrite in_empty_eq in N. false.
     subst. introv N. rewrite in_empty_eq in N. false.
 Qed.
 
@@ -548,7 +565,7 @@ Global Instance incl_empty_inv_from_incl_empty :
 Proof using. constructor. introv I. rewrite~ incl_empty in I. Qed.
 
 Global Instance single_incl_r_eq_from_in_single_eq_and_and_incl_in_eq :
-  In_iff -> In_single_eq -> Incl_in_eq -> Single_incl_r_eq.
+  In_extens -> In_single_eq -> Incl_in_eq -> Single_incl_r_eq.
 Proof using.
   constructor. intros. extens. rewrite incl_in_eq. iff M.
     applys* M. rewrite~ in_single_eq.
@@ -556,13 +573,13 @@ Proof using.
 Qed.
 
 Global Instance single_incl_l_eq_from_in_empty_eq_and_in_single_eq_and_and_incl_in_eq :
-  In_iff -> In_empty_eq -> In_single_eq -> Incl_in_eq -> Single_incl_l_eq.
+  In_extens -> In_empty_eq -> In_single_eq -> Incl_in_eq -> Single_incl_l_eq.
 Proof using.
   constructor. intros. extens. rewrite incl_in_eq. iff M.
     tests: (x \in E). 
       right. apply* is_single_prove. introv N. forwards~ R: M y.
         rewrite* in_single_eq in R.
-      left. apply in_iff. iff N. forwards~ R: M x0.
+      left. apply in_extens. iff N. forwards~ R: M x0.
         rewrite* in_single_eq in R. subst. false*.
         rewrite in_empty_eq in N. false.
     introv N. rewrite in_single_eq. destruct M.
@@ -571,12 +588,20 @@ Proof using.
 Qed.
 
 Global Instance union_incl_eq_from_in_union_eq_and_and_incl_in_eq :
-  In_iff -> In_union_eq -> Incl_in_eq -> Union_incl_eq.
+  In_extens -> In_union_eq -> Incl_in_eq -> Union_incl_eq.
 Proof using.
   constructor. intros. extens. repeat rewrite incl_in_eq. iff M (M1&M2).
     split. intros x N. specializes M x. rewrite* in_union_eq in M.
            intros x N. specializes M x. rewrite* in_union_eq in M.
     intros x N. specializes M1 x. specializes M2 x. rewrite* in_union_eq in N.
+Qed.
+
+Global Instance incl_union_l_from_incl_in_eq_and_in_union_eq :
+  Incl_in_eq -> In_union_eq -> Incl_union_l.
+Proof using.
+  constructor. introv I. rewrite incl_in_eq. rewrite incl_in_eq in I. 
+  (* coqbug on "rewrite incl_in_eq in *" *)
+  introv N. rewrite* in_union_eq.
 Qed.
 
 Global Instance incl_union_r_from_incl_union_l :
@@ -592,7 +617,7 @@ Global Instance union_incl_inv_from_union_incl_eq :
 Proof using. constructor. introv I. rewrite union_incl_eq in I. destruct* I. Qed.
 
 Global Instance incl_inter_eq_from_in_inter_eq_and_and_incl_in_eq :
-  In_iff -> In_inter_eq -> Incl_in_eq -> Incl_inter_eq.
+  In_extens -> In_inter_eq -> Incl_in_eq -> Incl_inter_eq.
 Proof using.
   constructor. intros. extens. repeat rewrite incl_in_eq. iff M (M1&M2).
     split. intros x N. specializes M x. rewrite* in_inter_eq in M.
@@ -614,18 +639,18 @@ Hint Rewrite @in_union_eq @in_inter_eq
   @in_empty_eq @in_single_eq : rew_in_eq. 
 
 Tactic Notation "contain_by_in_double" :=
-  intros_all; apply in_iff; intros; 
+  intros_all; apply in_extens; intros; 
   autorewrite with rew_in_eq; rew_reflect; 
   intuition (try solve [auto|eauto|auto_false|false]).
 
 (** Union *)
 
 Global Instance union_comm_form_in_union_eq : 
-  In_iff -> In_union_eq -> Union_comm.
+  In_extens -> In_union_eq -> Union_comm.
 Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance union_assoc_form_in_union_eq : 
-  In_iff -> In_union_eq -> Union_assoc.
+  In_extens -> In_union_eq -> Union_assoc.
 Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance union_comm_assoc_from_union_comm_and_union_assoc :
@@ -636,7 +661,7 @@ Proof using.
 Qed.
 
 Global Instance union_empty_l_from_in_union_eq_and_in_empty_eq : 
-  In_iff -> In_union_eq -> In_empty_eq -> Union_empty_l.
+  In_extens -> In_union_eq -> In_empty_eq -> Union_empty_l.
 Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance union_empty_r_from_union_empty_l : 
@@ -644,25 +669,25 @@ Global Instance union_empty_r_from_union_empty_l :
 Proof using. constructor. intros_all. rewrite union_comm. apply union_empty_l. Qed.
 
 Global Instance union_empty_inv_from_in_union_eq : 
-  In_iff -> In_empty_eq -> In_union_eq -> Union_empty_inv.
+  In_extens -> In_empty_eq -> In_union_eq -> Union_empty_inv.
 Proof using. 
   constructor. introv N. split.
-    apply in_iff. iff R. rewrite <- N. rewrite* in_union_eq. rewrite* in_empty_eq in R.
-    apply in_iff. iff R. rewrite <- N. rewrite* in_union_eq. rewrite* in_empty_eq in R.
+    apply in_extens. iff R. rewrite <- N. rewrite* in_union_eq. rewrite* in_empty_eq in R.
+    apply in_extens. iff R. rewrite <- N. rewrite* in_union_eq. rewrite* in_empty_eq in R.
 Qed.
 
 Global Instance union_self_from_in_union_eq : 
-  In_iff -> In_union_eq -> Union_self.
+  In_extens -> In_union_eq -> Union_self.
 Proof using. constructor. contain_by_in_double. Qed.
 
 (** Inter *)
 
 Global Instance inter_comm_form_in_inter_eq : 
-  In_iff -> In_inter_eq -> Inter_comm.
+  In_extens -> In_inter_eq -> Inter_comm.
 Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance inter_assoc_form_in_inter_eq : 
-  In_iff -> In_inter_eq -> Inter_assoc.
+  In_extens -> In_inter_eq -> Inter_assoc.
 Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance inter_comm_assoc_from_inter_comm_and_inter_assoc : 
@@ -673,7 +698,7 @@ Proof using.
 Qed.
 
 Global Instance inter_empty_l_from_in_inter_eq_and_in_empty_eq : 
-  In_iff -> In_inter_eq -> In_empty_eq -> Inter_empty_l.
+  In_extens -> In_inter_eq -> In_empty_eq -> Inter_empty_l.
 Proof using. constructor. contain_by_in_double. Qed.
 
 Global Instance inter_empty_r_from_inter_empty_l : 
@@ -681,9 +706,24 @@ Global Instance inter_empty_r_from_inter_empty_l :
 Proof using. constructor. intros_all. rewrite inter_comm. apply inter_empty_l. Qed.
 
 Global Instance inter_self_from_in_inter_eq : 
-  In_iff -> In_inter_eq -> Inter_self.
+  In_extens -> In_inter_eq -> Inter_self.
 Proof using. constructor. contain_by_in_double. Qed.
 
+
+(** Remove *)
+
+Global Instance remove_incl_from_in_remove_eq_and_incl_in_eq :
+  In_remove_eq -> Incl_in_eq -> Remove_incl.
+Proof using. 
+  constructor. intros. rewrite incl_in_eq. introv N. rewrite* in_remove_eq in N.
+Qed.
+
+Global Instance remove_disjoint_from_in_remove_eq_and_disjoint_eq :
+  In_remove_eq -> Disjoint_eq -> Remove_disjoint.
+Proof using.
+  constructor. intros. rewrite disjoint_eq. introv N M.
+  rewrite* in_remove_eq in M.
+Qed.
 
 (** Disjoint *)
 
@@ -703,11 +743,23 @@ Proof using.
     introv N1 N2. rewrite in_single_eq in N1. subst. false.
 Qed.  
 
+Global Instance disjoint_sym_from_disjoint_eq : 
+  Disjoint_eq -> Disjoint_sym.
+Proof using. constructor. intros x y. do 2 rewrite* disjoint_eq. Qed.
+
 Global Instance disjoint_single_r_eq_from_disjoint_single_l : 
   Disjoint_single_l_eq -> Disjoint_sym -> Disjoint_single_r_eq.
 Proof using.
   constructor. intros_all.
   rewrite (sym_to_eq disjoint_sym). apply disjoint_single_l_eq.
+Qed.
+
+Global Instance inter_disjoint_from_disjoint_eq_and_in_inter_eq : 
+  In_extens -> In_empty_eq -> Disjoint_eq -> In_inter_eq -> Inter_disjoint.
+Proof using.
+  constructor. introv M. apply in_extens. rewrite disjoint_eq in M. iff N.
+    rewrite in_inter_eq in N. false*.
+    rewrite in_empty_eq in N. false.
 Qed.
 
 

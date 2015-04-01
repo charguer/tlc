@@ -9,7 +9,14 @@ Require Import LibTactics LibLogic LibReflect LibOption
   LibRelation LibLogic LibOperation LibEpsilon LibSet.
 Require Export LibBag.
 
-(** UNDER CONSTRUCTION *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Notations to help the typechecker *)
+
+Notation "x \indom E" := (x \in (dom E : set _)) 
+  (at level 39) : container_scope.
+Notation "x \notindom E" := (x \notin ((dom E) : set _)) 
+  (at level 39) : container_scope.
 
 
 (* ********************************************************************** *)
@@ -47,7 +54,6 @@ Definition read_impl A `{Inhab B} (M:map A B) (k:A) :=
   | None => arbitrary
   | Some v => v
   end.
-
 
 (* ---------------------------------------------------------------------- *)
 (** ** Notation through typeclasses *)
