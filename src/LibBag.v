@@ -156,399 +156,554 @@ Instance bag_update_as_union_single : forall A B T
 Global Opaque bag_update_as_union_single.
 
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Properties *)
 
-(** Membership *)
+Section Properties.
 
-Class In_empty_eq `{BagIn A T, BagEmpty T} :=
+Context {A T:Type} 
+  {BI: BagIn A T} {BE: BagEmpty T} {BS: BagSingle A T}
+  {BN: BagInter T} {BU: BagUnion T} {BR: BagRemove T T} {BC: BagCard T}
+  {BL: BagIncl T} {BD: BagDisjoint T}.
+
+(** In *)
+
+Class In_empty_eq :=
   { in_empty_eq : forall x, x \in \{} = False }.
-Class In_empty `{BagIn A T, BagEmpty T} :=
+Class In_empty :=
   { in_empty : forall x, x \in \{} -> False }.
 
-Implicit Arguments in_empty [[A] [T] [H] [H0] [In_empty]].
-
-Class Notin_empty `{BagIn A T, BagEmpty T} :=
+Class Notin_eq :=
+  { notin_eq : forall x E, (x \notin E) = ~ (x \in E) }.
+Class Notin_empty :=
   { notin_empty : forall x, x \notin \{} }.
 
-Implicit Arguments notin_empty [[A] [T] [H] [H0] [Notin_empty]].
-
-Class In_single_eq `{BagIn A T, BagSingle A T} :=
+Class In_single_eq :=
   { in_single_eq : forall x y, x \in \{y} = (x = y) }.
-Class In_single `{BagIn A T, BagSingle A T} :=
+Class In_single :=
   { in_single : forall x y, x \in \{y} -> x = y }.
-Class In_single_self `{BagIn A T, BagSingle A T} :=
+Class In_single_self :=
   { in_single_self : forall x, x \in \{x} }.
 
-Implicit Arguments in_single_eq [[A] [T] [H] [H0] [In_single_eq]].
-Implicit Arguments in_single [[A] [T] [H] [H0] [In_single] x y].
-Implicit Arguments in_single_self [[A] [T] [H] [H0] [In_single_self]].
+Class In_iff_eq :=
+  { in_iff_eq : forall E F, (forall x, x \in E = x \in F) -> E = F }.
+Class In_iff :=
+  { in_iff : forall E F, (forall x, x \in E <-> x \in F) -> E = F }.
 
-Class Notin_eq `{BagIn A T, BagIn A T} :=
-  { notin_eq : forall x E, (x \notin E) = ~ (x \in E) }.
+Class Is_empty_eq := 
+  { is_empty_eq : forall E, (E = \{}) = (forall x, x \in E -> False) }.
+Class Is_empty_prove := 
+  { is_empty_prove : forall E, (forall x, x \in E -> False) -> E = \{} }.
+Class Is_empty_inv := 
+  { is_empty_inv : forall x E, E = \{} -> x \in E -> False }.
 
-Implicit Arguments notin_eq [[A] [T] [H] [H0] [Notin_eq]].
+Class Is_single_eq := 
+  { is_single_eq : forall x E, (E = \{x}) = (x \in E /\ (forall y, y \in E -> y = x)) }.
+Class Is_single_prove := 
+  { is_single_prove : forall x E, x \in E -> (forall y, y \in E -> y = x) -> E = \{x} }.
+Class Is_single_inv := 
+  { is_single_inv : forall x y E, E = \{x} -> y \in E -> y = x }.
 
-Class In_union_eq `{BagIn A T, BagUnion T} :=
-  { in_union_eq : forall x (E F : T), x \in (E \u F) = (x \in E \/ x \in F) }.
-Class In_union_l `{BagIn A T, BagUnion T} :=
-  { in_union_l : forall x E F, x \in E -> x \in (E \u F) }.
-Class In_union_r `{BagIn A T, BagUnion T} :=
-  { in_union_r : forall x E F, x \in F -> x \in (E \u F) }.
-Class In_union_inv `{BagIn A T, BagUnion T} :=
-  { in_union_inv : forall x (E F : T), x \in (E \u F) -> (x \in E \/ x \in F) }.
-
-Implicit Arguments in_union_eq [[A] [T] [H] [H0] [In_union_eq]].
-Implicit Arguments in_union_l [[A] [T] [H] [H0] [In_union_l] x E F].
-Implicit Arguments in_union_r [[A] [T] [H] [H0] [In_union_r] x E F].
-Implicit Arguments in_union_inv [[A] [T] [H] [H0] [In_union_inv] x E F].
-
-Class In_inter_eq `{BagIn A T, BagInter T} :=
+Class In_inter_eq :=
   { in_inter_eq : forall x E F, x \in (E \n F) = (x \in E /\ x \in F) }.
-Class In_inter `{BagIn A T, BagInter T} :=
+Class In_inter :=
   { in_inter : forall x E F, x \in E -> x \in F -> x \in (E \n F) }.
-Class In_inter_inv `{BagIn A T, BagInter T} :=
+Class In_inter_inv :=
   { in_inter_inv : forall x E F, x \in (E \n F) -> x \in E /\ x \in F }.
 
-Implicit Arguments in_inter_eq [[A] [T] [H] [H0] [In_inter_eq]].
-Implicit Arguments in_inter [[A] [T] [H] [H0] [In_inter] x E F].
-Implicit Arguments in_inter_inv [[A] [T] [H] [H0] [In_inter_inv] x E F].
-
-Class Notin_inter_eq `{BagIn A T, BagInter T} :=
+Class Notin_inter_eq :=
   { notin_inter_eq : forall x E F, x \notin (E \n F) = (x \notin E \/ x \notin F) }.
-Class Notin_inter `{BagIn A T, BagInter T} :=
-  { notin_inter : forall x E F, x \notin E \/ x \notin F -> x \notin (E \n F) }.
-Class Notin_inter_inv `{BagIn A T, BagInter T} :=
+Class Notin_inter_l :=
+  { notin_inter_l : forall x E F, x \notin E -> x \notin (E \n F) }.
+Class Notin_inter_r :=
+  { notin_inter_r : forall x E F, x \notin F -> x \notin (E \n F) }.
+Class Notin_inter_inv :=
   { notin_inter_inv : forall x E F, x \notin (E \n F) -> x \notin E \/ x \notin F }.
 
-Implicit Arguments notin_inter_eq [[A] [T] [H] [H0] [Notin_inter_eq]].
-Implicit Arguments notin_inter [[A] [T] [H] [H0] [Notin_inter] x E F].
-Implicit Arguments notin_inter_inv [[A] [T] [H] [H0] [Notin_inter_inv] x E F].
+Class In_union_eq :=
+  { in_union_eq : forall x (E F : T), x \in (E \u F) = (x \in E \/ x \in F) }.
+Class In_union_l :=
+  { in_union_l : forall x E F, x \in E -> x \in (E \u F) }.
+Class In_union_r :=
+  { in_union_r : forall x E F, x \in F -> x \in (E \u F) }.
+Class In_union_inv :=
+  { in_union_inv : forall x (E F : T), x \in (E \u F) -> (x \in E \/ x \in F) }.
 
-Class In_remove_eq `{BagIn A T, BagRemove T T} :=
+Class Notin_union_eq :=
+  { notin_union_eq : forall x E F, x \notin (E \u F) = (x \notin E /\ x \notin F) }.
+Class Notin_union :=
+  { notin_union : forall x E F, x \notin E -> x \notin F -> x \notin (E \u F) }.
+Class Notin_union_inv :=
+  { notin_union_inv : forall x E F, x \notin (E \u F) -> x \notin E /\ x \notin F }.
+
+Class In_remove_eq :=
   { in_remove_eq : forall x (E F : T), x \in (E \- F) = (x \in E /\ x \notin F) }.
-Class Remove_incl `{BagIncl T, BagRemove T T} :=
+Class Remove_incl :=
   { remove_incl : forall (E F : T), (E \- F) \c E }.
-Class Remove_disjoint `{BagDisjoint T, BagRemove T T} :=
+Class Remove_disjoint :=
   { remove_disjoint : forall (E F : T), F \# (E \- F) }.
 
-Implicit Arguments in_remove_eq [[A] [T] [H] [H0] [In_remove_eq]].
-Implicit Arguments remove_incl [[T] [H] [H0] [Remove_incl]].
-Implicit Arguments remove_disjoint [[T] [H] [H0] [Remove_disjoint]].
+(** Incl *)
 
-Class In_double_eq `{BagIn A T} :=
-  { in_double_eq : forall E F, (forall x, x \in E = x \in F) -> E = F }.
-Class In_double `{BagIn A T} :=
-  { in_double : forall E F, (forall x, x \in E <-> x \in F) -> E = F }.
-
-Implicit Arguments in_double_eq [[A] [T] [H] [In_double_eq]].
-Implicit Arguments in_double [[A] [T] [H] [In_double]].
-
-(* TODO: define Incl_in_eq as  (forall x, x \in E -> x \in F) = (E \c F) *)
-Class Incl_in `{BagIn A T, BagIncl T} :=
+Class Incl_in_eq :=
+  { incl_in_eq : forall E F, (E \c F) = (forall x, x \in E -> x \in F) }.
+Class Incl_in :=
   { incl_in : forall x E F, E \c F -> x \in E -> x \in F}.
-Class In_incl `{BagIn A T, BagIncl T} :=
+Class In_incl :=
   { in_incl : forall E F, (forall x, x \in E -> x \in F) -> E \c F }.
 
-Implicit Arguments incl_in [[A] [T] [H] [H0] [Incl_in] x E F].
-Implicit Arguments in_incl [[A] [T] [H] [H0] [In_incl] E F].
-
-Class Incl_refl `{BagIncl T} :=
+Class Incl_refl :=
   { incl_refl : refl incl }.
-Class Incl_trans `{BagIncl T} :=
+Class Incl_trans :=
   { incl_trans : trans incl }. 
-Class Double_incl `{BagIncl T} :=
-  { double_incl : antisym incl }.
-Class Incl_order `{BagIncl T} :=
+Class Incl_antisym := (* note: double inclusion *)
+  { incl_antisym : antisym incl }.
+Class Incl_order :=
   { incl_order : LibOrder.order incl }. 
 
-Implicit Arguments incl_refl [[T] [H] [Incl_refl]].
-Implicit Arguments incl_trans [[T] [H] [Incl_trans] x z].
-
-(* todo: add implicit
-Implicit Arguments double_incl [[T] [H] [Double_incl] x E F].
-Implicit Arguments incl_order [[T] [H] [Incl_order] x E F].*)
-
-Class Empty_incl `{BagEmpty T, BagIncl T} :=
+Class Empty_incl :=
   { empty_incl : forall E, \{} \c E }.
-Class Incl_empty `{BagEmpty T, BagIncl T} :=
+Class Incl_empty :=
   { incl_empty : forall E, (E \c \{}) = (E = \{}) }.
-Class Incl_empty_inv `{BagEmpty T, BagIncl T} :=
+Class Incl_empty_inv :=
   { incl_empty_inv : forall E, E \c \{} -> E = \{} }.
 
-Implicit Arguments empty_incl [[T] [H] [H0] [Empty_incl]].
-Implicit Arguments incl_empty [[T] [H] [Incl_empty]].
-Implicit Arguments incl_empty_inv [[T] [H] [Incl_empty_inv] E].
+Class Single_incl_r_eq :=
+  { single_incl_r_eq : forall x E, (\{x} \c E) = (x \in E) }.
+Class Single_incl_l_eq :=
+  { single_incl_l_eq : forall x E, (E \c \{x}) = (E = \{} \/ E = \{x}) }.
 
-(* todo: add implicit arguments in the rest of the file *)
-
-Class Single_incl `{BagSingle A T, BagIn A T, BagIncl T} :=
-  { single_incl : forall x E, (\{x} \c E) = (x \in E) }.
-Class Incl_single `{BagSingle A T, BagIn A T, BagIncl T, BagEmpty T} :=
-  { incl_single : forall x E, (E \c \{x}) -> (E = \{} \/ E = \{x}) }.
-
-Class Incl_union_l `{BagUnion T, BagIncl T} :=
+Class Incl_union_l :=
   { incl_union_l : forall E F G, E \c F -> E \c (F \u G) }.
-Class Incl_union_r `{BagUnion T, BagIncl T} :=
+Class Incl_union_r :=
   { incl_union_r : forall E F G, E \c G -> E \c (F \u G) }.
 
-Class Union_incl_eq `{BagUnion T, BagIncl T} :=
-  { union_incl_eq : forall E F G, (E \u F) \c G = (E \c G /\ F \c G) }.
-Class Union_incl `{BagUnion T, BagIncl T} :=
+Class Union_incl_eq :=
+  { union_incl_eq : forall E F G, ((E \u F) \c G) = (E \c G /\ F \c G) }.
+Class Union_incl :=
   { union_incl : forall E F G, E \c G -> F \c G -> (E \u F) \c G }.
-Class Union_incl_inv `{BagUnion T, BagIncl T} :=
+Class Union_incl_inv :=
   { union_incl_inv : forall E F G, (E \u F) \c G -> E \c G /\ F \c G }.
 
-Class Incl_inter_b `{BagInter T, BagIncl T} := (* TODO: rename ? *)
-  { incl_inter_b : forall E F G, E \c (F \n G) = (E \c F /\ E \c G) }.
-Class Incl_inter `{BagInter T, BagIncl T} :=
+Class Incl_inter_eq :=
+  { incl_inter_eq : forall E F G, E \c (F \n G) = (E \c F /\ E \c G) }.
+Class Incl_inter :=
   { incl_inter : forall E F G, E \c F -> E \c G -> E \c (F \n G) }.
-Class Incl_inter_inv `{BagInter T, BagIncl T} :=
+Class Incl_inter_inv :=
   { incl_inter_inv : forall E F G, E \c (F \n G) -> E \c F /\ E \c G }.
-
-Class Inter_disjoint `{BagEmpty T, BagInter T, BagDisjoint T} :=
-  { inter_disjoint : forall E F, E \# F -> E \n F = \{} }.
 
 (** Union *)
 
-Class Union_assoc `{BagUnion T} :=
+Class Union_assoc :=
   { union_assoc : assoc union }.
-Class Union_comm `{BagUnion T} :=
+Class Union_comm :=
   { union_comm : comm union }.
-Class Union_comm_assoc `{BagUnion T} :=
+Class Union_comm_assoc :=
   { union_comm_assoc : comm_assoc union }.
-Class Union_empty_l `{BagUnion T, BagEmpty T} :=
+Class Union_empty_l :=
   { union_empty_l : neutral_l union empty }.
-Class Union_empty_r `{BagUnion T, BagEmpty T} :=
+Class Union_empty_r :=
   { union_empty_r : neutral_r union empty }.
-Class Union_empty_inv `{BagUnion T, BagEmpty T} :=
-  { union_empty_inv : forall E F,
-     E \u F = \{} -> E = \{} /\ F = \{} }.
-Class Union_self `{BagUnion T} :=
+Class Union_empty_inv :=
+  { union_empty_inv : forall E F, E \u F = \{} -> E = \{} /\ F = \{} }.
+Class Union_self :=
   { union_self : idempotent2 union }.
-
-(* todo: union_comm_monoid *)
 
 (** Intersection *)
 
-Class Inter_assoc `{BagInter T} :=
+Class Inter_assoc :=
   { inter_assoc : assoc inter }.
-Class Inter_comm `{BagInter T} :=
+Class Inter_comm :=
   { inter_comm : comm inter }.
-Class Inter_empty_l `{BagInter T, BagEmpty T} :=
+Class Inter_comm_assoc :=
+  { inter_comm_assoc : comm_assoc inter }.
+Class Inter_empty_l :=
   { inter_empty_l : absorb_l inter empty }.
-Class Inter_empty_r `{BagInter T, BagEmpty T} :=
+Class Inter_empty_r :=
   { inter_empty_r : absorb_r inter empty }.
-Class Inter_self `{BagInter T} :=
+Class Inter_self :=
   { inter_self : idempotent2 inter }.
+
 
 (** Removal *)
 
-(** Disjointness *)
-
-Class Disjoint_sym `{BagDisjoint T} :=
-  { disjoint_sym : sym disjoint }.
-Class Disjoint_prove `{BagIn A T, BagDisjoint T} :=
-  { disjoint_prove : forall E F, (forall x, x \in E -> x \in F -> False) -> E \# F }.
-Class Disjoint_single_l_eq `{BagIn A T, BagSingle A T, BagDisjoint T} :=
-  { disjoint_single_l_eq : forall x E, (\{x} \# E) = x \notin E }.
-Class Disjoint_single_r_eq `{BagIn A T, BagSingle A T, BagDisjoint T} :=
-  { disjoint_single_r_eq : forall x E, (E \# \{x}) = x \notin E }.
-
-Implicit Arguments disjoint_sym [[T] [H] [Disjoint_sym]].
-Implicit Arguments disjoint_prove [[A] [T] [H] [H0] [Disjoint_prove]].
-Implicit Arguments disjoint_single_l_eq [[A] [T] [H] [H0] [H1] [Disjoint_single_l_eq]].
-Implicit Arguments disjoint_single_r_eq [[A] [T] [H] [H0] [H1] [Disjoint_single_r_eq]].
-
-(** Restriction *)
+  (* TODO: add more *)
 
 (** Cardinal *)
 
-Class Card_empty `{BagEmpty T, BagCard T} :=
+Class Card_empty :=
   { card_empty : card \{} = 0%nat }.
-Class Card_single `{BagSingle A T, BagCard T} :=
+Class Card_single :=
   { card_single : forall X, card \{X} = 1%nat }.
-Class Card_union `{BagUnion T, BagCard T} :=
+Class Card_union :=
   { card_union : forall E F, card (E \u F) = (card E + card F)%nat }.
-Class Card_union_le `{BagUnion T, BagCard T} :=
+Class Card_union_le :=
   { card_union_le : forall E F, card (E \u F) <= (card E + card F)%nat }.
+
+(** Disjointness *)
+
+Class Disjoint_sym :=
+  { disjoint_sym : sym disjoint }.
+Class Disjoint_eq :=
+  { disjoint_eq : forall E F, (E \# F) = (forall x, x \in E -> x \in F -> False) }.
+Class Disjoint_prove :=
+  { disjoint_prove : forall E F, (forall x, x \in E -> x \in F -> False) -> E \# F }.
+Class Disjoint_inv :=
+  { disjoint_inv : forall x E F, (E \# F) -> x \in E -> x \in F -> False }.
+Class Disjoint_single_l_eq :=
+  { disjoint_single_l_eq : forall x E, (\{x} \# E) = x \notin E }.
+Class Disjoint_single_r_eq :=
+  { disjoint_single_r_eq : forall x E, (E \# \{x}) = x \notin E }.
+
+Class Inter_disjoint :=
+  { inter_disjoint : forall E F, E \# F -> E \n F = \{} }.
+
+  (* TODO: add more *)
+
+End Properties.
+
+(** Lemmas with premises and operators in the conclusion 
+    need additional implicit arguments *)
+
+Implicit Arguments is_empty_inv [[A] [T] [BI] [BE] [Is_empty_inv] x E].
+Implicit Arguments is_single_inv [[A] [T] [BI] [BS] [Is_single_inv] x E].
+
+Implicit Arguments in_inter [[A] [T] [BI] [BN] [In_inter] x E F].
+Implicit Arguments in_inter_inv [[A] [T] [BI] [BN] [In_inter_inv] x E F].
+
+Implicit Arguments notin_inter_l [[A] [T] [BI] [BN] [Notin_inter_l] x E F].
+Implicit Arguments notin_inter_r [[A] [T] [BI] [BN] [Notin_inter_r] x E F].
+Implicit Arguments notin_inter_inv [[A] [T] [BI] [BN] [Notin_inter_inv] x E F].
+
+Implicit Arguments in_union_l [[A] [T] [BI] [BU] [In_union_l] x E F].
+Implicit Arguments in_union_r [[A] [T] [BI] [BU] [In_union_r] x E F].
+Implicit Arguments in_union_inv [[A] [T] [BI] [BU] [In_union_inv] x E F].
+
+Implicit Arguments notin_union [[A] [T] [BI] [BU] [Notin_union] x E F].
+Implicit Arguments notin_union_inv [[A] [T] [BI] [BU] [Notin_union_inv] x E F].
+
+Implicit Arguments incl_in [[A] [T] [BI] [BL] [Incl_in] x E F].
+Implicit Arguments in_incl [[A] [T] [BI] [BL] [In_incl] E F].
+Implicit Arguments incl_trans [[T] [BL] [Incl_trans] x z].
+Implicit Arguments incl_empty_inv [[T] [BL] [Incl_empty_inv] E].
+
+Implicit Arguments incl_union_l [[T] [BL] [Incl_union_l] E F G].
+Implicit Arguments incl_union_r [[T] [BL] [Incl_union_r] E F G].
+Implicit Arguments incl_inter [[T] [BL] [Incl_inter] E F G].
+Implicit Arguments incl_inter_inv [[T] [BL] [Incl_inter_inv] E F G].
+
+Implicit Arguments union_empty_inv [[T] [BU] [Union_empty_inv] E F].
+
+Implicit Arguments disjoint_sym [[T] [BD] [Disjoint_sym]].
+Implicit Arguments disjoint_prove [[A] [T] [BI] [BD] [Disjoint_prove] E F].
+Implicit Arguments disjoint_inv [[A] [T] [BI] [BD] [Disjoint_inv] x E F].
+Implicit Arguments disjoint_single_l_eq [[A] [T] [BI] [BS] [BD] [Disjoint_single_l_eq]].
+Implicit Arguments disjoint_single_r_eq [[A] [T] [BI] [BS] [BD] [Disjoint_single_r_eq]].
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Derived Properties *)
 
-(** Membership *)
+Section DerivedProperties.
 
-Instance in_empty_from_in_empty_eq : 
-  forall `{BagIn A T, BagEmpty T},
+Context {A T:Type} 
+  {BI: BagIn A T} {BE: BagEmpty T} {BS: BagSingle A T}
+  {BN: BagInter T} {BU: BagUnion T} {BR: BagRemove T T} {BC: BagCard T}
+  {BL: BagIncl T} {BD: BagDisjoint T}.
+
+(** In *)
+
+Global Instance in_empty_from_in_empty_eq : 
   In_empty_eq -> In_empty.
 Proof using. constructor. introv I. rewrite~ in_empty_eq in I. Qed.
 
-Instance in_single_from_in_single_eq : 
-  forall `{BagSingle A T, BagIn A T},
+Global Instance notin_eq_from_nothing : 
+  Notin_eq.
+Proof using. constructor. intros. unfold notin. auto. Qed.
+
+Global Instance notin_empty_from_in_empty_eq : 
+  In_empty_eq -> Notin_empty.
+Proof using. constructor. introv I. rewrite~ in_empty_eq in I. Qed.
+
+Global Instance in_single_from_in_single_eq : 
   In_single_eq -> In_single.
 Proof using. constructor. introv I. rewrite~ in_single_eq in I. Qed.
 
-Instance in_single_self_from_in_single_eq : 
-  forall `{BagSingle A T, BagIn A T},
+Global Instance in_single_self_from_in_single_eq : 
   In_single_eq -> In_single_self.
 Proof using. constructor. intros. rewrite~ in_single_eq. Qed.
 
-Instance in_union_r_from_in_union_eq : 
-  forall `{BagIn A T, BagUnion T},
-  In_union_eq -> In_union_r.
-Proof using. constructor. introv I. rewrite in_union_eq. rew_reflect*. Qed.
+Global Instance in_iff_eq_from_in_iff :
+  In_iff -> In_iff_eq.
+Proof using. constructor. introv I. apply in_iff. intros. rewrite* I. Qed.
 
-Instance in_union_l_from_in_union_eq : 
-  forall `{BagIn A T, BagUnion T},
-  In_union_eq -> In_union_l.
-Proof using. constructor. introv I. rewrite in_union_eq. rew_reflect*. Qed.
+Global Instance is_empty_eq_from_in_empty_eq :
+  In_iff -> In_empty_eq -> Is_empty_eq.
+Proof using.
+  constructor. intros. extens. iff M.
+    subst. introv N. rewrite* in_empty_eq in N.
+    apply in_iff. iff N. false* M. rewrite* in_empty_eq in N.
+Qed.
 
-Instance in_union_inv_from_in_union_eq : 
-  forall `{BagIn A T, BagUnion T},
-  In_union_eq -> In_union_inv.
-Proof using. constructor. introv I. rewrite~ @in_union_eq in I. Qed.
+Global Instance is_empty_prove_from_is_empty_eq :
+  Is_empty_eq -> Is_empty_prove.
+Proof using. constructor. introv I. rewrite* is_empty_eq. Qed.
 
-Instance in_inter_from_in_inter_eq : 
-  forall `{BagIn A T, BagInter T},
+Global Instance is_empty_inv_from_is_empty_eq :
+  Is_empty_eq -> Is_empty_inv.
+Proof using. constructor. introv I1 I2. rewrite* is_empty_eq in I1. Qed.
+
+Global Instance is_single_eq_from_in_single_eq :
+  In_iff -> In_single_eq -> Is_single_eq.
+Proof using.
+  constructor. intros. extens. iff M (M1&M2).
+    subst. split. rewrite* in_single_eq. introv N. rewrite* in_single_eq in N.
+    apply in_iff. iff N.
+      rewrite* (M2 x0). rewrite* in_single_eq.
+      rewrite* in_single_eq in N. subst*.
+Qed.
+
+Global Instance is_single_prove_from_is_single_eq :
+  Is_single_eq -> Is_single_prove.
+Proof using. constructor. introv I. rewrite* is_single_eq. Qed.
+
+Global Instance is_single_inv_from_is_single_eq :
+  Is_single_eq -> Is_single_inv.
+Proof using. constructor. introv I1 I2. rewrite* is_single_eq in I1. Qed.
+
+Global Instance in_inter_from_in_inter_eq : 
   In_inter_eq -> In_inter.
 Proof using. constructor. introv I1 I2. rewrite in_inter_eq. rew_reflect*. Qed. 
 
-Instance in_inter_inv_from_in_inter_eq : 
-  forall `{BagIn A T, BagInter T},
+Global Instance in_inter_inv_from_in_inter_eq : 
   In_inter_eq -> In_inter_inv.
 Proof using. constructor. introv I. rewrite~ <- in_inter_eq. Qed. 
 
-Instance notin_inter_from_notin_inter_eq : 
-  forall `{BagIn A T, BagInter T},
-  Notin_inter_eq -> Notin_inter.
+Global Instance notin_inter_l_from_notin_inter_eq : 
+  Notin_inter_eq -> Notin_inter_l.
 Proof using. constructor. introv I. rewrite~ notin_inter_eq. Qed. 
 
-Instance notin_inter_inv_from_notin_inter_eq : 
-  forall `{BagIn A T, BagInter T},
+Global Instance notin_inter_r_from_notin_inter_eq : 
+  Notin_inter_eq -> Notin_inter_r.
+Proof using. constructor. introv I. rewrite~ notin_inter_eq. Qed. 
+
+Global Instance notin_inter_inv_from_notin_inter_eq : 
   Notin_inter_eq -> Notin_inter_inv.
 Proof using. constructor. introv I. rewrite~ notin_inter_eq in I. Qed. 
 
-(** Union *)
+Global Instance in_union_l_from_in_union_eq : 
+  In_union_eq -> In_union_l.
+Proof using. constructor. introv I. rewrite in_union_eq. rew_reflect*. Qed.
 
-Instance union_empty_r_from_union_empty_l : 
-  forall `{BagUnion T, BagEmpty T},
-  Union_empty_l -> Union_comm -> Union_empty_r.
-Proof using. constructor. intros_all. rewrite union_comm. apply union_empty_l. Qed.
+Global Instance in_union_r_from_in_union_eq : 
+  In_union_eq -> In_union_r.
+Proof using. constructor. introv I. rewrite in_union_eq. rew_reflect*. Qed.
 
-(** Intersection *)
+Global Instance in_union_inv_from_in_union_eq : 
+  In_union_eq -> In_union_inv.
+Proof using. constructor. introv I. rewrite~ @in_union_eq in I. Qed.
 
-Instance inter_empty_r_from_inter_empty_l : 
-  forall `{BagInter T, BagEmpty T},
-  Inter_empty_l -> Inter_comm -> Inter_empty_r.
-Proof using. constructor. intros_all. rewrite inter_comm. apply inter_empty_l. Qed.
+Global Instance notin_union_from_notin_union_eq : 
+  Notin_union_eq -> Notin_union.
+Proof using. constructor. introv I1 I2. rewrite~ notin_union_eq. Qed. 
 
-(* Inclusion *)
+Global Instance notin_union_inv_from_notin_union_eq : 
+  Notin_union_eq -> Notin_union_inv.
+Proof using. constructor. introv I. rewrite~ notin_union_eq in I. Qed. 
 
-Instance incl_refl_from_incl_order :
-  forall `{BagIncl T},
+  (* TODO: in remove properties?*)
+
+(** Incl *)
+
+Global Instance incl_refl_from_incl_order :
   Incl_order -> Incl_refl.
 Proof using. constructor. apply order_refl. apply incl_order. Qed.
 
-Instance incl_trans_from_incl_order :
-  forall `{BagIncl T},
+Global Instance incl_trans_from_incl_order :
   Incl_order -> Incl_trans.
 Proof using. constructor. apply order_trans. apply incl_order. Qed.
 
-Instance double_incl_from_incl_order :
-  forall `{BagIncl T},
-  Incl_order -> Double_incl.
+Global Instance incl_antisym_from_incl_order :
+  Incl_order -> Incl_antisym.
 Proof using. constructor. apply order_antisym. apply incl_order. Qed.
 
-Instance incl_empty_inv_from_incl_empty :
-  forall `{BagEmpty T, BagIncl T},
+Global Instance empty_incl_inv_from_incl_in_eq_and_in_empty_eq :
+  Incl_in_eq -> In_empty_eq -> Empty_incl.
+Proof using.
+  constructor. intros. rewrite incl_in_eq. introv M.
+  rewrite in_empty_eq in M. false.
+Qed.
+
+Global Instance incl_empty_from_in_empty_eq_and_incl_in_eq :
+  In_iff -> In_empty_eq -> Incl_in_eq -> Incl_empty.
+Proof using.
+  constructor. intros. extens. rewrite incl_in_eq. iff M.
+    apply in_iff. iff N. applys* M. rewrite in_empty_eq in N. false.
+    subst. introv N. rewrite in_empty_eq in N. false.
+Qed.
+
+Global Instance incl_empty_inv_from_incl_empty :
   Incl_empty -> Incl_empty_inv.
 Proof using. constructor. introv I. rewrite~ incl_empty in I. Qed.
 
-Instance incl_union_r_from_incl_union_l :
-  forall `{BagUnion T, BagIncl T},
-  Incl_union_l -> Union_comm -> Incl_union_r.
-Proof using. constructor. introv I. rewrite union_comm. apply~ incl_union_l. Qed.
+Global Instance single_incl_r_eq_from_in_single_eq_and_and_incl_in_eq :
+  In_iff -> In_single_eq -> Incl_in_eq -> Single_incl_r_eq.
+Proof using.
+  constructor. intros. extens. rewrite incl_in_eq. iff M.
+    applys* M. rewrite~ in_single_eq.
+    introv N. rewrite in_single_eq in N. subst~.
+Qed.
 
-Instance union_incl_from_union_incl_eq :
-  forall `{BagUnion T, BagIncl T},
+Global Instance single_incl_l_eq_from_in_empty_eq_and_in_single_eq_and_and_incl_in_eq :
+  In_iff -> In_empty_eq -> In_single_eq -> Incl_in_eq -> Single_incl_l_eq.
+Proof using.
+  constructor. intros. extens. rewrite incl_in_eq. iff M.
+    tests: (x \in E). 
+      right. apply* is_single_prove. introv N. forwards~ R: M y.
+        rewrite* in_single_eq in R.
+      left. apply in_iff. iff N. forwards~ R: M x0.
+        rewrite* in_single_eq in R. subst. false*.
+        rewrite in_empty_eq in N. false.
+    introv N. rewrite in_single_eq. destruct M.
+      subst. rewrite in_empty_eq in N. false.
+      subst. rewrite in_single_eq in N. auto.
+Qed.
+
+Global Instance union_incl_eq_from_in_union_eq_and_and_incl_in_eq :
+  In_iff -> In_union_eq -> Incl_in_eq -> Union_incl_eq.
+Proof using.
+  constructor. intros. extens. repeat rewrite incl_in_eq. iff M (M1&M2).
+    split. intros x N. specializes M x. rewrite* in_union_eq in M.
+           intros x N. specializes M x. rewrite* in_union_eq in M.
+    intros x N. specializes M1 x. specializes M2 x. rewrite* in_union_eq in N.
+Qed.
+
+Global Instance incl_union_r_from_incl_union_l :
+  Incl_union_l -> Union_comm -> Incl_union_r.
+Proof using. constructor. introv I. rewrite union_comm. apply* @incl_union_l. Qed.
+
+Global Instance union_incl_from_union_incl_eq :
   Union_incl_eq -> Union_incl_eq.
 Proof using. constructor. intros_all. rewrite union_incl_eq. rew_reflect*. Qed.
 
-Instance union_incl_inv_from_union_incl_eq :
-  forall `{BagUnion T, BagIncl T},
+Global Instance union_incl_inv_from_union_incl_eq :
   Union_incl_eq -> Union_incl_inv.
 Proof using. constructor. introv I. rewrite union_incl_eq in I. destruct* I. Qed.
 
-Instance in_double_eq_from_in_double :
-  forall `{BagIn A T},
-  In_double -> In_double_eq.
-Proof using. constructor. introv I. apply in_double. intros. rewrite* I. Qed.
+Global Instance incl_inter_eq_from_in_inter_eq_and_and_incl_in_eq :
+  In_iff -> In_inter_eq -> Incl_in_eq -> Incl_inter_eq.
+Proof using.
+  constructor. intros. extens. repeat rewrite incl_in_eq. iff M (M1&M2).
+    split. intros x N. specializes M x. rewrite* in_inter_eq in M.
+           intros x N. specializes M x. rewrite* in_inter_eq in M.
+    intros x N. specializes M1 N. specializes M2 N. rewrite* in_inter_eq.
+Qed.
 
-(** Union and inter from Extensionality *)
+Global Instance incl_inter_from_incl_inter_eq :
+  Incl_inter_eq -> Incl_inter.
+Proof using. constructor. intros. rewrite* incl_inter_eq. Qed.
+
+Global Instance incl_inter_inv_from_incl_inter_eq :
+  Incl_inter_eq -> Incl_inter_inv.
+Proof using. constructor. introv N. rewrite* incl_inter_eq in N. Qed.
+
+(** Tactics *)
 
 Hint Rewrite @in_union_eq @in_inter_eq 
   @in_empty_eq @in_single_eq : rew_in_eq. 
 
 Tactic Notation "contain_by_in_double" :=
-  intros_all; apply in_double; intros; 
+  intros_all; apply in_iff; intros; 
   autorewrite with rew_in_eq; rew_reflect; 
   intuition (try solve [auto|eauto|auto_false|false]).
 
-Section UnionDouble.
-Context `{BagIn A T, BagUnion T}.
+(** Union *)
 
-Global Instance union_assoc_from_in_union :
-  In_double -> In_union_eq -> Union_assoc.
+Global Instance union_comm_form_in_union_eq : 
+  In_iff -> In_union_eq -> Union_comm.
 Proof using. constructor. contain_by_in_double. Qed.
 
-Global Instance union_comm_from_in_union :
-  In_double -> In_union_eq -> Union_comm.
+Global Instance union_assoc_form_in_union_eq : 
+  In_iff -> In_union_eq -> Union_assoc.
 Proof using. constructor. contain_by_in_double. Qed.
 
-Global Instance union_empty_l_from_in_union : 
-  forall `{BagEmpty T},
-  In_double -> In_union_eq -> In_empty_eq -> Union_empty_l.
-Proof using. constructor. contain_by_in_double. Qed.
-
-Global Instance union_self_from_in_union :
-  In_double -> In_union_eq -> Union_self.
-Proof using. constructor. contain_by_in_double. Qed.
-
-End UnionDouble.
-
-Section InterDouble.
-Context `{BagIn A T, BagInter T}.
-
-Global Instance inter_assoc_from_in_inter :
-  In_double -> In_inter_eq -> Inter_assoc.
-Proof using. constructor. contain_by_in_double. Qed.
-
-Global Instance inter_comm_from_in_inter :
-  In_double -> In_inter_eq -> Inter_comm.
-Proof using. constructor. contain_by_in_double. Qed.
-
-Global Instance inter_empty_l_from_in_inter :
-  forall `{BagEmpty T},
-  In_double -> In_inter_eq -> In_empty_eq -> Inter_empty_l.
-Proof using. constructor. contain_by_in_double. Qed.
-
-Global Instance inter_self_from_in_inter :
-  In_double -> In_inter_eq -> Inter_self.
-Proof using. constructor. contain_by_in_double. Qed.
-
-End InterDouble.
-
-Instance union_comm_assoc_from_assoc_and_comm 
-  `{Union_assoc} {UH: Union_comm} : Union_comm_assoc.
+Global Instance union_comm_assoc_from_union_comm_and_union_assoc :
+  Union_comm -> Union_assoc -> Union_comm_assoc.
 Proof using. 
   constructor. intros_all. do 2 rewrite union_assoc. 
   rewrite (union_comm _ x). auto. 
 Qed.
 
+Global Instance union_empty_l_from_in_union_eq_and_in_empty_eq : 
+  In_iff -> In_union_eq -> In_empty_eq -> Union_empty_l.
+Proof using. constructor. contain_by_in_double. Qed.
+
+Global Instance union_empty_r_from_union_empty_l : 
+  Union_empty_l -> Union_comm -> Union_empty_r.
+Proof using. constructor. intros_all. rewrite union_comm. apply union_empty_l. Qed.
+
+Global Instance union_empty_inv_from_in_union_eq : 
+  In_iff -> In_empty_eq -> In_union_eq -> Union_empty_inv.
+Proof using. 
+  constructor. introv N. split.
+    apply in_iff. iff R. rewrite <- N. rewrite* in_union_eq. rewrite* in_empty_eq in R.
+    apply in_iff. iff R. rewrite <- N. rewrite* in_union_eq. rewrite* in_empty_eq in R.
+Qed.
+
+Global Instance union_self_from_in_union_eq : 
+  In_iff -> In_union_eq -> Union_self.
+Proof using. constructor. contain_by_in_double. Qed.
+
+(** Inter *)
+
+Global Instance inter_comm_form_in_inter_eq : 
+  In_iff -> In_inter_eq -> Inter_comm.
+Proof using. constructor. contain_by_in_double. Qed.
+
+Global Instance inter_assoc_form_in_inter_eq : 
+  In_iff -> In_inter_eq -> Inter_assoc.
+Proof using. constructor. contain_by_in_double. Qed.
+
+Global Instance inter_comm_assoc_from_inter_comm_and_inter_assoc : 
+  Inter_comm -> Inter_assoc -> Inter_comm_assoc.
+Proof using. 
+  constructor. intros_all. do 2 rewrite inter_assoc. 
+  rewrite (inter_comm _ x). auto. 
+Qed.
+
+Global Instance inter_empty_l_from_in_inter_eq_and_in_empty_eq : 
+  In_iff -> In_inter_eq -> In_empty_eq -> Inter_empty_l.
+Proof using. constructor. contain_by_in_double. Qed.
+
+Global Instance inter_empty_r_from_inter_empty_l : 
+  Inter_empty_l -> Inter_comm -> Inter_empty_r.
+Proof using. constructor. intros_all. rewrite inter_comm. apply inter_empty_l. Qed.
+
+Global Instance inter_self_from_in_inter_eq : 
+  In_iff -> In_inter_eq -> Inter_self.
+Proof using. constructor. contain_by_in_double. Qed.
+
+
 (** Disjoint *)
 
-Instance disjoint_single_r_eq_from_disjoint_single_l : 
-  forall `{BagIn A T, BagSingle A T, BagDisjoint T},
+Global Instance disjoint_prove_from_disjoint_eq : 
+  Disjoint_eq -> Disjoint_prove.
+Proof using. constructor. intros. rewrite* disjoint_eq. Qed.
+
+Global Instance disjoint_inv_from_disjoint_eq : 
+  Disjoint_eq -> Disjoint_inv.
+Proof using. constructor. introv I I1 I2. rewrite* disjoint_eq in I. Qed.
+
+Global Instance disjoint_single_l_eq_from_disjoint_eq_and_in_single_eq : 
+  Disjoint_eq -> In_single_eq -> Disjoint_single_l_eq.
+Proof using.
+  constructor. intros. rewrite disjoint_eq. unfold notin. extens. iff M.
+    introv N. specializes M N. rewrite* in_single_eq. false.
+    introv N1 N2. rewrite in_single_eq in N1. subst. false.
+Qed.  
+
+Global Instance disjoint_single_r_eq_from_disjoint_single_l : 
   Disjoint_single_l_eq -> Disjoint_sym -> Disjoint_single_r_eq.
 Proof using.
   constructor. intros_all.
@@ -556,12 +711,5 @@ Proof using.
 Qed.
 
 
+End DerivedProperties.
 
-
-(* todo: comm_assoc_l and _r *)
-
-
-
-
-
-(* TODO maybe define an instance of BagUpdate for functions *)
