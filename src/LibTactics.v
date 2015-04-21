@@ -3324,22 +3324,23 @@ Tactic Notation "exists" :=
 (* ---------------------------------------------------------------------- *)
 (** Existentials and conjunctions in hypotheses *)
 
-(* todo: doc *)
+(** [unpack] or [unpack H] destructs conjunctions and existentials in
+    all or one hypothesis. *)
 
-Ltac intuit_core :=
+Ltac unpack_core :=
   repeat match goal with
   | H: _ /\ _ |- _ => destruct H
   | H: exists a, _ |- _ => destruct H
   end.
 
-Ltac intuit_from H :=
-  first [ progress (intuit_core)
-        | destruct H; intuit_core ].
+Ltac unpack_from H :=
+  first [ progress (unpack_core)
+        | destruct H; unpack_core ].
 
-Tactic Notation "intuit" :=
-  intuit_core.
-Tactic Notation "intuit" constr(H) :=
-  intuit_from H.
+Tactic Notation "unpack" :=
+  unpack_core.
+Tactic Notation "unpack" constr(H) :=
+  unpack_from H.
 
 
 (* ********************************************************************** *)

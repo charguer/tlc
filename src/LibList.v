@@ -1723,7 +1723,7 @@ Proof using.
   right. rew_length. exists~ n.
   inverts H. left~.
    forwards* M: IHl1. destruct M.
-    left~. intuit. rew_length.
+    left~. unpack. rew_length.
     right*. exists x0. split~. math.
 Qed.
 
@@ -1975,7 +1975,7 @@ Proof using.
   rew_length~.
   introv M H. destruct (Nth_app_inv _ _ M).
     apply~ Nth_app_l.
-    intuit. apply* Nth_app_r. math.
+    unpack. apply* Nth_app_r. math.
   apply~ Nth_app_l.
 Qed.
 
@@ -1986,7 +1986,7 @@ Proof using.
   rew_length~.
   introv M H. destruct (Nth_app_inv _ _ M).
     apply~ Nth_app_l.
-    intuit. apply* Nth_app_r. apply* O. math. math.
+    unpack. apply* Nth_app_r. apply* O. math. math.
   apply* Nth_app_r.
 Qed.
 

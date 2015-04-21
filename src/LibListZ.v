@@ -92,7 +92,7 @@ Lemma ZNth_cons_inv : forall i x l,
   \/ (exists y q j, l = y::q /\ ZNth j q x /\ i = j+1).
 Proof using.
   introv [H P]. forwards~: (@abs_pos i).
-  destruct (Nth_cons_inv H); intuit.
+  destruct (Nth_cons_inv H); unpack.
   left. exists___. split~. 
   right. exists___. splits~.
    split. rewrite* abs_pos_nat. math.
