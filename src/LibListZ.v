@@ -303,7 +303,8 @@ Tactic Notation "rew_arr" :=
 Tactic Notation "rew_arr" "in" hyp(H) := 
   autorewrite with rew_arr in H.
 Tactic Notation "rew_arr" "in" "*" := 
-  autorewrite with rew_arr in *.
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_arr).
+  (* autorewrite with rew_arr in *. *)
 
 Tactic Notation "rew_arr" "~" :=
   rew_arr; auto_tilde.
@@ -315,6 +316,7 @@ Tactic Notation "rew_arr" "*" "in" hyp(H) :=
   rew_arr in H; auto_star.
 
 (** [rew_array] is a more aggressive normalization tactic for array *)
+(* TODO: rename into [rew_arr_all] *)
 
 Hint Rewrite @read_zmake @length_update @read_update_eq
   @read_update_neq : rew_array.
@@ -324,7 +326,8 @@ Tactic Notation "rew_array" :=
 Tactic Notation "rew_array" "in" hyp(H) := 
   autorewrite with rew_array in H.
 Tactic Notation "rew_array" "in" "*" := 
-  autorewrite with rew_array in *.
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_array).
+  (* autorewrite with rew_array in *. *)
 
 Tactic Notation "rew_array" "~" :=
   rew_array; auto_tilde.

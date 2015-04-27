@@ -534,7 +534,8 @@ Tactic Notation "rew_logic" :=
 Tactic Notation "rew_logic" "in" hyp(H) := 
   autorewrite with rew_logic in H.
 Tactic Notation "rew_logic" "in" "*" := 
-  autorewrite with rew_logic in *.
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_logic).
+  (* autorewrite with rew_logic in *. *)
 
 Tactic Notation "rew_logic" "~" := 
   rew_logic; auto_tilde.

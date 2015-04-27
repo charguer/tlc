@@ -961,6 +961,9 @@ Hint Rewrite mem_nil mem_cons mem_app mem_last
 Hint Rewrite keys_nil keys_cons keys_app keys_last : rew_keys.
 Hint Rewrite assoc_cons assoc_here : rew_assoc.
 
+(* TODO: rew_tactics other than [rew_app] and [rew_length]
+   will become deprecated; use [rew_list] instead. *)
+
 Tactic Notation "rew_app" :=
   autorewrite with rew_app.
 Tactic Notation "rew_foldr" :=
@@ -1005,6 +1008,7 @@ Tactic Notation "rew_assoc" "in" hyp(H) :=
 
 Tactic Notation "rew_app" "in" "*" :=
   autorewrite with rew_app in *.
+
 Tactic Notation "rew_foldr" "in" "*" :=
   autorewrite with rew_foldr rew_app in *.
 Tactic Notation "rew_foldl" "in" "*" :=
@@ -1059,7 +1063,8 @@ Tactic Notation "rew_list" "~" :=
 Tactic Notation "rew_list" "*" :=
   rew_list; auto_star.
 Tactic Notation "rew_list" "in" "*" :=
-  autorewrite with rew_list in *.
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_list).
+  (* autorewrite with rew_list in *. *)
 Tactic Notation "rew_list" "~" "in" "*" :=
   rew_list in *; auto_tilde.
 Tactic Notation "rew_list" "*" "in" "*" :=

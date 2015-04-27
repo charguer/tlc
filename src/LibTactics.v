@@ -4867,7 +4867,6 @@ Tactic Notation "let_name_all" "as" ident(x) :=
   end.
 
 
-
 (* ---------------------------------------------------------------------- *)
 (* Bugfix for [f_equal] and [fequals]; only supports up to arity 5 *)
 
@@ -4921,3 +4920,27 @@ Ltac fequal_base ::=
   | |- (_,_,_,_,_,_) = (_,_,_,_,_,_) => go
   | |- _ => f_equal_fixed
   end.
+
+
+(* ---------------------------------------------------------------------- *)
+(* Bugfix for [autorewrite in *], which is currently inefficient *)
+
+(** Generalize all propositions into the goal *) 
+
+Ltac generalize_all_prop :=
+  repeat match goal with H: ?T |- _ =>
+    match type of T with Prop =>
+      generalizes H
+    end end.
+
+(** Work around for inefficiency bug of [autorewrite in *].
+  Usage, e.g.:
+  [Tactic Notation "rew_list" "in" "*" :=
+     autorewrite_in_star_patch 
+       ltac:(fun tt => autorewrite with rew_list)]. *) 
+
+Ltac autorewrite_in_star_patch cont := 
+  generalize ltac_mark;
+  generalize_all_prop;
+  cont tt;
+  intro_until_mark.

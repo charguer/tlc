@@ -211,7 +211,9 @@ Tactic Notation "rew_nat" "~" :=
 Tactic Notation "rew_nat" "*" :=
   rew_nat; auto_star.
 Tactic Notation "rew_nat" "in" "*" :=
-  autorewrite with rew_nat in *.
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_nat).
+  (* autorewrite with rew_nat in *. *)
+
 Tactic Notation "rew_nat" "~" "in" "*" :=
   rew_nat in *; auto_tilde.
 Tactic Notation "rew_nat" "*" "in" "*" :=
