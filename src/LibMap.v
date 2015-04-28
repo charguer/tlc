@@ -267,8 +267,8 @@ Lemma binds_update_analysis: forall A B i j v w (M:map A B),
   i = j /\ v = w.
 Proof using.
   intros.
-  forwards [ ? ? ]: binds_inv. (* COQBUG eexact H. *)
-Admitted.
+  forwards [ ? ? ]: binds_inv.
+Admitted.  (* COQBUG eexact H. *)
 
 Lemma binds_update_indom_iff:
   forall A B (M : map A B) a1 a2 b1 b2,

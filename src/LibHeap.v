@@ -42,7 +42,7 @@ Implicit Arguments empty [[K] [V]].
 (***********************************************************)
 (** Properties *)
 
-Section HeapAxioms.
+Section HeapParameters.
 Context `{Comparable K} `{Inhab V}.
 Implicit Types h : heap K V.
 
@@ -93,7 +93,7 @@ Parameter not_indom_equiv_read_option : forall h k,
 Parameter read_option_def : forall h k,
   read_option h k = (If indom h k then Some (read h k) else None).
 
-End HeapAxioms.
+End HeapParameters.
 
 Parameter indom_decidable : forall `{Comparable K} V (h:heap K V) k,
   Decidable (indom h k).
@@ -146,7 +146,7 @@ End HeapDefs.
 Implicit Arguments empty [[K] [V]].
 
 
-Section HeapAxioms.
+Section HeapParameters.
 Context `{HK: Comparable K} `{IV: Inhab V}.
 Implicit Types h : heap K V.
 (* TODO: do the right proof using *)
@@ -154,7 +154,7 @@ Implicit Types h : heap K V.
 Lemma indom_equiv_binds : forall h k,
   indom h k = (exists v, binds h k v).
 Proof using.
-Admitted.
+Admitted. (* File will be soon deprecated *)
 
 Lemma dom_empty :
   dom (@empty K V) = \{}.
@@ -163,7 +163,7 @@ Proof using. auto. Qed.
 Lemma binds_equiv_read : forall h k,
   indom h k -> (forall v, (binds h k v) = (read h k = v)).
 Proof.
-Admitted.
+Admitted. (* File will be soon deprecated *)
 
 Lemma dom_write : forall h r v,
   dom (write h r v) = dom h \u \{r}.
@@ -186,12 +186,12 @@ Proof. unfolds @binds, @write. introv M. inverts* M. Qed.
 Lemma binds_rem : forall h k k' v,
   binds h k v -> k <> k' -> binds (rem h k') k v.
 Proof using HK.
-Admitted.
+Admitted. (* File will be soon deprecated *)
 
 Lemma binds_rem_inv : forall h k v k',
   binds (rem h k') k v -> k <> k' /\ binds h k v.
 Proof using HK.
-Admitted.
+Admitted. (* File will be soon deprecated *)
 
 (* TODO: need to add the instance BagRemove to LibSet
 Lemma dom_rem : forall h k,
@@ -259,7 +259,7 @@ Proof.
    extens. rew_refl*.
 Qed.
 
-End HeapAxioms.
+End HeapParameters.
 
 Lemma indom_decidable : forall `{Comparable K} V (h:heap K V) k,
   Decidable (indom h k).

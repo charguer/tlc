@@ -1797,6 +1797,10 @@ Lemma Mem_inv : forall A (L:list A) x y,
   Mem x (y::L) -> x = y \/ x <> y /\ Mem x L.
 Proof using. introv H. tests: (x = y). eauto. inverts H. false. eauto. Qed.
 
+Lemma Mem_map : forall (A B:Type) (f:A->B) (l: list A) x,
+  Mem x l -> Mem (f x) (map f l).
+Proof using. introv M. induction M; rew_map; auto. Qed.
+
 Fixpoint mem_decide `{Comparable A} (x : A) (l : list A) :=
   match l with
   | nil => false

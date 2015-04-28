@@ -117,35 +117,61 @@ Proof using. intros. unfold fupdate. case_if*. Qed.
 
 Section FunctionImage.
 Open Scope set_scope.
+Require Import LibList.
 
 Definition image A B (f : A -> B) (E : set A) : set B :=
   \set{ y | exists_ x \in E, y = f x }.  
 
-Lemma finite_image:
-  forall A B (f : A -> B) (E : set A),
+Lemma in_image_prove_eq : forall A B x (f : A -> B) (E : set A),
+  x \in E -> f x \in image f E.
+Proof using. introv N. unfold image. rew_set. exists* x. Qed.
+
+Lemma in_image_prove : forall A B x y (f : A -> B) (E : set A),
+  x \in E -> y = f x -> y \in image f E.
+Proof using. intros. subst. applys* in_image_prove_eq. Qed.
+
+Lemma in_image_inv : forall A B y (f : A -> B) (E : set A),
+  y \in image f E -> exists x, x \in E /\ y = f x.
+Proof using. introv N. unfolds image. rew_set in N. auto. Qed.
+
+Lemma finite_image : forall A B (f : A -> B) (E : set A),
   finite E ->
   finite (image f E).
 Proof using.
-Admitted.
+  introv M. lets (L&H): finite_inv_basic M.
+  applys finite_prove (LibList.map f L). introv N.
+  lets (y&Hy&Ey): in_image_inv (rm N). subst x. applys* Mem_map.
+Qed.
 
-Lemma image_covariant:
-  forall A B (f : A -> B) (E F : set A),
+Lemma image_covariant : forall A B (f : A -> B) (E F : set A),
   E \c F ->
   image f E \c image f F.
 Proof using.
-Admitted.
+  introv. do 2 rewrite incl_in_eq. introv M N.
+  lets (y&Hy&Ey): in_image_inv (rm N). applys* in_image_prove.
+Qed.
 
-Lemma image_union:
-  forall A B (f : A -> B) (E F : set A),
+Lemma image_union : forall A B (f : A -> B) (E F : set A),
   image f (E \u F) = image f E \u image f F.
 Proof using.
-Admitted.
+  Hint Resolve in_image_prove.
+  introv. apply in_extens. intros x. iff N.
+    lets (y&Hy&Ey): in_image_inv (rm N). rewrite in_union_eq in Hy.
+     rewrite in_union_eq. destruct* Hy.
+    rewrite in_union_eq in N. destruct N as [N|N].
+      lets (y&Hy&Ey): in_image_inv (rm N). applys* in_image_prove.
+       rewrite in_union_eq. eauto.
+      lets (y&Hy&Ey): in_image_inv (rm N). applys* in_image_prove.
+       rewrite in_union_eq. eauto.
+Qed.
 
-Lemma image_singleton:
-  forall A B (f : A -> B) (x : A),
+Lemma image_singleton : forall A B (f : A -> B) (x : A),
   image f \{x} = \{f x}.
 Proof using.
-Admitted.
+  intros. apply in_extens. intros z. iff N.
+    lets (y&Hy&Ey): in_image_inv (rm N). rewrite in_single_eq in Hy. subst~.
+    rewrite in_single_eq in N. applys* in_image_prove.
+Qed.
 
 End FunctionImage.
 

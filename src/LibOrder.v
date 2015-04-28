@@ -96,8 +96,7 @@ Implicit Arguments order_antisym [A R o x y].
 Coercion order_to_preorder (A:Type) (R:binary A) 
   (O:order R) : preorder R.
 Proof using. destruct* O.
-admit.
-(* TODO *)
+admit. (* TODO: under construction *)
 Qed.
 
 Hint Resolve order_to_preorder.
@@ -153,8 +152,7 @@ Qed.
 Coercion total_order_to_total_preorder (A:Type) (R:binary A) 
   (O:total_order R) : total_preorder R.
 Proof using. destruct* O.
-admit.
-(*TODO*)
+admit.  (* TODO: under construction *)
  Qed.
 
 Definition total_order_to_order := total_order_order.
@@ -840,8 +838,7 @@ Proof using.
   branches (total_order_lt_or_eq_or_gt le_total_order x y).
   hnf in *; autos*.
 *)
-admit.
-(*TODO*)
+admit.  (* TODO: under construction *)
 Qed.
 
 Global Instance case_eq_lt_slt_from : Le_total_order -> Case_Eq_Lt_SLt.
@@ -857,8 +854,7 @@ Proof using.
   branches (total_order_le_or_gt le_total_order x y);
   hnf in *; autos*.
 *)
-admit.
-(*TODO*)
+admit.  (* TODO: under construction *)
 Qed.
 
 Global Instance case_eq_lt_ge_from : Le_total_order -> Case_Lt_Ge. 
@@ -868,9 +864,8 @@ Proof using.
   branches (total_order_lt_or_ge le_total_order x y);
   hnf in *; autos*. 
 *)
-admit.
-(*TODO*)
-Qed.
+admit. (* TODO: under construction *)
+Qed. 
 
 Global Instance case_le_slt_from : Le_total_order -> Case_Le_SLt. 
 Proof using. constructor. intros. rewrite lt_is_flip_gt. apply case_le_gt. Qed.

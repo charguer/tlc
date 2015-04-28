@@ -267,8 +267,13 @@ Ltac check_noevar_goal ::=
 
 Ltac math_0 := idtac.
 Ltac math_1 := intros; generalize_arith.
+(* Work around for the slow [autorewrite in *] *)
+Ltac math_2 := instantiate; check_noevar_goal.
+Ltac math_3 := autorewrite with rew_maths rew_int_comp rew_nat_comp; intros.
+(* original:
 Ltac math_2 := instantiate; check_noevar_goal; intros.
 Ltac math_3 := rew_maths; nat_comp_to_peano; int_comp_to_zarith.
+*)
 Ltac math_4 := math_setup_goal.
 Ltac math_5 := omega.
 
