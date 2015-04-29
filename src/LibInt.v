@@ -6,6 +6,7 @@
 Set Implicit Arguments.  
 Require Export ZArith. 
 Require Import LibTactics LibLogic LibReflect LibRelation.
+Require Import Psatz.
 Export LibTacticsCompatibility.
 Require Export LibNat.
 
@@ -279,6 +280,8 @@ Ltac math_5 := omega.
 
 Ltac math_debug := math_0; math_1; math_2; math_3; math_4.
 Ltac math_base := math_debug; math_5.
+
+Ltac math_lia := math_debug; lia.
 
 Tactic Notation "math" := math_base.
 
