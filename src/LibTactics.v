@@ -2825,13 +2825,15 @@ Tactic Notation "destruct_if" "in" hyp(H) :=
   let Eq := fresh "C" in destruct_if in H as Eq Eq.
 
 
-(** [destruct_head_match] performs a case analysis on the argument
+(** ---BROKEN since v8.5beta2.
+
+    [destruct_head_match] performs a case analysis on the argument
     of the head pattern matching when the goal has the form 
     [match ?E with ...] or [match ?E with ... = _] or
     [_ = match ?E with ...]. Due to the limits of Ltac, this tactic
     will not fail if a match does not occur. Instead, it might
-    perform a case analysis on an unspecified subterm from the goal. 
-    --- Warning: experimental. *)
+    perform a case analysis on an unspecified subterm from the goal.
+    Warning: experimental. *)
 
 Ltac find_head_match T :=
   match T with context [?E] => 

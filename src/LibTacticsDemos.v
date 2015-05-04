@@ -411,6 +411,8 @@ Qed.
 (* ********************************************************************** *)
 (** * Substitution *)
 
+(* DEPRECATED: [subst] tactic has been fixed 
+
 Lemma demo_substs_1 : forall a b c d e : nat, 
   a = b -> b = c -> d = e -> e = d -> P1 d -> P2 a -> P3 c.
 Proof using.
@@ -426,11 +428,15 @@ Lemma demo_substs_2 : forall x y (f:nat->nat),
 Proof using.
   intros. 
   (* [subst] does not work *)
+subst.
   try subst. 
   (* [substs] does work *)
   substs.
   assumption.
 Qed.
+
+*)
+
 
 Lemma subst_hyp_demo : forall (x y x' y' z z' : nat) (P:nat->Prop), 
   (x,y,z) = (x',y',z') -> 
@@ -440,6 +446,7 @@ Proof using.
   introv H. intros. 
   subst_hyp_base H. auto.
 Qed.
+
 
 
 (* ********************************************************************** *)
@@ -852,6 +859,7 @@ Proof using.
     skip_induction p. skip. skip.
 Qed.
 
+(* DEPRECATED
 Lemma demo_skip_with_existential : False.
 Proof using.
   dup.
@@ -860,6 +868,7 @@ Proof using.
   skip'.
   skip'.
 Admitted. (* demo *)
+*)
 
 
 (* ********************************************************************** *)
@@ -1050,7 +1059,7 @@ Qed.
 Lemma demo_ereplace_working : forall (P:nat->nat->Prop) x y,
   (forall n, P n n) -> (x > 0 -> x = y) -> (x > 0) -> P x y.
 Proof.
-  introv H E L. dup 3.
+  introv H E L. dup 4.
   (* here, the hypothesis [P n n] cannot be applied directly *)
   try apply H.
   (* however, we really want to be able to apply it *)
@@ -1066,7 +1075,7 @@ Admitted. (* demo *)
 Lemma demo_equates_non_dep : forall (P:nat->nat->nat->Prop) x y z,
   P x y z.
 Proof using.
-  intros. dup 5.
+  intros. dup 6.
   equates 1. skip. skip.
   equates 2. skip. skip.
   equates 3. skip. skip.
@@ -1078,7 +1087,7 @@ Admitted. (* demo *)
 Lemma demo_equates_dep : forall (P:nat->forall A, A->Prop) x (T:Type) z,
   P x T z.
 Proof using.
-  intros. dup 3.
+  intros. dup 4.
   equates 1. skip. skip.
   (* replacement of dependent hypotheses is not allowed *)
   try equates 2.
@@ -1162,7 +1171,7 @@ Lemma demo_exist :
   exists x1 x2 x3, x1 = x2 /\ x2 = x3 /\ x3 = 0.
 Proof using. 
   (* dup N makes N copies of the current goal, which is useful for demos *)
-  dup 6.
+  dup 7.
   (* N-ary existentials are displayed in a packed way, 
      and they can be instantiated at once *)
   exists 0 0 0. auto.

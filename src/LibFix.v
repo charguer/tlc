@@ -675,7 +675,7 @@ Proof using.
   asserts Fixv: (forall i, v i = V i (fun j _ => v j)).
     apply fix_dep_eq. intros x v1 v2 H. unfold V. destruct_if~.
     apply epsilon_eq. intros i. iff N; intros j; specializes N j;
-     destruct_head_match; congruence.
+     destruct (classicT (family_r M j x)); congruence.
   (* the sequence [v] is locally-coherent up to any index *)
   asserts LocCohv: (forall i, locally_coherent M i v).
     intros i. induction_wf: (ofe_wf Ofem) i.
@@ -839,7 +839,7 @@ Proof using.
   asserts Fixv: (forall i, v i = V i (fun j _ => v j)).  
     apply fix_dep_eq. intros x v1 v2 H. unfold V. fequals.
       apply epsilon_eq. intros i. iff N; intros j; specializes N j;
-        destruct_head_match; congruence.
+        destruct (classicT (family_r M j x)); congruence.
   (* a lemma to help establish coherence *)
   asserts Coh: (forall i j, family_r M j i ->  
      locally_coherent M i v -> locally_coherent M j v -> 
