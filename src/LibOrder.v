@@ -937,13 +937,16 @@ Record order_wrt (A:Type) (E:binary A) (R:binary A) : Prop := {
 
 Open Scope comp_scope.
 
+(** Additional notation for reflected boolean comparison. 
+    Use [Open Scope comp_scope_reflect] to use them. *)
+
 Notation "x ''<=' y" := (isTrue (@le _ _ x y))
-  (at level 70, no associativity) : comp_scope.
+  (at level 70, no associativity) : comp_scope_reflect.
 Notation "x ''>=' y" := (isTrue (@ge _ _ x y))
-  (at level 70, no associativity) : comp_scope.
+  (at level 70, no associativity) : comp_scope_reflect.
 Notation "x ''<' y" := (isTrue (@lt _ _ x y))
-  (at level 70, no associativity) : comp_scope.
+  (at level 70, no associativity) : comp_scope_reflect.
 Notation "x ''>' y" := (isTrue (@gt _ _ x y))
-  (at level 70, no associativity) : comp_scope.
+  (at level 70, no associativity) : comp_scope_reflect.
 
 

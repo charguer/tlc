@@ -1007,8 +1007,10 @@ Tactic Notation "rew_assoc" "in" hyp(H) :=
   autorewrite with rew_assoc rew_app in H.
 
 Tactic Notation "rew_app" "in" "*" :=
-  autorewrite with rew_app in *.
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_app).
+  (* autorewrite with rew_app in *. *)
 
+  (* TODO: if those are kept, need the efficiency workaround *)
 Tactic Notation "rew_foldr" "in" "*" :=
   autorewrite with rew_foldr rew_app in *.
 Tactic Notation "rew_foldl" "in" "*" :=
@@ -1245,6 +1247,12 @@ Proof using.
     rew_length. math.
 Qed.
 
+Lemma last_neq_nil : forall A (L:list A),
+  L <> nil -> exists X Q, L = Q&X.
+Proof using.
+  introv N. destruct* (@last_case l).
+Qed.
+
 Lemma app_not_empty_l : forall l1 l2,
   l1 <> nil -> l1 ++ l2 <> nil.
 Proof using. introv NE K. apply NE. destruct~ (app_eq_nil_inv _ _ K). Qed.
@@ -1252,6 +1260,14 @@ Proof using. introv NE K. apply NE. destruct~ (app_eq_nil_inv _ _ K). Qed.
 Lemma app_not_empty_r : forall l1 l2,
   l2 <> nil -> l1 ++ l2 <> nil.
 Proof using. introv NE K. apply NE. destruct~ (app_eq_nil_inv _ _ K). Qed.
+
+Lemma length_zero_iff_nil : forall l,
+  length l = 0 <-> l = nil.
+Proof using. intros. iff M. destruct l; simpls. auto_false*. Qed.
+ 
+Lemma length_neq_elim : forall l1 l2,
+  length l1 <> length l2 -> (l1 <> l2).
+Proof using. introv N E. subst. auto. Qed.
 
 End Inversions.
 
@@ -1792,6 +1808,14 @@ Proof using. intros. apply* Mem_app_or. Qed.
 Lemma Mem_rev : forall A (L:list A) x,
   Mem x L -> Mem x (rev L).
 Proof using. introv H. induction H; rew_rev; apply~ Mem_app_or. Qed.
+
+Lemma Mem_rev_iff : forall A (L:list A) x,
+  Mem x L <-> Mem x (rev L).
+Proof using.
+ iff M.
+ apply~ Mem_rev.
+ lets H: Mem_rev M. rewrite~ rev_rev in H.
+Qed.
 
 Lemma Mem_inv : forall A (L:list A) x y,
   Mem x (y::L) -> x = y \/ x <> y /\ Mem x L.

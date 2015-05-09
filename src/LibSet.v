@@ -460,7 +460,8 @@ Tactic Notation "rew_foreach" :=
 Tactic Notation "rew_foreach" "in" hyp(H) := 
   autorewrite with rew_foreach in H.
 Tactic Notation "rew_foreach" "in" "*" := 
-  autorewrite with rew_foreach in *.
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_foreach).
+  (* autorewrite with rew_foreach in *.  *)
 
 Tactic Notation "rew_foreach" "~" :=
   rew_foreach; auto_tilde.
@@ -470,6 +471,10 @@ Tactic Notation "rew_foreach" "~" "in" constr(H) :=
   rew_foreach in H; auto_tilde.
 Tactic Notation "rew_foreach" "*" "in" constr(H) :=
   rew_foreach in H; auto_star.
+Tactic Notation "rew_foreach" "~" "in" "*" :=
+  rew_foreach in *; auto_tilde.
+Tactic Notation "rew_foreach" "*" "in" "*" :=
+  rew_foreach in *; auto_star.
 
 
 (* ********************************************************************** *)

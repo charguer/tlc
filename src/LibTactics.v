@@ -2792,6 +2792,13 @@ Tactic Notation "cases_if" :=
 Tactic Notation "cases_if" "in" hyp(H) :=
   let Eq := fresh in cases_if in H as Eq.
 
+(** [case_ifs] is like [repeat case_if] *)
+
+Ltac case_ifs_core :=
+  repeat case_if.
+
+Tactic Notation "case_ifs" := 
+  case_ifs_core.
 
 (** [destruct_if] looks for a pattern of the form [if ?B then ?E1 else ?E2]
     in the goal, and perform a case analysis on [B] by calling 
@@ -3447,6 +3454,10 @@ Ltac auto_star := auto_star_default.
 (** [autos~] is a notation for tactic [auto_tilde]. It may be followed
     by lemmas (or proofs terms) which auto will be able to use
     for solving the goal. *)
+(** [autos] is an alias for [autos~] *)
+
+Tactic Notation "autos" := 
+  auto_tilde.
 Tactic Notation "autos" "~" :=
   auto_tilde.
 Tactic Notation "autos" "~" constr(E1) :=
@@ -3799,6 +3810,8 @@ Tactic Notation "cases" "~" constr(E) :=
   cases E; auto_tilde.
 Tactic Notation "case_if" "~" :=
   case_if; auto_tilde.
+Tactic Notation "case_ifs" "~" := 
+  case_ifs; auto_tilde.
 Tactic Notation "case_if" "~" "in" hyp(H) :=
   case_if in H; auto_tilde. 
 Tactic Notation "cases_if" "~" := 
@@ -4177,6 +4190,8 @@ Tactic Notation "cases" "*" constr(E) :=
   cases E; auto_star.
 Tactic Notation "case_if" "*" :=
   case_if; auto_star.
+Tactic Notation "case_ifs" "*" := 
+  case_ifs; auto_star.
 Tactic Notation "case_if" "*" "in" hyp(H) :=
   case_if in H; auto_star. 
 Tactic Notation "cases_if" "*" := 
@@ -4556,6 +4571,7 @@ Tactic Notation "skip" :=
   skip_with_axiom. 
 Tactic Notation "skip'" := 
   skip_with_existential.
+
    
 (* For backward compatibility *)
 Tactic Notation "admit" := 
@@ -4577,6 +4593,10 @@ Tactic Notation "skip" simple_intropattern(I) ":" constr(T) :=
   asserts I: T; [ skip | ]. 
 Tactic Notation "skip" ":" constr(T) :=
   let H := fresh in skip H: T. 
+Tactic Notation "skip" "~" ":" constr(T) :=
+  skip: T; auto_tilde.
+Tactic Notation "skip" "*" ":" constr(T) :=
+  skip: T; auto_star.
 
 Tactic Notation "skip" simple_intropattern(I1)
  simple_intropattern(I2) ":" constr(T) :=

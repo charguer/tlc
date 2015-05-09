@@ -231,6 +231,7 @@ Instance index_inst : forall A, BagIndex int (list A).
 Global Opaque card_inst read_inst update_inst binds_inst index_inst.
 
 
+
 (* ---------------------------------------------------------------------- *)
 (** * Properties of zmake *)
 
@@ -269,24 +270,25 @@ Proof using.
   case_if. math. rewrite~ length_update.
 Qed.
 
-Lemma read_update_eq : forall `{Inhab A} (l:list A) (i:int) (v:A),
-  index l i -> (l\(i:=v))\(i) = v.
-Proof using. 
+Lemma read_update_case : forall `{Inhab A} (l:list A) (i j:int) (v:A),
+  index l j -> (l\(i:=v))\(j) = (If i = j then v else l\(j)).
+Proof using.
   introv. unfold index_inst, index_impl, update_inst, update_impl, zupdate,
     read_inst, read_impl, znth. simpl. introv N. rewrite int_index_def in N.
   case_if. math.
-  rewrite~ nth_update_eq. apply nat_int_lt. rewrite abs_pos; try math.
+  case_if. case_if. auto. case_if. 
+    rewrite~ nth_update_eq. apply nat_int_lt. rewrite abs_pos; try math.
+    rewrite~ nth_update_neq. apply nat_int_lt. rewrite abs_pos; try math.
+      apply nat_int_neq. rewrite abs_pos; try math. rewrite abs_pos; try math.
 Qed.
+
+Lemma read_update_eq : forall `{Inhab A} (l:list A) (i:int) (v:A),
+  index l i -> (l\(i:=v))\(i) = v.
+Proof using. introv N. rewrite~ read_update_case. case_if~. Qed.
 
 Lemma read_update_neq : forall `{Inhab A} (l:list A) (i j:int) (v:A),
   index l j -> (i <> j) -> (l\(i:=v))\(j) = l\(j).
-Proof using.
-  introv. unfold index_inst, index_impl, update_inst, update_impl, zupdate,
-    read_inst, read_impl, znth. simpl. introv N E. rewrite int_index_def in N.
-  case_if. math. case_if. auto.
-  rewrite~ nth_update_neq. apply nat_int_lt. rewrite abs_pos; try math.
-    apply nat_int_neq. rewrite abs_pos; try math. rewrite abs_pos; try math.
-Qed.
+Proof using. introv N. rewrite~ read_update_case. case_if~. Qed.
 
 End UpdateProperties.
 
@@ -296,7 +298,9 @@ End UpdateProperties.
 
 (** [rew_arr] is a light normalization tactic for array *)
 
-Hint Rewrite @read_update_eq : rew_arr.
+(* TODO: rename to [rew_array_nocase] *) 
+Hint Rewrite @read_zmake @length_zmake @length_update @read_update_eq 
+  : rew_arr.
 
 Tactic Notation "rew_arr" := 
   autorewrite with rew_arr.
@@ -314,12 +318,15 @@ Tactic Notation "rew_arr" "~" "in" hyp(H) :=
   rew_arr in H; auto_tilde.
 Tactic Notation "rew_arr" "*" "in" hyp(H) :=
   rew_arr in H; auto_star.
+Tactic Notation "rew_arr" "~" "in" "*" :=
+  rew_arr in *; auto_tilde.
+Tactic Notation "rew_arr" "*" "in" "*" :=
+  rew_arr in *; auto_star.
 
-(** [rew_array] is a more aggressive normalization tactic for array *)
-(* TODO: rename into [rew_arr_all] *)
+(** [rew_array] is a normalization tactic for array *)
 
-Hint Rewrite @read_zmake @length_update @read_update_eq
-  @read_update_neq : rew_array.
+Hint Rewrite @read_zmake @length_zmake @length_update @read_update_eq
+  @read_update_case : rew_array.
 
 Tactic Notation "rew_array" := 
   autorewrite with rew_array.
@@ -337,7 +344,10 @@ Tactic Notation "rew_array" "~" "in" hyp(H) :=
   rew_array in H; auto_tilde.
 Tactic Notation "rew_array" "*" "in" hyp(H) :=
   rew_array in H; auto_star.
-
+Tactic Notation "rew_array" "~" "in" "*" :=
+  rew_array in *; auto_tilde.
+Tactic Notation "rew_array" "*" "in" "*" :=
+  rew_array in *; auto_star.
 
 (* ---------------------------------------------------------------------- *)
 (** * Valid index predicate *)
@@ -419,3 +429,14 @@ Proof using.
   do 2 (case_if; tryfalse). math.
 Qed.
 
+
+
+(* ---------------------------------------------------------------------- *)
+(* LATER:
+
+Lemma isTrue_eq_list : forall A {IA:Inhab A} (L1 L2:list A),
+  len L1 = len L2 ->
+  ((forall i, index (len L1) i -> L1[i] = L2[i]) ->
+  (L1 = L2)).
+
+*)

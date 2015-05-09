@@ -211,6 +211,8 @@ Proof using. intros. rewrite isTrue_not. rewrite~ isTrue_istrue. Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics for distributing [istrue] and [isTrue] *)
 
+(* TODO: keep only one of [rew_refl] and [rew_reflect] *)
+
 (** [rew_reflect] distributes [istrue]. *)
 
 Hint Rewrite istrue_true_eq istrue_false_eq istrue_isTrue 
@@ -218,24 +220,25 @@ Hint Rewrite istrue_true_eq istrue_false_eq istrue_isTrue
 
 Tactic Notation "rew_reflect" :=
   autorewrite with rew_reflect.
-Tactic Notation "rew_reflect" "in" "*" :=
-  autorewrite with rew_reflect in *.
 Tactic Notation "rew_reflect" "in" hyp(H) :=
   autorewrite with rew_reflect in H.
+Tactic Notation "rew_reflect" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_reflect).
+  (* autorewrite with rew_reflect in *. *)
 
 Tactic Notation "rew_reflect" "~" :=
   rew_reflect; auto_tilde.
-Tactic Notation "rew_reflect" "~" "in" "*" :=
-  rew_reflect in *; auto_tilde.
 Tactic Notation "rew_reflect" "~" "in" hyp(H) :=
   rew_reflect in H; auto_tilde.
+Tactic Notation "rew_reflect" "~" "in" "*" :=
+  rew_reflect in *; auto_tilde.
 
 Tactic Notation "rew_reflect" "*" :=
   rew_reflect; auto_star.
-Tactic Notation "rew_reflect" "*" "in" "*" :=
-  rew_reflect in *; auto_star.
 Tactic Notation "rew_reflect" "*" "in" hyp(H) :=
   rew_reflect in H; auto_star.
+Tactic Notation "rew_reflect" "*" "in" "*" :=
+  rew_reflect in *; auto_star.
 
 (** [rew_unreflect] distributes [istrue]. *)
 
@@ -244,24 +247,25 @@ Hint Rewrite isTrue_True isTrue_False isTrue_istrue
 
 Tactic Notation "rew_unreflect" :=
   autorewrite with rew_unreflect.
-Tactic Notation "rew_unreflect" "in" "*" :=
-  autorewrite with rew_unreflect in *.
 Tactic Notation "rew_unreflect" "in" hyp(H) :=
   autorewrite with rew_unreflect in H.
+Tactic Notation "rew_unreflect" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_unreflect).
+  (* autorewrite with rew_unreflect in *. *)
 
 Tactic Notation "rew_unreflect" "~" :=
   rew_unreflect; auto_tilde.
-Tactic Notation "rew_unreflect" "~" "in" "*" :=
-  rew_unreflect in *; auto_tilde.
 Tactic Notation "rew_unreflect" "~" "in" hyp(H) :=
   rew_unreflect in H; auto_tilde.
+Tactic Notation "rew_unreflect" "~" "in" "*" :=
+  rew_unreflect in *; auto_tilde.
 
 Tactic Notation "rew_unreflect" "*" :=
   rew_unreflect; auto_star.
-Tactic Notation "rew_unreflect" "*" "in" "*" :=
-  rew_unreflect in *; auto_star.
 Tactic Notation "rew_unreflect" "*" "in" hyp(H) :=
   rew_unreflect in H; auto_star.
+Tactic Notation "rew_unreflect" "*" "in" "*" :=
+  rew_unreflect in *; auto_star.
 
 (** [rew_refl] distributes [istrue] and [isTrue]
     and replaces [decide] with [isTrue]. *)
@@ -273,24 +277,25 @@ Hint Rewrite isTrue_True isTrue_False isTrue_istrue
 
 Tactic Notation "rew_refl" :=
   autorewrite with rew_refl.
-Tactic Notation "rew_refl" "in" "*" :=
-  autorewrite with rew_refl in *.
 Tactic Notation "rew_refl" "in" hyp(H) :=
   autorewrite with rew_refl in H.
+Tactic Notation "rew_refl" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_refl).
+  (* autorewrite with rew_refl in *. *)
 
 Tactic Notation "rew_refl" "~" :=
   rew_refl; auto_tilde.
-Tactic Notation "rew_refl" "~" "in" "*" :=
-  rew_refl in *; auto_tilde.
 Tactic Notation "rew_refl" "~" "in" hyp(H) :=
   rew_refl in H; auto_tilde.
+Tactic Notation "rew_refl" "~" "in" "*" :=
+  rew_refl in *; auto_tilde.
 
 Tactic Notation "rew_refl" "*" :=
   rew_refl; auto_star.
-Tactic Notation "rew_refl" "*" "in" "*" :=
-  rew_refl in *; auto_star.
 Tactic Notation "rew_refl" "*" "in" hyp(H) :=
   rew_refl in H; auto_star.
+Tactic Notation "rew_refl" "*" "in" "*" :=
+  rew_refl in *; auto_star.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -333,7 +338,7 @@ Proof using. intros. apply~ neqb_eq. Qed.
 (** * Tactics for reflection *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Tactic [fold_bool] *)
+(** ** DEPRECATED  --- Tactic [fold_bool] *)
 
 (** Tactic [fold_bool] simplifies goal and hypotheses of the form
     [b = true] and [b = false], as well as their symmetric *)
@@ -416,7 +421,7 @@ Ltac fold_bool :=
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Tactic [fold_prop] *)
+(** ** DEPRECATED --- Tactic [fold_prop] *)
 
 (** Tactic [fold_prop] simplifies goal and hypotheses of the form 
     [istrue b] or [~ istrue b], or [P = True] or [P = False]
@@ -522,8 +527,6 @@ Ltac fold_prop :=
   | |- ~ (~ ?P) => apply not_not_intro
   end.
 
-Ltac case_if_post ::= fold_prop; tryfalse.
-
   (* todo: improve case_if so that there is no need for that *)
 
 
@@ -563,6 +566,95 @@ Proof using. tautob; auto_false*. Qed.
 Implicit Arguments xor_cases [b1 b2].
 
 
+(* ---------------------------------------------------------------------- *)
+(** ** Tactic [logics] for normalizing bool/Prop coercions *)
+
+Section Logics.
+
+Implicit Type P : Prop.
+Ltac isTrue_prove :=
+  intros; try extens; try iff; rewrite isTrue_def in *; case_if; auto_false*.
+
+Lemma true_eq_isTrue : forall P,
+  (true = isTrue P) = P.
+Proof using. isTrue_prove. Qed.
+Lemma isTrue_eq_true : forall P,
+  (isTrue P = true) = P.
+Proof using. isTrue_prove. Qed.
+Lemma false_eq_isTrue : forall P,
+  (false = isTrue P) = ~ P.
+Proof using. isTrue_prove. Qed.
+Lemma isTrue_eq_false : forall P,
+  (isTrue P = false) = ~ P.
+Proof using. isTrue_prove. Qed.
+Lemma not_not_eq : forall P,
+  (~ ~ P) = P.
+Proof using. intros. rew_logic*. Qed.
+
+Lemma isTrue_eq_isTrue : forall P1 P2,
+  (isTrue P1 = isTrue P2) = (P1 <-> P2).
+Proof using.
+  intros. extens. iff; repeat rewrite isTrue_def in *;
+  repeat case_if; auto_false*.
+Qed.
+
+Lemma prop_eq_True : forall P,
+  (P = True) = P.
+Proof using. intros. rew_logic*. Qed.
+
+Lemma prop_eq_False : forall P,
+  (P = False) = ~ P.
+Proof using. intro. rew_logic*. Qed.
+
+Lemma prop_neq_True : forall P,
+  (P <> True) = ~ P.
+Proof using. intros. rew_logic*. Qed.
+
+Lemma prop_neq_False : forall P,
+  (P <> False) = P.
+Proof using.
+  intro. rew_logic*. iff.
+  apply not_not_elim. intros E. apply H. autos*.
+  intros E. rewrite* <- E. 
+Qed.
+
+End Logics.
+
+Hint Rewrite 
+  true_eq_isTrue isTrue_eq_true
+  false_eq_isTrue isTrue_eq_false
+  isTrue_eq_isTrue not_not_eq 
+  istrue_true_eq istrue_false_eq istrue_isTrue 
+  istrue_neg istrue_and istrue_or
+  : rew_isTrue.
+
+Ltac rew_isTrue :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_isTrue).
+
+Tactic Notation "logics" := 
+  rew_isTrue.
+Tactic Notation "logics" "~" := 
+  logics; auto_tilde.
+Tactic Notation "logics" "*" := 
+  logics; auto_star.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Tactics extended for reflection *)
+
+(* Extension of [extens] *)
+
+Ltac extens_base :=
+  first [ extens_core | intros; extens_core ]; logics.
+
+(* Extension of [case_if] *)
+
+Ltac case_if_post ::= logics; tryfalse.
+
+(* Extension of [absurds] *)
+
+Ltac absurds_post H :=
+  rew_logic in H.
 
 
 (* ********************************************************************** *)
@@ -792,3 +884,9 @@ Proof using.
   introv. applys pickable_make a.
   intro. reflexivity.
 Qed.
+
+
+
+
+
+

@@ -614,7 +614,8 @@ Tactic Notation "rew_env_concat" :=
 Tactic Notation "rew_env_concat" "in" hyp(H) := 
   autorewrite with rew_env_concat in H.
 Tactic Notation "rew_env_concat" "in" "*" := 
-  autorewrite with rew_env_concat in *.
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_env_concat).
+  (* autorewrite with rew_env_concat in *. *)
 
 Ltac simpl_dom :=
   rewrite_all dom_map in *;

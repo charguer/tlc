@@ -112,6 +112,6 @@ ide: _CoqProject
 
 clean::
 	rm -f *~
-	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob
+	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob *.cache
 	rm -rf .coq-native .coqide
 

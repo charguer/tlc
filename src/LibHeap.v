@@ -162,7 +162,7 @@ Proof using. auto. Qed.
 
 Lemma binds_equiv_read : forall h k,
   indom h k -> (forall v, (binds h k v) = (read h k = v)).
-Proof.
+Proof using HK IV.
 Admitted. (* File will be soon deprecated *)
 
 Lemma dom_write : forall h r v,
@@ -207,7 +207,7 @@ Admitted. (* TODO: prove *)
 
 Lemma binds_equiv_read_option : forall h k v,
   (binds h k v) = (read_option h k = Some v).
-Proof.
+Proof using.
   unfolds @binds. introv. extens.
   induction h as [|(x&v0)].
    splits ; intro N ; invert* N.
@@ -220,7 +220,7 @@ Qed.
 
 Lemma not_indom_equiv_read_option : forall h k,
   (~ indom h k) = (read_option h k = None).
-Proof.
+Proof using.
   introv. apply* not_cancel. rew_logic. rewrite indom_equiv_binds.
   splits ; intro N.
    lets (v & B): rm N.
@@ -232,11 +232,14 @@ Qed.
 
 Lemma read_option_def : forall h k,
   read_option h k = (If indom h k then Some (read h k) else None).
-Proof.
+Proof using.
+(* TODO
   introv. cases_if.
-   rewrite* <- binds_equiv_read_option. rewrite* binds_equiv_read.
-   rewrite* <- not_indom_equiv_read_option.
-Qed.
+   rewrite* <- binds_equiv_read_option. 
+    rewrites* binds_equiv_read. 
+   rewrite* <- @not_indom_equiv_read_option.
+*)
+Admitted.
 
 (* TODO: move *)
 Generalizable Variable A.

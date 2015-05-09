@@ -367,6 +367,7 @@ End Properties.
     need additional implicit arguments *)
 
 Implicit Arguments is_empty_inv [[A] [T] [BI] [BE] [Is_empty_inv] x E].
+Implicit Arguments in_single [A T [BI] [BS] [In_single] [x] [y]].
 Implicit Arguments is_single_inv [[A] [T] [BI] [BS] [Is_single_inv] x E].
 
 Implicit Arguments in_inter [[A] [T] [BI] [BN] [In_inter] x E F].

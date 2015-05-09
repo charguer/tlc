@@ -646,6 +646,37 @@ Tactic Notation "tests_basic" ":" constr(E) :=
   let C := fresh "C" in tests_basic C: E.
 
 
+(* ---------------------------------------------------------------------- *)
+(** ** Tactic [absurds] *)
+
+(** [absurds as H], or simply [absurd] adds the negation of the goal
+    as hypothesis. *)
+
+Ltac absurds_post H :=
+  rew_logic in H.
+
+Ltac absurds_core H :=
+  let N := fresh "TEMP" in apply not_not_elim;
+  intros N; absurds_post N; generalize N; intros H.
+
+Tactic Notation "absurds" "as" simple_intropattern(H) :=
+  absurds_core H.
+Tactic Notation "absurds" :=
+  let H := fresh "H" in absurds as H.
+
+(** [absurds_nosimpl as H], or simply [absurd_nosimpl] is like
+    [absurd] but does not perform any simplification of the negation. *)
+
+Ltac absurds_nosimpl_core H :=
+  apply not_not_elim; intros H.
+
+Tactic Notation "absurds_nosimpl" "as" simple_intropattern(H) :=
+  absurds_nosimpl_core H.
+Tactic Notation "absurds_nosimpl" :=
+  let H := fresh "H" in absurds_nosimpl as H.
+
+
+
 (* ********************************************************************** *)
 (** * Predicate combinators, comparison and compatibility *)
 

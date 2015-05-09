@@ -77,6 +77,7 @@ Proof using. intros. subst~. Qed.
 End Combinators.
 
 (** Tactic for simplifying function compositions *)
+(* TODO: not used; might become deprecated *)
 
 Hint Rewrite compose_id_l compose_id_r compose_assoc : rew_compose.
 Tactic Notation "rew_compose" := 
