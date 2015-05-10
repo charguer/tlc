@@ -593,7 +593,6 @@ Ltac jauto_set :=
 (* ********************************************************************** *)
 (** * Backward and forward chaining *)
 
-
 (* ---------------------------------------------------------------------- *)
 (** ** Application *)
 
@@ -4966,3 +4965,6 @@ Ltac autorewrite_in_star_patch cont :=
   generalize_all_prop;
   cont tt;
   intro_until_mark.
+
+
+

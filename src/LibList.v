@@ -1247,11 +1247,9 @@ Proof using.
     rew_length. math.
 Qed.
 
-Lemma last_neq_nil : forall A (L:list A),
-  L <> nil -> exists X Q, L = Q&X.
-Proof using.
-  introv N. destruct* (@last_case l).
-Qed.
+Lemma last_neq_nil : forall l,
+  l <> nil -> exists x q, l = q&x.
+Proof using. introv N. destruct* (@last_case l). Qed.
 
 Lemma app_not_empty_l : forall l1 l2,
   l1 <> nil -> l1 ++ l2 <> nil.
@@ -1263,7 +1261,8 @@ Proof using. introv NE K. apply NE. destruct~ (app_eq_nil_inv _ _ K). Qed.
 
 Lemma length_zero_iff_nil : forall l,
   length l = 0 <-> l = nil.
-Proof using. intros. iff M. destruct l; simpls. auto_false*. Qed.
+Proof using.
+  intros. iff M. destruct l; simpls; auto_false*. subst*. Qed.
  
 Lemma length_neq_elim : forall l1 l2,
   length l1 <> length l2 -> (l1 <> l2).

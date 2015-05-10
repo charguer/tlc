@@ -151,17 +151,17 @@ End Properties.
 
 
 Axiom restrict_read : forall A `{Inhab B} (M:map A B) i j,
-  i <> j -> (M\--i)\(j) = M\(j).
+  i <> j -> (M\--i)[j] = M[j].
 
 Axiom restrict_update : forall A `{Inhab B} (M:map A B) i j v,
-  i <> j -> (M\--i)\(j:=v) = (M\(j:=v) \--i).
+  i <> j -> (M\--i)[j:=v] = (M[j:=v] \--i).
 
 Axiom dom_update_in : forall A i `{Inhab B} v (M:map A B),
-  index M i -> dom (M\(i:=v)) = dom M.
+  index M i -> dom (M[i:=v]) = dom M.
 
 Lemma dom_update_in_variant:
   forall A `{Inhab B} (M M' : map A B) (D : set A) x v,
-  M' = M\(x:=v) ->
+  M' = M[x:=v] ->
   D = dom M ->
   x \in D ->
   D = dom M'.
@@ -173,7 +173,7 @@ Axiom dom_restrict_in : forall A i j `{Inhab B} (M:map A B),
   index M j -> i <> j -> index (M\--i) j.
 
 Axiom update_update_eq : forall A i `{Inhab B} v v' (M:map A B),
-  M\(i:=v)\(i:=v') = M\(i:=v').
+  M[i:=v][i:=v'] = M[i:=v'].
 
 Implicit Arguments dom_update_in [A B [H]].
 Implicit Arguments dom_restrict_in [A B [H]].
@@ -181,78 +181,78 @@ Implicit Arguments dom_restrict_in [A B [H]].
 
 
 Lemma map_update_as_union : forall A B (M:map A B) x v,
-  M\(x:=v) = M \u (x \:= v).
+  M[x:=v] = M \u (x \:= v).
 Proof using. auto. Qed.
 
 Axiom map_split : forall A (E:set A) B (M:map A B),
   M = (M \- E) \u (M \| E).
 Axiom map_restrict_single : forall A (x:A) B `{Inhab B} (M:map A B),
-  M \| \{x} = (x \:= (M\(x))).
+  M \| \{x} = (x \:= (M[x])).
 Lemma map_split_single : forall A (x:A) B `{Inhab B} (M:map A B),
-  M = (M \- \{x}) \u (x \:= (M\(x))).
+  M = (M \- \{x}) \u (x \:= (M[x])).
 Proof using. intros. rewrite~ <- map_restrict_single. apply map_split. Qed.
 
 
 
 Axiom map_indom_update_inv : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  j \indom (m\(i:=v)) -> (j = i \/ j \indom m).
+  j \indom (m[i:=v]) -> (j = i \/ j \indom m).
 Axiom map_indom_update_already : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  j \indom m -> j \indom (m\(i:=v)).
+  j \indom m -> j \indom (m[i:=v]).
 
 (* TEMPORARY {Inhab B} not needed in the following axioms, I think *)
 Axiom binds_def : forall A `{Inhab B} (M:map A B) x v,
-  binds M x v = (x \indom M /\ M\(x) = v).
+  binds M x v = (x \indom M /\ M[x] = v).
 Axiom binds_inv : forall A `{Inhab B} (M:map A B) x v,
-  binds M x v -> (x \indom M /\ M\(x) = v).
+  binds M x v -> (x \indom M /\ M[x] = v).
 Axiom binds_prove : forall A `{Inhab B} (M:map A B) x v,
-  x \indom M -> M\(x) = v -> binds M x v.
+  x \indom M -> M[x] = v -> binds M x v.
 
 Axiom binds_update_neq : forall A B i j v w (M:map A B),
-  i <> j -> binds M i v -> binds (M\(j:=w)) i v.
+  i <> j -> binds M i v -> binds (M[j:=w]) i v.
 
 Axiom binds_update_eq : forall A B i v (M:map A B),
-  binds (M\(i:=v)) i v.
+  binds (M[i:=v]) i v.
 
 Axiom binds_update_neq_inv : forall A B i j v w (M:map A B),
-  binds (M\(j:=w)) i v -> i <> j -> binds M i v.
+  binds (M[j:=w]) i v -> i <> j -> binds M i v.
 Axiom binds_update_neq_inv' : forall A B i j v w (M:map A B),
-  binds (M\(j:=w)) i v -> j \notin (dom M : set _) -> binds M i v.
+  binds (M[j:=w]) i v -> j \notin (dom M : set _) -> binds M i v.
 
 Axiom binds_inj : forall A i `{Inhab B} v1 v2 (M:map A B),
   binds M i v1 -> binds M i v2 -> v1 = v2.
 
 (*
 Axiom binds_update_rem : forall A i j `{Inhab B} v w (M:map A B),
-  j \notindom' M -> binds (M\(j:=w)) i v -> binds M i v.
+  j \notindom' M -> binds (M[j:=w]) i v -> binds M i v.
 Hint Resolve binds_update_rem.
 *)
 
 Axiom binds_get : forall A `{Inhab B} (M:map A B) x v,
-  binds M x v -> M\(x) = v.
+  binds M x v -> M[x] = v.
 Axiom binds_dom : forall A `{Inhab B} (M:map A B) x v,
   binds M x v -> x \indom M.
 
 Axiom dom_update_notin : forall A B i v (M:map A B),
-  i \notin (dom M : set _) -> dom (M\(i:=v)) = dom M \u \{i}.
+  i \notin (dom M : set _) -> dom (M[i:=v]) = dom M \u \{i}.
   (* TEMPORARY semble vrai aussi sans l'hypothèse? *)
 
 Axiom binds_index : forall A i `{Inhab B} v (M:map A B),
   binds M i v -> index M i.
 
 Axiom binds_update_neq' : forall A i j `{Inhab B} v w (M:map A B),
-  i <> j -> binds M i v -> binds (M\(j:=w)) i v.
+  i <> j -> binds M i v -> binds (M[j:=w]) i v.
 
 Axiom map_indom_update_already_inv : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  j \indom (m\(i:=v)) -> i \indom m -> j \indom m.
+  j \indom (m[i:=v]) -> i \indom m -> j \indom m.
 Global Opaque binds_inst. 
 
 
 Axiom map_update_read_if : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  (m\(i:=v))\(j) = If i = j then v else m\(j).
+  (m[i:=v])[j] = If i = j then v else m[j].
 
 Lemma binds_update_neq_iff: forall A `{Inhab B} i j v w (M:map A B),
   j \notin (dom M : set _) ->
-  (binds M i v <-> binds (M\(j:=w)) i v).
+  (binds M i v <-> binds (M[j:=w]) i v).
 Proof using.
   split; intros.
   { eapply binds_update_neq; [ | eauto ].
@@ -262,7 +262,7 @@ Proof using.
 Qed.
 
 Lemma binds_update_analysis: forall A B i j v w (M:map A B),
-  binds (M\(j:=w)) i v ->
+  binds (M[j:=w]) i v ->
   i <> j /\ binds M i v \/
   i = j /\ v = w.
 Proof using.
@@ -274,7 +274,7 @@ Lemma binds_update_indom_iff:
   forall A B (M : map A B) a1 a2 b1 b2,
   (a2 <> a1 /\ binds M a2 b2 \/ a2 = a1 /\ b2 = b1)
   <->
-  binds (M\(a1:=b1)) a2 b2.
+  binds (M[a1:=b1]) a2 b2.
 Proof using.
   split. introv [ [ ? ? ] | [ ? ? ] ].
   { eauto using binds_update_neq. }
@@ -284,20 +284,20 @@ Qed.
 
 (* todo *)
 Axiom map_indom_update : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  j \indom (m\(i:=v)) = (j = i \/ j \indom m).
+  j \indom (m[i:=v]) = (j = i \/ j \indom m).
 Lemma map_indom_update_self : forall A `{Inhab B} (m:map A B) (i:A) (v:B),
-  i \indom (m\(i:=v)).
+  i \indom (m[i:=v]).
 Proof using. intros. rewrite~ map_indom_update. Qed.
 
 Hint Resolve map_indom_update_self.
 
 Axiom map_update_read_eq : forall A `{Inhab B} (m:map A B) (i:A) (v:B),
-  (m\(i:=v))\(i) = v.
+  (m[i:=v])[i] = v.
 Axiom map_update_read_neq : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  i<>j -> (m\(i:=v))\(j) = m\(j).
+  i<>j -> (m[i:=v])[j] = m[j].
 
 Axiom map_update_restrict : forall A `{Inhab B} (m:map A B) (i:A) (v:B),
-  (m\(i:=v) \- \{i}) = (m \- \{i}).
+  (m[i:=v] \- \{i}) = (m \- \{i}).
 
 Hint Rewrite @map_indom_update @map_update_read_neq @map_update_read_eq : rew_map.
 
