@@ -718,13 +718,20 @@ Proof using. intros. apply prop_ext. iff H. autos*. split; intros x; apply* (H x
 Definition pred_le (A : Type) (P Q : A -> Prop) :=
   forall x, P x -> Q x.
 
+(* TODO: can it be reformulated using [refl] and still serve as hint? *)
 Lemma pred_le_refl : forall A (P : A -> Prop),
   pred_le P P.
 Proof using. unfolds~ pred_le. Qed.
 
+(* TODO: reformulate the two lemmas using [trans] *)
 Lemma pred_le_trans : forall A (Q P R : A -> Prop), 
   pred_le P Q -> pred_le Q R -> pred_le P R.
 Proof using. unfolds~ pred_le. Qed.
+
+Lemma pred_le_antisym : forall A (P Q : A -> Prop), (* antisym (@pred_le A). *)
+  pred_le P Q -> pred_le Q P -> P = Q.
+Proof using. intros_all. applys* prop_ext_1. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Compatibility of a predicate with an equivalence relation *)
