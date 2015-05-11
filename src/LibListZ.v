@@ -13,6 +13,14 @@ Require Export LibBag.
 
 Open Local Scope comp_scope.
 
+
+Remove Hints trans_eq_bool.
+
+Lemma test : forall b, b = false.
+Proof using.
+  intros.
+  time eauto 7. (* takes 0 sec to fail! *)
+
 (* ********************************************************************** *)
 (** * List operations using indices in Z *)
 

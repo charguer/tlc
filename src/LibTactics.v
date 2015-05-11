@@ -45,6 +45,15 @@
 
 Set Implicit Arguments.
 
+Require Import List.
+
+(* Very important to remove hint trans_eq_bool from LibBool,
+   otherwise eauto slows down dramatically:
+  Lemma test : forall b, b = false.
+  time eauto 7. (* takes over 4 seconds  to fail! *) *)
+
+Remove Hints Bool.trans_eq_bool.
+
 
 (* ********************************************************************** *)
 (** * Tools for programming with Ltac *)
@@ -141,8 +150,6 @@ Ltac intro_until_mark :=
 (** A datatype of type [list Boxer] is used to manipulate list of
     Coq values in ltac. Notation is [>> v1 v2 ... vN] for building
     a list containing the values [v1] through [vN]. *)
-
-Require Import List.
 
 Notation "'>>'" :=
   (@nil Boxer)

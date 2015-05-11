@@ -9,7 +9,6 @@ Require Export LibBool LibLogic.
 Generalizable Variable P.
 
 
-
 (* ********************************************************************** *)
 (** * Reflection between booleans and propositions *)
 
