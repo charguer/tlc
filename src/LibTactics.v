@@ -3332,9 +3332,12 @@ Tactic Notation "exists___" :=
   let N := get_goal_existential_arity in
   exists___ N.
 
+  (* todo: does not seem to work *)
 Tactic Notation "exists" := 
   exists___.
 
+  (* todo: [exists_all] is the new syntax for [exists___] *)
+Tactic Notation "exists_all" := exists___.
 
 (* ---------------------------------------------------------------------- *)
 (** Existentials and conjunctions in hypotheses *)
@@ -3845,6 +3848,8 @@ Tactic Notation "decides_equality" "~" :=
 
 Tactic Notation "iff" "~" :=
   iff; auto_tilde.
+Tactic Notation "iff" "~" simple_intropattern(I) :=
+  iff I; auto_tilde.
 Tactic Notation "splits" "~" :=
   splits; auto_tilde.
 Tactic Notation "splits" "~" constr(N) := 
@@ -4226,6 +4231,8 @@ Tactic Notation "decides_equality" "*" :=
 
 Tactic Notation "iff" "*" :=
   iff; auto_star.
+Tactic Notation "iff" "*" simple_intropattern(I) :=
+  iff I; auto_star.
 Tactic Notation "splits" "*" :=
   splits; auto_star.
 Tactic Notation "splits" "*" constr(N) := 

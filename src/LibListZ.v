@@ -93,6 +93,8 @@ Variable A : Type.
 Implicit Types l : list A.
 Ltac auto_tilde ::= eauto with maths.
 
+Lemma length_nonneg : forall A (L: list A), 0 <= length L.
+Proof using. intros. unfold length. math. Qed.
 Lemma length_nil : 
   length (@nil A) = 0.
 Proof using. auto. Qed.

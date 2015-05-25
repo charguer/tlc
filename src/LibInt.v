@@ -244,12 +244,27 @@ Ltac rew_maths :=
     is of the form [P1 = P2 :> Prop], then the goal is 
     changed to [P1 <-> P2]. *)
 
+Ltac math_setup_goal_step tt :=
+  match goal with
+  | |- _ -> _ => intro
+  | |- _ <-> _ => iff
+  | |- forall _, _  => intro
+  | |- _ /\ _ => split 
+  | |- _ = _ :> Prop => apply prop_ext; iff
+  end.
+
 Ltac math_setup_goal :=
-  intros;
-  try match goal with |- _ /\ _ => split end;
-  try match goal with |- _ = _ :> Prop => apply prop_ext; iff end;
+  repeat (math_setup_goal_step tt);
   arith_goal_or_false. 
-  (* try split_if_eq_bool. *)
+
+  (* DEPRECATED
+  Ltac math_setup_goal :=
+    intros;
+    try match goal with |- _ /\ _ => split end;
+    try match goal with |- _ = _ :> Prop => apply prop_ext; iff end;
+    arith_goal_or_false. 
+    (* try split_if_eq_bool. *)
+  *)
 
 (* todo; [int_nat_conv] 
 Lemma int_nat_plus : forall (n m:nat),
@@ -281,7 +296,8 @@ Ltac math_5 := omega.
 Ltac math_debug := math_0; math_1; math_2; math_3; math_4.
 Ltac math_base := math_debug; math_5.
 
-Ltac math_lia := math_debug; lia.
+Tactic Notation "math_lia" := math_debug; lia.
+Tactic Notation "math_nia" := math_debug; nia.
 
 Tactic Notation "math" := math_base.
 
@@ -371,6 +387,16 @@ Hint Extern 3 (@le int _ _ _) => math : maths.
 Hint Extern 3 (@lt int _ _ _) => math : maths.
 Hint Extern 3 (@ge int _ _ _) => math : maths.
 Hint Extern 3 (@gt int _ _ _) => math : maths.
+Hint Extern 3 (~ @le int _ _ _) => unfold not; math : maths.
+Hint Extern 3 (~ @lt int _ _ _) => unfold not; math : maths.
+Hint Extern 3 (~ @ge int _ _ _) => unfold not; math : maths.
+Hint Extern 3 (~ @gt int _ _ _) => unfold not; math : maths.
+Hint Extern 3 (~ @eq int _ _) => unfold not; math : maths.
+Hint Extern 3 (@le int _ _ _ -> False) => math : maths.
+Hint Extern 3 (@lt int _ _ _ -> False) => math : maths.
+Hint Extern 3 (@ge int _ _ _ -> False) => math : maths.
+Hint Extern 3 (@gt int _ _ _ -> False) => math : maths.
+
 
 
 (* ********************************************************************** *)

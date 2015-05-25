@@ -450,6 +450,18 @@ Lemma foreach_weaken : forall P Q E,
   foreach P E -> pred_le P Q -> foreach Q E.
 Proof using. introv H L K. apply~ L. Qed.
 
+Lemma foreach_remove_simple : forall P E F,
+  foreach P E -> foreach P (E \- F).
+Proof using. introv M H. applys M. rewrite in_remove_eq in H. autos*. Qed.
+
+Lemma foreach_remove : forall P Q E F,
+  foreach P E -> pred_le P (fun (x:A) => x \notin F -> Q x) -> foreach Q (E \- F).
+Proof using. introv M H Px. rewrite in_remove_eq in Px. applys* H. Qed.
+
+Lemma foreach_notin_prove : forall P x E,
+  foreach P E -> ~ P x -> x \notin E.
+Proof using. introv M N I. applys N. applys~ M. Qed.
+
 End ForeachProp.
 
 Hint Resolve foreach_empty foreach_single foreach_union.

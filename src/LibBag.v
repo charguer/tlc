@@ -198,6 +198,8 @@ Class Is_empty_prove :=
   { is_empty_prove : forall E, (forall x, x \in E -> False) -> E = \{} }.
 Class Is_empty_inv := 
   { is_empty_inv : forall x E, E = \{} -> x \in E -> False }.
+Class Is_nonempty_prove :=
+  { is_nonempty_prove : forall x E, x \in E -> E <> \{} }.
 
 Class Is_single_eq := 
   { is_single_eq : forall x E, (E = \{x}) = (x \in E /\ (forall y, y \in E -> y = x)) }.
@@ -205,6 +207,8 @@ Class Is_single_prove :=
   { is_single_prove : forall x E, x \in E -> (forall y, y \in E -> y = x) -> E = \{x} }.
 Class Is_single_inv := 
   { is_single_inv : forall x y E, E = \{x} -> y \in E -> y = x }.
+Class Notin_single_eq :=
+  { notin_single_eq : forall x y, x \notin \{y} = (x <> y) }.
 
 Class In_inter_eq :=
   { in_inter_eq : forall x E F, x \in (E \n F) = (x \in E /\ x \in F) }.
@@ -368,6 +372,8 @@ End Properties.
     need additional implicit arguments *)
 
 Implicit Arguments is_empty_inv [[A] [T] [BI] [BE] [Is_empty_inv] x E].
+Implicit Arguments is_nonempty_prove [[A] [T] [BE] [Is_nonempty_prove] x E].
+
 Implicit Arguments in_single [A T [BI] [BS] [In_single] [x] [y]].
 Implicit Arguments is_single_inv [[A] [T] [BI] [BS] [Is_single_inv] x E].
 
@@ -456,6 +462,11 @@ Global Instance is_empty_inv_from_is_empty_eq :
   Is_empty_eq -> Is_empty_inv.
 Proof using. constructor. introv I1 I2. rewrite* is_empty_eq in I1. Qed.
 
+Global Instance is_nonempty_prove_from_is_empty_eq : 
+  Is_empty_eq -> Is_nonempty_prove.
+Proof using. constructor. introv I1 I2. rewrite is_empty_eq in I2. eauto. 
+Admitted. (* TODO, coq bug ?*)
+
 Global Instance is_single_eq_from_in_single_eq :
   In_extens -> In_single_eq -> Is_single_eq.
 Proof using.
@@ -473,6 +484,10 @@ Proof using. constructor. introv I. rewrite* is_single_eq. Qed.
 Global Instance is_single_inv_from_is_single_eq :
   Is_single_eq -> Is_single_inv.
 Proof using. constructor. introv I1 I2. rewrite* is_single_eq in I1. Qed.
+
+Global Instance notin_single_eq_from_in_single_eq : 
+  In_single_eq -> Notin_single_eq.
+Proof using. constructor. intros. unfold notin. rewrite in_single_eq. eauto. Qed.
 
 Global Instance in_inter_from_in_inter_eq : 
   In_inter_eq -> In_inter.
@@ -681,6 +696,10 @@ Qed.
 Global Instance union_self_from_in_union_eq : 
   In_extens -> In_union_eq -> Union_self.
 Proof using. constructor. contain_by_in_double. Qed.
+
+Global Instance notin_union_eq_from_in_union_eq :
+  In_union_eq -> Notin_union_eq.
+Proof using. constructor. intros. unfold notin. rewrite @in_union_eq. extens*. eauto. Qed.
 
 (** Inter *)
 

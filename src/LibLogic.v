@@ -522,8 +522,9 @@ End ClassicQuantifiers.
     simplify logical expressions. Syntax [rew_logic in H]
     and [rew_logic in *] are also available. *)
 
+  (* Note: not_impl needs to have higher priority than not_forall *)
 Hint Rewrite not_not not_and not_or not_impl not_True not_False 
-  not_forall_not not_exists_not not_forall not_exists
+  not_forall_not not_exists_not not_forall not_exists not_impl
   prop_eq_True prop_eq_False prop_eq_to_iff
   and_True_l and_True_r and_False_l and_False_r
   or_True_l or_True_r or_False_l or_False_r not_False not_True
@@ -630,7 +631,7 @@ Tactic Notation "tests" "*" ":" constr(E) :=
 Tactic Notation "tests_nosubst" simple_intropattern(I1) simple_intropattern(I2) ":" constr(E) := 
   tests_base E I1 I2 ltac:(tests_post_nosubst).
 Tactic Notation "tests_nosubst" simple_intropattern(I) ":" constr(E) :=
-  tests I I: E.
+  tests_nosubst I I: E.
 Tactic Notation "tests_nosubst" ":" constr(E) :=
   let I := fresh "C" in tests I: E.
 Tactic Notation "tests_nosubst" "~" ":" constr(E) :=
