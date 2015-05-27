@@ -296,6 +296,9 @@ Ltac math_5 := omega.
 Ltac math_debug := math_0; math_1; math_2; math_3; math_4.
 Ltac math_base := math_debug; math_5.
 
+Ltac math_lia := math_debug; lia.
+Ltac math_nia := math_debug; nia.
+
 Tactic Notation "math" := math_base.
 
 Tactic Notation "math" simple_intropattern(I) ":" constr(E) :=
@@ -333,18 +336,18 @@ Lemma Z_div_mod' : forall a b : int,
 Proof using. applys Z_div_mod. Qed.
 
 Ltac Zdiv_eliminate_step tt :=
-  match goal with |- context[ Z.div_eucl ?X ?Y ] =>   
+  match goal with |- context[ Z.div_eucl ?X ?Y ] =>
      generalize (@Z_div_mod' X Y);
      destruct (Z.div_eucl X Y)
   end.
 
 Ltac math_dia_generalize_all_prop tt :=
-  repeat match goal with H: ?T |- _ => 
+  repeat match goal with H: ?T |- _ =>
     match type of T with Prop => gen H end end.
 
 Ltac Zdiv_eliminate tt :=
   math_dia_generalize_all_prop tt;
-  unfold Z.div; 
+  unfold Z.div;
   repeat (Zdiv_eliminate_step tt).
 
 (* todo: deal differently with iterated divisions,
@@ -352,16 +355,16 @@ Ltac Zdiv_eliminate tt :=
 
 Ltac Zdiv_instantiate_hyp_steps tt :=
   match goal with H: Zdiv_hyp ?P -> _ |- _ =>
-    specializes H __; 
+    specializes H __;
     [ idtac
-    | try Zdiv_instantiate_hyp_steps tt ]  
+    | try Zdiv_instantiate_hyp_steps tt ]
   end.
 
 Ltac Zdiv_instantiate_hyp tt :=
   Zdiv_instantiate_hyp_steps tt.
 
 Ltac math_dia_setup :=
-  math_0; math_1; math_2; math_3; Zdiv_eliminate tt; 
+  math_0; math_1; math_2; math_3; Zdiv_eliminate tt;
   intros; try Zdiv_instantiate_hyp_steps tt; unfolds Zdiv_hyp.
 
 Tactic Notation "math_dia" :=
@@ -369,46 +372,46 @@ Tactic Notation "math_dia" :=
 
 (*--in progress
 
-Lemma math_nia_demo_1 : forall (a b N : int), 
-  N > 0 -> 
+Lemma math_nia_demo_1 : forall (a b N : int),
+  N > 0 ->
   a * N <= b * N ->
   a <= b.
 Proof using. math_nia. Qed.
 
-Lemma math_dia_demo_1 : forall (a b t : int), 
+Lemma math_dia_demo_1 : forall (a b t : int),
   t > 0 ->
   a <= b ->
   a / t <= b / t.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_2 : forall (a t : int), 
-  t > 1 -> 
+Lemma math_dia_demo_2 : forall (a t : int),
+  t > 1 ->
   a > 0 ->
   a / t <= a.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_3 : forall (a b t : int), 
+Lemma math_dia_demo_3 : forall (a b t : int),
   t > 0 ->
   0 <= a <= b ->
   a / t <= b / t.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_4 : forall (a b N : int), 
-  N > 0 -> 
+Lemma math_dia_demo_4 : forall (a b N : int),
+  N > 0 ->
   a > 0 ->
   b > 0 ->
   a * N <= b * N ->
   a <= b.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_5 : forall (a b N t : int), 
-  N > 0 -> 
-  t > 1 -> 
+Lemma math_dia_demo_5 : forall (a b N t : int),
+  N > 0 ->
+  t > 1 ->
   a > 0 ->
   b > 0 ->
   a * N <= b * N ->
   a / t <= b.
-Proof using. 
+Proof using.
   intros.
   (* math_dia_setup. math_dia. *)
   try math_dia.
@@ -417,12 +420,12 @@ Proof using.
   math_dia.
 Qed.
 
-Lemma math_dia_demo_span_1 : forall (a b t n N : int), 
+Lemma math_dia_demo_span_1 : forall (a b t n N : int),
   N > 0 ->
   n > 0 ->
-  t > 0 -> 
+  t > 0 ->
   a >= 0 ->
-  b >= 0 -> 
+  b >= 0 ->
   a <= b * (1 + N/t) + n * t/N ->
   (   a <= b * (1 + N/t) + (n+1) * t/N
   /\ (a+1) <= (b+1) * (1 + N/t) + (n+1) * t/N
@@ -499,40 +502,41 @@ Tactic Notation "math_rewrite" "*" constr(E) "in" "*" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Hint externs for calling math in the hint base [maths] *)
 
-Hint Extern 3 (_ = _ :> nat) => math : maths.
-Hint Extern 3 (_ = _ :> int) => math : maths.
-Hint Extern 3 (_ <> _ :> nat) => math : maths.
-Hint Extern 3 (_ <> _ :> int) => math : maths.
-Hint Extern 3 (istrue (isTrue (_ = _ :> nat))) => math : maths.
-Hint Extern 3 (istrue (isTrue (_ = _ :> int))) => math : maths.
-Hint Extern 3 (istrue (isTrue (_ <> _ :> nat))) => math : maths.
-Hint Extern 3 (istrue (isTrue (_ <> _ :> int))) => math : maths.
-Hint Extern 3 ((_ <= _)%nat) => math : maths.
-Hint Extern 3 ((_ >= _)%nat) => math : maths.
-Hint Extern 3 ((_ < _)%nat) => math : maths.
-Hint Extern 3 ((_ > _)%nat) => math : maths.
-Hint Extern 3 ((_ <= _)%Z) => math : maths.
-Hint Extern 3 ((_ >= _)%Z) => math : maths.
-Hint Extern 3 ((_ < _)%Z) => math : maths.
-Hint Extern 3 ((_ > _)%Z) => math : maths.
-Hint Extern 3 (@le nat _ _ _) => math : maths.
-Hint Extern 3 (@lt nat _ _ _) => math : maths.
-Hint Extern 3 (@ge nat _ _ _) => math : maths.
-Hint Extern 3 (@gt nat _ _ _) => math : maths.
-Hint Extern 3 (@le int _ _ _) => math : maths.
-Hint Extern 3 (@lt int _ _ _) => math : maths.
-Hint Extern 3 (@ge int _ _ _) => math : maths.
-Hint Extern 3 (@gt int _ _ _) => math : maths.
-Hint Extern 3 (~ @le int _ _ _) => unfold not; math : maths.
-Hint Extern 3 (~ @lt int _ _ _) => unfold not; math : maths.
-Hint Extern 3 (~ @ge int _ _ _) => unfold not; math : maths.
-Hint Extern 3 (~ @gt int _ _ _) => unfold not; math : maths.
-Hint Extern 3 (~ @eq int _ _) => unfold not; math : maths.
-Hint Extern 3 (@le int _ _ _ -> False) => math : maths.
-Hint Extern 3 (@lt int _ _ _ -> False) => math : maths.
-Hint Extern 3 (@ge int _ _ _ -> False) => math : maths.
-Hint Extern 3 (@gt int _ _ _ -> False) => math : maths.
+Ltac math_hint := math.
 
+Hint Extern 3 (_ = _ :> nat) => math_hint : maths.
+Hint Extern 3 (_ = _ :> int) => math_hint : maths.
+Hint Extern 3 (_ <> _ :> nat) => math_hint : maths.
+Hint Extern 3 (_ <> _ :> int) => math_hint : maths.
+Hint Extern 3 (istrue (isTrue (_ = _ :> nat))) => math_hint : maths.
+Hint Extern 3 (istrue (isTrue (_ = _ :> int))) => math_hint : maths.
+Hint Extern 3 (istrue (isTrue (_ <> _ :> nat))) => math_hint : maths.
+Hint Extern 3 (istrue (isTrue (_ <> _ :> int))) => math_hint : maths.
+Hint Extern 3 ((_ <= _)%nat) => math_hint : maths.
+Hint Extern 3 ((_ >= _)%nat) => math_hint : maths.
+Hint Extern 3 ((_ < _)%nat) => math_hint : maths.
+Hint Extern 3 ((_ > _)%nat) => math_hint : maths.
+Hint Extern 3 ((_ <= _)%Z) => math_hint : maths.
+Hint Extern 3 ((_ >= _)%Z) => math_hint : maths.
+Hint Extern 3 ((_ < _)%Z) => math_hint : maths.
+Hint Extern 3 ((_ > _)%Z) => math_hint : maths.
+Hint Extern 3 (@le nat _ _ _) => math_hint : maths.
+Hint Extern 3 (@lt nat _ _ _) => math_hint : maths.
+Hint Extern 3 (@ge nat _ _ _) => math_hint : maths.
+Hint Extern 3 (@gt nat _ _ _) => math_hint : maths.
+Hint Extern 3 (@le int _ _ _) => math_hint : maths.
+Hint Extern 3 (@lt int _ _ _) => math_hint : maths.
+Hint Extern 3 (@ge int _ _ _) => math_hint : maths.
+Hint Extern 3 (@gt int _ _ _) => math_hint : maths.
+Hint Extern 3 (~ @le int _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @lt int _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @ge int _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @gt int _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @eq int _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (@le int _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@lt int _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@ge int _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@gt int _ _ _ -> False) => math_hint : maths.
 
 
 (* ********************************************************************** *)
