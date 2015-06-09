@@ -538,6 +538,25 @@ Hint Extern 3 (@lt int _ _ _ -> False) => math_hint : maths.
 Hint Extern 3 (@ge int _ _ _ -> False) => math_hint : maths.
 Hint Extern 3 (@gt int _ _ _ -> False) => math_hint : maths.
 
+(* ---------------------------------------------------------------------- *)
+(** ** Extend [zify] to handle [Z.to_nat]. *)
+
+Lemma Z_of_nat_zify : forall x, Z.of_nat (Z.to_nat x) = Z.max 0 x.
+Proof.
+  intros x. destruct x.
+  - rewrite Z2Nat.id; reflexivity.
+  - rewrite Z2Nat.inj_pos. math_lia.
+  - rewrite Z2Nat.inj_neg. math_lia.
+Qed.
+
+Ltac zify_nat_op_extended :=
+  match goal with
+  | H : context [ Z.of_nat (Z.to_nat ?a) ] |- _ => rewrite (Z_of_nat_zify a) in H
+  | |- context [ Z.of_nat (Z.to_nat ?a) ] => rewrite (Z_of_nat_zify a)
+  | _ => zify_nat_op
+  end.
+
+Ltac zify_nat ::= repeat zify_nat_rel; repeat zify_nat_op_extended; unfold Z_of_nat' in *.
 
 (* ********************************************************************** *)
 (** * Simplification lemmas *)
