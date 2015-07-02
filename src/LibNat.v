@@ -251,6 +251,16 @@ Tactic Notation "rew_nat" "*" "in" hyp(H) :=
   rew_nat in H; auto_star.
 
 
+(* ---------------------------------------------------------------------- *)
+(* Total order instance *)
+
+Instance nat_le_total_order : Le_total_order (A:=nat).
+Proof using.
+  constructor. constructor. constructor; unfolds.
+  nat_math. nat_math. unfolds. nat_math. unfolds.
+  intros. tests: (x <= y). left~. right. nat_math.
+Qed.
+
 (* ********************************************************************** *)
 (** * Other lemmas *)
 
