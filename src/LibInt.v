@@ -843,13 +843,24 @@ Proof using. intros. unfolds min. case_if; math. Qed.
 
 End Min.
 
+(************************************************************)
+(* * Pow function *)
+
 Require Import Zpow_facts.
+
+Lemma power_pos:
+  forall k n,
+  0 < n ->
+  0 <= k ->
+  1 <= n^k.
+Proof using.
+  intros. math_rewrite (1 = n^0). reflexivity.
+  apply Zpower_le_monotone; math.
+Qed.
 
 Lemma pow2_pos : forall n, n >= 0 -> 2^n >= 1.
 Proof using.
-  intros. math_rewrite (1 = 2^0). reflexivity.
-  rewrite ge_is_flip_le. unfolds.
-  apply Zpower_le_monotone; math.
+  intros. forwards: power_pos n 2; math.
 Qed.
 
 Lemma pow2_succ : forall n, n >= 0 -> 2^(n+1) = 2*2^n.
