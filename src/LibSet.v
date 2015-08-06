@@ -7,6 +7,125 @@ Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect LibList
   LibOperation LibStruct LibInt LibNat LibEpsilon.
+
+(*-----------------*)
+
+(* TEMPORARY some of these definitions are redundant with LibFix 
+   and LibMMin from credits *)
+
+Require Import LibRelation.
+
+(* [lower_bound le P x] means that [x] is a lower bound for the
+   set [P] with respect to the ordering [le]. *)
+
+Definition lower_bound (A:Type) (le:binary A) (P:A->Prop) (x:A) :=
+  forall y, P y -> le x y.
+
+(* [min_element le P x] means that [x] is a minimal element of
+   [P], i.e., it is both a member of [P] and a lower bound for
+   [P]. *)
+
+Definition min_element (A:Type) (le:binary A) (P:A->Prop) (x:A) :=
+  P x /\ lower_bound le P x.
+
+(* [mmin le P] is a minimal element of [P] with respect to [le],
+   when such an element exists. *)
+
+Definition mmin `{Inhab A} (le:binary A) (P:A->Prop) :=
+  epsilon (min_element le P).
+
+
+(* TODO: move *)
+
+(* The type [nat] enjoys this property. *)
+
+Lemma increment_lower_bound_nat:
+  forall (P : nat -> Prop) x,
+  lower_bound le P x ->
+  ~ P x ->
+  lower_bound le P (x + 1)%nat.
+Proof using.
+  introv hlo ?. intros y ?.
+  destruct (eq_nat_dec x y).
+    { subst. tauto. }
+    { forwards: hlo; eauto. math. }
+Qed.
+
+Definition bounded_has_minimal (A:Type) (le:binary A) :=
+  (* Recall that [ex P] means that [P] has an inhabitant; i.e.,
+     it is equivalent to [exists x, P x]. *)
+  forall P,
+  ex P ->
+  ex (lower_bound le P) ->
+  ex (min_element le P).
+
+
+Lemma bounded_has_minimal_nat:
+  @bounded_has_minimal nat le.
+Proof using.
+  (* Assume a set [P], such that [y] is an inhabitant of [P]
+     and [x] is a lower bound for [P]. *)
+  intros P [ y ? ].
+  (* We reason by induction on the difference [y + 1 - x].
+     Reasoning with [y - x] would work too, but this choice
+     is more elegant, as it makes the base case a contradiction,
+     and avoids a little duplication. *)
+  cut (
+    forall (k x : nat), (y + 1 - x)%nat = k ->
+    lower_bound le P x ->
+    exists z, min_element le P z
+  ). { intros ? [ x ? ]. eauto. }
+  induction k; introv ? hlo.
+  (* Base. *)
+  (* Our hypotheses imply that [x] must be less than or equal to
+     [y]. Because in this case the difference [y + 1 - x] is zero,
+     this leads to a contradiction. *)
+  { false. forwards: hlo; eauto. math. }
+  (* Step. *)
+  (* Eeither [P x] holds, or it does not. If it does, then [x]
+     is the desired minimal element. If it does not, this implies
+     that [x + 1] is a lower bound for [P], and the induction
+     hypothesis can be used. *)
+  destruct (classic (P x)).
+    { exists x. split; eauto. }
+    { eapply (IHk (x + 1)%nat). math. eauto using increment_lower_bound_nat. }
+Qed.
+
+Lemma admits_lower_bound_nat:
+  forall P : nat -> Prop,
+  ex (lower_bound le P).
+Proof using.
+  exists 0%nat. unfold lower_bound. math.
+Qed.
+
+Lemma mmin_spec:
+  forall `{Inhab A} (le:binary A) (P:A->Prop) m,
+  m = mmin le P ->
+  ex P ->
+  ex (lower_bound le P) ->
+  bounded_has_minimal le ->
+  min_element le P m.
+Proof using.
+  intros. subst. unfold mmin. spec_epsilon* as m.
+Qed.
+
+Lemma mmin_spec_nat:
+  forall (P:nat->Prop) m,
+  m = mmin le P ->
+  ex P ->
+  P m /\ (forall x, P x -> m <= x).
+Proof using.
+  introv E Q. applys (@mmin_spec _ _ _ P m E Q).
+  applys admits_lower_bound_nat. 
+  applys bounded_has_minimal_nat.
+Qed.
+
+(*-----------------*)
+
+
+
+
+
 Require Export LibBag.
 
 
@@ -38,8 +157,10 @@ Definition incl_impl : set A -> set A -> Prop := @pred_le A.
 Definition list_repr_impl (E:set A) (l:list A) :=
   No_duplicates l /\ forall x, Mem x l <-> E x.
 Definition to_list (E:set A) := epsilon (list_repr_impl E).
-Definition finite (E:set A) := exists l, list_repr_impl E l.
-Definition card_impl (E:set A) := LibList.length (to_list E).
+Definition list_covers_impl (E:set A) L := forall x, E x -> Mem x L.
+Definition finite (E:set A) := exists L, list_covers_impl E L.
+Definition card_impl (E:set A) : nat := 
+  mmin le (fun n => exists L, list_covers_impl E L /\ n = length L).
 Definition fold_impl (m:monoid_def B) (f:A->B) (E:set A) := 
   LibList.fold_right (fun x acc => monoid_oper m (f x) acc)
     (monoid_neutral m) (to_list E).
@@ -118,7 +239,7 @@ Hint Constructors Mem.
 
 Ltac unf := unfold finite, 
   card_inst, card_impl, card,
-  to_list,
+  to_list, 
   disjoint_inst, disjoint,
   incl_inst, incl_impl,
   empty_inst, empty_impl, empty,
@@ -141,10 +262,25 @@ Proof using. intros. apply* prop_ext. Qed.
 (* ---------------------------------------------------------------------- *)
 (** to_list *)
 
+Lemma list_covers_impl_to_list_repr_impl : forall A (E:set A),
+  ex (list_covers_impl E) -> ex (list_repr_impl E).
+Proof using.
+  introv (L&M). sets_eq L1 EQL1: (Remove_duplicates L).
+  forwards~ (HN&HM): Remove_duplicates_spec EQL1.
+  sets L2: (Filter (fun x => x \in E) L1).
+  exists L2. split. 
+    applys* Filter_No_duplicates.
+    intros x. specializes M x. rewrite <- HM in M. unf. iff N.
+      subst L2. forwards*: Filter_Mem_inv N.    
+      applys* Filter_Mem.
+Qed.
+
 Lemma to_list_spec : forall (E:set A) L,
   L = to_list E -> finite E -> No_duplicates L /\ (forall x, Mem x L <-> x \in E).
 Proof.
-  intros. unfolds to_list, finite. spec_epsilon~ as L' (HL'&EL'). subst*.
+  intros. unfolds to_list, finite. spec_epsilon~ as L' (HL'&EL').
+  applys~ list_covers_impl_to_list_repr_impl.
+  subst*.
 Qed.
 
 Lemma to_list_empty : 
@@ -176,26 +312,20 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** finite *)
 
-Lemma finite_prove : forall A (E:set A) L,
-  (forall x, x \in E -> Mem x L) -> finite E.
-Proof using. 
-  introv M. sets_eq L1 EQL1: (Remove_duplicates L).
-  forwards~ (HN&HM): Remove_duplicates_spec EQL1.
-  sets L2: (Filter (fun x => x \in E) L1).
-  exists L2. split. 
-    applys* Filter_No_duplicates.
-    intros x. specializes M x. rewrite <- HM in M. unf. iff N.
-      subst L2. forwards*: Filter_Mem_inv N.    
-      applys* Filter_Mem.
-Qed.
+Definition list_covers A (E:set A) L := forall x, x \in E -> Mem x L.
 
+Lemma finite_prove : forall A (E:set A) L,
+  list_covers E L -> finite E.
+Proof using. introv H. exists* L. Qed.
+
+(* useful? *)
 Lemma finite_prove_exists : forall A (E:set A),
-  (exists L, forall x, x \in E -> Mem x L) -> finite E.
+  ex (list_covers E) -> finite E.
 Proof using. introv (L&H). applys* finite_prove. Qed.
 
 Lemma finite_inv_basic : forall A (E:set A),
-  finite E -> exists L, (forall x, x \in E -> Mem x L).
-Proof using. introv (L&HN&HM). exists L. intros. applys* HM. Qed.
+  finite E -> exists L, list_covers E L.
+Proof using. introv (L&HN). exists L. intros. applys* HN. Qed.
 
 Lemma finite_empty : forall A,
   finite (\{} : set A).
@@ -219,7 +349,9 @@ Proof using.
   introv H1 H2. apply finite_prove_exists.
   lets (L1&E1): finite_inv_basic H1.
   lets (L2&E2): finite_inv_basic H2.
-  exists (L1++L2). unf. introv M. rewrite* Mem_app_or_eq.
+  exists (L1++L2). unfolds list_covers.
+  introv M. rewrite @in_union_eq in M; try typeclass.
+  rewrite* Mem_app_or_eq. 
 Qed.
 
 Lemma finite_inter : forall A (E F : set A),
@@ -227,8 +359,8 @@ Lemma finite_inter : forall A (E F : set A),
   finite (E \n F).
 Proof using.
   introv H. apply finite_prove_exists. destruct H.
-  lets (L&EQ): finite_inv_basic H. exists L. unf. autos*.
-  lets (L&EQ): finite_inv_basic H. exists L. unf. autos*.
+  lets (L&EQ): finite_inv_basic H. exists L. unfold list_covers. unf. autos*.
+  lets (L&EQ): finite_inv_basic H. exists L. unfold list_covers. unf. autos*.
 Qed.
 
 Lemma finite_incl : forall A (E F : set A),
@@ -237,7 +369,7 @@ Lemma finite_incl : forall A (E F : set A),
   finite E.
 Proof using.
   introv HI HF. apply finite_prove_exists.
-  lets (L&EQ): finite_inv_basic HF. unf. exists* L.
+  lets (L&EQ): finite_inv_basic HF. unfold list_covers. unf. exists* L.
 Qed.
 
 Lemma finite_remove : forall A (E F : set A),
@@ -245,7 +377,7 @@ Lemma finite_remove : forall A (E F : set A),
   finite (E \- F).
 Proof using.
   introv HE. apply finite_prove_exists.
-  lets (L&EQ): finite_inv_basic HE. unf. exists* L.
+  lets (L&EQ): finite_inv_basic HE. unfold list_covers. unf. exists* L.
 Qed.
 
 
@@ -305,7 +437,7 @@ Global Instance in_single_eq_inst : In_single_eq (A:=A) (T:=set A).
 Proof using. constructor. intros. apply* prop_ext. Qed.
 
 Global Instance in_union_eq_inst : In_union_eq (A:=A) (T:=set A).
-Proof using. constructor. intros. unf. apply* prop_ext. Qed.
+Proof using. constructor. intros. unf. simpl. apply* prop_ext. Qed.
 
 Global Instance in_inter_eq_inst : In_inter_eq (A:=A) (T:=set A).
 Proof using. constructor. intros. unf. apply* prop_ext. Qed.
@@ -318,37 +450,111 @@ Proof using. constructor. intros. unf. autos*. Qed.
 
 Global Instance disjoint_eq_inst : Disjoint_eq (T:=set A).
 Proof using.
-  constructor. intros. unf. applys prop_ext. iff M.
+  constructor. intros. unf. simpl. applys prop_ext. iff M.
     intros x. rewrite* <- (@func_same_1 _ _ x _ _ M).
     applys* prop_ext_1.
 Qed.
 
+
+
+(* ---------------------------------------------------------------------- *)
+(** structural decomposition *)
+
+Lemma set_isolate : forall A (E : set A) x,
+  x \in E ->
+  E = \{x} \u (E \- \{x}).
+Proof using.
+  introv H. unf. apply prop_ext_1. intros y. iff M. 
+    simpls. tests*: (y = x).
+    destruct M. subst*. autos*.
+Qed.
+
+
 (* ---------------------------------------------------------------------- *)
 (** card *)
 
-(* TODO: prove that 
-  card E = min_of (fun n => exists L, covers L E /\ n = length L)
-  where covers L E = forall_ x \in E, Mem x L
-*)
+Definition finite_covers : forall (E:set A), 
+  finite E -> exists L, list_covers E L /\ card E = length L.
+Proof.
+  introv (L&H). sets m: (card E).
+  forwards* (R&P): mmin_spec_nat m.
+Qed.
+
+Definition card_prove_le : forall (E:set A) L,
+  list_covers E L -> (card E <= length L)%nat.
+Proof using.
+  introv H. sets m: (card E). unf.
+  forwards* (R&P): mmin_spec_nat m.
+Qed.
+
+Definition card_prove_ge : forall (E:set A) n,
+  finite E -> (forall L, list_covers E L -> (length L >= n)%nat) -> (card E >= n)%nat.
+Proof using.
+  introv H. sets m: (card E).
+  forwards* (R&P): mmin_spec_nat m.
+    lets (L&EL): finite_inv_basic H. exists~ (length L) L.
+  simpls. introv HL. destruct R as (L&CR&ER). 
+  forwards~: HL L. math.
+Qed.
+
+Definition card_prove_eq : forall (E:set A) L,
+  list_covers E L ->
+  (forall L', list_covers E L' -> (length L' >= length L)%nat) -> 
+  card E = length L.
+Proof using.
+  introv HC HG.
+  forwards~: card_prove_le HC.
+  forwards~: card_prove_ge HG. applys* finite_prove.
+  math.
+Qed.
 
 Lemma card_is_length_to_list : forall (E:set A), 
-  finite E -> card E = length (to_list E).
+  card E = length (to_list E).
+Admitted.
+(*
 Proof using. introv HF. unf. spec_epsilon* as L'. Qed.
+*)
 
 Global Instance card_empty_inst : Card_empty (T:=set A).
 Proof using. 
-  constructor. lets E: to_list_empty. unf. rewrite E. rew_list~. 
+  constructor. rewrite card_is_length_to_list.
+  lets E: to_list_empty. unf. rewrite E. rew_list~. 
 Qed.
 
 Global Instance card_single_inst : Card_single (T:=set A).
 Proof using.
-  constructor. intros a. lets E: to_list_single a. unf. rewrite E. rew_list~. 
+  constructor. intros a. rewrite card_is_length_to_list.
+  lets E: to_list_single a. unf. rewrite E. rew_list~. 
+Qed.
+
+Opaque card.
+Opaque union.
+
+Lemma set_card_incl_le : forall (E F:set A), 
+  finite F -> 
+  E \c F ->
+  (card E <= card F)%nat.
+Proof using. 
+  introv FF CF. lets FE: finite_incl CF FF.
+  lets (LF&RF&QF): finite_covers FF.
+  rewrite QF. applys card_prove_le. introv Ex.
+  applys RF. applys* @incl_inv. typeclass.
 Qed.
 
 Lemma set_card_union_le : forall (E F:set A), 
   finite E -> finite F ->
   card (E \u F) <= (card E + card F)%nat.
-Proof using.
+Proof using. 
+  introv FE FF.
+  lets (LE&RE&QE): finite_covers FE.
+  lets (LF&RF&QF): finite_covers FF.
+  lets H: card_prove_le (E \u F) (LE++LF) __.
+    unfolds list_covers. intros. apply Mem_app_or.
+    rewrite in_union_eq in H. autos*.
+  rew_length in H. math.
+Qed.
+
+(* DEPRECATED
   Local Opaque union. hint finite_union.
   introv FE FF. do 3 rewrite~ card_is_length_to_list.
   forwards~ (NE&HE): to_list_spec E.
@@ -363,23 +569,205 @@ Proof using.
    introv N. apply Mem_app_or. rewrite HE, HF. rewrite <- RG. auto.
   rew_length in M. auto.
   Transparent union. (* should not be needed *)
-Qed.
+*)
+
+End Instances.
+
 
 
 (* ---------------------------------------------------------------------- *)
-(** structural decomposition *)
+(* ---------------------------------------------------------------------- *)
 
-Lemma set_isolate : forall (E : set A) x,
-  x \in E ->
-  E = \{x} \u (E \- \{x}).
+Section Autorewrite.
+Variables (A : Type).
+Implicit Types x y : A.
+Implicit Types E F : set A.
+
+Lemma set_in_empty_eq : forall x, x \in (\{}:set A) = False.
 Proof using.
-  introv H. unf. apply prop_ext_1. intros y. iff M.
-    tests*: (y = x).
-    destruct M. subst*. autos*.
+  apply in_empty_eq.
+Qed.
+
+Lemma set_in_single_eq : forall x y, x \in (\{y}:set A) = (x = y).
+Proof using.
+  apply in_single_eq.
+Qed.
+
+Lemma set_in_inter_eq : forall x E F, x \in (E \n F) = (x \in E /\ x \in F).
+Proof using.
+  apply in_inter_eq.
+Qed.
+
+Lemma set_in_union_eq : forall x E F, x \in (E \u F) = (x \in E \/ x \in F).
+Proof using.
+  apply in_union_eq.
+Qed.
+
+Lemma set_in_remove_eq : forall x E F, x \in (E \- F) = (x \in E /\ ~ x \in F).
+Proof using.
+  apply in_remove_eq.
+Qed.
+
+Lemma set_in_extens_eq : forall E F, (E = F) = (forall x, x \in E <-> x \in F).
+Proof using.
+  extens. iff M.
+  subst*.
+  applys @in_extens_eq. typeclass. intros. extens*. 
+Qed.
+
+Lemma set_incl_in_eq : forall E F, (E \c F) = (forall x, x \in E -> x \in F).
+Proof using.
+  apply incl_in_eq.
+Qed.
+
+Lemma set_disjoint_eq : forall E F, (E \# F) = (forall x, x \in E -> x \in F -> False).
+Proof using.
+  apply disjoint_eq.
+Qed.
+
+End Autorewrite.
+
+Hint Rewrite set_in_empty_eq set_in_single_eq set_in_inter_eq set_in_union_eq 
+  set_in_remove_eq set_in_extens_eq set_incl_in_eq set_disjoint_eq : set_norm.
+
+
+(* tactics *)
+
+Ltac set_norm :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with set_norm).
+
+Ltac set_specialize_hyps A x :=
+  repeat match goal with H: forall _:?A, _ |- _ => 
+    specializes H x
+  end.
+
+Ltac set_specialize_classic x :=
+  repeat match goal with E: set _ |- _ => 
+    match goal with 
+    | H: x \in E \/ ~ x \in E |- _ => fail 1
+    | _ => lets: (classic (x \in E))
+    end
+  end.
+
+Ltac set_specialize use_classic :=
+  match goal with |- forall _:?A, _ =>
+    let x := fresh "x" in intros x; 
+    set_specialize_hyps A x; 
+    match use_classic with 
+    | true => set_specialize_classic x
+    | false => idtac
+    end
+  end.
+
+Ltac set_prove_setup use_classic := 
+  intros;
+  set_norm;
+  try set_specialize use_classic;
+  set_norm.
+
+Ltac set_prove_conclude :=
+  solve [ intros; subst; tauto ].
+
+Ltac set_prove :=
+  set_prove_setup false; set_prove_conclude.
+
+Ltac set_prove_classic :=
+  set_prove_setup true; set_prove_conclude.
+
+(* demos *)
+
+Lemma inter_union_disjoint_right:
+  forall A (E F G : set A),
+  F \# G ->
+  (E \u F) \n G = (E \n G).
+Proof using.
+  set_prove.
+  (*
+  intros.
+  set_norm.
+  set_specialize.
+  set_norm.
+  tauto.
+  *)
+Admitted.
+
+Lemma inter_union_subset_right:
+  forall A (E F G : set A),
+  F \c G ->
+  (E \u F) \n G = (E \n G) \u F.
+Proof using.
+  set_prove.
+Admitted.
+
+
+Lemma inter_covariant:
+  forall A (E E' F F' : set A),
+  E \c E' ->
+  F \c F' ->
+  (E \n F) \c (E' \n F').
+Proof using.
+  set_prove.
+Admitted.
+
+Lemma set_decompose_inter_right :
+  forall A (E F : set A),
+  E = (E \n F) \u (E \- F).
+Proof using.
+  set_prove_classic.
+Admitted.
+
+Lemma set_decompose_union_right :
+  forall A (E F : set A),
+  (E \u F) = E \u (F \- E).
+Proof using.
+  set_prove_classic.
+Admitted.
+
+
+
+
+(* ---------------------------------------------------------------------- *)
+(* ---------------------------------------------------------------------- *)
+
+
+Lemma Filter_disjoint_predicates_length : forall A (P Q:A-> Prop) L,
+  (forall x, Mem x L -> P x -> Q x -> False) ->
+  length (Filter P L) + length (Filter Q L) <= length L.
+Proof.
+  introv. induction L; introv H.
+  rew_list. math.
+  specializes IHL. intros. applys* H x. 
+  repeat rewrite Filter_cons. do 2 case_if; rew_list.
+    false* H.
+    math.
+    math.
+    math.
+Qed.
+
+Lemma card_disjoint_union:
+  forall A (E F : set A),
+  finite E ->
+  finite F ->
+  E \# F ->
+  card (E \u F) = (card E + card F)%nat.
+Proof using.
+  introv FE FF EF.
+  forwards: set_card_union_le FE FF.
+  cuts: (card (E \u F) >= (card E + card F)%nat). math. clear H.
+  forwards (L&LC&LL): finite_covers (E \u F). applys~ finite_union.
+  rewrite LL. clear LL.
+  sets PE: (fun x => x \in E). sets LE: (Filter PE L).
+  sets PF: (fun x => x \in F). sets LF: (Filter PF L).
+  forwards: card_prove_le E LE.
+    unfold LE, PE. introv Ex. forwards: LC x. set_prove. applys~ Filter_Mem.
+  forwards: card_prove_le F LF. 
+    unfold LF, PF. introv Fx. forwards: LC x. set_prove. applys~ Filter_Mem.
+  forwards LEF: Filter_disjoint_predicates_length PE PF L.
+    introv _ HEx HFx. unfolds PE, PF. applys* @disjoint_inv. typeclass.
+  subst LE LF. math.
 Qed.
 
 
-End Instances.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -957,150 +1345,3 @@ Tactic Notation "eq_set" "*" :=
     \set{ x | forall_ F \in E, x \in (F:set A) }.
 
 *)
-
-
-(* ---------------------------------------------------------------------- *)
-(* ---------------------------------------------------------------------- *)
-
-Section Autorewrite.
-Variables (A : Type).
-Implicit Types x y : A.
-Implicit Types E F : set A.
-
-Lemma set_in_empty_eq : forall x, x \in (\{}:set A) = False.
-Proof using.
-  apply in_empty_eq.
-Qed.
-
-Lemma set_in_single_eq : forall x y, x \in (\{y}:set A) = (x = y).
-Proof using.
-  apply in_single_eq.
-Qed.
-
-Lemma set_in_inter_eq : forall x E F, x \in (E \n F) = (x \in E /\ x \in F).
-Proof using.
-  apply in_inter_eq.
-Qed.
-
-Lemma set_in_union_eq : forall x E F, x \in (E \u F) = (x \in E \/ x \in F).
-Proof using.
-  apply in_union_eq.
-Qed.
-
-Lemma set_in_remove_eq : forall x E F, x \in (E \- F) = (x \in E /\ ~ x \in F).
-Proof using.
-  apply in_remove_eq.
-Qed.
-
-Lemma set_in_extens_eq : forall E F, (E = F) = (forall x, x \in E <-> x \in F).
-Proof using.
-  extens. iff M.
-  subst*.
-  applys @in_extens_eq. typeclass. intros. extens*. 
-Qed.
-
-Lemma set_incl_in_eq : forall E F, (E \c F) = (forall x, x \in E -> x \in F).
-Proof using.
-  apply incl_in_eq.
-Qed.
-
-Lemma set_disjoint_eq : forall E F, (E \# F) = (forall x, x \in E -> x \in F -> False).
-Proof using.
-  apply disjoint_eq.
-Qed.
-
-End Autorewrite.
-
-Hint Rewrite set_in_empty_eq set_in_single_eq set_in_inter_eq set_in_union_eq 
-  set_in_remove_eq set_in_extens_eq set_incl_in_eq set_disjoint_eq : set_norm.
-
-
-(* tactics *)
-
-Ltac set_norm :=
-  autorewrite_in_star_patch ltac:(fun tt => autorewrite with set_norm).
-
-Ltac set_specialize_hyps A x :=
-  repeat match goal with H: forall _:?A, _ |- _ => 
-    specializes H x
-  end.
-
-Ltac set_specialize_classic x :=
-  repeat match goal with E: set _ |- _ => 
-    match goal with 
-    | H: x \in E \/ ~ x \in E |- _ => fail 1
-    | _ => lets: (classic (x \in E))
-    end
-  end.
-
-Ltac set_specialize use_classic :=
-  match goal with |- forall _:?A, _ =>
-    let x := fresh "x" in intros x; 
-    set_specialize_hyps A x; 
-    match use_classic with 
-    | true => set_specialize_classic x
-    | false => idtac
-    end
-  end.
-
-Ltac set_prove_setup use_classic := 
-  intros;
-  set_norm;
-  set_specialize use_classic;
-  set_norm.
-
-Ltac set_prove :=
-  set_prove_setup false; solve [ tauto ].
-
-Ltac set_prove_classic :=
-  set_prove_setup true; solve [ tauto ].
-
-(* demos *)
-
-Lemma inter_union_disjoint_right:
-  forall A (E F G : set A),
-  F \# G ->
-  (E \u F) \n G = (E \n G).
-Proof using.
-  set_prove.
-  (*
-  intros.
-  set_norm.
-  set_specialize.
-  set_norm.
-  tauto.
-  *)
-Admitted.
-
-Lemma inter_union_subset_right:
-  forall A (E F G : set A),
-  F \c G ->
-  (E \u F) \n G = (E \n G) \u F.
-Proof using.
-  set_prove.
-Admitted.
-
-
-Lemma inter_covariant:
-  forall A (E E' F F' : set A),
-  E \c E' ->
-  F \c F' ->
-  (E \n F) \c (E' \n F').
-Proof using.
-  set_prove.
-Admitted.
-
-Lemma set_decompose_inter_right :
-  forall A (E F : set A),
-  E = (E \n F) \u (E \- F).
-Proof using.
-  set_prove_classic.
-Admitted.
-
-Lemma set_decompose_union_right :
-  forall A (E F : set A),
-  (E \u F) = E \u (F \- E).
-Proof using.
-  set_prove_classic.
-Admitted.
-
