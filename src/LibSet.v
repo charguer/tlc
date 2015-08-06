@@ -959,3 +959,148 @@ Tactic Notation "eq_set" "*" :=
 *)
 
 
+(* ---------------------------------------------------------------------- *)
+(* ---------------------------------------------------------------------- *)
+
+Section Autorewrite.
+Variables (A : Type).
+Implicit Types x y : A.
+Implicit Types E F : set A.
+
+Lemma set_in_empty_eq : forall x, x \in (\{}:set A) = False.
+Proof using.
+  apply in_empty_eq.
+Qed.
+
+Lemma set_in_single_eq : forall x y, x \in (\{y}:set A) = (x = y).
+Proof using.
+  apply in_single_eq.
+Qed.
+
+Lemma set_in_inter_eq : forall x E F, x \in (E \n F) = (x \in E /\ x \in F).
+Proof using.
+  apply in_inter_eq.
+Qed.
+
+Lemma set_in_union_eq : forall x E F, x \in (E \u F) = (x \in E \/ x \in F).
+Proof using.
+  apply in_union_eq.
+Qed.
+
+Lemma set_in_remove_eq : forall x E F, x \in (E \- F) = (x \in E /\ ~ x \in F).
+Proof using.
+  apply in_remove_eq.
+Qed.
+
+Lemma set_in_extens_eq : forall E F, (E = F) = (forall x, x \in E <-> x \in F).
+Proof using.
+  extens. iff M.
+  subst*.
+  applys @in_extens_eq. typeclass. intros. extens*. 
+Qed.
+
+Lemma set_incl_in_eq : forall E F, (E \c F) = (forall x, x \in E -> x \in F).
+Proof using.
+  apply incl_in_eq.
+Qed.
+
+Lemma set_disjoint_eq : forall E F, (E \# F) = (forall x, x \in E -> x \in F -> False).
+Proof using.
+  apply disjoint_eq.
+Qed.
+
+End Autorewrite.
+
+Hint Rewrite set_in_empty_eq set_in_single_eq set_in_inter_eq set_in_union_eq 
+  set_in_remove_eq set_in_extens_eq set_incl_in_eq set_disjoint_eq : set_norm.
+
+
+(* tactics *)
+
+Ltac set_norm :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with set_norm).
+
+Ltac set_specialize_hyps A x :=
+  repeat match goal with H: forall _:?A, _ |- _ => 
+    specializes H x
+  end.
+
+Ltac set_specialize_classic x :=
+  repeat match goal with E: set _ |- _ => 
+    match goal with 
+    | H: x \in E \/ ~ x \in E |- _ => fail 1
+    | _ => lets: (classic (x \in E))
+    end
+  end.
+
+Ltac set_specialize use_classic :=
+  match goal with |- forall _:?A, _ =>
+    let x := fresh "x" in intros x; 
+    set_specialize_hyps A x; 
+    match use_classic with 
+    | true => set_specialize_classic x
+    | false => idtac
+    end
+  end.
+
+Ltac set_prove_setup use_classic := 
+  intros;
+  set_norm;
+  set_specialize use_classic;
+  set_norm.
+
+Ltac set_prove :=
+  set_prove_setup false; solve [ tauto ].
+
+Ltac set_prove_classic :=
+  set_prove_setup true; solve [ tauto ].
+
+(* demos *)
+
+Lemma inter_union_disjoint_right:
+  forall A (E F G : set A),
+  F \# G ->
+  (E \u F) \n G = (E \n G).
+Proof using.
+  set_prove.
+  (*
+  intros.
+  set_norm.
+  set_specialize.
+  set_norm.
+  tauto.
+  *)
+Admitted.
+
+Lemma inter_union_subset_right:
+  forall A (E F G : set A),
+  F \c G ->
+  (E \u F) \n G = (E \n G) \u F.
+Proof using.
+  set_prove.
+Admitted.
+
+
+Lemma inter_covariant:
+  forall A (E E' F F' : set A),
+  E \c E' ->
+  F \c F' ->
+  (E \n F) \c (E' \n F').
+Proof using.
+  set_prove.
+Admitted.
+
+Lemma set_decompose_inter_right :
+  forall A (E F : set A),
+  E = (E \n F) \u (E \- F).
+Proof using.
+  set_prove_classic.
+Admitted.
+
+Lemma set_decompose_union_right :
+  forall A (E F : set A),
+  (E \u F) = E \u (F \- E).
+Proof using.
+  set_prove_classic.
+Admitted.
+

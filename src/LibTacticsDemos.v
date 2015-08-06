@@ -529,6 +529,7 @@ Lemma demo_invert :
 Proof using.
   intros P. dup 12.
   (* [inversion] generates a lot of ugly stuff *)
+inversion_clear P.
   inversion P. inversion H7. inversion H10.
   (* [inversions H] is short for [inversion H; subst; clear H] *)
   inversions P. inversions H7. inversions H8.
