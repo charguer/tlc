@@ -735,7 +735,7 @@ Lemma list_fold_equiv_step : forall A B (m:monoid_def B) (f:A->B) (L: list A) a,
 Proof using.
   introv Hm. induction L as [|b T]; introv DL La. inverts La.
   tests: (a = b). 
-    skip. 
+    exists T. splits*. 
     inverts La. false. inverts DL as DLb DT. forwards~ (L'&EL'&EQ&DL'): IHT.
      exists (b::L'). splits. 
        do 3 rewrite list_fold_cons. rewrite EL'.
