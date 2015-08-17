@@ -3,6 +3,8 @@
 * Finite maps                                                             *
 **************************************************************************)
 
+(* FILE UNDER CONSTRUCTION *)
+
 Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect LibOption
@@ -322,15 +324,21 @@ Tactic Notation "rew_map" "*" "in" hyp(H) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Reduce on maps *)
 
+(* TODO: rename to fold, use commutative monoids *)
+(* used somewhere in CFML (?) *)
 Require Import LibStruct.
 Section Reduce.
 Variables (A B C : Type).
-Parameter reduce : monoid_def C -> (A -> B -> C) -> map A B -> C.
-Parameter reduce_empty : forall m f, Monoid m ->
+Axiom reduce : (* UNDER CONSTRUCTION *)
+  monoid_def C -> (A -> B -> C) -> map A B -> C.
+Axiom reduce_empty : (* UNDER CONSTRUCTION *)
+  forall m f, Monoid m ->
   reduce m f \{} = monoid_neutral m.
-Parameter reduce_single : forall x v m f, Monoid m ->
+Axiom reduce_single : (* UNDER CONSTRUCTION *)
+  forall x v m f, Monoid m ->
   reduce m f (x \:= v) = f x v.
-Parameter reduce_union : forall M1 M2 m f, Monoid m ->
+Axiom reduce_union : (* UNDER CONSTRUCTION *)
+  forall M1 M2 m f, Monoid m ->
   reduce m f (M1 \u M2) = (monoid_oper m) (reduce m f M1) (reduce m f M2).
 End Reduce.
 

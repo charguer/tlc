@@ -5,7 +5,7 @@
 
 Set Implicit Arguments.
 Require Import LibTactics LibLogic LibReflect LibEpsilon LibInt
-  LibProd LibSum LibOperation LibRelation LibWf LibOrder.
+  LibProd LibSum LibOperation LibRelation LibWf LibOrder LibMin.
 
 
 (* ********************************************************************** *)
@@ -40,27 +40,6 @@ Hint Unfold post_true post_false.
 
 Definition unique_upto_st A (E:binary A) (P : A -> Prop) (x : A) :=
   P x /\ forall y, P y -> E y x.
-
-(* ---------------------------------------------------------------------- *)
-(** ** Facts about ordered sets *)
-
-Definition lower_bound A (le:binary A) (E:A->Prop) (x:A) :=
-  forall x', E x' -> le x x'.
-
-Definition upper_bound A (le:binary A) (E:A->Prop) (x:A) :=
-  forall x', E x' -> le x' x.
-
-Definition smallest A (le:binary A) (E:A->Prop) (x:A) :=
-  E x /\ lower_bound le E x. 
-
-Definition greatest A (le:binary A) (E:A->Prop) (x:A) :=
-  E x /\ upper_bound le E x.
-
-Definition lub A (le:binary A) (E:A->Prop) (x:A) :=
-  smallest le (upper_bound le E) x.
-
-Definition glb A (le:binary A) (E:A->Prop) (x:A) :=
-  smallest le (lower_bound le E) x.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -304,7 +283,7 @@ Definition generally_consistent_partial_fixed_point
     fixed point. *)
 
 Definition optimal_fixed_point A B (E:binary B) (F:(A->B)->(A->B)) (f:A-->B) :=
-  greatest (extends E) (generally_consistent_partial_fixed_point E F) f.
+  max_element (extends E) (generally_consistent_partial_fixed_point E F) f.
 
 (** The optimal fixed point, if it exists, is unique (up to equiv). *)
 
@@ -1435,7 +1414,7 @@ Qed.
     and is best fixed point with respect to the partial order [C]. *)
 
 Definition Fix_prop A (E C:binary A) (F:A->A) (x:A) :=
-  greatest C (fixed_point E F) x.
+  max_element C (fixed_point E F) x.
 
 (** [Fix E C F] picks a fixed point, if it exists, for [F] *)
 

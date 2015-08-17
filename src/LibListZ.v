@@ -280,26 +280,31 @@ End IndexProperties.
 (* ---------------------------------------------------------------------- *)
 (** * count *)
 
+(* UNDER CONSTRUCTION *)
+
 (* TODO: complete definitions and proofs, which are used by CFML/Dijstra *)
 
 Require Import LibWf.
 
 (* TODO: implement a non-decidable version of count *)
 
-Parameter count : forall A (P:A->Prop) (l:list A), int.
+Axiom count : (* UNDER CONSTRUCTION *) 
+  forall A (P:A->Prop) (l:list A), int.
 
 (* currently not used
-Parameter count_make : forall A (f:A->Prop) n v,
-  count f (make n v) = (If f v then n else 0).
+  Axiom count_make : forall A (f:A->Prop) n v,
+    count f (make n v) = (If f v then n else 0).
 *)
 
-Parameter count_update : forall `{Inhab A} (P:A->Prop) (l:list A) (i:int) v,
+Axiom count_update : (* UNDER CONSTRUCTION *)
+  forall `{Inhab A} (P:A->Prop) (l:list A) (i:int) v,
   index l i ->
   count P (l[i:=v]) = count P l
     - (If P (l[i]) then 1 else 0)
     + (If P v then 1 else 0).
 
-Parameter count_bounds : forall `{Inhab A} (l:list A) (P:A->Prop),
+Axiom count_bounds : (* UNDER CONSTRUCTION *)
+  forall `{Inhab A} (l:list A) (P:A->Prop),
   0 <= count P l <= length l.
 
 (** The following lemma is used to argue that the update to a sequence,

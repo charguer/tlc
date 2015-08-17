@@ -529,7 +529,6 @@ Lemma demo_invert :
 Proof using.
   intros P. dup 12.
   (* [inversion] generates a lot of ugly stuff *)
-inversion_clear P.
   inversion P. inversion H7. inversion H10.
   (* [inversions H] is short for [inversion H; subst; clear H] *)
   inversions P. inversions H7. inversions H8.
@@ -1188,7 +1187,7 @@ Proof using.
   (* [exists___] without arguments is the same as [exists __ ... __].
      Contrary to [exists ___], it does not unfold definitions. *)
   exists___. skip.
-Admitted.
+Admitted. (* demo *)
 
 
 (* ********************************************************************** *)

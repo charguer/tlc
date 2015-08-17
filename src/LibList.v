@@ -6,7 +6,7 @@
 Set Implicit Arguments. 
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect LibOperation
- LibProd LibOption LibNat LibInt LibWf LibRelation.
+ LibProd LibOption LibNat LibInt LibWf LibStruct LibRelation.
 Require Export List.
 Open Local Scope nat_scope.
 Open Local Scope comp_scope.
@@ -209,6 +209,9 @@ Fixpoint make (n:nat) (v:A) : list A :=
 
 End Operations.
 
+Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
+  fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
+
 Implicit Arguments fold_left [[A] [B]].
 Implicit Arguments fold_right [[A] [B]].
 Implicit Arguments append [[A]].
@@ -223,6 +226,7 @@ Implicit Arguments nth_def [[A]].
 Implicit Arguments nth [[A] [IA]].
 Implicit Arguments update [[A]].
 Implicit Arguments make [[A]].
+Implicit Arguments fold [[A] [B]].
 
 (* todo: implicit arguments for the other functions *)
 
@@ -853,6 +857,35 @@ Proof using.
   auto.
   simpl. rewrite length_cons. math.
 Qed.
+
+(* ---------------------------------------------------------------------- *)
+(** * Fold *)
+
+Section Fold.
+Variables (A B:Type) (m:monoid_def B) (L:list A) (f:A->B).
+Lemma fold_nil : 
+  fold m f nil = monoid_neutral m.
+Proof using. auto. Qed.
+Lemma fold_cons : forall x l,
+  fold m f (x::l) = monoid_oper m (f x) (fold m f l) .
+Proof using. auto. Qed.
+Lemma fold_app : forall l1 l2,
+  Monoid m ->
+  fold m f (l1 ++ l2) = monoid_oper m (fold m f l1) (fold m f l2).
+Proof using.
+  unfold fold. intros. rewrite fold_right_app. gen l2.
+  induction l1; intros.
+  repeat rewrite fold_right_nil. rewrite~ monoid_neutral_l.
+  repeat rewrite fold_right_cons. rewrite <- monoid_assoc. fequals.
+Qed.
+Lemma fold_last : forall x l,
+  Monoid m ->
+  fold m f (l & x) = monoid_oper m (fold m f l) (f x).
+Proof using.
+  intros. rewrite~ fold_app. rewrite fold_cons.
+  rewrite fold_nil. rewrite monoid_neutral_r. auto.
+Qed.
+End Fold.
 
 
 (* ********************************************************************** *)
@@ -1916,6 +1949,16 @@ Proof.
   rewrite Filter_cons. case_if; rew_length; math.
 Qed.
 
+Lemma Filter_eq_Mem_length : forall x (L:list A),
+  Mem x L -> (length (Filter (= x) L) >= 1)%nat.
+Proof.
+  introv M. induction L.
+  inverts M.
+  rewrite Filter_cons. case_if.
+    rew_list. nat_math.
+    inverts M. false. applys~ IHL.
+Qed.
+
 Lemma Filter_neq_Mem_length : forall x (L:list A),
   Mem x L -> (length (Filter (<> x) L) < length L)%nat.
 Proof.
@@ -1926,7 +1969,49 @@ Proof.
     lets: (Filter_length_le L (<> x)). rew_length. math.
 Qed.
 
-Lemma Filter_No_duplicates : forall (L:list A) P, 
+Lemma Filter_disjoint_predicates_length : forall (P Q:A-> Prop) L,
+  (forall x, Mem x L -> P x -> Q x -> False) ->
+  (length (Filter P L) + length (Filter Q L) <= length L)%nat.
+Proof.
+  introv. induction L; introv H.
+  rew_list. nat_math.
+  specializes IHL. intros. applys* H x. 
+  repeat rewrite Filter_cons. do 2 case_if; rew_list.
+    false* H.
+    nat_math.
+    nat_math.
+    nat_math.
+Qed.
+
+Lemma Filter_negated_predicates_length : forall (P:A-> Prop) L,
+  length (Filter (fun x => P x) L) + length (Filter (fun x => ~ P x) L) <= length L.
+Proof using. 
+  intros. applys~ Filter_disjoint_predicates_length P (fun x => ~ P x) L.
+Qed.
+
+End FilterFacts.
+
+
+(* ---------------------------------------------------------------------- *)
+(* ** No_duplicates *)
+
+  (* TODO: complete with a few potential missing lemmas *)
+
+Lemma No_duplicates_app : forall A (L1 L2 : list A),
+  No_duplicates L1 ->
+  No_duplicates L2 ->
+  (forall x, Mem x L1 -> Mem x L2 -> False) ->
+  No_duplicates (L1 ++ L2).
+Proof using.
+  Hint Constructors Mem.
+  induction L1; introv N1 N2 EQ; rew_list.
+  auto.
+  inverts N1 as N N1'. constructors. 
+    rewrite Mem_app_or_eq. rew_logic*.
+    applys~ IHL1. introv Mx1 Mx2. applys* EQ x. 
+Qed.
+
+Lemma No_duplicates_Filter : forall A (L:list A) P, 
   No_duplicates L -> No_duplicates (Filter P L).
 Proof.
   Hint Constructors No_duplicates.
@@ -1935,25 +2020,6 @@ Proof.
   rewrite Filter_cons. case_if.
     constructors*. introv N. false* Filter_Mem_inv N.
     auto.
-Qed.
-
-End FilterFacts.
-
-(* ---------------------------------------------------------------------- *)
-(* ** Remove_duplicates and No_duplicates *)
-
-Lemma Remove_duplicates_spec : forall A (L L':list A),
-  L' = Remove_duplicates L ->
-  No_duplicates L' /\ (forall x, Mem x L' <-> Mem x L).
-Proof using.
-  Hint Constructors Mem No_duplicates.
-  introv. gen L'. induction L; introv E; simpls.
-  subst. splits*.
-  sets_eq L'': (Remove_duplicates L). forwards~ [E' M]: IHL. splits~.
-    subst L'. constructors. applys Filter_neq. applys* Filter_No_duplicates.
-    subst L'. intros x. lets (M1&M2): M x. iff N.
-      inverts N as R. auto. lets: Filter_Mem_inv R. constructors*.
-      lets [E|(H1&H2)]: Mem_inv N. subst*. constructors. applys* Filter_Mem.
 Qed.
 
 Lemma No_duplicates_length_le : forall A (L L':list A),
@@ -1971,6 +2037,94 @@ Proof using.
    forwards~: IHL L''. introv N. tests: (x = a). subst L''. applys* Filter_Mem.
    math.  
 Qed.
+
+Lemma No_duplicates_length_eq : forall A (L L':list A),
+  No_duplicates L ->
+  No_duplicates L' ->
+  (forall x, Mem x L <-> Mem x L') ->
+  (length L = length L')%nat.
+Proof using.
+  introv HL HL' EQ. 
+  forwards~: No_duplicates_length_le L L'. intros. rewrite~ <- EQ.
+  forwards~: No_duplicates_length_le L' L. intros. rewrite~ EQ.
+  math.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** * Fold on No_duplicates *)
+
+Lemma fold_equiv_step : forall A B (m:monoid_def B) (f:A->B) (L: list A) a,
+  Monoid_commutative m ->
+  No_duplicates L ->
+  Mem a L ->
+  exists L', 
+     fold m f L = fold m f (a::L')
+  /\ (forall x, Mem x L <-> Mem x (a::L'))
+  /\ No_duplicates (a::L').
+Proof using.
+  introv Hm. induction L as [|b T]; introv DL La. inverts La.
+  tests: (a = b). 
+    exists T. splits*. 
+    inverts La. false. inverts DL as DLb DT. forwards~ (L'&EL'&EQ&DL'): IHT.
+     exists (b::L'). splits. 
+       do 3 rewrite fold_cons. rewrite EL'.
+        rewrite fold_cons. do 2 rewrite monoid_assoc.
+        rewrite~ (monoid_comm (f b)).
+       intros x. specializes EQ x. rewrite Mem_cons_eq in EQ.
+        do 3 rewrite Mem_cons_eq. autos*.
+       inverts DL'. constructors.
+         introv N. inverts N. false. false.         
+         constructors~. introv N. applys DLb. rewrite EQ. constructors~. 
+Qed.
+
+Lemma fold_equiv : forall A B (m:monoid_def B) (f:A->B) (L1 L2: list A),
+  Monoid_commutative m ->
+  No_duplicates L1 ->
+  No_duplicates L2 ->
+  (forall x, Mem x L1 <-> Mem x L2) ->
+  fold m f L1 = fold m f L2.
+Proof using.
+  induction L1; introv HM D1 D2 EQ.
+  cuts_rewrite (L2 = nil). rewrite~ fold_nil.
+    destruct L2; auto. forwards~ M: (proj2 (EQ a)). inverts M.
+  inverts D1. asserts L2a: (Mem a L2). rewrite~ <- EQ.
+   forwards* (L2'&V2'&EQ'&D2'): fold_equiv_step f L2a.
+   rewrite V2'. do 2 rewrite fold_cons.
+  inverts D2'.
+  rewrite~ (IHL1 L2'). intros.
+  tests: (x = a).
+    iff; auto_false*.
+  asserts_rewrite (Mem x L1 = Mem x (a::L1)).
+    extens. iff~ M. inverts~ M. false.
+  asserts_rewrite (Mem x L2' = Mem x (a::L2')).
+    extens. iff~ M. inverts~ M. false.
+  rewrite EQ. rewrite* EQ'.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(* ** Remove_duplicates *)
+
+Lemma Remove_duplicates_spec : forall A (L L':list A),
+  L' = Remove_duplicates L ->
+     No_duplicates L' 
+  /\ (forall x, Mem x L' <-> Mem x L) 
+  /\ (length L' <= length L)%nat.
+Proof using.
+  Hint Constructors Mem No_duplicates.
+  introv E.
+  asserts (R1&R2): (No_duplicates L' /\ (forall x, Mem x L' <-> Mem x L)).
+  gen L' E. induction L; introv E; simpls.
+  subst. splits*.
+  sets_eq L'': (Remove_duplicates L). forwards~ [E' M]: IHL. splits~.
+    subst L'. constructors. applys Filter_neq. applys* No_duplicates_Filter.
+    subst L'. intros x. lets (M1&M2): M x. iff N.
+      inverts N as R. auto. lets: Filter_Mem_inv R. constructors*.
+      lets [E|(H1&H2)]: Mem_inv N. subst*. constructors. applys* Filter_Mem.
+  splits~. applys~ No_duplicates_length_le. introv Hx. rewrite~ <- R2. 
+Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (* ** Update of a functional list *)

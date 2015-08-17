@@ -464,8 +464,7 @@ Proof using. constructor. introv I1 I2. rewrite* is_empty_eq in I1. Qed.
 
 Global Instance is_nonempty_prove_from_is_empty_eq : 
   Is_empty_eq -> Is_nonempty_prove.
-Proof using. constructor. introv I1 I2. rewrite is_empty_eq in I2. eauto. 
-Admitted. (* TODO, coq bug ?*)
+Proof using. constructor. introv I1 I2. rewrite is_empty_eq in I2. eauto. Qed. 
 
 Global Instance is_single_eq_from_in_single_eq :
   In_extens -> In_single_eq -> Is_single_eq.

@@ -239,7 +239,7 @@ Proof using.
     rewrites* binds_equiv_read. 
    rewrite* <- @not_indom_equiv_read_option.
 *)
-Admitted.
+Admitted. (* File will be soon deprecated *)
 
 (* TODO: move *)
 Generalizable Variable A.

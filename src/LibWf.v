@@ -112,6 +112,24 @@ Qed.
 
 Hint Resolve measure2_wf : wf.
 
+
+
+(*-----------------------------------------------------*)
+(** ** The relation "greater than" on the set of 
+       natural number lower than a fixed upper bound. *)
+
+Definition nat_upto (b : nat) := 
+  fun n m : nat => (n <= b) /\ (m < n)%nat. 
+
+Lemma nat_upto_wf : forall b, wf (nat_upto b).
+Proof using.
+  intros b n. 
+  induction_wf: (measure_wf (fun n => b-n)) n.
+  apply Acc_intro. introv [H1 H2]. apply IH.
+  hnf. nat_math.
+Qed.
+
+
 (*-----------------------------------------------------*)
 (** ** The relation "less than" on the set of 
        integers greater than a fixed lower bound. *)

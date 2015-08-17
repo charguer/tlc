@@ -409,7 +409,7 @@ Proof using. intros. subst. apply permut_get_2. Qed.
 Lemma permut_tactic_simpl_incl : forall A (l1 l2 l3 l4:multiset A),
   (l1 \u l3) \c l4 ->
   (l1 \u (l2 \u l3)) \c (l2 \u l4).
-Admitted. (* todo: reason on inclusion *)
+Admitted. (* todo: reason on this tedious inclusion... *)
 
 
 Ltac get_premut_tactic_simpl tt :=
