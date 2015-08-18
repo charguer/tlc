@@ -2456,8 +2456,9 @@ Tactic Notation "invert" hyp(H) "as" simple_intropattern(I1)
 (* --we do not import Eqdep because it imports nasty hints automatically 
     Require Import Eqdep. *)
 
-Axiom inj_pair2 : forall (U : Type) (P : U -> Type) (p : U) (x y : P p),
-       existT P p x = existT P p y -> x = y.
+Axiom inj_pair2 :  (* is in fact derivable from the axioms in LibAxiom.v *)
+  forall (U : Type) (P : U -> Type) (p : U) (x y : P p),
+  existT P p x = existT P p y -> x = y.
 (* Proof using. apply Eqdep.EqdepTheory.inj_pair2. Qed.*)
 
 Ltac inverts_tactic H i1 i2 i3 i4 i5 i6 :=

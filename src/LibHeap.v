@@ -7,6 +7,9 @@ Set Implicit Arguments.
 Require Import LibTactics LibReflect LibList LibSet.
 Generalizable Variable K V.
 
+(* FILE TO BE DEPRECATED SOON *)
+
+
 (***********************************************************)
 (***********************************************************)
 (***********************************************************)
@@ -202,7 +205,7 @@ For now, we used this derived form:
 Lemma not_indom_rem : forall h k,
   ~ indom (rem h k) k.
 Proof using HK.
-Admitted. (* TODO: prove *)
+Admitted. (* File will be soon deprecated *)
 
 
 Lemma binds_equiv_read_option : forall h k v,
@@ -400,9 +403,9 @@ Qed.
 Lemma not_indom_empty : forall k,
   ~ indom (@empty K V) k.
 Proof using HV. introv H. unfold indom in H. rewrite dom_empty in H. 
-  admit. (* TODO: add an instance for in_empty_eq in LibSet.
+Admitted. (* File will be soon deprecated *)
+  (* TODO: add an instance for in_empty_eq in LibSet.
   apply* in_empty_eq. *) 
-Qed.
 
 Lemma not_binds_empty : forall k v,
   ~ binds (@empty K V) k v.

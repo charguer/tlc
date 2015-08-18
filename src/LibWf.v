@@ -540,7 +540,7 @@ End Wf_Transitive_Closure.
 Lemma tclosure_wf : forall A (R:binary A),
   wf R -> wf (tclosure R).
 Proof using. 
-Admitted. (* need to copy proof from the standard library; see above *)
+Admitted. (* TODO: adapt proof from the standard library; see above *)
 
 (* end hide *)
 

@@ -95,9 +95,7 @@ Implicit Arguments order_antisym [A R o x y].
 
 Coercion order_to_preorder (A:Type) (R:binary A) 
   (O:order R) : preorder R.
-Proof using. destruct* O.
-admit. (* TODO: under construction *)
-Qed.
+Proof using. destruct* O. constructors*. Qed.
 
 Hint Resolve order_to_preorder.
 
@@ -151,9 +149,7 @@ Qed.
 
 Coercion total_order_to_total_preorder (A:Type) (R:binary A) 
   (O:total_order R) : total_preorder R.
-Proof using. destruct* O.
-admit.  (* TODO: under construction *)
- Qed.
+Proof using. destruct* O. constructors*. applys* order_trans. Qed.
 
 Definition total_order_to_order := total_order_order.
 
@@ -195,6 +191,13 @@ Proof using.
   destruct M. autos*. subst*. dintuition eauto.
 Qed. 
 
+Lemma total_order_lt_is_strict_le :
+  forall (To:total_order R),
+  lt = strict le. 
+Proof using.
+  auto.
+Qed. 
+
 Lemma total_order_ge_is_large_gt : 
   forall (To:total_order R),
   ge = large gt. 
@@ -202,6 +205,16 @@ Proof using.
   extens. intros. unfold large, flip, strict. iff M.
   tests~: (x = y).
   destruct M. autos*. subst*. dintuition eauto.
+Qed. 
+
+Lemma total_order_gt_is_strict_ge :
+  forall (To:total_order R),
+  gt = strict ge. 
+Proof using.
+  extens. intros. unfold flip, large, strict. iff M.
+  tests~: (x = y).
+  destruct M. autos*.
+  destruct M. autos*.
 Qed. 
 
 Lemma total_order_lt_or_eq_or_gt : 
@@ -232,7 +245,6 @@ Proof using.
   intros. branches~ (total_order_lt_or_eq_or_gt To x y).
   left~. rewrite~ total_order_le_is_large_lt. hnfs~.
   left~. subst. apply~ total_order_refl.
-  (* COQBUG right~. *)
 Qed.
 
 End TotalOrderProp.
@@ -829,16 +841,15 @@ Proof using.
   rew_to_le. unfolds* flip, strict.
 Qed.
 
-(** case analysis *)
+(** case analysis under no assumption *)
 
 Global Instance case_eq_lt_gt_from : Le_total_order -> Case_Eq_Lt_Gt. 
 Proof using.
-  constructor. intros.
-(*
-  branches (total_order_lt_or_eq_or_gt le_total_order x y).
-  hnf in *; autos*.
-*)
-admit.  (* TODO: under construction *)
+  introv K. constructor. intros.
+  lets [(M1&M2)|[M|(M1&M2)]]: (total_order_lt_or_eq_or_gt le_total_order x y).
+    rewrite le_is_large_lt in M1 by applys* total_order_refl. destruct* M1.
+    autos*.
+    rewrite le_is_large_lt in M1 by applys* total_order_refl. destruct* M1.
 Qed.
 
 Global Instance case_eq_lt_slt_from : Le_total_order -> Case_Eq_Lt_SLt.
@@ -850,28 +861,23 @@ Qed.
 Global Instance case_le_gt_from : Le_total_order -> Case_Le_Gt. 
 Proof using.
   constructor. intros.
-(*
-  branches (total_order_le_or_gt le_total_order x y);
-  hnf in *; autos*.
-*)
-admit.  (* TODO: under construction *)
+  rewrite le_is_large_lt by applys* total_order_refl. unfold large.
+  branches (total_order_lt_or_eq_or_gt le_total_order x y); eauto.
 Qed.
 
 Global Instance case_eq_lt_ge_from : Le_total_order -> Case_Lt_Ge. 
 Proof using. 
-(*
   constructor. intros.
-  branches (total_order_lt_or_ge le_total_order x y);
-  hnf in *; autos*. 
-*)
-admit. (* TODO: under construction *)
-Qed. 
+  rewrite ge_is_large_gt by applys* total_order_refl. unfold large.
+  branches (total_order_lt_or_eq_or_gt le_total_order x y); eauto.
+Qed.
 
 Global Instance case_le_slt_from : Le_total_order -> Case_Le_SLt. 
 Proof using. constructor. intros. rewrite lt_is_flip_gt. apply case_le_gt. Qed.
 
 Global Instance case_eq_lt_sle_from : Le_total_order -> Case_Lt_SLe. 
 Proof using. constructor. intros. rewrite le_is_flip_ge. apply case_lt_ge. Qed.
+
 
 (** case analysis under one assumption *)
 
@@ -897,6 +903,7 @@ Proof using. constructor. intros. rew_to_le. hnfs*. Qed.
 
 Global Instance nlt_nslt_to_eq_from : Le_total_order -> NLt_NSLt_To_Eq. 
 Proof using. constructor. intros. branches* (case_eq_lt_gt x y). Qed.
+
 
 (** contradiction from case analysis *)
 

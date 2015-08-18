@@ -3,6 +3,8 @@
 * MultiSets -- PROTOTYPE                                                  *
 **************************************************************************)
 
+(** FILE UNDER CONSTRUCTION *)
+
 Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect

@@ -24,24 +24,54 @@ Variables (A B : Type).
 Implicit Types x : A.
 Implicit Types E F G : set A.
 
-Definition set_st (P:A->Prop) : set A := P.
-Definition empty_impl : set A := (fun _ => False).
-Definition full_impl : set A := (fun _ => True).
-Definition single_impl x := (= x).
-Definition in_impl x E := E x.
-Definition compl_impl : set A -> set A := @pred_not A. (* todo: as typeclass? *)
-Definition union_impl : set A -> set A -> set A := @pred_or A.
-Definition inter_impl : set A -> set A -> set A := @pred_and A.
+Definition set_st (P:A->Prop) : set A := 
+  P.
+
+Definition empty_impl : set A := 
+  (fun _ => False).
+
+Definition full_impl : set A := 
+  (fun _ => True).
+
+Definition single_impl x := 
+  (= x).
+
+Definition in_impl x E := 
+  E x.
+
+Definition compl_impl : set A -> set A := 
+  @pred_not A. (* todo: as typeclass? *)
+
+Definition union_impl : set A -> set A -> set A := 
+  @pred_or A.
+
+Definition inter_impl : set A -> set A -> set A :=
+  @pred_and A.
+
 Definition remove_impl : set A -> set A -> set A := 
   fun E F x => E x /\ ~ F x.
-Definition incl_impl : set A -> set A -> Prop := @pred_le A.
+
+Definition incl_impl : set A -> set A -> Prop := 
+  @pred_le A.
+
+Definition disjoint_impl : set A -> set A -> Prop := 
+  fun E F : set A => E \n F = \{}.
+
 Definition list_repr_impl (E:set A) (l:list A) :=
   No_duplicates l /\ forall x, Mem x l <-> E x.
-Definition to_list (E:set A) := epsilon (list_repr_impl E).
-Definition list_covers_impl (E:set A) L := forall x, E x -> Mem x L.
-Definition finite (E:set A) := exists L, list_covers_impl E L.
+
+Definition to_list (E:set A) := 
+  epsilon (list_repr_impl E).
+
+Definition list_covers_impl (E:set A) L := 
+  forall x, E x -> Mem x L.
+
+Definition finite (E:set A) := 
+  exists L, list_covers_impl E L.
+
 Definition card_impl (E:set A) : nat := 
   mmin le (fun n => exists L, list_covers_impl E L /\ n = length L).
+
 Definition fold_impl (m:monoid_def B) (f:A->B) (E:set A) := 
   LibList.fold_right (fun x acc => monoid_oper m (f x) acc)
     (monoid_neutral m) (to_list E).
@@ -77,7 +107,7 @@ Instance remove_inst : forall A, BagRemove (set A) (set A).
 Instance incl_inst : forall A, BagIncl (set A).
   constructor. rapply (@incl_impl A). Defined.
 Instance disjoint_inst : forall A, BagDisjoint (set A).
-  constructor. rapply (fun E F : set A => E \n F = \{}). Defined.
+  constructor. rapply (@disjoint_impl A). Defined.
 Instance fold_inst : forall A B, BagFold B (A->B) (set A).
   constructor. rapply (@fold_impl A B). Defined.
 Instance card_inst : forall A, BagCard (set A).
@@ -135,7 +165,7 @@ Hint Constructors Mem.
 Ltac set_unf := unfold finite,
   card_inst, card_impl, card,
   to_list, 
-  disjoint_inst, disjoint,
+  disjoint_impl, disjoint_inst, disjoint,
   incl_inst, incl_impl,
   empty_inst, empty_impl, empty,
   single_inst, single_impl, single,
@@ -717,7 +747,7 @@ Proof using.
   applys~ LibList.fold_equiv. intros. rewrite EQ2. rewrite* EQ1.
 Qed.
 
-Lemma fold_empty : forall A B m (f:A->B),
+Lemma fold_empty : forall A B (m:monoid_def B) (f:A->B),
   fold m f (\{}:set A) = monoid_neutral m.
 Proof using.
   intros. rewrite fold_def.
