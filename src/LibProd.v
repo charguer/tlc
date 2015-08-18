@@ -174,7 +174,8 @@ Tactic Notation "unfolds_uncurryp" :=
     into a function of type [(A1*..*AN) -> (A1*..*AN) -> B]. *)
 
 Section Unproj.
-Variables (A1 A2 A3 A4 B : Type).
+Variables (A1 A2 A3 A4 A5 B : Type).
+
 Definition unproj21 f : A1*A2 -> A1*A2 -> B :=
   fun p1 p2 => match p1,p2 with (x1,x2),(y1,y2) =>
   f x1 y1 end.
@@ -202,6 +203,10 @@ Definition unproj43 f : A1*A2*A3*A4 -> A1*A2*A3*A4 -> B :=
 Definition unproj44 f : A1*A2*A3*A4 -> A1*A2*A3*A4 -> B :=
   fun p1 p2 => match p1,p2 with (x1,x2,x3,x4),(y1,y2,y3,y4) =>
   f x4 y4 end.
+Definition unproj51 f : A1*A2*A3*A4*A5 -> A1*A2*A3*A4*A5 -> B :=
+  fun p1 p2 => match p1,p2 with (x1,x2,x3,x4,x5),(y1,y2,y3,y4,y5) =>
+  f x1 y1 end.
+  (* TODO: complete *)
 End Unproj.
 
 Implicit Arguments unproj21 [ A1 B ].
@@ -213,14 +218,17 @@ Implicit Arguments unproj41 [ A1 B ].
 Implicit Arguments unproj42 [ A2 B ].
 Implicit Arguments unproj43 [ A3 B ].
 Implicit Arguments unproj44 [ A4 B ].
+Implicit Arguments unproj51 [ A1 B ].
 
 (** Unfolding *)
 
 Tactic Notation "unfold_unproj" :=
   unfold unproj21, unproj22, unproj31, unproj32, unproj33,
-         unproj41, unproj42, unproj43, unproj44.
+         unproj41, unproj42, unproj43, unproj44,
+         unproj51.
 
 Tactic Notation "unfolds_unproj" :=
   unfold unproj21, unproj22, unproj31, unproj32, unproj33,
-         unproj41, unproj42, unproj43, unproj44 in *.
+         unproj41, unproj42, unproj43, unproj44,
+         unproj51 in *.
 

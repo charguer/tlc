@@ -204,7 +204,7 @@ Hint Resolve empty_wf : wf.
 (** * Inverse projections *)
 
 Section UnprojWf.
-Variables (A1 A2 A3 A4 : Type).
+Variables (A1 A2 A3 A4 A5 : Type).
 
 Lemma unproj21_wf : forall (f : binary A1),
   wf f ->
@@ -278,12 +278,21 @@ Proof using.
   induction_wf IH: H x4. constructor. intros [[[y1 y2] y3] y4]. auto.
 Qed.
 
+Lemma unproj51_wf : forall (f : binary A1),
+  wf f ->
+  wf (unproj51 A2 A3 A4 A5 f).
+Proof using.
+  intros f H [[[[x1 x2] x3] x4] x5]. gen x2 x3 x4 x5.
+  induction_wf IH: H x1. constructor. intros [[[[y1 y2] y3] y4] y5]. auto.
+Qed.
+
 End UnprojWf.
 
 Hint Resolve 
   unproj21_wf unproj22_wf 
   unproj31_wf unproj32_wf unproj33_wf
-  unproj41_wf unproj42_wf unproj43_wf unproj44_wf : wf.
+  unproj41_wf unproj42_wf unproj43_wf unproj44_wf
+  unproj51_wf : wf.
 
 
 (* ********************************************************************** *)
