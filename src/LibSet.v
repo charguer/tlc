@@ -55,7 +55,7 @@ Definition incl_impl : set A -> set A -> Prop :=
   @pred_le A.
 
 Definition disjoint_impl : set A -> set A -> Prop := 
-  fun E F : set A => E \n F = \{}.
+  fun E F : set A => inter_impl E F = empty_impl.
 
 Definition list_repr_impl (E:set A) (l:list A) :=
   No_duplicates l /\ forall x, Mem x l <-> E x.
@@ -152,6 +152,25 @@ Notation "\set{= e | x y '\in' E }" :=
  (at level 0, x ident, y ident, E at level 200) : set_scope.
 
 
+(* ---------------------------------------------------------------------- *)
+(** Additional definitions *)
+
+(* TODO
+
+   map f E = \set{= f x | x in E }
+   
+   bij E F f g = 
+      forall x \in E, f x \in F 
+      forall y \in F, g x \in E 
+      forall x \in E, g (f x) = x
+      forall y \in F, f (g y) = y
+
+   fold m i E = fold m j F 
+     when  bij E F f g  
+      and  forall x \in E,  i x = j (f x)
+       or  forall y \in E,  j y = i (g y)
+*)
+
 (* ********************************************************************** *)
 (** * Properties of sets *)
 
@@ -177,24 +196,33 @@ Ltac set_unf := unfold finite,
   remove_inst, remove_impl, remove,
   fold_inst, fold_impl, fold in *. 
 
+(* ---------------------------------------------------------------------- *)
+(** Reformulation *)
 
+Lemma disjoint_def : forall (E F : set A),
+  E \# F = (E \n F = \{}).
+Proof using. auto. Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** set_st and double inclusion *)
 
-Lemma in_set_st_eq : forall A (P:A->Prop) x,
+Lemma in_set_st_eq : forall (P:A->Prop) x,
   x \in set_st P = P x.
 Proof using. intros. apply* prop_ext. Qed.
 
-Lemma set_ext_eq : forall A (E F : set A), 
+Lemma set_ext_eq : forall (E F : set A), 
   (E = F) = (forall (x:A), x \in E <-> x \in F).
 Proof using.
   intros. apply prop_ext. iff H. subst*. apply* prop_ext_1.
 Qed.
 
-Lemma set_ext : forall A (E F : set A), 
+Lemma set_ext : forall (E F : set A), 
   (forall (x:A), x \in E <-> x \in F) -> E = F.
 Proof using. intros. rewrite~ set_ext_eq. Qed.
+
+Lemma set_st_eq : forall A (P Q : A -> Prop), 
+  (forall (x:A), P x <-> Q x) -> set_st P = set_st Q.
+Proof using. intros. asserts_rewrite~ (P = Q). extens~. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -223,7 +251,8 @@ Proof using. constructor. intros. set_unf. autos*. Qed.
 
 Global Instance disjoint_eq_inst : Disjoint_eq (T:=set A).
 Proof using.
-  constructor. intros. set_unf. simpl. applys prop_ext. iff M.
+  constructor. intros. rewrite disjoint_def.
+  set_unf. applys prop_ext. iff M.
     intros x. rewrite* <- (@func_same_1 _ _ x _ _ M).
     applys* prop_ext_1.
 Qed.
@@ -553,8 +582,9 @@ Qed.
 
 End Autorewrite.
 
-Hint Rewrite set_in_empty_eq set_in_single_eq set_in_inter_eq set_in_union_eq 
+Hint Rewrite in_set_st_eq set_in_empty_eq set_in_single_eq set_in_inter_eq set_in_union_eq 
   set_in_remove_eq set_in_extens_eq set_incl_in_eq set_disjoint_eq : set_norm.
+
 
 (* tactics *)
 
