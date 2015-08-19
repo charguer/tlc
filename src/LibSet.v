@@ -434,6 +434,30 @@ Proof using.
   lets (L&EQ): finite_covers_basic HE. unfold list_covers. set_unf. exists* L.
 Qed.
 
+Section One.
+Lemma finite_remove_inv : forall A (E F : set A),
+  finite (E \- F) -> finite F -> finite E.
+Proof using.
+  Local Opaque remove_inst single_inst.
+  introv H1 H2. lets (L1&R1): finite_covers_basic H1.
+  lets (L2&R2): finite_covers_basic H2.
+  applys finite_prove_covers (L1 ++ L2).
+  intros y Hy. rewrite~ Mem_app_or_eq. tests: (y \in F).
+    autos~.
+    forwards~ M: R1 y. rewrite~ @in_remove_eq. typeclass.
+Qed.
+End One.
+
+Lemma finite_remove_one_inv : forall A (E : set A) x,
+  finite (E \-- x) -> finite E.
+Proof using.
+  introv H. applys finite_remove_inv H. applys finite_single.
+Qed.
+
+(* LATER : finite_remove_inv
+   finite (E \- F) -> finite F -> finite E
+*)
+
 
 (* ---------------------------------------------------------------------- *)
 (** card *)

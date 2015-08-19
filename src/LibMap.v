@@ -195,6 +195,8 @@ Transparent map empty_inst single_bind_inst binds_inst
  union_inst restrict_inst remove_inst read_inst
  dom_inst disjoint_inst index_inst fold_inst.
 
+Hint Extern 1 (Some _ <> None) => congruence.
+Hint Extern 1 (None <> Some _) => congruence.
 
 (* ---------------------------------------------------------------------- *)
 (** extens *)
@@ -220,10 +222,19 @@ Proof using.
   false. false. (* apply @in_empty. *)
 Qed.
 
+Lemma dom_single : forall A B (k:A) (x:B),
+  dom (k\:=x) = \{k}.
+Proof using.
+  intros. simpl. unfold binds_impl, single_bind_impl, dom_impl.
+  apply set_ext. intros y. rewrite in_set_st_eq. iff R; case_if~.
+Qed.
 
-(* todo: dom_single *)
-
-(* todo: dom_union *)
+Lemma dom_union : forall A B (M N : map A B),
+  dom (M \u N) = dom M \u dom N.
+Proof using.
+  intros. simpl. unfold dom_impl, union_impl.
+  set_norm. intros x. set_norm. iff R; destruct* (N x).
+Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -273,7 +284,7 @@ Proof using.
   apply in_extens.  (* "extens" should work directly *)
   intros x. set_norm. iff R.
     case_if~.
-    case_if~. congruence. destruct~ R.
+    case_if~. destruct~ R.
 Qed.
 
 Lemma dom_update_index : forall A i `{Inhab B} v (M:map A B), (* needed? *)
