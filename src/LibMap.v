@@ -731,7 +731,7 @@ End Instances.
   map_split ==> split_restrict_remove
   map_split ==> split_restrict_remove_single
   map_index_def ==> index_def
-  map_indom_update_already => LibMap.map_indom_update_already
+  map_indom_update_already => LibMap.indom_update_already
   map_indom_update_inv => LibMap.indom_update_inv
   map_restrict_single ==> restrict_single
   map_update_restrict ==> update_remove_one_eq
