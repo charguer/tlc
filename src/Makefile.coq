@@ -29,8 +29,9 @@ COQCHK := $(COQBIN)coqchk
 ############################################################################
 # Targets
 
-.PHONY: proof depend quick proof_vo proof_vq
+.PHONY: all proof depend quick proof_vo proof_vq
 
+all: proof
 ifndef SERIOUS
 proof: proof_vq
 else
