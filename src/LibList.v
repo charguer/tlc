@@ -473,22 +473,22 @@ Lemma concat_last : forall l m,
   concat (m & l) = concat m ++ l.
 Proof using. intros. rewrite~ concat_app. rewrite~ concat_one. Qed.
 
-Lemma concat_mem : forall L x,
-  mem x (concat L) <->
-  exists l,
-    mem l L /\ mem x l.
+Lemma concat_mem : forall Ls x,
+  mem x (concat Ls) <->
+  exists L,
+    mem L Ls /\ mem x L.
 Proof.
-  introv. induction L.
+  introv. induction Ls.
    simpl. iff I; inverts* I.
   rewrite concat_cons. iff I.
    rewrite mem_app in I. rew_refl in *. inverts I as I.
     exists a. splits~. simpl. rew_refl*.
-    apply IHL in I. lets (l&Il&Ix): (rm I).
+    apply IHLs in I. lets (l&Il&Ix): (rm I).
      exists l. splits~. simpl. rew_refl*.
    rewrite mem_app. rew_refl. lets (l&Il&Ix): (rm I).
     simpl in Il. rew_refl in Il. inverts Il as Il.
      left~.
-     right~. apply* IHL.
+     right~. apply* IHLs.
 Qed.
 
 (* ---------------------------------------------------------------------- *)
@@ -581,7 +581,7 @@ Lemma filter_last : forall x l,
   filter f (l & x) = filter f l ++ (if f x then x::nil else nil).
 Proof using. intros. rewrite~ filter_app. Qed.
 
-Lemma filter_fact : forall l,
+Lemma Forall_filter_same : forall l,
   Forall f (filter f l).
 Proof.
   introv. induction l.
@@ -589,10 +589,10 @@ Proof.
    rewrite filter_cons. cases_if~.
 Qed.
 
-Lemma filter_mem : forall l a,
-  mem a (filter f l) <-> (mem a l /\ f a).
+Lemma filter_mem_eq : forall l a,
+  mem a (filter f l) = (mem a l && f a).
 Proof.
-  introv. induction l.
+  introv. extens. induction l.
    rewrite filter_nil. iff I; false I.
    rewrite filter_cons. cases_if; iff I.
     simpls. rew_refl in *. inverts I as I; splits*.
@@ -1379,7 +1379,7 @@ Lemma length_neq_elim : forall l1 l2,
   length l1 <> length l2 -> (l1 <> l2).
 Proof using. introv N E. subst. auto. Qed.
 
-Lemma concat_is_nil : forall L (l : list A),
+Lemma concat_eq_nil : forall L (l : list A),
   concat L = nil ->
   mem l L ->
   l = nil.
@@ -1684,7 +1684,7 @@ Lemma Forall_inv : forall (P : A -> Prop) (a : A) (l : list A),
   Forall P (a :: l) -> P a /\ Forall P l.
 Proof. introv F. inverts~ F. Qed.
 
-Lemma Forall_forall : forall (P : A -> Prop) (l : list A),
+Lemma Forall_iff_forall_mem : forall (P : A -> Prop) (l : list A),
   Forall P l <-> (forall x : A, mem x l -> P x).
 Proof.
   introv. induction l; iff I.
@@ -1702,7 +1702,7 @@ Lemma Forall_mem : forall (P : A -> Prop) l a,
   Forall P l ->
   mem a l ->
   P a.
-Proof. introv F I. rewrite Forall_forall in F. apply~ F. Qed.
+Proof. introv F I. rewrite Forall_iff_forall_mem in F. apply~ F. Qed.
 
 End ForallProp.
 
