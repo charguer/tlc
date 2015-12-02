@@ -693,6 +693,10 @@ Lemma tclosure_rtclosure_step : forall x y z,
   rtclosure x y -> R y z -> tclosure x z.
 Proof using. intros. induction* H. Qed.
 
+Lemma tclosure_tclosure_step : forall x y z,
+  tclosure x y -> R y z -> tclosure x z.
+Proof. introv C H. applys tclosure_rtclosure_step H. apply* tclosure_rtclosure. Qed.
+
 Lemma tclosure_step_rtclosure : forall x y z,
   R x y -> rtclosure y z -> tclosure x z.
 Proof using. intros. gen x. induction* H0. Qed.
@@ -713,6 +717,18 @@ Proof using. intros. induction* H. Qed.
 
 Lemma tclosure_trans : trans tclosure.
 Proof using. intros_all. autos* tclosure_tclosure_rtclosure. Qed.
+
+Lemma tclosure_tclosure' : forall x y,
+  tclosure x y <-> tclosure' x y.
+Proof.
+  introv. iff C.
+   destruct C as [x y z HR HC]. gen x. induction HC; introv HR.
+    apply~ tclosure'_step.
+    applys~ tclosure'_trans x. constructors~.
+   induction C.
+    constructors*.
+    apply* tclosure_trans.
+Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -758,6 +774,19 @@ Proof using.
   introv Hstep Htrans S. inverts S as HR S. gen x. induction S; introv HR.
     autos*.
     applys* Htrans. constructors*.
+Qed.
+
+(** Star induction principle with steps at the end *)
+
+Lemma tclosure_ind_right : forall A (R : binary A) (P : A -> A -> Prop),
+  (forall x y, R x y -> P x y) ->
+  (forall y x z, tclosure R x y -> P x y -> R y z -> P x z) ->
+  forall x y, tclosure R x y -> P x y.
+Proof.
+  introv S Ind H. inverts H as HR HC.
+  induction HC using rtclosure_ind_right.
+   apply* S.
+   applys Ind; try apply* tclosure_step_rtclosure; autos*.
 Qed.
 
 Hint Resolve rtclosure_refl rtclosure_step rtclosure_once : rtclosure.

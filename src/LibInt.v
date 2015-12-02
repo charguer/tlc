@@ -509,6 +509,13 @@ Lemma nat_int_neq : forall (x y:nat),
   (x:int) <> (y:int) -> (x <> y)%nat.
 Proof using. math. Qed.
 
+Lemma nat_int_le : forall (x y:nat),
+  x <= y -> ((x:int) <= (y:int)).
+Proof. math. Qed.
+
+Lemma nat_int_ge : forall (x y:nat),
+  x >= y -> ((x:int) >= (y:int)).
+Proof. math. Qed.
 
 Lemma succ_abs : forall n : int,
   n >= 0 -> S (abs n) = abs (1 + n) :> nat.

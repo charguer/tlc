@@ -188,3 +188,45 @@ Definition preimage A B (f : A -> B) (E : set B) : set A :=
   \set{ x | exists_ y \in E, y = f x }.
 
 End FunctionPreimage.
+
+
+
+(* ********************************************************************** *)
+(** ** Function iteration *)
+
+Fixpoint applyn A n (f : A -> A) x :=
+  match n with
+  | O => x
+  | S n' =>
+    f (applyn n' f x)
+  end.
+
+Lemma applyn_fix : forall A n f (x : A),
+  applyn (S n) f x = applyn n f (f x).
+Proof. introv. induction~ n. simpls. rewrite~ IHn. Qed.
+
+Lemma applyn_comp : forall A n m f (x : A),
+  applyn n f (applyn m f x) = applyn (n + m) f x.
+Proof.
+  introv. gen m; induction n; introv; simpls~.
+  rewrite~ IHn.
+Qed.
+
+Lemma applyn_nested : forall A n m f (x : A),
+  applyn n (applyn m f) x = applyn (n * m) f x.
+Proof.
+  introv. gen m. induction n; introv; simpls~.
+  rewrite IHn. rewrite~ applyn_comp.
+Qed.
+
+Lemma applyn_altern : forall A B (f : A -> B) (g : B -> A) x n,
+  applyn n (fun x => f (g x)) (f x) =
+    f (applyn n (fun x => g (f x)) x).
+Proof. introv. gen x. induction~ n. introv. repeat rewrite applyn_fix. autos~. Qed.
+
+Lemma applyn_ind : forall A (P : A -> Prop) (f : A -> A) x n,
+  (forall x, P x -> P (f x)) ->
+  P x ->
+  P (applyn n f x).
+Proof. introv I. induction n; introv Hx; autos*. Qed.
+

@@ -334,6 +334,14 @@ Lemma neqb_self : forall A (x:A),
   (x '<> x) = false.
 Proof using. intros. apply~ neqb_eq. Qed.
 
+Lemma eqb_sym : forall A (x y : A),
+  (x '= y) = (y '= x).
+Proof.
+  introv. tests D: (x = y).
+   rewrite~ eqb_self.
+   do 2 rewrite~ eqb_neq.
+Qed.
+
 
 (* ********************************************************************** *)
 (** * Tactics for reflection *)
@@ -699,6 +707,23 @@ Proof using.
     (match H with left _ => true | right _ => false end).
   rewrite isTrue_def. destruct H; case_if; tryfalse; auto.
 Qed.
+
+Lemma decidable_sumbool : forall P : Prop,
+  Decidable P -> {P} + {~ P}.
+Proof. introv D. destruct (decide P) eqn: H; fold_bool; rew_refl in H; [left*|right*]. Qed.
+
+Global Instance Decidable_impl : forall A B : Prop,
+    Decidable A -> Decidable B -> Decidable (A -> B).
+  introv (da&Ha) (db&Hb).
+  destruct da; destruct db; fold_bool; rew_refl in *;
+    ((apply decidable_make with true; solve [ fold_bool; rew_refl* ]) ||
+     (apply decidable_make with false; solve [ fold_bool; rew_refl* ])).
+Defined.
+
+Global Instance Decidable_equiv : forall A B : Prop,
+    (A <-> B) -> Decidable A -> Decidable B.
+  introv E. apply prop_ext in E. substs~.
+Defined.
 
 (** Extending the [case_if] tactic to support [if decide] *)
 

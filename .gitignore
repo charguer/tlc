@@ -8,3 +8,6 @@
 .coq-native
 .coqide
 _CoqProject
+*~
+*#
+README.html
