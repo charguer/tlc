@@ -73,6 +73,14 @@ Definition antisym :=
 Definition incl R1 R2 :=
   forall x y, R1 x y -> R2 x y.
 
+Definition rel_le A B (P Q : A->B->Prop) := 
+  forall a, pred_le (P a) (Q a).
+(* TODO [incl] should be just [rel_le] *)
+
+Lemma rel_le_refl : forall A B (P:A->B->Prop),
+  rel_le P P.
+Proof. intros_all~. Qed.
+
 (** Equality between relations *)
 
 (* TODO move further down in the file *)
@@ -96,6 +104,19 @@ Definition incl_fr A B (f : A -> B) (R : A -> B -> Prop) :=
 Definition incl_rf A B (R : A -> B -> Prop) (f : A -> B) :=
   forall x y, R x y -> y = f x.
 
+(* Turning a function into a relation. *)
+
+Definition rel_func A B (f : A -> B) :=
+  fun (x : A) (y : B) => y = f x.
+
+Lemma rel_func_equiv : forall A B (f : A -> B) (R : A -> B -> Prop),
+  rel_le (rel_func f) R <-> incl_fr f R.
+Proof. 
+  intros f R.
+  unfold rel_func, incl_fr. iff H; intros x; specializes H x.
+    applys* H.
+    intros y Hy. subst~.
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Constructions *)
