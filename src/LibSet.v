@@ -403,8 +403,22 @@ Proof using.
   lets (L1&E1): finite_covers_basic H1.
   lets (L2&E2): finite_covers_basic H2.
   exists (L1++L2). unfolds list_covers.
-  introv M. rewrite @in_union_eq in M; try typeclass.
+  introv M.
+  (* detailed proof showing up the bug *)
+  rewrite @in_union_eq in M.
+  rewrite* Mem_app_or_eq.
+  eapply @in_union_eq_inst.
+
+  (* Anomaly: Universe Top.96 undefined. Please report. *)
+  (* also bug:
+    eauto with typeclass_instances.
+  *)
+
+
+  (* original proof 
+  rewrite @in_union_eq in M; try typeclass.
   rewrite* Mem_app_or_eq. 
+  *)
 Qed.
 
 Lemma finite_inter : forall A (E F : set A),
