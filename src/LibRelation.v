@@ -416,6 +416,20 @@ Proof using.
   unfold empty. repeat intro. tauto.
 Qed.
 
+(* The union of two functional relations is functional, provided the relations
+   have disjoint domains. *)
+
+Lemma functional_union:
+  forall A (F1 F2 : binary A),
+  functional F1 ->
+  functional F2 ->
+  (forall x y z, F1 x y -> F2 x z -> False) ->
+  functional (union F1 F2).
+Proof using.
+  intros. unfold union. intros x y z Hxy Hxz.
+  destruct Hxy, Hxz; eauto; false; eauto.
+Qed.
+
 (* TODO: a tactic "functional_exploit R" that looks for two distinct
    assumptions in the goal of the form [R ?x ?y] and produces [functional R]
    as subgoal. *)
