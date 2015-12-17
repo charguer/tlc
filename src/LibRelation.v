@@ -931,6 +931,15 @@ Proof using.
   unfold incl. induction 2; eauto with rstclosure.
 Qed.
 
+Lemma rtclosure_union : forall A (R S : binary A),
+  incl (union (rtclosure R) (rtclosure S))
+       (rtclosure (union R S)).
+Proof using.
+  unfold incl, union. intros ? ? ? x y H. 
+  destruct H; gen x y;
+  induction 1; eauto with rtclosure.
+Qed.
+
 Lemma rstclosure_union : forall A (R S : binary A),
   incl (union (rstclosure R) (rstclosure S))
        (rstclosure (union R S)).
@@ -1034,3 +1043,4 @@ Proof using.
     eapply tclosure_incl_stclosure; [ | eassumption ].
     eapply sclosure_incl_stclosure. }
 Qed.
+
