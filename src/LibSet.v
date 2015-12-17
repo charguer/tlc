@@ -394,7 +394,7 @@ Proof using.
   exists (a::nil). introv M. hnf in M. subst*.
 Qed.
 
-Lemma finite_union : forall A (E F : set A),
+Lemma finite_union : forall (E F : set A),
   finite E ->
   finite F ->
   finite (E \u F).
@@ -403,11 +403,12 @@ Proof using.
   lets (L1&E1): finite_covers_basic H1.
   lets (L2&E2): finite_covers_basic H2.
   exists (L1++L2). unfolds list_covers.
-  introv M. rewrite @in_union_eq in M; try typeclass.
+  introv M.
+  rewrite @in_union_eq in M; try typeclass.
   rewrite* Mem_app_or_eq. 
 Qed.
 
-Lemma finite_inter : forall A (E F : set A),
+Lemma finite_inter : forall (E F : set A),
   finite E \/ finite F ->
   finite (E \n F).
 Proof using.
@@ -416,7 +417,7 @@ Proof using.
   lets (L&EQ): finite_covers_basic H. exists L. unfold list_covers. set_unf. autos*.
 Qed.
 
-Lemma finite_incl : forall A (E F : set A),
+Lemma finite_incl : forall (E F : set A),
   E \c F ->
   finite F ->
   finite E.
@@ -426,7 +427,7 @@ Proof using.
   set_unf. exists* L. introv Ex. applys EQ. applys~ HI. 
 Qed.
 
-Lemma finite_remove : forall A (E F : set A),
+Lemma finite_remove : forall (E F : set A),
   finite E ->
   finite (E \- F).
 Proof using.
@@ -435,7 +436,7 @@ Proof using.
 Qed.
 
 Section One.
-Lemma finite_remove_inv : forall A (E F : set A),
+Lemma finite_remove_inv : forall (E F : set A),
   finite (E \- F) -> finite F -> finite E.
 Proof using.
   Local Opaque remove_inst single_inst.
@@ -448,7 +449,7 @@ Proof using.
 Qed.
 End One.
 
-Lemma finite_remove_one_inv : forall A (E : set A) x,
+Lemma finite_remove_one_inv : forall (E : set A) x,
   finite (E \-- x) -> finite E.
 Proof using.
   introv H. applys finite_remove_inv H. applys finite_single.
