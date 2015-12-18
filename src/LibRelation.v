@@ -469,6 +469,12 @@ Proof using.
   unfold refl, union. eauto.
 Qed.
 
+Lemma union_symmetric:
+  forall A (F1 F2 : binary A),
+  union F1 F2 = union F2 F1.
+Proof.
+  unfold union. intros. extens; intros a b. tauto.
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of inclusion *)
