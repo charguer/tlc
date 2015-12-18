@@ -321,6 +321,15 @@ Proof.
   introv EQ HE. unfolds. subst. forwards* (?&?): finite_list_repr HE.
 Qed.
 
+Lemma Mem_to_list:
+  forall (xs : set A),
+  finite xs ->
+  forall x,
+  Mem x (to_list xs) <-> x \in xs.
+Proof.
+  intros. forwards [ ? ? ]: to_list_spec xs; eauto.
+Qed.
+
 Lemma to_list_empty : 
   to_list (\{}:set A) = nil.
 Proof using.
@@ -346,7 +355,6 @@ Proof using.
        subst. inverts H as M1 M2. false* M1.
       inverts H2. false. forwards~: (proj1 (H0 a)). false.
 Qed.
-
 
 (* ---------------------------------------------------------------------- *)
 (** finite *)
@@ -800,6 +808,17 @@ Proof using.
   forwards~ (N&EQ2): to_list_spec E. applys* finite_prove_repr.
   destruct EL as (ND&EQ1).
   applys~ LibList.fold_equiv. intros. rewrite EQ2. rewrite* EQ1.
+Qed.
+
+Lemma fold_congruence : forall A B (m : monoid_def B) (f g : A -> B) (E : set A),
+  Monoid_commutative m ->
+  finite E ->
+  (forall x, x \in E -> f x = g x) ->
+  fold m f E = fold m g E.
+Proof using.
+  introv ? ? h. do 2 rewrite fold_def.
+  eapply LibList.fold_congruence. intros.
+  eapply h. eapply Mem_to_list; eauto.
 Qed.
 
 Lemma fold_empty : forall A B (m:monoid_def B) (f:A->B),
