@@ -2288,6 +2288,18 @@ Proof using.
   rewrite EQ. rewrite* EQ'.
 Qed.
 
+(* ---------------------------------------------------------------------- *)
+(* ** Reasoning about equality under a [fold]. *)
+
+Lemma fold_congruence : forall A B (m : monoid_def B) (f g : A -> B) (xs : list A),
+  (forall x, Mem x xs -> f x = g x) ->
+  fold m f xs = fold m g xs.
+Proof.
+  unfold fold.
+  induction xs as [| x xs ]; intros; simpl.
+  { eauto. }
+  { f_equal; eauto. }
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (* ** Remove_duplicates *)
