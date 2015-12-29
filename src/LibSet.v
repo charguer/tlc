@@ -361,15 +361,15 @@ Qed.
 
 (* introduction *)
 
-Lemma finite_prove_covers : forall A (E:set A) L,
+Lemma finite_prove_covers : forall (E:set A) L,
   list_covers E L -> finite E.
 Proof using. introv H. exists* L. Qed.
 
-Lemma finite_prove_repr : forall A (E:set A) L,
+Lemma finite_prove_repr : forall (E:set A) L,
   list_repr E L -> finite E.
 Proof using. introv (ND&EQ). exists~ L. introv Hx. rewrite~ EQ. Qed.
 
-Lemma finite_prove_exists : forall A (E:set A),
+Lemma finite_prove_exists : forall (E:set A),
   ex (list_covers E) -> finite E.
 Proof using. introv (L&H). applys* finite_prove_covers. Qed.
 
@@ -382,20 +382,20 @@ Proof.
   forwards* (R&P): mmin_spec_nat m.
 Qed.
 
-Lemma finite_covers_basic : forall A (E:set A),
+Lemma finite_covers_basic : forall (E:set A),
   finite E -> exists L, list_covers E L.
 Proof using. introv (L&HN). exists L. intros. applys* HN. Qed.
 
 (* operations *)
 
-Lemma finite_empty : forall A,
+Lemma finite_empty : 
   finite (\{} : set A).
 Proof using.
   intros. apply finite_prove_exists. set_unf.
   exists (@nil A). introv M. inverts M.
 Qed.
 
-Lemma finite_single : forall A (a : A),
+Lemma finite_single : forall (a : A),
   finite \{a}.
 Proof using.
   intros. apply finite_prove_exists. set_unf.

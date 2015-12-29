@@ -210,7 +210,7 @@ Admitted. (* File will be soon deprecated *)
 
 Lemma binds_equiv_read_option : forall h k v,
   (binds h k v) = (read_option h k = Some v).
-Proof using.
+Proof using. clear IV.
   unfolds @binds. introv. extens.
   induction h as [|(x&v0)].
    splits ; intro N ; invert* N.

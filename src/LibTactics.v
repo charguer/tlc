@@ -604,7 +604,7 @@ Ltac jauto_set :=
 (** ** Application *)
 
 Ltac old_refine f := 
-  refine f; shelve_unifiable.
+  refine f. (* ; shelve_unifiable. *)
 
 (** [rapply] is a tactic similar to [eapply] except that it is
     based on the [refine] tactics, and thus is strictly more 
