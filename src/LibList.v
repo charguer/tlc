@@ -413,6 +413,14 @@ Proof using.
   rewrite length_last. rewrite~ length_cons.
 Qed.
 
+
+(** Lemma to rewrite a [fold_left] into a [fold_right]. **)
+Lemma fold_left_eq_fold_right : forall B (f : A -> B -> B) i l,
+  fold_left f i l = fold_right f i (rev l).
+Proof.
+  introv. gen i. induction~ l. introv. rewrite rev_cons. rewrite* fold_right_last. Qed.
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** Mem *)
 
@@ -546,6 +554,11 @@ Proof.
 Qed.
 
 End MapProp.
+
+Lemma map_id : forall l,
+  map id l = l.
+Proof. introv. induction~ l. rewrite map_cons. fequals~. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Filter *)
@@ -1802,7 +1815,23 @@ Lemma Forall2_rev : forall P l r,
   Forall2 P l r -> Forall2 P (rev l) (rev r).
 Proof using. induction l; introv M; inverts M; rew_rev; auto. Qed.
 
-(* TODO: Forall2_weaken *)
+Lemma Forall2_weaken : forall A B (P Q : A -> B -> Prop) la lb,
+  Forall2 P la lb ->
+  (forall a b, P a b -> Q a b) ->
+  Forall2 Q la lb.
+Proof. introv F W. induction F; constructors~. Qed.
+
+Lemma Forall2_iff_forall_Nth : forall A B (P : A -> B -> Prop) la lb,
+  Forall2 P la lb -> forall n a b,
+    Nth n la a ->
+    Nth n lb b ->
+    P a b.
+Proof. introv F N1 N2. gen n. induction~ F; introv N1 N2; inverts N1; inverts* N2. Qed.
+
+Lemma Forall2_swap : forall A B (P : A -> B -> Prop) la lb,
+  Forall2 P la lb ->
+  Forall2 (fun b a => P a b) lb la.
+Proof. introv F. induction~ F; constructors~. Qed.
 
 End PropProperties2.
 
@@ -1841,7 +1870,7 @@ Global Instance Exists_decidable : forall P l,
       right~.
 Defined.
 
-Lemma Exists_exists : forall P l,
+Lemma Exists_iff_exists_mem : forall P l,
   Exists P l <-> exists (a : A), mem a l /\ P a.
 Proof.
   introv. iff E; induction l; inverts E as E.
@@ -1852,14 +1881,6 @@ Proof.
    simpl in E. rew_refl in E. lets ([I|I]&H): (rm E).
     substs. apply~ Exists_here.
     apply~ Exists_next. apply* IHl.
-Qed.
-
-Lemma Exists_weaken : forall (P Q : A -> Prop) l,
-  (forall x, P x -> Q x) ->
-  Exists P l -> Exists Q l.
-Proof.
-  introv Impl E. rewrite Exists_exists in *.
-  lets (a&I&H): (rm E). exists a. splits*.
 Qed.
 
 Lemma Exists_exists_st : forall (P : A -> bool) l,
@@ -1876,6 +1897,27 @@ Proof.
      inverts E as E.
       apply~ Exists_next.
       apply~ Exists_here.
+Qed.
+
+Lemma Exists_weaken : forall (P Q : A -> Prop) l,
+  Exists P l -> pred_le P Q ->
+  Exists Q l.
+Proof.
+  introv E Impl. rewrite Exists_iff_exists_mem in *.
+  lets (a&I&H): (rm E). exists a. splits*.
+Qed.
+
+Lemma Exists_split : forall P l,
+  Exists P l ->
+  exists l1 x l2, l = l1 ++ x :: l2
+    /\ Forall (fun x => ~ P x) l1
+    /\ P x.
+Proof.
+  introv E. induction E.
+   exists (@nil A) x l. splits~. constructors~.
+   lets (l1&x'&l2&E1&F&HP): (rm IHE). tests Px: (P x).
+    exists (@nil A) x l. splits~. constructors~.
+    substs. exists (x :: l1) x' l2. splits~. constructors~.
 Qed.
 
 End ExistsProp.
@@ -1979,7 +2021,29 @@ Proof using.
   right. eauto 8 with maths. 
 Qed.
 
+Lemma Nth_mem : forall l x n,
+  Nth n l x -> mem x l.
+Proof. introv N. induction N; simpl; rew_refl* in *. Qed.
+
+Lemma nth_def_if_in_length : forall l d n v,
+  n < length l ->
+  nth_def d n l = v ->
+  Nth n l v.
+Proof.
+  introv I E. forwards (v'&Nv): length_Nth_lt I.
+  erewrite Nth_to_nth_def in E; [| apply~ Nv ]. substs~.
+Qed.
+
 End NthProperties.
+
+Lemma Forall2_Nth_nth_def : forall A B (P : A -> B -> Prop) la lb n v d,
+  Forall2 P la lb ->
+  Nth n la v ->
+  Nth n lb (nth_def d n lb).
+Proof.
+  introv F N. forwards L: Forall2_length F. forwards I: Nth_lt_length N.
+  rewrite L in I. forwards*: nth_def_if_in_length I.
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (* ** Mem *)

@@ -834,6 +834,15 @@ Hint Resolve rtclosure_refl rtclosure_step rtclosure_once : rtclosure.
 (* TODO: should rename and complete the [closure] database *)
 (* TODO: should not need to re-export the following version *)
 
+Lemma tclosure_right : forall A (R : binary A) x y,
+  tclosure R x y ->
+  exists z, rtclosure R x z /\ R z y.
+Proof.
+  introv H. induction H using tclosure_ind_right.
+   exists x. splits~. constructors~.
+   exists y. splits~. apply~ tclosure_rtclosure.
+Qed.
+
 Lemma incl_tclosure_self : forall A (R:binary A), 
    incl R (tclosure R).
 Proof using. unfolds incl. intros. apply~ tclosure_once. Qed.

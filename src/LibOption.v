@@ -117,3 +117,7 @@ Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 
 Implicit Arguments map_on_inv [A B f x y].
 
+Lemma option_map_none_inv : forall A B (f : A -> B) o,
+  map f o = None -> o = None.
+Proof. introv E. destruct~ o; tryfalse. Qed.
+
