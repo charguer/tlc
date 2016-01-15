@@ -417,8 +417,7 @@ Qed.
 (** Lemma to rewrite a [fold_left] into a [fold_right]. **)
 Lemma fold_left_eq_fold_right : forall B (f : A -> B -> B) i l,
   fold_left f i l = fold_right f i (rev l).
-Proof.
-  introv. gen i. induction~ l. introv. rewrite rev_cons. rewrite* fold_right_last. Qed.
+Proof. introv. gen i. induction~ l. introv. rewrite rev_cons. rewrite* fold_right_last. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2023,7 +2022,7 @@ Qed.
 
 Lemma Nth_mem : forall l x n,
   Nth n l x -> mem x l.
-Proof. introv N. induction N; simpl; rew_refl* in *. Qed.
+Proof. clear IA. introv N. induction N; simpl; rew_refl* in *. Qed.
 
 Lemma nth_def_if_in_length : forall l d n v,
   n < length l ->
