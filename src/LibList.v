@@ -1430,19 +1430,6 @@ Definition map_partial (A B : Type) (f : A -> option B) :=
                  LibOption.map (cons v) (aux l'))
    end.
 
-Lemma map_partial_inv : forall (A B:Type) (f: A->option B) lx ly,
-  map_partial f lx = Some ly ->
-  Forall2 (fun x y => f x = Some y) lx ly. 
-Proof using.
-  induction lx; simpl map_partial; introv Eq.
-  inverts Eq. apply Forall2_nil.
-  lets fa Fa Eq2: (apply_on_inv Eq).
-   lets ly1 Eqly ?: (map_on_inv Eq2). subst ly.
-   apply* Forall2_cons.
-Qed.
-
-Implicit Arguments map_partial_inv [A B f lx ly].
-
 
 (* ---------------------------------------------------------------------- *)
 (* ** Induction principle on lists *)
@@ -1837,6 +1824,20 @@ End PropProperties2.
 Implicit Arguments Forall2_last_inv [A1 A2 P l1 r' x1].
 
 (* todo : inversion lemmas for other predicates *)
+
+
+Lemma map_partial_inv : forall (A B:Type) (f: A->option B) lx ly,
+  map_partial f lx = Some ly ->
+  Forall2 (fun x y => f x = Some y) lx ly.
+Proof using.
+  induction lx; simpl map_partial; introv Eq.
+  inverts Eq. apply Forall2_nil.
+  lets fa Fa Eq2: (apply_on_inv Eq).
+   lets ly1 Eqly ?: (map_on_inv Eq2). subst ly.
+   apply* Forall2_cons.
+Qed.
+
+Implicit Arguments map_partial_inv [A B f lx ly].
 
 
 (* ---------------------------------------------------------------------- *)
