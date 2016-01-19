@@ -1807,17 +1807,22 @@ Lemma Forall2_weaken : forall A B (P Q : A -> B -> Prop) la lb,
   Forall2 Q la lb.
 Proof. introv F W. induction F; constructors~. Qed.
 
-Lemma Forall2_iff_forall_Nth : forall A B (P : A -> B -> Prop) la lb, (* TODO: Rename into [Forall2_forall_Nth]. *)
+Lemma Forall2_forall_Nth : forall A B (P : A -> B -> Prop) la lb,
   Forall2 P la lb -> forall n a b,
     Nth n la a ->
     Nth n lb b ->
     P a b.
 Proof. introv F N1 N2. gen n. induction~ F; introv N1 N2; inverts N1; inverts* N2. Qed.
 
-Lemma Forall2_swap : forall A B (P : A -> B -> Prop) la lb,
-  Forall2 P la lb ->
-  Forall2 (fun b a => P a b) lb la.
+Lemma Forall2_swap : forall (P : A1 -> A2 -> Prop) l r,
+  Forall2 P l r ->
+  Forall2 (fun b a => P a b) r l.
 Proof. introv F. induction~ F; constructors~. Qed.
+
+Lemma Forall2_map : forall f (P : A1 -> A2 -> Prop) l,
+  (forall a, P a (f a)) ->
+  Forall2 P l (map f l).
+Proof. introv I. induction l; constructors~. Qed.
 
 End PropProperties2.
 
@@ -1921,6 +1926,17 @@ Proof.
 Qed.
 
 End ExistsProp.
+
+
+Lemma mem_split : forall A l (x:A),
+  mem x l ->
+  exists l1 l2,
+    l = l1 ++ x :: l2 /\ ~ mem x l1.
+Proof.
+  introv M. forwards (l1&?&l2&E&NF&?): Exists_split (fun y => x = y).
+   rewrite Exists_iff_exists_mem. exists x. splits*.
+   substs. rewrite Forall_iff_forall_mem in NF. exists* l1 l2.
+Qed.
 
 
 (* ---------------------------------------------------------------------- *)
