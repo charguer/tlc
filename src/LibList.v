@@ -1836,10 +1836,10 @@ Lemma map_partial_inv : forall (A B:Type) (f: A->option B) lx ly,
   Forall2 (fun x y => f x = Some y) lx ly.
 Proof using.
   induction lx; simpl map_partial; introv Eq.
-  inverts Eq. apply Forall2_nil.
-  lets fa Fa Eq2: (apply_on_inv Eq).
-   lets ly1 Eqly ?: (map_on_inv Eq2). subst ly.
-   apply* Forall2_cons.
+   inverts Eq. apply Forall2_nil.
+   lets fa Fa Eq2: (apply_on_inv Eq).
+    lets ly1 Eqly ?: (map_on_inv Eq2). subst ly.
+    apply* Forall2_cons.
 Qed.
 
 Implicit Arguments map_partial_inv [A B f lx ly].
@@ -1936,6 +1936,16 @@ Proof.
   introv M. forwards (l1&?&l2&E&NF&?): Exists_split (fun y => x = y).
    rewrite Exists_iff_exists_mem. exists x. splits*.
    substs. rewrite Forall_iff_forall_mem in NF. exists* l1 l2.
+Qed.
+
+Lemma map_partial_inv_none : forall (A B:Type) (f: A->option B) l,
+  map_partial f l = None ->
+  Exists (fun x => f x = None) l.
+Proof.
+  induction l; simpl map_partial; introv Eq; tryfalse.
+  forwards [E|(b&E1&E2)]: apply_on_inv_none Eq.
+   apply* Exists_here.
+   apply Exists_next. apply~ IHl. destruct~ map_partial. false*.
 Qed.
 
 

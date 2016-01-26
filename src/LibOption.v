@@ -96,15 +96,20 @@ Definition apply_on A B o (f : A -> option B) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Properties *)
 
-Lemma apply_on_inv : forall A B (f : A->option B) x y, 
-  apply_on x f = Some y -> 
+Lemma apply_on_inv : forall A B (f : A->option B) x y,
+  apply_on x f = Some y ->
   exists z, x = Some z /\ f z = Some y.
 Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 
 Implicit Arguments apply_on_inv [A B f x y].
 
-Lemma map_inv : forall A B (f : A->B) x y, 
-  map f x = Some y -> 
+Lemma apply_on_inv_none : forall A B (f : A->option B) x,
+  apply_on x f = None ->
+  x = None \/ exists y, x = Some y /\ f y = None.
+Proof. destruct x; simpl; introv H; inverts* H. Qed.
+
+Lemma map_inv : forall A B (f : A->B) x y,
+  map f x = Some y ->
   exists z, x = Some z /\ y = f z.
 Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 
