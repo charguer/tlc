@@ -1948,6 +1948,15 @@ Proof.
    apply Exists_next. apply~ IHl. destruct~ map_partial. false*.
 Qed.
 
+Lemma map_partial_none : forall (A B:Type) (f: A->option B) l,
+  Exists (fun x => f x = None) l ->
+  map_partial f l = None.
+Proof.
+  induction l; simpl map_partial; introv Eq; inverts Eq as Eq.
+   rewrite~ Eq.
+   destruct~ (f a). rewrite~ IHl.
+Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (* ** Nth *)
