@@ -165,7 +165,7 @@ Notation "\set{= e | x y '\in' E }" :=
       forall x \in E, g (f x) = x
       forall y \in F, f (g y) = y
 
-   fold m i E = fold m j F 
+   F m i E = fold m j F 
      when  bij E F f g  
       and  forall x \in E,  i x = j (f x)
        or  forall y \in E,  j y = i (g y)

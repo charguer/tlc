@@ -53,7 +53,7 @@ Definition upper_bound (A:Type) (le:binary A) (P:A->Prop) (x:A) :=
 Definition max_element (A:Type) (le:binary A) (P:A->Prop) (x:A) :=
   P x /\ upper_bound le P x.
 
-(* [mmin le P] is a minimal element of [P] with respect to [le],
+(* [mmax le P] is a minimal element of [P] with respect to [le],
    when such an element exists. *)
 
 Definition mmax `{Inhab A} (le:binary A) (P:A->Prop) :=
