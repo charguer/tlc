@@ -17,6 +17,17 @@ Require Import List.
 Inductive libtac_Dyn : Type :=
   | libtac_dyn : forall (A:Type), A -> libtac_Dyn.
 
+(** [libtac_dyn_of E] returns a term of type [libtac_Dyn],
+    according to the following rules:
+    - if [E] is already of type [libtac_Dyn], then it returns [E];
+    - otherwise, it returns the list [(libtac_dyn E)::nil]. *)
+
+Ltac libtac_dyn_of E := 
+  match type of E with 
+  | List.list libtac_Dyn => constr:(E)
+  | _ => constr:((libtac_dyn E)::nil)
+  end.
+
 (** [libtac_wild], written [__] is used as a "wildcard argument" 
     in LibTac tactics, which cannot reuse the simple wildcard [_]. *)
 
@@ -269,18 +280,25 @@ Tactic Notation "invert_nosubst" hyp(H) :=
 (* ********************************************************************** *)
 (** * First-match applications *)
 
-(** The expression [$ E0 E1 .. EN] is essentially equivalent to
+(** DISCLAIMER: FOR TECHNICAL REASONS, THIS SYNTAX ONLY WORKS WHEN 
+    USED IN THE FOLLOWING TACTICS:
+      [put I: (# E0 E1 .. EN)] 
+      [forward I: (# E0 E1 .. EN)]
+      [applys (# E0 E1 .. EN)] 
+*)
+
+(** The expression [# E0 E1 .. EN] is essentially equivalent to
     [E0 _ .. _ E1 _ .. .. _ EN] with the right number of underscores,
     as determined by a "first-match" greedy algorithm.
 
     In some cases, we have a term [E0] that expects two arguments of 
     the same type, but we only want to specify the second argument.
     In this case, we can use the [__] place-holder, and write 
-    [$E0 __ E2].
+    [#E0 __ E2].
 
-    Another use of [__] is as last argument. [$ E0 .. EN __] is the
-    same as [($ E0 .. EN) _ _ .. _] with as many trailing underscores
-    as there are visible produces in the type of the term [$ E0 .. EN].
+    Another use of [__] is as last argument. [# E0 .. EN __] is the
+    same as [(# E0 .. EN) _ _ .. _] with as many trailing underscores
+    as there are visible produces in the type of the term [# E0 .. EN].
     This usage is useful for reasoning by forward chaining.
 
     Remark: there is one exception to the "first-match" principe:
@@ -318,7 +336,7 @@ Ltac libtac_dynlist_next_type vs :=
   | (@libtac_dyn ?T _)::_ => constr:(T)
   end.
 
-Ltac ltac_build_app_alls t final :=
+Ltac libtac_build_app_alls t final :=
   let rec go t :=
     match type of t with 
     | ?P -> ?Q => libtac_app_assert t P go
@@ -336,7 +354,7 @@ Ltac ltac_first_match_app_cont_aux t vs final :=
     | nil => 
         first [ final t | fail 1 ]
     | (libtac_dyn libtac_wild)::nil => 
-        first [ ltac_build_app_alls t final | fail 1 ]
+        first [ libtac_build_app_alls t final | fail 1 ]
     | (libtac_dyn ?v)::?vs' => 
         let cont t' := go t' vs in
         let cont' t' := go t' vs' in
@@ -407,71 +425,75 @@ Ltac libtac_first_match_app_cont args final :=
     end
   | fail 1 "Instantiation fails for:" args].
 
+(* FOR FUTURE USE:
 Ltac libtac_first_match_app args :=
   libtac_first_match_app_cont args ltac:(fun E => exact E).
 
+FOR CURRENT WORK-AROUND: *)
+Ltac libtac_first_match_app args := exact args.
+
 (* Notation *)
 
-Notation "'$'" :=
+Notation "'#'" :=
   (ltac:(libtac_first_match_app (@nil libtac_Dyn)))
   (at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1" :=
+Notation "'#' v1" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::nil)))
   (at level 0, v1 at level 0)
   : libtac_scope.
-Notation "'$' v1 v2" :=
+Notation "'#' v1 v2" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::nil)))
   (at level 0, v1 at level 0, v2 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3" :=
+Notation "'#' v1 v2 v3" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::nil)))
   (at level 0, v1 at level 0, v2 at level 0, v3 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3 v4" :=
+Notation "'#' v1 v2 v3 v4" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::(libtac_dyn v4)::nil)))
   (at level 0, v1 at level 0, v2 at level 0, v3 at level 0,
    v4 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3 v4 v5" :=
+Notation "'#' v1 v2 v3 v4 v5" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::(libtac_dyn v4)::(libtac_dyn v5)::nil)))
   (at level 0, v1 at level 0, v2 at level 0, v3 at level 0,
    v4 at level 0, v5 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3 v4 v5 v6" :=
+Notation "'#' v1 v2 v3 v4 v5 v6" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::(libtac_dyn v4)::(libtac_dyn v5)
    ::(libtac_dyn v6)::nil)))
   (at level 0, v1 at level 0, v2 at level 0, v3 at level 0,
    v4 at level 0, v5 at level 0, v6 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3 v4 v5 v6 v7" :=
+Notation "'#' v1 v2 v3 v4 v5 v6 v7" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::(libtac_dyn v4)::(libtac_dyn v5)
    ::(libtac_dyn v6)::(libtac_dyn v7)::nil)))
   (at level 0, v1 at level 0, v2 at level 0, v3 at level 0,
    v4 at level 0, v5 at level 0, v6 at level 0, v7 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3 v4 v5 v6 v7 v8" :=
+Notation "'#' v1 v2 v3 v4 v5 v6 v7 v8" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::(libtac_dyn v4)::(libtac_dyn v5)
    ::(libtac_dyn v6)::(libtac_dyn v7)::(libtac_dyn v8)::nil)))
   (at level 0, v1 at level 0, v2 at level 0, v3 at level 0,
    v4 at level 0, v5 at level 0, v6 at level 0, v7 at level 0,
    v8 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3 v4 v5 v6 v7 v8 v9" :=
+Notation "'#' v1 v2 v3 v4 v5 v6 v7 v8 v9" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::(libtac_dyn v4)::(libtac_dyn v5)
    ::(libtac_dyn v6)::(libtac_dyn v7)::(libtac_dyn v8)::(libtac_dyn v9)::nil)))
   (at level 0, v1 at level 0, v2 at level 0, v3 at level 0,
    v4 at level 0, v5 at level 0, v6 at level 0, v7 at level 0,
    v8 at level 0, v9 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10" :=
+Notation "'#' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::(libtac_dyn v4)::(libtac_dyn v5)
    ::(libtac_dyn v6)::(libtac_dyn v7)::(libtac_dyn v8)::(libtac_dyn v9)::(libtac_dyn v10)::nil)))
   (at level 0, v1 at level 0, v2 at level 0, v3 at level 0,
    v4 at level 0, v5 at level 0, v6 at level 0, v7 at level 0,
    v8 at level 0, v9 at level 0, v10 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11" :=
+Notation "'#' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::(libtac_dyn v4)::(libtac_dyn v5)
    ::(libtac_dyn v6)::(libtac_dyn v7)::(libtac_dyn v8)::(libtac_dyn v9)::(libtac_dyn v10)
    ::(libtac_dyn v11)::nil)))
@@ -479,7 +501,7 @@ Notation "'$' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11" :=
    v4 at level 0, v5 at level 0, v6 at level 0, v7 at level 0,
    v8 at level 0, v9 at level 0, v10 at level 0, v11 at level 0, only parsing)
   : libtac_scope.
-Notation "'$' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12" :=
+Notation "'#' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12" :=
   (ltac:(libtac_first_match_app ((libtac_dyn v1)::(libtac_dyn v2)::(libtac_dyn v3)::(libtac_dyn v4)::(libtac_dyn v5)
    ::(libtac_dyn v6)::(libtac_dyn v7)::(libtac_dyn v8)::(libtac_dyn v9)::(libtac_dyn v10)
    ::(libtac_dyn v11)::(libtac_dyn v12)::nil)))
@@ -491,7 +513,7 @@ Notation "'$' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12" :=
 
 
 (* ********************************************************************** *)
-(** * Put tactic *)
+(** * [put] tactic *)
 
 (** [put I: E] is a convenient syntax for adding an hypothesis 
     of name [I] and of proof-term [E] into the goal.
@@ -500,40 +522,38 @@ Notation "'$' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12" :=
     or like [set (I:=E); clearbody I]. *)
 
 Tactic Notation "put" simple_intropattern(I) ":" constr(E) :=
-  generalize E; intros I.
+  (* FUTURE IMPLEMENTATION:  generalize E; intros I. *)
+  let args := libtac_dyn_of E in 
+  libtac_first_match_app_cont args ltac:(fun R => generalize R; intros I).
 
 
 (* ********************************************************************** *)
-(** * Forward tactic *)
+(** * [forward] tactic *)
 
 (** [forward I: E] is essentially a convenient syntax for 
-    [put I: ($ E __)], which instantiates all visible arguments 
+    [put I: (# E __)], which instantiates all visible arguments 
     from lemma [E] with fresh unification variables, and names 
     [I] the instantiated lemma. 
     *) 
 
 Tactic Notation "forward" simple_intropattern(I) ":" constr(E) :=
-  put I: ($ E __).
+  (* FUTURE IMPLEMENTATION:  put I: (# E __). *)
+  let args := libtac_dyn_of E in 
+  let args := (eval simpl in (args ++ ((libtac_dyn __)::nil))) in
+  libtac_first_match_app_cont args ltac:(fun R => generalize R; intros I).
 
 
+(* ********************************************************************** *)
+(** * [applys] tactic *)
 
+(** [applys E] is the same as [eapply E] except that it supports the
+    [applys (# E0 .. EN)] form. FUTURE: it won't be needed anymore. *) 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Tactic Notation "applys" constr(E) :=
+  match type of E with
+  | list libtac_Dyn => libtac_first_match_app_cont E ltac:(fun R => eapply R)
+  | _ => eapply E
+  end.
 
 
 
@@ -728,12 +748,36 @@ Admitted.
 
 
 (* ********************************************************************** *)
-(** ** First-match application: [$] *)
+(** ** [put] tactic *)
 
-(* Note: the use of "instantiation modes" is described in the overview file
-   and described in full details in the source file LibTactics.v *)
+Section PutDemo.
+Variables H1 H2 H3 H4 : Prop.
 
-Lemma demo_lets_of : forall (x y : nat) (A B : Prop),
+Lemma demo_put : 
+  (H1 -> H2 -> H3 /\ H4) -> (H1 -> H2) -> H1 -> H3.
+Proof using.
+  intros P Q R.
+  (* [put] a tactic for naming a term *) 
+  put U: (Q R). 
+  (* [put] can decompose terms with a patterns *)
+  put [V W]: (P R U).
+  (* [put] accepts any intro-pattern in fact *)
+  put (V'&_): (P R U). 
+  (* [put] can be used in particular to copy an hypothesis,
+     for example if you need to save it before an [invert]. *)
+  put U': U.
+  admit.
+Admitted.
+
+End PutDemo.
+
+
+(* ********************************************************************** *)
+(** ** First-match application: [#] *)
+
+(* See the documentation of [#] and [put] in the file LibTac.v. *)
+
+Lemma demo_put_forward_sharp : forall (x y : nat) (A B : Prop),
   (x > 0) ->
   (x <> y) -> 
   (A <-> B) ->
@@ -751,59 +795,94 @@ Lemma demo_lets_of : forall (x y : nat) (A B : Prop),
    True) ->
   True.
 Proof using.
-  =>> Pos Neq Iff L M.
-  (* [lets] is used to instantiate a lemma [M] on arguments *)
-
-  lets P: M Iff. eauto. clear P.
-  lets P: (>> M Neq). eauto. eauto. clear P.
-  lets P: (>> M __ y). eauto. eauto. clear P.
-  lets P: (>> M x __ B). eauto. instantiate (1:=A) in P. clear P.
-  (* [Hnts] keyword can be omitted *)
-  lets P: (>> M __ y Neq). eauto. eauto. clear P.
-  (* The syntax [>>] is not required for less than 5 arguments. *)
-  lets P: M Pos A B Neq. eauto. clear P.
-  (* A triple underscore indicates to instantiate all remaining *)
-  lets k K: (>> L Pos ___). eauto. clears k.
-  lets k K: (>> L ___). eauto. eauto. clears k.
-  (* [forwards I: (>> E E1 .. EN)] is short for
-     [lets I: (>> E E1 .. EN ___)] *)
-  forwards R: L. eauto. eauto. clear R.
-  forwards R: L Pos. eauto. clear R.
-  forwards k K: L. eauto. eauto. clears k.
-  forwards [k K]: L Pos y. eauto. clears k.
-  forwards k K: (>> L x y). eauto. eauto. clears k.
-  lets k K: (>> L Neq). eauto. clears k.
-  auto.
+  =>> Pos Neq Iff L M. dup 15.
+  (* Specializes the lemma [M] to the hypothesis [Pos], skipping [n] *)
+  - put P: (#M Pos). admit.
+  (* Specializes the lemma [M] to the hypothesis [Iff], skipping [n,Pos,P,Q] *)
+  - put P2: (#M Pos Iff). admit.
+  (* Specializes even further dosnw *)
+  - put P: (#M Neq). eauto. eauto. admit. 
+  (* Specializes only on [n] *)
+  - put P: (#M x). admit.
+  (* Specializes only on [m], which has the same type as [n], using [__] *)
+  - put P: (#M __ y). eauto. eauto. admit.
+  (* Specializes only on [m], and argument after it *)
+  - put P: (#M __ y Neq). eauto. eauto. admit.
+  (* Similarly, specializes only on [B], which has the same type as [A] *)
+  - put P: (#M x __ B). eauto. admit.
+  (* Using an introduction pattern to open an existential *)
+  - put (k&K): (#L Neq). eauto. admit.
+  (* Using a trailing [__] to instantiate all that remains *)
+  - put [k K]: (#L Pos __). eauto. admit. 
+  (* More extreme instantiation *)
+  - put R: (#L __). eauto. eauto. admit.
+  (* Alternative syntax using [forward] *)
+  - forward R: L. eauto. eauto. admit.
+  (* Refined versions using [forward] *)
+  - forward (k&K): (#L x y). eauto. eauto. admit.
 Admitted.
 
-
-Lemma demo_forwards_1 : forall x : nat, x > 1 ->
+Lemma demo_forward_1 : forall x : nat, x > 1 ->
   (forall z, z > 1 -> exists y, z < 2 /\ z <> y) -> 
   True.
 Proof using.
-  =>> Le H. dup 4.
-  (* [forwards] is used to instantiate a lemma entirely, generating one
+  =>> Le H. dup 2.
+  (* [forward] is used to instantiate a lemma entirely, generating one
      subgoal for each hypothesis and one existential variable for 
      each universally quantified variable *)
-  forwards Q: H. eauto. admit. 
+  - forward Q: H. eauto. admit. 
   (* an introduction-pattern can be used to decompose the result *)
-  forwards [y [R1 R2]]: H. eauto. admit. 
-  (* and [forwards] can also be used without introduction pattern *)
-  forwards: H. eauto. admit. 
-  (* [forwards] does nothing on an hypothesis without quantifiers *)
-  forwards: Le. admit. 
+  - forward [y [R1 R2]]: H. eauto. admit. 
 Admitted.
 
-Lemma demo_forwards_2 : 
+Lemma demo_forward_2 : 
   (forall x y : nat, x = y -> x <= y) ->
   forall a b : nat, a <= a.
 Proof using.
-  intros. dup 2. (* some more examples *)
-    forwards K: (H a). reflexivity. apply K.
-    forwards* K: (H a).
+  intros. forward K: (#H __ a). reflexivity. apply K.
 Admitted.
 
-Lemma demo_applys_specializes : forall (x y : nat) (A B : Prop),
+(** Similar demos, showing how head definitions are unfolded *)
+
+Definition mydef := forall (n m : nat), n = m -> False.
+
+Lemma demo_forward_3 :
+  forall (i:nat), mydef -> i <> i.
+Proof using.
+  =>> H. dup 3. 
+  (** forward does nothing if no quantifier is visible *)
+  - forward I: H. admit.
+  (** work-around is to force underscore *)
+  - forward I: (#H __). apply (refl_equal i). admit.
+  (** or to force one arguments *)
+  - forward I: (H i). reflexivity. admit.
+Admitted. 
+
+(** On the other hand, definitions that are not at head
+    position are not unfolded *)
+
+Definition outerdef := mydef.
+Definition nesteddef := forall (n:nat), mydef.
+
+Lemma demo_forward_4 : 
+  forall (i:nat), nesteddef -> outerdef.
+Proof using.
+  intros i H. dup 5.
+  (** forwards does not instantiate [mydef] from [H] *)
+  - forward K: (#H i). admit.
+  (** it is nevertheless possible to instantiate arguments
+      inside [mydef] if providing explicit arguments *)
+  - forward K: (#H i i). admit. admit. 
+  (* or by adding a [__] *)
+  - forward K: (#H i __). admit. admit. 
+  (* illustrating the interest of several [__] *)
+  - forward K: (#H __ __). exact i. apply (refl_equal 0). admit.
+  (** but usually it is simpler to unfold explicitly *)
+  - unfold nesteddef, mydef in H.
+    forward K: (#H i). apply (refl_equal 0). admit.
+Admitted.
+
+Lemma demo_applys : forall (x y : nat) (A B : Prop),
   (x > 0) ->
   (x <> y) -> 
   (A <-> B) ->
@@ -816,95 +895,17 @@ Lemma demo_applys_specializes : forall (x y : nat) (A B : Prop),
    True) ->
   True.
 Proof using.
-  =>> Pos Neq Iff M. dup 17.
+  =>> Pos Neq Iff M. dup 5.
   (* [applys] is used to apply an instantiated lemma. *)
-  applys (>> M Pos). eauto. eauto.
-  applys (>> M A B). eauto. eauto. eauto.
-  applys (>> M Pos Iff). eauto.
-  applys (>> M Iff). eauto. eauto.
-  applys (>> M x Iff). eauto. eauto.
-  applys M x Iff. eauto. eauto.
-  (* [specializes] is used to instantiate an hypothesis in-place *)
-  specializes M (>> 3). auto. 
-  specializes M (>> 3 A B). auto. auto.
-  specializes M (>> A __ __). eauto. eauto. auto.
-  specializes M (>> Pos Iff 2). eauto. auto.
-  (* A triple underscore indicates to instantiate all remaining *)
-  specializes M (>> Pos ___). eauto. eauto. auto.
-  specializes M (>> __ B ___). eauto. eauto. eauto. auto.
-  specializes M __. specializes M __. eauto. auto.
-  (* [specializes] can be used as [forwards in] thanks to [___] *)
-  specializes M ___. eauto. eauto. eauto. auto.
-  (* In those tactics, one can apply the constant [rm] to any subterm
-     to request the argument of [rm] to be removed from the context. *)
-  applys (>> M (rm Pos) Iff). (* [Pos] is gone here *) eauto.
-  (* In fact, [rm] can be applied in depth inside terms *)
-  specializes M (>> (proj1 (conj (rm Pos) Neq))). (* [Pos] is gone *) auto. 
+  - applys (#M Pos). eauto. eauto.
+  - applys (#M A B). eauto. eauto. eauto.
+  - applys (#M Pos Iff). eauto.
+  - applys (#M Iff). eauto. eauto.
+  - applys (#M x Iff). eauto. eauto.
 Admitted.
 
-(** Similar demos, showing how head definitions are unfolded *)
 
-Definition mydef := forall (n m : nat), n = m -> False.
 
-Lemma demo_specializes_definition :
-  forall (i:nat), mydef -> i <> i.
-Proof using.
-  =>> H. dup 6. 
-  (** specializes one by one *)
-  specializes H i. specializes H i.
-   specializes H (refl_equal i). false.
-  (** specializes all arguments *)
-  specializes H i i (refl_equal i). false.
-  (** specializes admitping some arguments *)
-  specializes H (refl_equal i). false.
-  (** forwards all arguments *)
-  forwards: H. apply (refl_equal i). false.
-  (** forwards on one arguments *)
-  forwards M: H i. reflexivity. false.
-  (** build using lets *)
-  lets: (>> H (refl_equal i)). false.
-Admitted. 
 
-(** Unfolding occurs recursively *)
 
-Definition outerdef := mydef.
-
-Lemma demo_specializes_definition_2 : 
-  forall (i:nat), outerdef -> i <> i.
-Proof using.
-  =>> H. dup 6.
-  (** specializes one by one *)
-  specializes H i. specializes H i.
-   specializes H (refl_equal i). false.
-  (** specializes all arguments *)
-  specializes H i i (refl_equal i). false.
-  (** specializes admitping some arguments *)
-  specializes H (refl_equal i). false.
-  (** forwards all arguments *)
-  forwards: H. apply (refl_equal i). false.
-  (** forwards on one arguments *)
-  forwards M: H i. reflexivity. false.
-  (** build using lets *)
-  lets: (>> H (refl_equal i)). false.
-Admitted. 
-
-(** On the other hand, definitions that are not at head
-    position are not unfolded *)
-
-Definition nesteddef := forall (n:nat), mydef.
-
-Lemma demo_specializes_definition_3 : 
-  forall (i:nat), nesteddef -> outerdef.
-Proof using.
-  intros i H. dup 4.
-  (** forwards does not instantiate [mydef] from [H] *)
-  forwards K: H i. admit. 
-  (** ... unless explicitely visible *)
-  unfold nesteddef, mydef in H.
-   forwards K: H i. apply (refl_equal i). false.
-  (** yet, it should be possible to instantiate arguments
-      inside [mydef] if providing explicit arguments *)
-  lets K: (>> H i i). admit. 
-  lets K: (>> H i (refl_equal i)). admit. 
-Admitted.
 
