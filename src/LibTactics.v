@@ -436,6 +436,7 @@ Ltac check_noevar_hyp H := (* todo: imlement using check_noevar *)
 Ltac check_noevar_goal := (* todo: imlement using check_noevar *)
   match goal with |- ?G => check_noevar G end.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Helper function for introducing evars *)
 
