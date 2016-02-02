@@ -1,7 +1,43 @@
+
+(* Question.
+
+Lemma test : (forall n:nat, n > 0 -> True) -> True.
+intros H.
+
+eapply ltac:(refine (H _)).
+
+eapply ltac:(eapply (H _)).
+
+eapply ltac:(evar (x:nat); refine (H x)).
+
+eapply ltac:(evar (x:nat); evar (P:x>0); refine (H x P)).
+
+Grab Existential Variables.
+
+*)
+
+
+
 (**************************************************************************
-* New Tactics for Coq                                                     *
+* Additional Tactics for Coq                                              *
 * Distributed under the terms of the MIT license                          *
 ***************************************************************************)
+
+(** Main features, at a glance:
+
+  =>> I1 .. IN
+    New intro pattern to name only non-dependent hypotheses.
+    --> later will be part of SSR, as a variant of the "=>" tacticial.
+
+  #H E1 .. EN
+    Syntax for terms to build applications on a first-match basis
+    --> currently only works for apply/put/forward
+
+  invert H
+    Performs inversion, substitution (on fresh variables), clear,
+    and re-generalize all fresh variables and hypotheses.
+
+*)
 
 
 Set Implicit Arguments.
@@ -903,8 +939,6 @@ Proof using.
   - applys (#M Iff). eauto. eauto.
   - applys (#M x Iff). eauto. eauto.
 Admitted.
-
-
 
 
 
