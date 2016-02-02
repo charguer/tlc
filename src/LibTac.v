@@ -1,16 +1,192 @@
+(*
 
-(* Question.
+Lemma test : forall (P:Prop),
+  P -> (forall n:nat, n > 0 -> P -> True) -> True.
+intros P HP H.
+
+evar (x : nat) ; evar (Q : x > 0) ;
+let E := constr:(H x) in
+let F := constr:(E Q) in
+let G := constr:(F HP) in
+let v := eval cbv delta [x Q] in G in
+let v := match v with context [?C] => is_evar C ; idtac C ; fail 0 | _ => constr:(0%nat) end in
+idtac v.
+
+
+  refine F.
+
+  evar (x:nat); evar(P:x>0);
+  let E := uconstr:(H x) in
+  let F := uconstr:(E P) in
+  refine F. pattern x.
+
+
+
+
+
+
+Definition argindex(t : Type)(Admit : forall T, T) : t.
+Proof.
+  intros.
+  apply Admit.
+Qed.
+
+Ltac remove_argindexes n f :=
+  match f with
+  | context[?C] =>
+    lazymatch C with
+      (argindex (let a := n in ?T) _) =>
+      lazymatch (eval pattern C in f) with
+        ?F _ =>
+        constr:(ltac:(
+                  (*Try renaming any hyp a so that there is no clash.  The
+                  rename will not be visible outside this constr.*)
+                  tryif is_var a then (let a' := fresh in rename a into a') else idtac;
+                  let r := constr:(
+                            fun (a : T) =>
+                              ltac:(let b := (eval cbn beta in (F a)) in
+                                    let r := remove_argindexes (S n) b in
+                                    exact r)) in exact r))
+      end
+    end
+  | context[?C] =>
+    (*If the above case failed, it was probably because of a clash between a
+    and something in T.  One would not expect this to happen, considering how
+    a encloses T without binding anything in it, but it does for some
+    reason.  Probably a Coq bug?  So, in this case, we just use a fresh name.*)
+    lazymatch C with
+      (argindex (let a := n in ?T) _) =>
+      lazymatch (eval pattern C in f) with
+        ?F _ =>
+        let v := fresh a in
+        constr:(fun (v : T) =>
+                  ltac:(let b := (eval cbn beta in (F v)) in
+                        let r := remove_argindexes (S n) b in
+                        exact r))
+      end
+    end
+  | context[argindex (let _ := n in _)] =>
+    fail 1 "Something unexpectedly went wrong:" n f
+  | context[argindex (let _ := _:nat in _)] =>
+    (*in case of missing argindex numbers, due to specializing*)
+    remove_argindexes (S n) f
+  | context[argindex] =>
+    fail 1 "Did you remember to use the abstractable prefix operator '#'?"
+  | _ => f
+  end.
+
+Ltac label_args n T :=
+  lazymatch T with
+  | (forall (a : ?T), @?b a) => 
+    constr:(forall (a : (let a:=n in T)), 
+               ltac:(let b' := eval cbn beta in (b a) in 
+                     let c:= label_args (S n) b' in exact c))
+  | _ => T
+  end.
+
+Tactic Notation "abstracted" "as" ident(result) tactic3(tac) :=
+  refine (let result := _ in _);
+  let dummy :=
+      constr:(
+        ltac:(
+          let Admit := fresh in
+          intro Admit;
+          let f := constr:(
+                      ltac:(unshelve tac;
+                            [apply (@argindex _ Admit)..])) in
+          let r := remove_argindexes 1 f in
+          let r' := eval cbn beta zeta in r in
+          instantiate (1 := r') in (Value of result);
+          exact I
+        ): (forall T, T) -> True) in idtac.
+
+(*Unfortunately, we have to clutter up the syntax even more with a first pass
+over the function to be abstracted in order to label its args*)
+Ltac abstractable f :=
+  constr:(ltac:(let ft := type of f in
+                let laft := label_args 1 ft in
+                let F := fresh in
+                pose (f : laft) as F;
+                (*this appears fragile - various other combos collapse to ft
+                in the result*)
+                exact F)).
+
+(*but we can minimize that clutter to a single prefix operator:*)
+Notation "# f" := (ltac:(let f' := abstractable f in exact f')) (at level 0, only parsing).
+
+(**********************************************************************)
+
+Variable P : nat -> nat -> Type.
+Variable Q : nat -> nat -> nat -> Type.
+Variable R : Type.
+
+Goal forall a b c, Q a b c -> (forall (x t y z : nat)(p : P x t)(q : Q x y z), R) -> True.
+Proof.
+  intros a b c H0 H.
+  abstracted as H' eapply #H with (2 := H0).
+  exact I.
+Qed.
+
+Goal forall a b, P a b -> (forall (x t y z : nat), P x t -> P y z -> Q x y z -> R) -> True.
+Proof.
+  intros a b H0 H.
+  abstracted as H1 eapply #H with (1 := H0).
+  abstracted as H2 eapply #H with (2 := H0).
+  Fail abstracted as H3 eapply H with (1 := H0) (2 := H0).
+  abstracted as H3 eapply #H with (1 := H0) (2 := H0).
+  exact I.
+
+
+
+
+(* Question.*)
+
 
 Lemma test : (forall n:nat, n > 0 -> True) -> True.
 intros H.
 
-eapply ltac:(refine (H _)).
+evar(P:Prop); assert P; [ subst P;
+
+  let E := uconstr:(H _) in
+  let F := uconstr:(E _) in
+  refine F | ].
+
+
+
+
+  simple refine F; shelve_unifiable | ].
+admit.
+
+
+unshelve eapply (H ltac:(evar (x:nat); exact x) _).
+
+
+   (H _ _ E1 ?x ?P _ E2 ?y)
+
+
+cbv zeta.
+
+
+evar(P:Prop); assert P; [ subst P;
+unshelve (eapply (H ltac:(evar (x:nat)) _))
+|
+].
+admit.
+
+
+unshelve (eapply (H ltac:(evar (x:nat)) _)).
+
+unshelve eapply ltac:(evar (x:nat); assert (P:x>0); [ shelve | refine (H x P) ]).
+
+
 
 eapply ltac:(eapply (H _)).
 
 eapply ltac:(evar (x:nat); refine (H x)).
 
 eapply ltac:(evar (x:nat); evar (P:x>0); refine (H x P)).
+
+Unshelve.
 
 Grab Existential Variables.
 
@@ -29,15 +205,55 @@ Grab Existential Variables.
     New intro pattern to name only non-dependent hypotheses.
     --> later will be part of SSR, as a variant of the "=>" tacticial.
 
-  #H E1 .. EN
-    Syntax for terms to build applications on a first-match basis
-    --> currently only works for apply/put/forward
-
   invert H
     Performs inversion, substitution (on fresh variables), clear,
     and re-generalize all fresh variables and hypotheses.
 
+  #H E1 .. EN
+    Syntax for terms to build applications on a first-match basis
+
+  H E1 EN
+  @H E1 EN
+  #H E1 EN
+
+  H _ EN
+
+  H .. E1 .. EN
+
+
+
+  forward I: H.
+
+  H : forall .... -> ... -> G.
+
+
+  set (I := H _ _ _ _);  clearbody I.
+
+  assert (
+
+ I: G
+
+
+    --> currently only works for apply/put/forward
+         applys (#H E1 .. EN).
+         forward I: (#H E1 .. EN).
+         put I: (#H E1 .. EN).
+         rewrite (#H E1 EN)
+
+
+Question: what should =>> do.
+  def convergence: forall x y, exists.
+  conv : convergence.
+   =>>+.
+
+  invert H. [ =>> M | =>> M N | ].
+
+
+
+exact ltac:(let H := inst (H :: E1 .. :: EN)) in exact H)
 *)
+
+
 
 
 Set Implicit Arguments.
