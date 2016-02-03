@@ -1047,6 +1047,12 @@ Proof.
   do 2 unfolds in M. simpl in M. rew_refl in M. inverts* M.
 Qed.
 
+Lemma mem_assoc_assoc : forall A B `{Inhab B} (l : list (A * B)) a b,
+  assoc a l = b ->
+  mem_assoc a l ->
+  mem (a, b) l.
+Proof. introv E I. substs. apply~ assoc_mem_assoc. Qed.
+
 Lemma mem_assoc_map_fst : forall A B (l : list (A * B)) a,
   mem_assoc a l = mem a (map fst l).
 Proof.
