@@ -281,6 +281,15 @@ Lemma app_cons_one : forall x l,
   (x::nil) ++ l = x::l.
 Proof using. auto. Qed.
 
+Lemma app_cancel_l : forall l1 l2 l3,
+  l1 ++ l2 = l1 ++ l3 -> l2 = l3.
+Proof.
+  introv E. gen l2 l3. induction l1; introv E.
+   repeat rewrite app_nil_l in E. autos~.
+   repeat rewrite app_cons in E. inverts~ E.
+Qed.
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** FoldRight *)
 
@@ -418,6 +427,19 @@ Qed.
 Lemma fold_left_eq_fold_right : forall B (f : A -> B -> B) i l,
   fold_left f i l = fold_right f i (rev l).
 Proof. introv. gen i. induction~ l. introv. rewrite rev_cons. rewrite* fold_right_last. Qed.
+
+(** Lemma abuot app wich needs [rev] to be proven. **)
+Lemma app_cancel_r : forall l1 l2 l3,
+  l1 ++ l3 = l2 ++ l3 -> l1 = l2.
+Proof.
+  introv E. gen l1 l2. induction l3; introv E.
+   repeat rewrite app_nil_r in E. autos~.
+   rewrite (app_last a l1) in E. rewrite (app_last a l2) in E.
+    apply IHl3 in E. asserts E': (rev (l1 & a) = rev (l2 & a)).
+      rewrite~ E.
+    repeat rewrite rev_last in E'. inverts E' as E'.
+    rewrite <- rev_rev. rewrite <- E'. rewrite~ rev_rev.
+Qed.
 
 
 (* ---------------------------------------------------------------------- *)
