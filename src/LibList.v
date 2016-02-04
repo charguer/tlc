@@ -2362,6 +2362,56 @@ Proof.
     apply Nth_mem in N1. rewrite <- Mem_mem in N1. false*.
 Qed.
 
+Lemma Nth_No_duplicates : forall A (L : list A),
+  (forall n1 n2 a,
+    Nth n1 L a ->
+    Nth n2 L a ->
+    n1 = n2) ->
+  No_duplicates L.
+Proof.
+  introv NL. induction L; constructors.
+   introv I. rewrite Mem_mem in I. lets (n&N): mem_Nth (rm I).
+    forwards* Ab: NL Nth_here Nth_next. inverts Ab.
+   apply IHL. introv N1 N2. forwards G: NL.
+    applys Nth_next N1.
+    applys Nth_next N2.
+    inverts~ G.
+Qed.
+
+Lemma No_duplicates_inv_app : forall A (L1 L2 : list A),
+  No_duplicates (L1 ++ L2) ->
+  No_duplicates L1 /\ No_duplicates L2 /\ ~ exists x, mem x L1 /\ mem x L2.
+Proof.
+  introv ND. splits.
+   induction L1.
+    constructors.
+    rew_list in ND. inverts ND as ND1 ND2. rewrite Mem_app_or_eq in ND1. rew_logic* in ND1.
+   induction L1.
+    rew_list~ in ND.
+    rew_list in ND. inverts~ ND.
+   introv (x&I1&I2). rewrite <- Mem_mem in *. induction I1; rew_list in ND.
+    inverts ND as ND1 ND2. false ND1. apply* Mem_app_or.
+    apply IHI1. inverts~ ND.
+Qed.
+
+Lemma No_duplicates_app : forall A (L1 L2 : list A),
+  No_duplicates L1 ->
+  No_duplicates L2 ->
+  ~ (exists x, mem x L1 /\ mem x L2) ->
+  No_duplicates (L1 ++ L2).
+Proof.
+  introv ND1 ND2 NE. induction L1; rew_list~.
+  constructors.
+   introv I. rewrite Mem_app_or_eq in I. inverts I as I.
+    inverts~ ND1.
+    false NE. exists a. splits.
+     simpl. rew_refl*.
+     rewrite~ <- Mem_mem.
+   apply~ IHL1.
+    inverts~ ND1.
+    introv (x&I1&I2). false NE. exists x. splits~. simpl. rew_refl*.
+Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** * Fold on No_duplicates *)
