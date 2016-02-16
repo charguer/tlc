@@ -43,9 +43,17 @@ quick: $(VIO)
 proof_vo: $(VO)
 
 ############################################################################
-# Verbosity filter. (Remove when verbosity bug in Coq is fixed.)
+# Verbosity filter.
+# Coq is way too verbose when using one of the -schedule-* commands.
+# So, we grep its output and remove any line that contains 'Checking task'.
+# We need a pipe that keeps the exit code of the *first* process.
+# We could program it by hand, but prefer to use mispipe, which is part
+# of the package moreutils.
 
-QUIET := 2>&1 | (grep -v "Checking task" || true)
+MISPIPE := $(shell if mispipe true cat ; then echo mispipe ; else echo failed ; fi)
+ifeq ($(MISPIPE),failed)
+  $(error Please install mispipe (part of the package "moreutils"))
+endif
 
 ############################################################################
 # Rules
@@ -61,14 +69,18 @@ ifndef SERIOUS
 
 %.vo: %.vio
 	@echo "Compiling $*..."
-	@$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* $(QUIET)
+	@$(MISPIPE) \
+	  "$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* 2>&1" \
+	  "grep -v 'Checking task'"
 
 %.vio: %.v
 	$(COQC) $(COQINCLUDE) -quick $<
 
 %.vq: %.vio
 	@echo "Checking $*..."
-	@$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< $(QUIET)
+	@$(MISPIPE) \
+	  "$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< 2>&1" \
+	  "grep -v 'Checking task'"
 	@touch $@
 
 endif
