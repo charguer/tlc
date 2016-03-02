@@ -1,3 +1,82 @@
+(* TEMPORARY *)
+
+(*
+
+(*-----------*)
+Lemma demo_lets_of : forall (x y : nat) (A B : Prop),
+  (x > 0) ->
+  (x <> y) -> 
+  (A <-> B) ->
+  (forall n, n > 0 -> forall m, n <> m -> exists k, k <> m) ->
+  (forall n : nat, 
+   n > 0 ->
+   forall P Q : Prop,
+   (P <-> Q) ->
+   forall m : nat,
+   n <> m ->
+   forall K : nat -> Prop,
+   K n -> 
+   forall p,
+   K (m+p) -> 
+   True) ->
+  True.
+Proof using.
+
+  introv Pos Neq Iff L M.
+Require Import List.
+  build_app (((boxer M)::(boxer Iff)::nil)) ltac:(fun R => generalize R).
+  build_app (((boxer M)::(boxer Iff)::nil)) ltac:(fun R => lets_base Fr R).
+
+
+
+  build_app ((boxer M)::(boxer Iff)::nil) ltac:(fun Fr => set (L:=Fr)).
+
+  lets_build Fr  ((boxer M)::(boxer Iff)::nil).
+
+  build_app args ltac:(fun R => lets_base I R).
+
+
+  let Ei := constr:(>> M Iff) in lets_build Fr Ei.
+  lets I: Ei.
+
+Ltac lets_build I Ei :=
+
+
+
+
+ lets_build I ((boxer M)::(boxer Iff)::nil).
+  let args := list_boxer_of Ei in 
+  let args := args_unfold_head_if_not_product_but_params args in
+(*    let Ei''' := args_unfold_head_if_not_product Ei'' in*)
+  build_app args ltac:(fun R => lets_base I R).
+
+
+
+  build_app ((boxer M)::(boxer Iff)::nil) ltac:(fun E => pose E).
+
+
+Ltac  := 
+  first [ 
+    match args with (@boxer ?T ?t)::?vs => 
+      let t := constr:(t:T) in
+      build_app_hnts t vs final;
+      fast_rm_inside args
+    end
+  | fail 1 "Instantiation fails for:" args].
+
+
+
+  build_app_hnts M ((boxer Iff)::nil) ltac:(fun E => pose E).
+
+  lets P: (>> M Iff). eauto. clear P.
+
+  build_app_hnts M ((boxer Iff)::nil) ltac:(fun E => pose E).
+
+
+
+*)
+
+
 (**************************************************************************
 * New Tactics for Coq -- Demos                                            *
 * Distributed under the terms of the MIT license                          *
@@ -442,3 +521,5 @@ Proof using.
   lets K: (>> H i (refl_equal i)). skip.
 Qed.
 
+
+*)
