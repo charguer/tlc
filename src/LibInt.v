@@ -869,6 +869,89 @@ Proof using.
   rewrite Zpower_Zsucc; math.
 Qed.
 
+(* A tactic that helps dealing with goals containing "b^m" for multiple m *)
+Require Import List.
+
+Ltac subst_eq_boxer_list l rewrite_tac :=
+  match l with
+  | nil => idtac
+  | (@boxer _ ?p) :: ?Hs =>
+    match p with
+      (?tm, ?Htm) =>
+      rewrite_tac Htm; clear Htm; clear tm;
+      subst_eq_boxer_list Hs rewrite_tac
+    end
+  end.
+
+(* Develop occurences of (b ^ m) in H into (b ^ (m - min_e) * b ^ min_e).
+   (and try to simplify/compute b^(m - min_e)).
+ *)
+Ltac rew_pow_develop b m min_e H :=
+  let m_eq_plusminus := fresh in
+  assert (m = min_e + (m - min_e)) as m_eq_plusminus
+      by (rewrite Zplus_minus; reflexivity);
+  rewrite m_eq_plusminus in H; clear m_eq_plusminus;
+  rewrite (Z.pow_add_r b min_e (m - min_e)) in H; [
+    rewrite Z.mul_comm in H;
+    let tm' := fresh "tm'" in
+    let H' := fresh "H'" in
+    remember (b ^ (m - min_e)) as tm' eqn:H' in H;
+    let e := fresh "e" in
+    evar (e: int);
+    let Heqe := fresh in
+    assert (e = m - min_e) as Heqe
+        by (ring_simplify; subst e; reflexivity);
+    rewrite <-Heqe in H'; clear Heqe; unfold e in H'; ring_simplify in H';
+    rewrite H' in H; clear H'; clear tm'; clear e;
+    try rewrite Z.mul_1_l in H
+  | ring_simplify; auto with zarith ..].
+
+Ltac rew_pow_aux_goal b min_e normalized_acc :=
+  match goal with
+  | |- context [ b ^ ?m ] =>
+    let tm := fresh "tm" in
+    let Heqtm := fresh "Heqtm" in
+    remember (b ^ m) as tm eqn:Heqtm in |- *;
+    rew_pow_develop b m min_e Heqtm; [
+      rew_pow_aux_goal b min_e ((boxer (tm, Heqtm)) :: normalized_acc)
+    | ..]
+  | _ => subst_eq_boxer_list normalized_acc ltac:(fun E => rewrite E)
+  end.
+
+Ltac rew_pow_aux_in b min_e H normalized_acc :=
+  match type of H with
+  | context [ b ^ ?m ] =>
+    let tm := fresh "tm" in
+    let Heqtm := fresh "Heqtm" in
+    remember (b ^ m) as tm eqn:Heqtm in H;
+    rew_pow_develop b m min_e Heqtm; [
+      rew_pow_aux_in b min_e H ((boxer (tm, Heqtm)) :: normalized_acc)
+    | ..]
+  | _ => subst_eq_boxer_list normalized_acc ltac:(fun E => rewrite E in H)
+  end.
+
+Tactic Notation "rew_pow" constr(b) constr(min_e) :=
+  rew_pow_aux_goal b min_e (@nil Boxer).
+Tactic Notation "rew_pow" "~" constr(b) constr(min_e) :=
+  rew_pow_aux_goal b min_e (@nil Boxer); auto_tilde.
+Tactic Notation "rew_pow" "*" constr(b) constr(min_e) :=
+  rew_pow_aux_goal b min_e (@nil Boxer); auto_star.
+Tactic Notation "rew_pow" constr(b) constr(min_e) "in" hyp(H) :=
+  rew_pow_aux_in b min_e H (@nil Boxer).
+Tactic Notation "rew_pow" "~" constr(b) constr(min_e) "in" hyp(H) :=
+  rew_pow_aux_in b min_e H (@nil Boxer); auto_tilde.
+Tactic Notation "rew_pow" "*" constr(b) constr(min_e) "in" hyp(H) :=
+  rew_pow_aux_in b min_e H (@nil Boxer); auto_star.
+
+(* Test *)
+Axiom P : int -> Prop.
+(* Goal forall n, P (1 + 2 ^ (n + 3) + 2 ^ n + 2 ^ (n+1)). *)
+(* Proof. *)
+(*   intros. *)
+(*   skip_asserts: (3 = 2 ^ (n+3)). rew_pow 2 n in H. *)
+(*   rew_pow 2 n. *)
+(* Admitted. *)
+
 (* ********************************************************************** *)
 (** * Advanced induction *)
 
