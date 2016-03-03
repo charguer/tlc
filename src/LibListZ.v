@@ -363,6 +363,24 @@ Proof.
   eauto using abs_length.
 Qed.
 
+Lemma read_cons_case : forall `{IA:Inhab A} (l:list A) (i:int) (v:A),
+  (v::l)[i] = (If i = 0 then v else l[i-1]).
+Proof using.
+  introv. simpl. unfold read_impl, nth.
+  case_if.
+  - case_if. math. case_if~. math.
+  - case_if~. case_if. math. rewrite~ abs_spos. math.
+Qed.
+
+Lemma read_last_case : forall `{IA:Inhab A} (l:list A) (i:int) (v:A),
+  (l & v)[i] = (If i = LibList.length l then v else l[i]).
+Proof using.
+  introv. simpl. unfold read_impl, nth.
+  case_if.
+  - case_if~; math.
+  - admit. (* lemmas missing about "&" and LibList.nth *)
+Qed.
+
 End UpdateProperties.
 
 
@@ -399,7 +417,7 @@ Tactic Notation "rew_arr" "*" "in" "*" :=
 (** [rew_array] is a normalization tactic for array *)
 
 Hint Rewrite @read_make @length_make @length_update @read_update_eq
-  @read_update_case : rew_array.
+  @read_update_case @read_cons_case @read_last_case : rew_array.
 
 Tactic Notation "rew_array" :=
   autorewrite with rew_array.
