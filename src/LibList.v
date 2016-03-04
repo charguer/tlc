@@ -281,6 +281,15 @@ Lemma app_cons_one : forall x l,
   (x::nil) ++ l = x::l.
 Proof using. auto. Qed.
 
+Lemma app_cancel_l : forall l1 l2 l3,
+  l1 ++ l2 = l1 ++ l3 -> l2 = l3.
+Proof using.
+  introv E. gen l2 l3. induction l1; introv E.
+   repeat rewrite app_nil_l in E. autos~.
+   repeat rewrite app_cons in E. inverts~ E.
+Qed.
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** FoldRight *)
 
@@ -413,6 +422,26 @@ Proof using.
   rewrite length_last. rewrite~ length_cons.
 Qed.
 
+
+(** Lemma to rewrite a [fold_left] into a [fold_right]. **)
+Lemma fold_left_eq_fold_right : forall B (f : A -> B -> B) i l,
+  fold_left f i l = fold_right f i (rev l).
+Proof using. introv. gen i. induction~ l. introv. rewrite rev_cons. rewrite* fold_right_last. Qed.
+
+(** Lemma abuot app wich needs [rev] to be proven. **)
+Lemma app_cancel_r : forall l1 l2 l3,
+  l1 ++ l3 = l2 ++ l3 -> l1 = l2.
+Proof using.
+  introv E. gen l1 l2. induction l3; introv E.
+   repeat rewrite app_nil_r in E. autos~.
+   rewrite (app_last a l1) in E. rewrite (app_last a l2) in E.
+    apply IHl3 in E. asserts E': (rev (l1 & a) = rev (l2 & a)).
+      rewrite~ E.
+    repeat rewrite rev_last in E'. inverts E' as E'.
+    rewrite <- rev_rev. rewrite <- E'. rewrite~ rev_rev.
+Qed.
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** Mem *)
 
@@ -477,7 +506,7 @@ Lemma concat_mem : forall Ls x,
   mem x (concat Ls) <->
   exists L,
     mem L Ls /\ mem x L.
-Proof.
+Proof using.
   introv. induction Ls.
    simpl. iff I; inverts* I.
   rewrite concat_cons. iff I.
@@ -532,7 +561,7 @@ Qed.
 Lemma map_mem : forall l (x : B),
   mem x (map f l) <->
     exists y, mem y l /\ x = f y.
-Proof.
+Proof using.
   induction l; introv.
    simpl. iff I; false*. inverts* I.
    rewrite map_cons. iff I.
@@ -546,6 +575,11 @@ Proof.
 Qed.
 
 End MapProp.
+
+Lemma map_id : forall l,
+  map id l = l.
+Proof using. introv. induction~ l. rewrite map_cons. fequals~. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Filter *)
@@ -583,7 +617,7 @@ Proof using. intros. rewrite~ filter_app. Qed.
 
 Lemma Forall_filter_same : forall l,
   Forall f (filter f l).
-Proof.
+Proof using.
   introv. induction l.
    rewrite filter_nil. constructors~.
    rewrite filter_cons. cases_if~.
@@ -591,7 +625,7 @@ Qed.
 
 Lemma filter_mem_eq : forall l a,
   mem a (filter f l) = (mem a l && f a).
-Proof.
+Proof using.
   introv. extens. induction l.
    rewrite filter_nil. iff I; false I.
    rewrite filter_cons. cases_if; iff I.
@@ -1029,15 +1063,21 @@ Section MemAssocProperties.
 Lemma assoc_mem_assoc : forall A B `{Inhab B} (l : list (A * B)) a,
   mem_assoc a l ->
   mem (a, assoc a l) l.
-Proof.
+Proof using.
   introv M. induction l as [|[a' b'] l]; tryfalse.
   simpl. rew_refl. cases_if*. right. apply IHl.
   do 2 unfolds in M. simpl in M. rew_refl in M. inverts* M.
 Qed.
 
+Lemma mem_assoc_assoc : forall A B `{Inhab B} (l : list (A * B)) a b,
+  assoc a l = b ->
+  mem_assoc a l ->
+  mem (a, b) l.
+Proof using. introv E I. substs. apply~ assoc_mem_assoc. Qed.
+
 Lemma mem_assoc_map_fst : forall A B (l : list (A * B)) a,
   mem_assoc a l = mem a (map fst l).
-Proof.
+Proof using.
   extens. induction l as [|[a' b'] l]; iff I; tryfalse.
    do 2 unfolds in I. simpls. rew_refl in *. inverts I as I.
     right. apply~ IHl.
@@ -1383,7 +1423,7 @@ Lemma concat_eq_nil : forall L (l : list A),
   concat L = nil ->
   mem l L ->
   l = nil.
-Proof.
+Proof using.
   induction L; introv E I; inverts I as I.
   rewrite concat_cons in E. fold_bool. rew_refl in I.
   forwards (?&C): app_eq_nil_inv (rm E). substs. inverts~ I.
@@ -1392,7 +1432,7 @@ Qed.
 Lemma nil_mem : forall l,
   (forall x : A, ~ mem x l) ->
   l = nil.
-Proof. introv P. destruct~ l. false P. simpl. rew_refl*. Qed.
+Proof using. introv P. destruct~ l. false P. simpl. rew_refl*. Qed.
 
 End Inversions.
 
@@ -1417,19 +1457,6 @@ Definition map_partial (A B : Type) (f : A -> option B) :=
     | x::l' => LibOption.apply_on (f x) (fun v =>
                  LibOption.map (cons v) (aux l'))
    end.
-
-Lemma map_partial_inv : forall (A B:Type) (f: A->option B) lx ly,
-  map_partial f lx = Some ly ->
-  Forall2 (fun x y => f x = Some y) lx ly. 
-Proof using.
-  induction lx; simpl map_partial; introv Eq.
-  inverts Eq. apply Forall2_nil.
-  lets fa Fa Eq2: (apply_on_inv Eq).
-   lets ly1 Eqly ?: (map_on_inv Eq2). subst ly.
-   apply* Forall2_cons.
-Qed.
-
-Implicit Arguments map_partial_inv [A B f lx ly].
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1674,19 +1701,19 @@ Proof using. induction l; introv H L; inverts* H. Qed.
 
 Lemma Forall_inv_tail : forall (P : A -> Prop) (a : A) (l : list A),
   Forall P (a :: l) -> Forall P l.
-Proof. introv F. inverts~ F. Qed.
+Proof using. introv F. inverts~ F. Qed.
 
 Lemma Forall_inv_head : forall (P : A -> Prop) (a : A) (l : list A),
   Forall P (a :: l) -> P a.
-Proof. introv F. inverts~ F. Qed.
+Proof using. introv F. inverts~ F. Qed.
 
 Lemma Forall_inv : forall (P : A -> Prop) (a : A) (l : list A),
   Forall P (a :: l) -> P a /\ Forall P l.
-Proof. introv F. inverts~ F. Qed.
+Proof using. introv F. inverts~ F. Qed.
 
 Lemma Forall_iff_forall_mem : forall (P : A -> Prop) (l : list A),
   Forall P l <-> (forall x : A, mem x l -> P x).
-Proof.
+Proof using.
   introv. induction l; iff I.
    introv IN. false.
    constructors.
@@ -1702,7 +1729,7 @@ Lemma Forall_mem : forall (P : A -> Prop) l a,
   Forall P l ->
   mem a l ->
   P a.
-Proof. introv F I. rewrite Forall_iff_forall_mem in F. apply~ F. Qed.
+Proof using. introv F I. rewrite Forall_iff_forall_mem in F. apply~ F. Qed.
 
 End ForallProp.
 
@@ -1802,13 +1829,48 @@ Lemma Forall2_rev : forall P l r,
   Forall2 P l r -> Forall2 P (rev l) (rev r).
 Proof using. induction l; introv M; inverts M; rew_rev; auto. Qed.
 
-(* TODO: Forall2_weaken *)
+Lemma Forall2_weaken : forall A B (P Q : A -> B -> Prop) la lb,
+  Forall2 P la lb ->
+  (forall a b, P a b -> Q a b) ->
+  Forall2 Q la lb.
+Proof using. introv F W. induction F; constructors~. Qed.
+
+Lemma Forall2_forall_Nth : forall A B (P : A -> B -> Prop) la lb,
+  Forall2 P la lb -> forall n a b,
+    Nth n la a ->
+    Nth n lb b ->
+    P a b.
+Proof using. introv F N1 N2. gen n. induction~ F; introv N1 N2; inverts N1; inverts* N2. Qed.
+
+Lemma Forall2_swap : forall (P : A1 -> A2 -> Prop) l r,
+  Forall2 P l r ->
+  Forall2 (fun b a => P a b) r l.
+Proof using. introv F. induction~ F; constructors~. Qed.
+
+Lemma Forall2_map : forall f (P : A1 -> A2 -> Prop) l,
+  (forall a, P a (f a)) ->
+  Forall2 P l (map f l).
+Proof using. introv I. induction l; constructors~. Qed.
 
 End PropProperties2.
 
 Implicit Arguments Forall2_last_inv [A1 A2 P l1 r' x1].
 
 (* todo : inversion lemmas for other predicates *)
+
+
+Lemma map_partial_inv : forall (A B:Type) (f: A->option B) lx ly,
+  map_partial f lx = Some ly ->
+  Forall2 (fun x y => f x = Some y) lx ly.
+Proof using.
+  induction lx; simpl map_partial; introv Eq.
+   inverts Eq. apply Forall2_nil.
+   lets fa Fa Eq2: (apply_on_inv Eq).
+    lets ly1 Eqly ?: (map_on_inv Eq2). subst ly.
+    apply* Forall2_cons.
+Qed.
+
+Implicit Arguments map_partial_inv [A B f lx ly].
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1841,9 +1903,9 @@ Global Instance Exists_decidable : forall P l,
       right~.
 Defined.
 
-Lemma Exists_exists : forall P l,
+Lemma Exists_iff_exists_mem : forall P l,
   Exists P l <-> exists (a : A), mem a l /\ P a.
-Proof.
+Proof using.
   introv. iff E; induction l; inverts E as E.
    exists a. splits~. simpl. rew_refl. left~.
    forwards~ (a'&I&H): (rm IHl) (rm E). exists a'. splits~.
@@ -1854,17 +1916,9 @@ Proof.
     apply~ Exists_next. apply* IHl.
 Qed.
 
-Lemma Exists_weaken : forall (P Q : A -> Prop) l,
-  (forall x, P x -> Q x) ->
-  Exists P l -> Exists Q l.
-Proof.
-  introv Impl E. rewrite Exists_exists in *.
-  lets (a&I&H): (rm E). exists a. splits*.
-Qed.
-
 Lemma Exists_exists_st : forall (P : A -> bool) l,
   Exists P l <-> exists_st P l.
-Proof.
+Proof using.
   introv. iff E.
    induction l.
     inverts E.
@@ -1878,7 +1932,58 @@ Proof.
       apply~ Exists_here.
 Qed.
 
+Lemma Exists_weaken : forall (P Q : A -> Prop) l,
+  Exists P l -> pred_le P Q ->
+  Exists Q l.
+Proof using.
+  introv E Impl. rewrite Exists_iff_exists_mem in *.
+  lets (a&I&H): (rm E). exists a. splits*.
+Qed.
+
+Lemma Exists_split : forall P l,
+  Exists P l ->
+  exists l1 x l2, l = l1 ++ x :: l2
+    /\ Forall (fun x => ~ P x) l1
+    /\ P x.
+Proof using.
+  introv E. induction E.
+   exists (@nil A) x l. splits~. constructors~.
+   lets (l1&x'&l2&E1&F&HP): (rm IHE). tests Px: (P x).
+    exists (@nil A) x l. splits~. constructors~.
+    substs. exists (x :: l1) x' l2. splits~. constructors~.
+Qed.
+
 End ExistsProp.
+
+
+Lemma mem_split : forall A l (x:A),
+  mem x l ->
+  exists l1 l2,
+    l = l1 ++ x :: l2 /\ ~ mem x l1.
+Proof using.
+  introv M. forwards (l1&?&l2&E&NF&?): Exists_split (fun y => x = y).
+   rewrite Exists_iff_exists_mem. exists x. splits*.
+   substs. rewrite Forall_iff_forall_mem in NF. exists* l1 l2.
+Qed.
+
+Lemma map_partial_inv_none : forall (A B:Type) (f: A->option B) l,
+  map_partial f l = None ->
+  Exists (fun x => f x = None) l.
+Proof using.
+  induction l; simpl map_partial; introv Eq; tryfalse.
+  forwards [E|(b&E1&E2)]: apply_on_inv_none Eq.
+   apply* Exists_here.
+   apply Exists_next. apply~ IHl. destruct~ map_partial. false*.
+Qed.
+
+Lemma map_partial_none : forall (A B:Type) (f: A->option B) l,
+  Exists (fun x => f x = None) l ->
+  map_partial f l = None.
+Proof using.
+  induction l; simpl map_partial; introv Eq; inverts Eq as Eq.
+   rewrite~ Eq.
+   destruct~ (f a). rewrite~ IHl.
+Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1901,7 +2006,7 @@ Qed.
 
 Lemma length_Nth_lt : forall A n (l : list A),
   n < length l -> exists x, Nth n l x.
-Proof.
+Proof using.
   induction n; introv Comp; destruct l as [|a l'];
     rew_list in Comp; try solve [math].
    eexists. apply Nth_here.
@@ -1979,7 +2084,29 @@ Proof using.
   right. eauto 8 with maths. 
 Qed.
 
+Lemma Nth_mem : forall l x n,
+  Nth n l x -> mem x l.
+Proof using. clear IA. introv N. induction N; simpl; rew_refl* in *. Qed.
+
+Lemma nth_def_if_in_length : forall l d n v,
+  n < length l ->
+  nth_def d n l = v ->
+  Nth n l v.
+Proof using.
+  introv I E. forwards (v'&Nv): length_Nth_lt I.
+  erewrite Nth_to_nth_def in E; [| apply~ Nv ]. substs~.
+Qed.
+
 End NthProperties.
+
+Lemma Forall2_Nth_nth_def : forall A B (P : A -> B -> Prop) la lb n v d,
+  Forall2 P la lb ->
+  Nth n la v ->
+  Nth n lb (nth_def d n lb).
+Proof using.
+  introv F N. forwards L: Forall2_length F. forwards I: Nth_lt_length N.
+  rewrite L in I. forwards*: nth_def_if_in_length I.
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (* ** Mem *)
@@ -1991,7 +2118,7 @@ Lemma Mem_induct : forall (A : Type) (x : A) (P : list A -> Prop),
   (forall l : list A, P (x :: l)) ->
   (forall (y : A) (l : list A), Mem x l -> x <> y -> P l -> P (y :: l)) ->
   (forall l : list A, Mem x l -> P l).
-Proof.
+Proof using.
   introv HH HN M. induction l.
   inverts M.
   tests: (x = a). auto. inverts M; auto_false*.
@@ -2060,6 +2187,14 @@ Proof using.
     iff E. constructors*. inverts* E.
 Qed.
 
+Lemma Mem_mem : forall A l (a:A),
+  Mem a l = mem a l.
+Proof using.
+  introv. extens. induction l; iff I; inverts I as I;
+    simpls; fold_bool; rew_refl in *; autos*.
+   inverts* I.
+Qed.
+
 End MemFacts.
 
 
@@ -2101,7 +2236,7 @@ Proof using. intros. rewrite~ Filter_app. Qed.
 
 Lemma Filter_neq : forall x (L:list A), 
   ~ Mem x (Filter (<> x) L).
-Proof.
+Proof using.
   intros. induction L.
   rewrite Filter_nil. introv M. inverts M.
   rewrite Filter_cons. case_if.
@@ -2111,7 +2246,7 @@ Qed.
 
 Lemma Filter_Mem : forall x (L:list A) (P:A->Prop),
   Mem x L -> P x -> Mem x (Filter P L).
-Proof.
+Proof using.
   Hint Constructors Mem.
   introv H Px. induction H using Mem_induct.
   rewrite Filter_cons. case_if*.
@@ -2120,7 +2255,7 @@ Qed.
 
 Lemma Filter_Mem_inv : forall x (L:list A) P,
   Mem x (Filter P L) -> Mem x L /\ P x.
-Proof.
+Proof using.
   Hint Constructors Mem.
   introv M. induction L.
   rewrite Filter_nil in M. inverts M.
@@ -2129,7 +2264,7 @@ Qed.
 
 Lemma Filter_length_le : forall (L:list A) P,
   (length (Filter P L) <= length L)%nat.
-Proof.
+Proof using.
   intros. induction L. 
   rewrite Filter_nil. math.
   rewrite Filter_cons. case_if; rew_length; math.
@@ -2137,7 +2272,7 @@ Qed.
 
 Lemma Filter_eq_Mem_length : forall x (L:list A),
   Mem x L -> (length (Filter (= x) L) >= 1)%nat.
-Proof.
+Proof using.
   introv M. induction L.
   inverts M.
   rewrite Filter_cons. case_if.
@@ -2147,7 +2282,7 @@ Qed.
 
 Lemma Filter_neq_Mem_length : forall x (L:list A),
   Mem x L -> (length (Filter (<> x) L) < length L)%nat.
-Proof.
+Proof using.
   introv M. induction L.
   inverts M.
   rewrite Filter_cons. case_if.
@@ -2158,7 +2293,7 @@ Qed.
 Lemma Filter_disjoint_predicates_length : forall (P Q:A-> Prop) L,
   (forall x, Mem x L -> P x -> Q x -> False) ->
   (length (Filter P L) + length (Filter Q L) <= length L)%nat.
-Proof.
+Proof using.
   introv. induction L; introv H.
   rew_list. nat_math.
   specializes IHL. intros. applys* H x. 
@@ -2173,6 +2308,18 @@ Lemma Filter_negated_predicates_length : forall (P:A-> Prop) L,
   length (Filter (fun x => P x) L) + length (Filter (fun x => ~ P x) L) <= length L.
 Proof using. 
   intros. applys~ Filter_disjoint_predicates_length P (fun x => ~ P x) L.
+Qed.
+
+Lemma filter_No_duplicates : forall (L:list A) p,
+  No_duplicates L -> No_duplicates (filter p L).
+Proof using.
+  Hint Constructors No_duplicates.
+  introv H. induction H.
+  rewrite* filter_nil.
+  rewrite filter_cons. case_if.
+    constructors*. introv N. rewrite Mem_mem in N. rewrite filter_mem_eq in N.
+     rew_refl in N. rewrite* <- Mem_mem in N.
+    auto.
 Qed.
 
 End FilterFacts.
@@ -2199,7 +2346,7 @@ Qed.
 
 Lemma No_duplicates_Filter : forall A (L:list A) P, 
   No_duplicates L -> No_duplicates (Filter P L).
-Proof.
+Proof using.
   Hint Constructors No_duplicates.
   introv H. induction H.
   rewrite* Filter_nil. 
@@ -2234,6 +2381,51 @@ Proof using.
   forwards~: No_duplicates_length_le L L'. intros. rewrite~ <- EQ.
   forwards~: No_duplicates_length_le L' L. intros. rewrite~ EQ.
   math.
+Qed.
+
+Lemma No_duplicates_Nth : forall A (L : list A) n1 n2 a,
+  No_duplicates L ->
+  Nth n1 L a ->
+  Nth n2 L a ->
+  n1 = n2.
+Proof using.
+  introv NL. gen n1 n2. induction NL; introv N1 N2.
+   inverts N1.
+   inverts N1 as N1; inverts N2 as N2; autos~.
+    apply Nth_mem in N2. rewrite <- Mem_mem in N2. false*.
+    apply Nth_mem in N1. rewrite <- Mem_mem in N1. false*.
+Qed.
+
+Lemma Nth_No_duplicates : forall A (L : list A),
+  (forall n1 n2 a,
+    Nth n1 L a ->
+    Nth n2 L a ->
+    n1 = n2) ->
+  No_duplicates L.
+Proof using.
+  introv NL. induction L; constructors.
+   introv I. rewrite Mem_mem in I. lets (n&N): mem_Nth (rm I).
+    forwards* Ab: NL Nth_here Nth_next. inverts Ab.
+   apply IHL. introv N1 N2. forwards G: NL.
+    applys Nth_next N1.
+    applys Nth_next N2.
+    inverts~ G.
+Qed.
+
+Lemma No_duplicates_inv_app : forall A (L1 L2 : list A),
+  No_duplicates (L1 ++ L2) ->
+  No_duplicates L1 /\ No_duplicates L2 /\ ~ exists x, mem x L1 /\ mem x L2.
+Proof using.
+  introv ND. splits.
+   induction L1.
+    constructors.
+    rew_list in ND. inverts ND as ND1 ND2. rewrite Mem_app_or_eq in ND1. rew_logic* in ND1.
+   induction L1.
+    rew_list~ in ND.
+    rew_list in ND. inverts~ ND.
+   introv (x&I1&I2). rewrite <- Mem_mem in *. induction I1; rew_list in ND.
+    inverts ND as ND1 ND2. false ND1. apply* Mem_app_or.
+    apply IHI1. inverts~ ND.
 Qed.
 
 
@@ -2294,7 +2486,7 @@ Qed.
 Lemma fold_congruence : forall A B (m : monoid_def B) (f g : A -> B) (xs : list A),
   (forall x, Mem x xs -> f x = g x) ->
   fold m f xs = fold m g xs.
-Proof.
+Proof using.
   unfold fold.
   induction xs as [| x xs ]; intros; simpl.
   { eauto. }
@@ -2322,6 +2514,10 @@ Proof using.
       lets [E|(H1&H2)]: Mem_inv N. subst*. constructors. applys* Filter_Mem.
   splits~. applys~ No_duplicates_length_le. introv Hx. rewrite~ <- R2. 
 Qed.
+
+Lemma Remove_duplicates_mem : forall A (L:list A) a,
+  mem a (Remove_duplicates L) = mem a L.
+Proof using. introv. extens. repeat rewrite <- Mem_mem. apply~ Remove_duplicates_spec. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
