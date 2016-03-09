@@ -1087,6 +1087,61 @@ Proof using.
     left. apply~ IHl.
 Qed.
 
+Lemma mem_assoc_cons : forall A B (l : list (A * B)) a e,
+  mem_assoc a (e :: l) = (a '= fst e) || mem_assoc a l.
+Proof using.
+  introv. extens. iff M.
+   do 2 unfolds in M. simpl in M. rew_refl. rew_refl* in M.
+   rew_refl in M. inverts M as M.
+    destruct e as [a b]. do 2 unfolds. simpl. rew_refl*.
+    do 2 unfolds. simpl. rew_refl*.
+Qed.
+
+Lemma mem_assoc_nil : forall A B a,
+  mem_assoc a (nil : list (A * B)) = false.
+Proof using. autos*. Qed.
+
+Lemma assoc_eq_mem_assoc : forall A B `{Inhab B} (l : list (A * B)) a,
+  mem (a, assoc a l) l = mem_assoc a l.
+Proof using.
+  introv. induction l as [|[a' b'] l].
+   reflexivity.
+   simpl. cases_if; extens; iff I; rewrite mem_assoc_cons in *; rew_refl*.
+    rew_refl in I. repeat inverts I as I; tryfalse. rewrite* <- IHl.
+    rew_refl in I. inverts I; tryfalse~. right. rewrite~ IHl.
+Qed.
+
+Lemma mem_mem_assoc : forall A B (l : list (A * B)) a b,
+  mem (a, b) l ->
+  mem_assoc a l.
+Proof using.
+  introv M. induction l as [|[a' b'] l].
+   false*.
+   simpl in M. rew_refl in M. rewrite mem_assoc_cons. rew_refl. inverts M as M.
+    inverts* M.
+    right*.
+Qed.
+
+Lemma mem_assoc_exists_mem : forall A B (l : list (A * B)) a,
+  mem_assoc a l ->
+  exists b, mem (a, b) l.
+Proof using.
+  introv M. induction l as [|[a' b'] l]; tryfalse.
+  do 2 unfolds in M. simpl in M. rew_refl in M. inverts M as M.
+   forwards (b&M'): (rm IHl) (rm M). exists b. simpl. rew_refl*.
+   exists b'. simpl. rew_refl*.
+Qed.
+
+Lemma app_mem_assoc : forall A B (l1 l2 : list (A * B)) a,
+  mem_assoc a (l1 ++ l2) ->
+  mem_assoc a l1 \/ mem_assoc a l2.
+Proof using.
+  introv M. lets (b&M'): mem_assoc_exists_mem (rm M). rewrite mem_app in M'.
+  rew_refl in M'. inverts M' as M.
+   left. apply* mem_mem_assoc.
+   right. apply* mem_mem_assoc.
+Qed.
+
 End MemAssocProperties.
 
 
