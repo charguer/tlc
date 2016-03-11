@@ -1,4 +1,12 @@
 ############################################################################
+# Requirements.
+
+# We need bash. We use the pipefail option to control the exit code of a
+# pipeline.
+
+SHELL := /bin/bash
+
+############################################################################
 # Configuration
 #
 #
@@ -44,16 +52,15 @@ proof_vo: $(VO)
 
 ############################################################################
 # Verbosity filter.
+
 # Coq is way too verbose when using one of the -schedule-* commands.
 # So, we grep its output and remove any line that contains 'Checking task'.
-# We need a pipe that keeps the exit code of the *first* process.
-# We could program it by hand, but prefer to use mispipe, which is part
-# of the package moreutils.
 
-MISPIPE := $(shell if mispipe true cat ; then echo mispipe ; else echo failed ; fi)
-ifeq ($(MISPIPE),failed)
-  $(error Please install mispipe (part of the package "moreutils"))
-endif
+# We need a pipe that keeps the exit code of the *first* process. In
+# bash, when the pipefail option is set, the exit code is the logical
+# conjunction of the exit codes of the two processes. If we make sure
+# that the second process always succeeds, then we get the exit code
+# of the first process, as desired.
 
 ############################################################################
 # Rules
@@ -69,18 +76,18 @@ ifndef SERIOUS
 
 %.vo: %.vio
 	@echo "Compiling $*..."
-	@$(MISPIPE) \
-	  "$(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* 2>&1" \
-	  "grep -v 'Checking task'"
+	@set -o pipefail; ( \
+	  $(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* \
+	  2>&1 | (grep -v 'Checking task' || true))
 
 %.vio: %.v
 	$(COQC) $(COQINCLUDE) -quick $<
 
 %.vq: %.vio
 	@echo "Checking $*..."
-	@$(MISPIPE) \
-	  "$(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< 2>&1" \
-	  "grep -v 'Checking task'"
+	@set -o pipefail; ( \
+	  $(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< \
+	  2>&1 | (grep -v 'Checking task' || true))
 	@touch $@
 
 endif
