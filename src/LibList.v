@@ -768,6 +768,18 @@ Qed.
 
 End OperationProperties.
 
+
+(* This lemma requires [rev_cons] to be parameterised to be proven,
+  this putting it out of the section. *)
+Lemma map_rev : forall A B (f : A -> B) l,
+  map f (rev l) = rev (map f l).
+Proof using.
+  induction l.
+   reflexivity.
+   rewrite map_cons. rewrite rev_cons. rewrite map_last. rewrite rev_cons. rewrite~ IHl.
+Qed.
+
+
 Implicit Arguments length_zero_inv [A l].
 Implicit Arguments take_struct [A].
 

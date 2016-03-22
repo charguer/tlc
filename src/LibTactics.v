@@ -2153,6 +2153,8 @@ Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) :=
   unfolds in H1; unfolds in H2 H3.
 Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) hyp(H4) :=
   unfolds in H1; unfolds in H2 H3 H4.
+Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) hyp(H4) hyp(H5) :=
+  unfolds in H1; unfolds in H2 H3 H4 H5.
 
 (** [unfolds P1,..,PN] is a shortcut for [unfold P1,..,PN in *]. *)
 
