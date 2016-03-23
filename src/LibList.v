@@ -477,6 +477,14 @@ Proof using. intros. simpl. rewrite~ eqb_self. Qed.
 Lemma mem_last_eq : forall x l,
   mem x (l & x) = true.
 Proof using. intros. rewrite mem_last. rewrite~ eqb_self. Qed.
+
+Lemma rev_mem : forall l x,
+  mem x l -> mem x (rev l).
+Proof using.
+  introv H. induction~ l. simpl in H.
+  rewrite rev_cons. rewrite mem_last. rew_refl* in *.
+Qed.
+
 End MemProp.
 
 (* ---------------------------------------------------------------------- *)
@@ -1172,6 +1180,10 @@ Proof using.
    left. apply* mem_mem_assoc.
    right. apply* mem_mem_assoc.
 Qed.
+
+Lemma keys_mem_assoc : forall A B (l : list (A * B)) a,
+  mem a (keys l) = mem_assoc a l.
+Proof using. introv. unfold keys. rewrite~ <- mem_assoc_map_fst. Qed.
 
 End MemAssocProperties.
 
