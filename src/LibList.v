@@ -422,6 +422,10 @@ Proof using.
   rewrite length_last. rewrite~ length_cons.
 Qed.
 
+Lemma rev_inj : forall l1 l2,
+  rev l1 = rev l2 ->
+  l1 = l2.
+Proof using. introv E. forwards E': f_equal E. repeat rewrite~ rev_rev in E'. Qed.
 
 (** Lemma to rewrite a [fold_left] into a [fold_right]. **)
 Lemma fold_left_eq_fold_right : forall B (f : A -> B -> B) i l,
@@ -556,6 +560,21 @@ Lemma length_map : forall l,
 Proof using. 
   induction l. auto.
   rewrite map_cons. do 2 rewrite length_cons. auto.
+Qed.
+
+Lemma nil_map : forall l,
+  map f l = nil -> l = nil.
+Proof using. introv E. apply length_zero_inv. rewrite <- length_map. rewrite~ E. Qed.
+
+Lemma map_inj : forall l1 l2,
+  (forall x y, f x = f y -> x = y) ->
+  map f l1 = map f l2 ->
+  l1 = l2.
+Proof using.
+  introv inj E. gen l2. induction l1; introv E.
+   rewrite map_nil in E. symmetry in E. forwards~: nil_map E.
+   destruct l2 as [|e l2]; tryfalse. repeat rewrite map_cons in E.
+    inverts E as E1 E2. forwards: inj E1. substs. fequals~.
 Qed.
 
 Lemma map_mem : forall l (x : B),
