@@ -1095,6 +1095,19 @@ Lemma remove_assoc_cons : forall x x' y l,
     If x = x' then l else (x',y)::remove_assoc x l.
 Proof using. auto. Qed.
 
+Lemma assoc_remove_assoc : forall x x' l,
+  x <> x' ->
+  assoc x (remove_assoc x' l) = assoc x l.
+Proof using.
+  introv D. induction l.
+   reflexivity.
+   destruct a. simpl. tests: (x' = a).
+    case_if~.
+    tests: (x = a); tryfalse.
+     case_if~. apply assoc_here.
+     case_if~. rewrite <- IHl. unfold assoc. case_if~.
+Qed.
+
 End AssocProperties.
 
 Section MemAssocProperties.
@@ -1184,6 +1197,17 @@ Qed.
 Lemma keys_mem_assoc : forall A B (l : list (A * B)) a,
   mem a (keys l) = mem_assoc a l.
 Proof using. introv. unfold keys. rewrite~ <- mem_assoc_map_fst. Qed.
+
+Lemma mem_assoc_remove_assoc_neq : forall A B x x' (l : list (A * B)),
+  x <> x' ->
+  mem_assoc x (remove_assoc x' l) = mem_assoc x l.
+Proof using.
+  introv N. induction l.
+   reflexivity.
+   destruct a. rewrite remove_assoc_cons. cases_if~.
+    rewrite mem_assoc_cons. extens. rew_refl*.
+    repeat rewrite mem_assoc_cons. rewrite~ IHl.
+Qed.
 
 End MemAssocProperties.
 
