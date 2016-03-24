@@ -479,10 +479,10 @@ Lemma mem_last_eq : forall x l,
 Proof using. intros. rewrite mem_last. rewrite~ eqb_self. Qed.
 
 Lemma rev_mem : forall l x,
-  mem x l -> mem x (rev l).
+  mem x l = mem x (rev l).
 Proof using.
-  introv H. induction~ l. simpl in H.
-  rewrite rev_cons. rewrite mem_last. rew_refl* in *.
+  introv. induction~ l. simpls.
+  rewrite rev_cons. rewrite mem_last. extens. rew_refl. rewrite* IHl.
 Qed.
 
 End MemProp.
