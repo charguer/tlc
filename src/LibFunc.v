@@ -187,7 +187,7 @@ Qed.
 
 End FunctionImage.
 
-
+Hint Resolve finite_image : finite.
 
 (* ********************************************************************** *)
 (** ** Function preimage *)

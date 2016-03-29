@@ -558,7 +558,8 @@ Qed.
 
 End Instances.
 
-
+Hint Resolve finite_empty finite_single finite_union
+  finite_inter finite_incl finite_remove : finite.
 
 (* ---------------------------------------------------------------------- *)
 (* ---------------------------------------------------------------------- *)
@@ -852,6 +853,23 @@ Proof using.
   rewrite~ LibList.fold_app. typeclass.
 Qed.
 
+Lemma fold_isolate :
+  forall A (E : set A) x,
+  finite E ->
+  x \in E ->
+  forall B (m : monoid_def B),
+  Monoid_commutative m ->
+  forall (f : A -> B),
+  fold m f E = monoid_oper m (f x) (fold m f (E \- \{x})).
+Proof using.
+  intros.
+  (* Separate [E] into the singleton [\{x}] union the rest. *)
+  rewrite (set_isolate E x) at 1 by eauto.
+  (* Note that [f x] is the result of folding [f] over the singleton [\{x}]. *)
+  erewrite <- (fold_single f x) by typeclass.
+  (* Conclude. *)
+  eapply fold_union; eauto using remove_disjoint with finite.
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Structural properties *)
