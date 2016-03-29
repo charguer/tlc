@@ -267,7 +267,14 @@ Proof using.
     destruct M. subst*. autos*.
 Qed.
 
-
+Lemma set_add_remove : forall A (E : set A) x,
+  x \notin E ->
+  E = (E \u \{x}) \- \{x}.
+Proof using.
+  introv Hx. set_unf. apply prop_ext_1. iff.
+  { split. eauto. intro. subst*. }
+  { tauto. }
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** repr and covers *)
