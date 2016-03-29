@@ -3259,7 +3259,12 @@ Tactic Notation "branches" constr(T) :=
 Tactic Notation "branches" constr(N) constr(T) :=
   let N := nat_from_number N in
   destructs_disjunction_tactic N T.
- 
+
+(** [branches] automatically finds a hypothesis [h] that is a disjunction
+    and destructs it. *)
+
+Tactic Notation "branches" :=
+  match goal with h: _ \/ _ |- _ => branches h end.
 
 (* ---------------------------------------------------------------------- *)
 (** N-ary Existentials *)
