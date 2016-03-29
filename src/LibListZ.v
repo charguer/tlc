@@ -511,3 +511,55 @@ Qed.
 
 
 End ZindicesOld.
+
+(* -------------------------------------------------------------------------- *)
+
+(* Prefixes of lists. *)
+
+Section Prefix.
+
+Variable A : Type.
+
+Definition prefix (ys xs : list A) :=
+  exists zs, ys ++ zs = xs.
+
+Lemma le_implies_ge: forall x y, x <= y -> y >= x.
+Proof. math. Qed.
+
+Local Hint Resolve le_implies_ge length_nonneg.
+
+Lemma prefix_read:
+  forall `{Inhab A} ys xs y,
+  prefix (ys & y) xs ->
+  y = xs[length ys].
+Proof.
+  intros.
+  change (xs[length ys]) with (nth (length ys) xs).
+  unfold nth. case_if as Hop; [ | clear Hop ].
+  { false. forwards: length_nonneg ys. math. }
+  unfold LibList.nth.
+  generalize dependent xs.
+  generalize dependent ys. unfold prefix.
+  induction ys; intros xs [ zs ? ]; rew_list in *.
+  (* Base case. *)
+  { change (abs 0) with (0%nat).
+    subst xs. reflexivity. }
+  (* Inductive case. *)
+  { rewrite abs_plus by first [ math | eauto ].
+    change (abs 1) with (1%nat).
+    destruct xs as [ | x xs ]; [ congruence | ].
+    simpl. eapply IHys. exists zs. rew_list. congruence. }
+Qed.
+
+Lemma prefix_length:
+  forall ys y xs,
+  prefix (ys & y) xs ->
+  length ys < length xs.
+Proof.
+  intros ys y xs [ zs ? ]. subst xs. rew_list.
+  assert (length zs >= 0). { eauto. }
+  math.
+Qed.
+
+End Prefix.
+
