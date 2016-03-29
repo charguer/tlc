@@ -5,6 +5,7 @@
 
 Set Implicit Arguments.
 Generalizable Variables A B.
+Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
 Require Import LibTactics LibLogic LibReflect LibList
   LibOperation LibStruct LibInt LibNat
   LibEpsilon LibRelation LibMin.
@@ -871,6 +872,22 @@ Proof using.
   eapply fold_union; eauto using remove_disjoint with finite.
 Qed.
 
+Lemma fold_pointwise:
+  forall B (m : monoid_def B) (leB : B -> B -> Prop),
+  Monoid m ->
+  refl leB ->
+  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
+  forall A (E : set A),
+  finite E ->
+  forall (f f' : A -> B),
+  (forall x, x \in E -> leB (f x) (f' x)) ->
+  leB (fold m f E) (fold m f' E).
+Proof using.
+  intros. do 2 rewrite fold_def.
+  applys~ LibList.fold_pointwise.
+  intros x. forwards~ (_&EQ): finite_list_repr E. rewrite (EQ x). auto.
+Qed.
+
 (* ---------------------------------------------------------------------- *)
 (** ** Structural properties *)
 
@@ -924,7 +941,8 @@ Lemma foreach_union_eq : forall P E F,
   foreach P (E \u F) = (foreach P E /\ foreach P F).
 Proof using.
   intros. extens. iff.
-  apply~ foreach_union_inv. apply* foreach_union.
+  apply~ foreach_union_inv.
+  intuition eauto using foreach_union.
 Qed.
 
 Lemma foreach_single_eq : forall P X,

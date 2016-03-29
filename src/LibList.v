@@ -5,6 +5,7 @@
 
 Set Implicit Arguments. 
 Generalizable Variables A B.
+Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
 Require Import LibTactics LibLogic LibReflect LibOperation
  LibProd LibOption LibNat LibInt LibWf LibStruct LibRelation.
 Require Export List.
@@ -1014,6 +1015,7 @@ Proof using.
 Qed.
 End Fold.
 
+(* See also [fold_pointwise], stated later on because it depends on [Mem]. *)
 
 (* ********************************************************************** *)
 (** * Association lists *)
@@ -2613,6 +2615,23 @@ Proof using.
   induction xs as [| x xs ]; intros; simpl.
   { eauto. }
   { f_equal; eauto. }
+Qed.
+
+(* Reasoning about an arbitrary relation under a [fold]. *)
+
+Lemma fold_pointwise:
+  forall B (m : monoid_def B) (leB : B -> B -> Prop),
+  Monoid m ->
+  refl leB ->
+  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
+  forall A (L : list A),
+  forall (f f' : A -> B),
+  (forall x, Mem x L -> leB (f x) (f' x)) ->
+  leB (fold m f L) (fold m f' L).
+Proof using.
+  introv HM HR HP. induction L; introv HL.
+  do 2 rewrite fold_nil. applys HR.
+  do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHL.
 Qed.
 
 (* ---------------------------------------------------------------------- *)
