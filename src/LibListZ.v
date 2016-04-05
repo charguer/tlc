@@ -110,6 +110,10 @@ Proof using. intros. unfold length. rew_length~. Qed.
 Lemma length_zero_inv : forall l,
   length l = 0 -> l = nil.
 Proof using. intros. unfolds length. applys~ LibList.length_zero_inv. Qed.
+Lemma length_tail : forall l,
+  l <> nil -> length (tail l) = length l - 1.
+Proof using. induction l; intros; simpl; unfold length; rew_length. congruence. math. Qed.
+
 
 End LengthProperties.
 

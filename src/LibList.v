@@ -114,6 +114,31 @@ Definition exists_st (f : predb A) :=
 Definition count (f : predb A) :=
   nosimpl (fold_right (fun x acc => (if f x then 1 else 0) + acc) 0).
 
+(* The head of a list is its first element. *)
+
+Definition head (xs : list A) : option A :=
+  match xs with
+  | nil => None
+  | x :: _ => Some x
+  end.
+
+(* The tail of a list is everything beyond its first element. *)
+
+Definition tail (xs : list A) : list A :=
+  match xs with
+  | nil => nil
+  | _ :: xs => xs
+  end.
+
+(* These functions are known as [List.hd_error] and [List.tl] in Coq's
+   standard library. *)
+
+Lemma head_hd_error (xs : list A) : head xs = List.hd_error xs.
+Proof. destruct xs; reflexivity. Qed.
+
+Lemma tail_tl (xs : list A) : tail xs = List.tl xs.
+Proof. destruct xs; reflexivity. Qed.
+
 Fixpoint mem x l := 
   match l with
   | nil => false
