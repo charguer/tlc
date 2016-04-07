@@ -139,6 +139,30 @@ Proof. destruct xs; reflexivity. Qed.
 Lemma tail_tl (xs : list A) : tail xs = List.tl xs.
 Proof. destruct xs; reflexivity. Qed.
 
+(* No list is cyclic. *)
+
+Lemma no_cyclic_list:
+  forall (xs : list A) x,
+  x :: xs = xs ->
+  False.
+Proof using.
+  induction xs; simpl; introv h.
+  { congruence. }
+  { injection h. clear h. intros h ?. subst x. eauto. }
+Qed.
+
+(* Only the empty list is its own tail. *)
+
+Lemma tail_self_inv:
+  forall (xs : list A),
+  tail xs = xs ->
+  xs = nil.
+Proof using.
+  destruct xs; simpl; intros.
+  { eauto. }
+  { false. eauto using no_cyclic_list. }
+Qed.
+
 Fixpoint mem x l := 
   match l with
   | nil => false
