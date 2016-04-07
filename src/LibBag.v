@@ -276,6 +276,9 @@ Class Incl_empty_inv :=
 
 Class Single_incl_r_eq :=
   { single_incl_r_eq : forall x E, (\{x} \c E) = (x \in E) }.
+Class Single_incl_r :=
+  { single_incl_r : forall x E, x \in E -> \{x} \c E }.
+
 Class Single_incl_l_eq :=
   { single_incl_l_eq : forall x E, (E \c \{x}) = (E = \{} \/ E = \{x}) }.
 
@@ -586,6 +589,12 @@ Proof using.
   constructor. intros. extens. rewrite incl_in_eq. iff M.
     applys* M. rewrite~ in_single_eq.
     introv N. rewrite in_single_eq in N. subst~.
+Qed.
+
+Global Instance single_incl_r_from_single_incl_r_eq:
+  Single_incl_r_eq -> Single_incl_r.
+Proof using.
+  constructor. intros. rewrite single_incl_r_eq. assumption.
 Qed.
 
 Global Instance single_incl_l_eq_from_in_empty_eq_and_in_single_eq_and_and_incl_in_eq :
