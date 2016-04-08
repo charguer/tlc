@@ -181,6 +181,31 @@ Qed.
 End ReadProperties.
 
 (* ---------------------------------------------------------------------- *)
+(* Extensional equality between two lists. *)
+
+Lemma ext_eq:
+  forall A `{Inhab A} (xs ys : list A),
+  length xs = length ys ->
+  (forall i, 0 <= i < length xs -> xs[i] = ys[i]) ->
+  xs = ys.
+Proof.
+  induction xs; destruct ys; simpl; introv Heq Hread;
+  try solve [ eauto | false ]. f_equal.
+  (* The head. *)
+  { specializes Hread 0.
+    repeat rewrite read_zero in Hread.
+    repeat rewrite length_cons in Hread.
+    eapply Hread.
+    forwards: length_nonneg xs. math. }
+  (* The tail. *)
+  { repeat rewrite length_cons in *.
+    eapply IHxs. math. intros i Hi.
+    specializes Hread (i + 1).
+    do 2 rewrite read_succ in Hread by math.
+    eapply Hread. math. }
+Qed.
+
+(* ---------------------------------------------------------------------- *)
 (** * Properties of update *)
 
 Section UpdateProperties.
