@@ -149,6 +149,37 @@ Qed.
 End MakeProperties.
 
 
+(* -------------------------------------------------------------------------- *)
+
+(* Properties of [read]. *)
+
+Section ReadProperties.
+Transparent read_inst.
+
+Context (A : Type) `{Inhab A}.
+
+Lemma read_zero:
+  forall x (xs : list A),
+  (x :: xs)[0] = x.
+Proof.
+  intros. unfold read, read_inst, read_impl, nth.
+  case_if; [ math | ]. reflexivity.
+Qed.
+
+Lemma read_succ:
+  forall x (xs : list A) i,
+  0 <= i < length xs ->
+  (x :: xs)[i + 1] = xs[i].
+Proof.
+  intros. unfold read, read_inst, read_impl, nth, LibList.nth.
+  do 2 (case_if; [ math | ]).
+  change (i + 1) with (Z.succ i).
+  rewrite Zabs2Nat.inj_succ by math.
+  reflexivity.
+Qed.
+
+End ReadProperties.
+
 (* ---------------------------------------------------------------------- *)
 (** * Properties of update *)
 
@@ -536,7 +567,7 @@ Lemma prefix_read:
   forall `{Inhab A} ys xs y,
   prefix (ys & y) xs ->
   y = xs[length ys].
-Proof.
+Proof using.
   intros.
   change (xs[length ys]) with (nth (length ys) xs).
   unfold nth. case_if as Hop; [ | clear Hop ].
@@ -559,7 +590,7 @@ Lemma prefix_length:
   forall ys y xs,
   prefix (ys & y) xs ->
   length ys < length xs.
-Proof.
+Proof using.
   intros ys y xs [ zs ? ]. subst xs. rew_list.
   assert (length zs >= 0). { eauto. }
   math.
