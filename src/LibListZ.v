@@ -205,11 +205,24 @@ Proof.
     eapply Hread. math. }
 Qed.
 
+Lemma ext_eq_index:
+  forall A `{Inhab A} (xs ys : list A),
+  length xs = length ys ->
+  (forall i, index xs i -> xs[i] = ys[i]) ->
+  xs = ys.
+Proof.
+  eauto using ext_eq.
+Qed.
+
 (* ---------------------------------------------------------------------- *)
 (** * Properties of update *)
 
 Section UpdateProperties.
 Transparent index_inst read_inst update_inst.
+
+Lemma index_def : forall A (l:list A) i,
+  index l i = index (length l : int) i.
+Proof using. auto. Qed.
 
 Lemma length_update : forall A (l:list A) (i:int) (v:A),
   length (l[i:=v]) = length l.
@@ -217,6 +230,14 @@ Proof using.
   intros. unfold update_inst, update_impl, length, update. simpl.
   case_if. math. rewrite~ length_update.
 Qed.
+
+Lemma index_update_eq : forall A (l:list A) i j (v:A),
+  index (l[j:=v]) i = index l i.
+Proof using. intros. rewrite index_def in *. rewrite~ length_update. Qed.
+
+Lemma index_update : forall A (l:list A) i j (v:A),
+  index l i -> index (l[j:=v]) i.
+Proof using. intros. rewrite~ index_update_eq. Qed.
 
 Lemma read_update_case : forall `{Inhab A} (l:list A) (i j:int) (v:A),
   index l j -> l[i:=v][j] = (If i = j then v else l[j]).
@@ -237,6 +258,30 @@ Proof using. introv N. rewrite~ read_update_case. case_if~. Qed.
 Lemma read_update_neq : forall `{Inhab A} (l:list A) (i j:int) (v:A),
   index l j -> (i <> j) -> (l[i:=v])[j] = l[j].
 Proof using. introv N. rewrite~ read_update_case. case_if; auto_false~. Qed.
+
+Lemma update_update_eq : forall `{Inhab A} (l:list A) (i:int) (v w:A),
+  index l i -> l[i:=v][i:=w] = l[i:=w].
+Proof using. 
+  intros. eapply ext_eq_index; repeat rewrite length_update.
+  { reflexivity. }
+  intros j. 
+  repeat rewrite index_update_eq.
+  intros Hj.
+  repeat rewrite read_update_case by eauto using index_update.
+  case_if; reflexivity.
+Qed.
+
+Lemma update_update_neq : forall `{Inhab A} (l:list A) (i j:int) (v w:A),
+  index l i -> index l j -> i <> j -> l[i:=v][j:=w] = l[j:=w][i:=v].
+Proof using.
+  intros. eapply ext_eq_index; repeat rewrite length_update.
+  { reflexivity. }
+  intros k.
+  repeat rewrite index_update_eq.
+  intros Hk.
+  repeat rewrite read_update_case by eauto using index_update.
+  repeat case_if; reflexivity.
+Qed.
 
 End UpdateProperties.
 
@@ -303,9 +348,9 @@ Tactic Notation "rew_array" "*" "in" "*" :=
 Section IndexProperties.
 Transparent index_inst.
 
-Lemma index_def : forall A (l:list A) i,
-  index l i = index (length l : int) i.
-Proof using. auto. Qed. 
+(* [index_def] : proven above *)
+
+(* [index_update] : proven above *)
 
 Lemma index_length_unfold : forall A (l:list A) i,
   index (length l : int) i -> index l i.
@@ -322,10 +367,6 @@ Proof using. auto. Qed.
 Lemma index_bounds_impl : forall A (l:list A) i,
   0 <= i < length l -> index l i.
 Proof using. intros. rewrite~ index_bounds. Qed.
-
-Lemma index_update : forall A (l:list A) i j (v:A),
-  index l i -> index (l[j:=v]) i.
-Proof using. intros. rewrite index_def in *. rewrite~ length_update. Qed.
 
 Lemma index_zmake : forall A n i (v:A),
   index n i -> index (make n v) i.
