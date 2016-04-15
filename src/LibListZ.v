@@ -110,6 +110,10 @@ Proof using. intros. unfold length. rew_length~. Qed.
 Lemma length_zero_inv : forall l,
   length l = 0 -> l = nil.
 Proof using. intros. unfolds length. applys~ LibList.length_zero_inv. Qed.
+Lemma length_tail : forall l,
+  l <> nil -> length (tail l) = length l - 1.
+Proof using. induction l; intros; simpl; unfold length; rew_length. congruence. math. Qed.
+
 
 End LengthProperties.
 
@@ -145,11 +149,80 @@ Qed.
 End MakeProperties.
 
 
+(* -------------------------------------------------------------------------- *)
+
+(* Properties of [read]. *)
+
+Section ReadProperties.
+Transparent read_inst.
+
+Context (A : Type) `{Inhab A}.
+
+Lemma read_zero:
+  forall x (xs : list A),
+  (x :: xs)[0] = x.
+Proof.
+  intros. unfold read, read_inst, read_impl, nth.
+  case_if; [ math | ]. reflexivity.
+Qed.
+
+Lemma read_succ:
+  forall x (xs : list A) i,
+  0 <= i < length xs ->
+  (x :: xs)[i + 1] = xs[i].
+Proof.
+  intros. unfold read, read_inst, read_impl, nth, LibList.nth.
+  do 2 (case_if; [ math | ]).
+  change (i + 1) with (Z.succ i).
+  rewrite Zabs2Nat.inj_succ by math.
+  reflexivity.
+Qed.
+
+End ReadProperties.
+
+(* ---------------------------------------------------------------------- *)
+(* Extensional equality between two lists. *)
+
+Lemma ext_eq:
+  forall A `{Inhab A} (xs ys : list A),
+  length xs = length ys ->
+  (forall i, 0 <= i < length xs -> xs[i] = ys[i]) ->
+  xs = ys.
+Proof.
+  induction xs; destruct ys; simpl; introv Heq Hread;
+  try solve [ eauto | false ]. f_equal.
+  (* The head. *)
+  { specializes Hread 0.
+    repeat rewrite read_zero in Hread.
+    repeat rewrite length_cons in Hread.
+    eapply Hread.
+    forwards: length_nonneg xs. math. }
+  (* The tail. *)
+  { repeat rewrite length_cons in *.
+    eapply IHxs. math. intros i Hi.
+    specializes Hread (i + 1).
+    do 2 rewrite read_succ in Hread by math.
+    eapply Hread. math. }
+Qed.
+
+Lemma ext_eq_index:
+  forall A `{Inhab A} (xs ys : list A),
+  length xs = length ys ->
+  (forall i, index xs i -> xs[i] = ys[i]) ->
+  xs = ys.
+Proof.
+  eauto using ext_eq.
+Qed.
+
 (* ---------------------------------------------------------------------- *)
 (** * Properties of update *)
 
 Section UpdateProperties.
 Transparent index_inst read_inst update_inst.
+
+Lemma index_def : forall A (l:list A) i,
+  index l i = index (length l : int) i.
+Proof using. auto. Qed.
 
 Lemma length_update : forall A (l:list A) (i:int) (v:A),
   length (l[i:=v]) = length l.
@@ -157,6 +230,14 @@ Proof using.
   intros. unfold update_inst, update_impl, length, update. simpl.
   case_if. math. rewrite~ length_update.
 Qed.
+
+Lemma index_update_eq : forall A (l:list A) i j (v:A),
+  index (l[j:=v]) i = index l i.
+Proof using. intros. rewrite index_def in *. rewrite~ length_update. Qed.
+
+Lemma index_update : forall A (l:list A) i j (v:A),
+  index l i -> index (l[j:=v]) i.
+Proof using. intros. rewrite~ index_update_eq. Qed.
 
 Lemma read_update_case : forall `{Inhab A} (l:list A) (i j:int) (v:A),
   index l j -> l[i:=v][j] = (If i = j then v else l[j]).
@@ -177,6 +258,30 @@ Proof using. introv N. rewrite~ read_update_case. case_if~. Qed.
 Lemma read_update_neq : forall `{Inhab A} (l:list A) (i j:int) (v:A),
   index l j -> (i <> j) -> (l[i:=v])[j] = l[j].
 Proof using. introv N. rewrite~ read_update_case. case_if; auto_false~. Qed.
+
+Lemma update_update_eq : forall `{Inhab A} (l:list A) (i:int) (v w:A),
+  index l i -> l[i:=v][i:=w] = l[i:=w].
+Proof using. 
+  intros. eapply ext_eq_index; repeat rewrite length_update.
+  { reflexivity. }
+  intros j. 
+  repeat rewrite index_update_eq.
+  intros Hj.
+  repeat rewrite read_update_case by eauto using index_update.
+  case_if; reflexivity.
+Qed.
+
+Lemma update_update_neq : forall `{Inhab A} (l:list A) (i j:int) (v w:A),
+  index l i -> index l j -> i <> j -> l[i:=v][j:=w] = l[j:=w][i:=v].
+Proof using.
+  intros. eapply ext_eq_index; repeat rewrite length_update.
+  { reflexivity. }
+  intros k.
+  repeat rewrite index_update_eq.
+  intros Hk.
+  repeat rewrite read_update_case by eauto using index_update.
+  repeat case_if; reflexivity.
+Qed.
 
 End UpdateProperties.
 
@@ -243,9 +348,9 @@ Tactic Notation "rew_array" "*" "in" "*" :=
 Section IndexProperties.
 Transparent index_inst.
 
-Lemma index_def : forall A (l:list A) i,
-  index l i = index (length l : int) i.
-Proof using. auto. Qed. 
+(* [index_def] : proven above *)
+
+(* [index_update] : proven above *)
 
 Lemma index_length_unfold : forall A (l:list A) i,
   index (length l : int) i -> index l i.
@@ -262,10 +367,6 @@ Proof using. auto. Qed.
 Lemma index_bounds_impl : forall A (l:list A) i,
   0 <= i < length l -> index l i.
 Proof using. intros. rewrite~ index_bounds. Qed.
-
-Lemma index_update : forall A (l:list A) i j (v:A),
-  index l i -> index (l[j:=v]) i.
-Proof using. intros. rewrite index_def in *. rewrite~ length_update. Qed.
 
 Lemma index_zmake : forall A n i (v:A),
   index n i -> index (make n v) i.
@@ -511,3 +612,55 @@ Qed.
 
 
 End ZindicesOld.
+
+(* -------------------------------------------------------------------------- *)
+
+(* Prefixes of lists. *)
+
+Section Prefix.
+
+Variable A : Type.
+
+Definition prefix (ys xs : list A) :=
+  exists zs, ys ++ zs = xs.
+
+Lemma le_implies_ge: forall x y, x <= y -> y >= x.
+Proof. math. Qed.
+
+Local Hint Resolve le_implies_ge length_nonneg.
+
+Lemma prefix_read:
+  forall `{Inhab A} ys xs y,
+  prefix (ys & y) xs ->
+  y = xs[length ys].
+Proof using.
+  intros.
+  change (xs[length ys]) with (nth (length ys) xs).
+  unfold nth. case_if as Hop; [ | clear Hop ].
+  { false. forwards: length_nonneg ys. math. }
+  unfold LibList.nth.
+  generalize dependent xs.
+  generalize dependent ys. unfold prefix.
+  induction ys; intros xs [ zs ? ]; rew_list in *.
+  (* Base case. *)
+  { change (abs 0) with (0%nat).
+    subst xs. reflexivity. }
+  (* Inductive case. *)
+  { rewrite abs_plus by first [ math | eauto ].
+    change (abs 1) with (1%nat).
+    destruct xs as [ | x xs ]; [ congruence | ].
+    simpl. eapply IHys. exists zs. rew_list. congruence. }
+Qed.
+
+Lemma prefix_length:
+  forall ys y xs,
+  prefix (ys & y) xs ->
+  length ys < length xs.
+Proof using.
+  intros ys y xs [ zs ? ]. subst xs. rew_list.
+  assert (length zs >= 0). { eauto. }
+  math.
+Qed.
+
+End Prefix.
+

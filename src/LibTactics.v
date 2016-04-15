@@ -2153,6 +2153,8 @@ Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) :=
   unfolds in H1; unfolds in H2 H3.
 Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) hyp(H4) :=
   unfolds in H1; unfolds in H2 H3 H4.
+Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) hyp(H4) hyp(H5) :=
+  unfolds in H1; unfolds in H2 H3 H4 H5.
 
 (** [unfolds P1,..,PN] is a shortcut for [unfold P1,..,PN in *]. *)
 
@@ -3257,7 +3259,12 @@ Tactic Notation "branches" constr(T) :=
 Tactic Notation "branches" constr(N) constr(T) :=
   let N := nat_from_number N in
   destructs_disjunction_tactic N T.
- 
+
+(** [branches] automatically finds a hypothesis [h] that is a disjunction
+    and destructs it. *)
+
+Tactic Notation "branches" :=
+  match goal with h: _ \/ _ |- _ => branches h end.
 
 (* ---------------------------------------------------------------------- *)
 (** N-ary Existentials *)

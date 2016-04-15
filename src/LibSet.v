@@ -5,6 +5,7 @@
 
 Set Implicit Arguments.
 Generalizable Variables A B.
+Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
 Require Import LibTactics LibLogic LibReflect LibList
   LibOperation LibStruct LibInt LibNat
   LibEpsilon LibRelation LibMin.
@@ -266,7 +267,14 @@ Proof using.
     destruct M. subst*. autos*.
 Qed.
 
-
+Lemma set_add_remove : forall A (E : set A) x,
+  x \notin E ->
+  E = (E \u \{x}) \- \{x}.
+Proof using.
+  introv Hx. set_unf. apply prop_ext_1. iff.
+  { split. eauto. intro. subst*. }
+  { tauto. }
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** repr and covers *)
@@ -558,7 +566,8 @@ Qed.
 
 End Instances.
 
-
+Hint Resolve finite_empty finite_single finite_union
+  finite_inter finite_incl finite_remove : finite.
 
 (* ---------------------------------------------------------------------- *)
 (* ---------------------------------------------------------------------- *)
@@ -852,6 +861,39 @@ Proof using.
   rewrite~ LibList.fold_app. typeclass.
 Qed.
 
+Lemma fold_isolate :
+  forall A (E : set A) x,
+  finite E ->
+  x \in E ->
+  forall B (m : monoid_def B),
+  Monoid_commutative m ->
+  forall (f : A -> B),
+  fold m f E = monoid_oper m (f x) (fold m f (E \- \{x})).
+Proof using.
+  intros.
+  (* Separate [E] into the singleton [\{x}] union the rest. *)
+  rewrite (set_isolate E x) at 1 by eauto.
+  (* Note that [f x] is the result of folding [f] over the singleton [\{x}]. *)
+  erewrite <- (fold_single f x) by typeclass.
+  (* Conclude. *)
+  eapply fold_union; eauto using remove_disjoint with finite.
+Qed.
+
+Lemma fold_pointwise:
+  forall B (m : monoid_def B) (leB : B -> B -> Prop),
+  Monoid m ->
+  refl leB ->
+  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
+  forall A (E : set A),
+  finite E ->
+  forall (f f' : A -> B),
+  (forall x, x \in E -> leB (f x) (f' x)) ->
+  leB (fold m f E) (fold m f' E).
+Proof using.
+  intros. do 2 rewrite fold_def.
+  applys~ LibList.fold_pointwise.
+  intros x. forwards~ (_&EQ): finite_list_repr E. rewrite (EQ x). auto.
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Structural properties *)
@@ -906,7 +948,8 @@ Lemma foreach_union_eq : forall P E F,
   foreach P (E \u F) = (foreach P E /\ foreach P F).
 Proof using.
   intros. extens. iff.
-  apply~ foreach_union_inv. apply* foreach_union.
+  apply~ foreach_union_inv.
+  intuition eauto using foreach_union.
 Qed.
 
 Lemma foreach_single_eq : forall P X,

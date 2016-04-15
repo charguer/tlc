@@ -5,6 +5,7 @@
 
 Set Implicit Arguments. 
 Generalizable Variables A B.
+Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
 Require Import LibTactics LibLogic LibReflect LibOperation
  LibProd LibOption LibNat LibInt LibWf LibStruct LibRelation.
 Require Export List.
@@ -112,6 +113,55 @@ Definition exists_st (f : predb A) :=
 
 Definition count (f : predb A) :=
   nosimpl (fold_right (fun x acc => (if f x then 1 else 0) + acc) 0).
+
+(* The head of a list is its first element. *)
+
+Definition head (xs : list A) : option A :=
+  match xs with
+  | nil => None
+  | x :: _ => Some x
+  end.
+
+(* The tail of a list is everything beyond its first element. *)
+
+Definition tail (xs : list A) : list A :=
+  match xs with
+  | nil => nil
+  | _ :: xs => xs
+  end.
+
+(* These functions are known as [List.hd_error] and [List.tl] in Coq's
+   standard library. *)
+
+Lemma head_hd_error (xs : list A) : head xs = List.hd_error xs.
+Proof. destruct xs; reflexivity. Qed.
+
+Lemma tail_tl (xs : list A) : tail xs = List.tl xs.
+Proof. destruct xs; reflexivity. Qed.
+
+(* No list is cyclic. *)
+
+Lemma no_cyclic_list:
+  forall (xs : list A) x,
+  x :: xs = xs ->
+  False.
+Proof using.
+  induction xs; simpl; introv h.
+  { congruence. }
+  { injection h. clear h. intros h ?. subst x. eauto. }
+Qed.
+
+(* Only the empty list is its own tail. *)
+
+Lemma tail_self_inv:
+  forall (xs : list A),
+  tail xs = xs ->
+  xs = nil.
+Proof using.
+  destruct xs; simpl; intros.
+  { eauto. }
+  { false. eauto using no_cyclic_list. }
+Qed.
 
 Fixpoint mem x l := 
   match l with
@@ -422,6 +472,10 @@ Proof using.
   rewrite length_last. rewrite~ length_cons.
 Qed.
 
+Lemma rev_inj : forall l1 l2,
+  rev l1 = rev l2 ->
+  l1 = l2.
+Proof using. introv E. forwards E': f_equal E. repeat rewrite~ rev_rev in E'. Qed.
 
 (** Lemma to rewrite a [fold_left] into a [fold_right]. **)
 Lemma fold_left_eq_fold_right : forall B (f : A -> B -> B) i l,
@@ -473,6 +527,14 @@ Proof using. intros. simpl. rewrite~ eqb_self. Qed.
 Lemma mem_last_eq : forall x l,
   mem x (l & x) = true.
 Proof using. intros. rewrite mem_last. rewrite~ eqb_self. Qed.
+
+Lemma rev_mem : forall l x,
+  mem x l = mem x (rev l).
+Proof using.
+  introv. induction~ l. simpls.
+  rewrite rev_cons. rewrite mem_last. extens. rew_refl. rewrite* IHl.
+Qed.
+
 End MemProp.
 
 (* ---------------------------------------------------------------------- *)
@@ -556,6 +618,21 @@ Lemma length_map : forall l,
 Proof using. 
   induction l. auto.
   rewrite map_cons. do 2 rewrite length_cons. auto.
+Qed.
+
+Lemma nil_map : forall l,
+  map f l = nil -> l = nil.
+Proof using. introv E. apply length_zero_inv. rewrite <- length_map. rewrite~ E. Qed.
+
+Lemma map_inj : forall l1 l2,
+  (forall x y, f x = f y -> x = y) ->
+  map f l1 = map f l2 ->
+  l1 = l2.
+Proof using.
+  introv inj E. gen l2. induction l1; introv E.
+   rewrite map_nil in E. symmetry in E. forwards~: nil_map E.
+   destruct l2 as [|e l2]; tryfalse. repeat rewrite map_cons in E.
+    inverts E as E1 E2. forwards: inj E1. substs. fequals~.
 Qed.
 
 Lemma map_mem : forall l (x : B),
@@ -768,6 +845,18 @@ Qed.
 
 End OperationProperties.
 
+
+(* This lemma requires [rev_cons] to be parameterised to be proven,
+  this putting it out of the section. *)
+Lemma map_rev : forall A B (f : A -> B) l,
+  map f (rev l) = rev (map f l).
+Proof using.
+  induction l.
+   reflexivity.
+   rewrite map_cons. rewrite rev_cons. rewrite map_last. rewrite rev_cons. rewrite~ IHl.
+Qed.
+
+
 Implicit Arguments length_zero_inv [A l].
 Implicit Arguments take_struct [A].
 
@@ -975,6 +1064,7 @@ Proof using.
 Qed.
 End Fold.
 
+(* See also [fold_pointwise], stated later on because it depends on [Mem]. *)
 
 (* ********************************************************************** *)
 (** * Association lists *)
@@ -1056,6 +1146,19 @@ Lemma remove_assoc_cons : forall x x' y l,
     If x = x' then l else (x',y)::remove_assoc x l.
 Proof using. auto. Qed.
 
+Lemma assoc_remove_assoc : forall x x' l,
+  x <> x' ->
+  assoc x (remove_assoc x' l) = assoc x l.
+Proof using.
+  introv D. induction l.
+   reflexivity.
+   destruct a. simpl. tests: (x' = a).
+    case_if~.
+    tests: (x = a); tryfalse.
+     case_if~. apply assoc_here.
+     case_if~. rewrite <- IHl. unfold assoc. case_if~.
+Qed.
+
 End AssocProperties.
 
 Section MemAssocProperties.
@@ -1085,6 +1188,76 @@ Proof using.
    rewrite map_cons in I. do 2 unfolds. simpls. rew_refl in *. inverts I as I.
     right~.
     left. apply~ IHl.
+Qed.
+
+Lemma mem_assoc_cons : forall A B (l : list (A * B)) a e,
+  mem_assoc a (e :: l) = (a '= fst e) || mem_assoc a l.
+Proof using.
+  introv. extens. iff M.
+   do 2 unfolds in M. simpl in M. rew_refl. rew_refl* in M.
+   rew_refl in M. inverts M as M.
+    destruct e as [a b]. do 2 unfolds. simpl. rew_refl*.
+    do 2 unfolds. simpl. rew_refl*.
+Qed.
+
+Lemma mem_assoc_nil : forall A B a,
+  mem_assoc a (nil : list (A * B)) = false.
+Proof using. autos*. Qed.
+
+Lemma assoc_eq_mem_assoc : forall A B `{Inhab B} (l : list (A * B)) a,
+  mem (a, assoc a l) l = mem_assoc a l.
+Proof using.
+  introv. induction l as [|[a' b'] l].
+   reflexivity.
+   simpl. cases_if; extens; iff I; rewrite mem_assoc_cons in *; rew_refl*.
+    rew_refl in I. repeat inverts I as I; tryfalse. rewrite* <- IHl.
+    rew_refl in I. inverts I; tryfalse~. right. rewrite~ IHl.
+Qed.
+
+Lemma mem_mem_assoc : forall A B (l : list (A * B)) a b,
+  mem (a, b) l ->
+  mem_assoc a l.
+Proof using.
+  introv M. induction l as [|[a' b'] l].
+   false*.
+   simpl in M. rew_refl in M. rewrite mem_assoc_cons. rew_refl. inverts M as M.
+    inverts* M.
+    right*.
+Qed.
+
+Lemma mem_assoc_exists_mem : forall A B (l : list (A * B)) a,
+  mem_assoc a l ->
+  exists b, mem (a, b) l.
+Proof using.
+  introv M. induction l as [|[a' b'] l]; tryfalse.
+  do 2 unfolds in M. simpl in M. rew_refl in M. inverts M as M.
+   forwards (b&M'): (rm IHl) (rm M). exists b. simpl. rew_refl*.
+   exists b'. simpl. rew_refl*.
+Qed.
+
+Lemma app_mem_assoc : forall A B (l1 l2 : list (A * B)) a,
+  mem_assoc a (l1 ++ l2) ->
+  mem_assoc a l1 \/ mem_assoc a l2.
+Proof using.
+  introv M. lets (b&M'): mem_assoc_exists_mem (rm M). rewrite mem_app in M'.
+  rew_refl in M'. inverts M' as M.
+   left. apply* mem_mem_assoc.
+   right. apply* mem_mem_assoc.
+Qed.
+
+Lemma keys_mem_assoc : forall A B (l : list (A * B)) a,
+  mem a (keys l) = mem_assoc a l.
+Proof using. introv. unfold keys. rewrite~ <- mem_assoc_map_fst. Qed.
+
+Lemma mem_assoc_remove_assoc_neq : forall A B x x' (l : list (A * B)),
+  x <> x' ->
+  mem_assoc x (remove_assoc x' l) = mem_assoc x l.
+Proof using.
+  introv N. induction l.
+   reflexivity.
+   destruct a. rewrite remove_assoc_cons. cases_if~.
+    rewrite mem_assoc_cons. extens. rew_refl*.
+    repeat rewrite mem_assoc_cons. rewrite~ IHl.
 Qed.
 
 End MemAssocProperties.
@@ -2491,6 +2664,23 @@ Proof using.
   induction xs as [| x xs ]; intros; simpl.
   { eauto. }
   { f_equal; eauto. }
+Qed.
+
+(* Reasoning about an arbitrary relation under a [fold]. *)
+
+Lemma fold_pointwise:
+  forall B (m : monoid_def B) (leB : B -> B -> Prop),
+  Monoid m ->
+  refl leB ->
+  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
+  forall A (L : list A),
+  forall (f f' : A -> B),
+  (forall x, Mem x L -> leB (f x) (f' x)) ->
+  leB (fold m f L) (fold m f' L).
+Proof using.
+  introv HM HR HP. induction L; introv HL.
+  do 2 rewrite fold_nil. applys HR.
+  do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHL.
 Qed.
 
 (* ---------------------------------------------------------------------- *)
