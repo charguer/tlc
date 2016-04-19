@@ -45,6 +45,28 @@ Definition make (n:int) (v:A) :=
 End Zindices.
 
 
+(** Automation for [math], to unfold [length] *)
+
+Lemma LibListZ_length_def : forall A (l:list A),
+  length l = LibList.length l.
+Proof using. auto. Qed.
+
+Hint Rewrite LibListZ_length_def : rew_maths.
+
+(* DEMO
+
+  Lemma test1 : forall (L:list Z),
+    length L >= 0.
+  Proof. intros. math. Qed.
+
+  Lemma test2 : forall (L:list Z) (s n:int),
+    s <= n ->
+    s = length L ->
+    n >= 0.
+  Proof. intros. math. Qed.
+*)
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** Typeclasses read & update operations, binds and index predicates *)
 
