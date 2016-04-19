@@ -517,12 +517,12 @@ Ltac get_head E :=
 
 Ltac get_fun_arg E :=
   match E with
-  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X6 ?X7 ?X => constr:((X1 X2 X3 X4 X5 X6,X))
-  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X6 ?X => constr:((X1 X2 X3 X4 X5,X))
-  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X => constr:((X1 X2 X3 X4,X))  
-  | ?X1 ?X2 ?X3 ?X4 ?X => constr:((X1 X2 X3,X))
-  | ?X1 ?X2 ?X3 ?X => constr:((X1 X2,X)) 
-  | ?X1 ?X2 ?X => constr:((X1,X))
+  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X6 ?X7 ?X => constr:((X1 X2 X3 X4 X5 X6 X7,X))
+  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X6 ?X => constr:((X1 X2 X3 X4 X5 X6,X))
+  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X => constr:((X1 X2 X3 X4 X5,X))  
+  | ?X1 ?X2 ?X3 ?X4 ?X => constr:((X1 X2 X3 X4,X))
+  | ?X1 ?X2 ?X3 ?X => constr:((X1 X2 X3,X)) 
+  | ?X1 ?X2 ?X => constr:((X1 X2,X))
   | ?X1 ?X => constr:((X1,X))
   end.
 
