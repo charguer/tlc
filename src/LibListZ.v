@@ -694,5 +694,16 @@ Proof using.
   math.
 Qed.
 
-End Prefix.
+Lemma prefix_last :
+  forall ys y xs,
+  prefix (ys & y) xs ->
+  prefix ys xs.
+Proof.
+  intros.
+  unfold prefix in *.
+  destruct H.
+  exists (y :: x).
+  rewrite~ <- app_last_sym.
+Qed.
 
+End Prefix.
