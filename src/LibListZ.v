@@ -675,6 +675,16 @@ Proof using.
 Qed.
 
 Lemma prefix_length:
+  forall ys xs,
+  prefix ys xs ->
+  length ys <= length xs.
+Proof using.
+  intros ys xs [ zs ? ]. subst xs. rew_list.
+  assert (length zs >= 0). { eauto. }
+  math.
+Qed.
+
+Lemma prefix_snoc_length:
   forall ys y xs,
   prefix (ys & y) xs ->
   length ys < length xs.
