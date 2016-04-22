@@ -139,6 +139,14 @@ Proof. destruct xs; reflexivity. Qed.
 Lemma tail_tl (xs : list A) : tail xs = List.tl xs.
 Proof. destruct xs; reflexivity. Qed.
 
+(* The empty list, and only the empty list, has no head. *)
+
+Lemma use_None_head (xs : list A) : None = head xs -> xs = nil.
+Proof. destruct xs; simpl; congruence. Qed.
+
+Lemma use_Some_head x (xs : list A) : Some x = head xs -> xs <> nil.
+Proof. destruct xs; simpl; congruence. Qed.
+
 (* No list is cyclic. *)
 
 Lemma no_cyclic_list:
