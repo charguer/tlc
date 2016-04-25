@@ -700,17 +700,54 @@ Proof using. intros. applys~ decidable_make (isTrue P). Qed.
 (** In constructive logic, any proposition with a proof of 
     that is constructively true or false is decidable. *)
 
-Lemma sumbool_decidable : forall (P:Prop),  
+Definition sumbool_decidable : forall (P:Prop),  
   {P}+{~P} -> Decidable P.
 Proof using.
   introv H. applys decidable_make
     (match H with left _ => true | right _ => false end).
   rewrite isTrue_def. destruct H; case_if; tryfalse; auto.
+Defined.
+
+Definition decidable_sumbool : forall P : Prop,
+    Decidable P -> {P}+{~P}.
+Proof using.
+  introv D. destruct (decide P) eqn: H; fold_bool; rew_refl in H; [left*|right*].
+Defined.
+
+(** [sumbool_decidable] and [decidable_sumbool] just wrap their
+    property as expected. *)
+
+Lemma sumbool_decidable_decidable_sumbool : forall P (d : {P}+{~P}),
+  decidable_sumbool (sumbool_decidable d) = d.
+Proof.
+  introv. unfolds.
+  asserts R1: (forall (d : bool) B C C1 C2,
+    d ->
+    (if d as b return (d = b -> B) then
+      fun H => C1 H
+    else fun H => C2 H) eq_refl = C ->
+    exists E, C1 E = C).
+   clear. introv D Eq. destruct d; tryfalse. eexists. apply Eq.
+  lets R1': (rm R1) (@decide P (sumbool_decidable d)).
+  asserts R2: (forall (d : bool) B C C1 C2,
+    !d ->
+    (if d as b return (d = b -> B) then
+      fun H => C1 H
+    else fun H => C2 H) eq_refl = C ->
+    exists E, C2 E = C).
+   clear. introv D Eq. destruct d; tryfalse. eexists. apply Eq.
+  lets R2': (rm R2) (@decide P (sumbool_decidable d)).
+  unfold sumbool_decidable. case_if as I.
+   forwards (E&Eq): R1'.
+     rewrite decide_spec. rew_refl*.
+     reflexivity.
+    rewrite <- Eq. fequals.
+   forwards (E&Eq): R2'.
+     rewrite decide_spec. rew_refl*.
+     reflexivity.
+    rewrite <- Eq. fequals.
 Qed.
 
-Lemma decidable_sumbool : forall P : Prop,
-  Decidable P -> {P} + {~ P}.
-Proof. introv D. destruct (decide P) eqn: H; fold_bool; rew_refl in H; [left*|right*]. Qed.
 
 Global Instance Decidable_impl : forall A B : Prop,
     Decidable A -> Decidable B -> Decidable (A -> B).
