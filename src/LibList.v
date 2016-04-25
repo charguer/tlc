@@ -83,7 +83,7 @@ Fixpoint fold_left (f : A -> B -> B) (acc : B) l :=
 End Folds.
 
 Section Operations.
-Variables (A B C : Type) (IA : Inhab A). 
+Variables (A B C : Type) (IA : Inhab A) (CA : Comparable A).
 Implicit Types l a b : list A.
 Implicit Types x : A. 
 
@@ -169,14 +169,10 @@ Fixpoint mem x l :=
   | y::l' => (x '= y) || mem x l'
   end.
 
-Fixpoint remove x l := (* DEPRECATED *)
-  match l with
-  | nil => nil
-  | y::l' => let acc := remove x l' in
-             If x = y then acc else y::acc
-  end.
+Definition remove x :=
+  filter (fun y => decide (y <> x)).
 
-Fixpoint removes l2 l1 := (* DEPRECATED *)
+Fixpoint removes l2 l1 :=
   match l2 with
   | nil => l1
   | x::l2' => removes l2' (remove x l1) 
@@ -269,8 +265,8 @@ Implicit Arguments concat [[A]].
 Implicit Arguments rev [[A]].
 Implicit Arguments length [[A]].
 Implicit Arguments mem [[A]].
-Implicit Arguments remove [[A]].
-Implicit Arguments removes [[A]].
+Implicit Arguments remove [[A] [CA]].
+Implicit Arguments removes [[A] [CA]].
 Implicit Arguments take_drop_last [[A] [IA]].
 Implicit Arguments nth_def [[A]].
 Implicit Arguments nth [[A] [IA]].
@@ -1074,14 +1070,14 @@ End Fold.
 
 Section Assoc.
 Context {A B : Type}.
-Variables (IB:Inhab B).
+Variables (IB:Inhab B) (CA:Comparable A).
 Implicit Types x : A.
 Implicit Types l : list (A*B).
 
 Fixpoint assoc k l : B :=
   match l with 
   | nil => arbitrary
-  | (x,v)::l' => If x = k then v else assoc k l' 
+  | (x,v)::l' => ifb x = k then v else assoc k l'
   end.
 
 Definition mem_assoc k := 
@@ -1094,29 +1090,29 @@ Fixpoint remove_assoc k l : list (A*B) :=
   match l with 
   | nil => nil
   | (x,v)::l' => 
-      If k = x 
+      ifb k = x
         then l' 
         else (x,v)::(remove_assoc k l')
   end.
 
 End Assoc.
 
-Implicit Arguments assoc [[A] [B] [IB]].
+Implicit Arguments assoc [[A] [B] [IB] [CA]].
 Implicit Arguments mem_assoc [[A] [B]].
 Implicit Arguments keys [[A] [B]].
-Implicit Arguments remove_assoc [[A] [B]].
+Implicit Arguments remove_assoc [[A] [B] [CA]].
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties *)
 
 Section AssocProperties.
-Variable (A B : Type) (IB:Inhab B).
+Variable (A B : Type) (IB:Inhab B) (CA:Comparable A).
 Implicit Types x : A.
 Implicit Types l : list (A*B).
 
 Lemma assoc_cons : forall k x y l,
-  assoc k ((x,y)::l) = If x = k then y else assoc k l.
+  assoc k ((x,y)::l) = ifb x = k then y else assoc k l.
 Proof using. auto. Qed.
 Lemma assoc_here : forall x y l,
   assoc x ((x,y)::l) = y.
@@ -1143,7 +1139,7 @@ Lemma remove_assoc_nil : forall x,
 Proof using. auto. Qed.
 Lemma remove_assoc_cons : forall x x' y l,
   remove_assoc x ((x',y)::l) = 
-    If x = x' then l else (x',y)::remove_assoc x l.
+    ifb x = x' then l else (x',y)::remove_assoc x l.
 Proof using. auto. Qed.
 
 Lemma assoc_remove_assoc : forall x x' l,
@@ -1152,27 +1148,25 @@ Lemma assoc_remove_assoc : forall x x' l,
 Proof using.
   introv D. induction l.
    reflexivity.
-   destruct a. simpl. tests: (x' = a).
-    case_if~.
-    tests: (x = a); tryfalse.
-     case_if~. apply assoc_here.
-     case_if~. rewrite <- IHl. unfold assoc. case_if~.
+   destruct a. simpl. do 2 case_if~; simpl; case_if~.
 Qed.
 
 End AssocProperties.
 
 Section MemAssocProperties.
 
-Lemma assoc_mem_assoc : forall A B `{Inhab B} (l : list (A * B)) a,
+Lemma assoc_mem_assoc : forall A B `{Inhab B} `{Comparable A} (l : list (A * B)) a,
   mem_assoc a l ->
   mem (a, assoc a l) l.
 Proof using.
   introv M. induction l as [|[a' b'] l]; tryfalse.
-  simpl. rew_refl. cases_if*. right. apply IHl.
-  do 2 unfolds in M. simpl in M. rew_refl in M. inverts* M.
+  simpl. rew_refl. cases_if.
+   substs*.
+   right. apply IHl.
+    do 2 unfolds in M. simpl in M. rew_refl in M. inverts* M.
 Qed.
 
-Lemma mem_assoc_assoc : forall A B `{Inhab B} (l : list (A * B)) a b,
+Lemma mem_assoc_assoc : forall A B `{Inhab B} `{Comparable A} (l : list (A * B)) a b,
   assoc a l = b ->
   mem_assoc a l ->
   mem (a, b) l.
@@ -1204,14 +1198,18 @@ Lemma mem_assoc_nil : forall A B a,
   mem_assoc a (nil : list (A * B)) = false.
 Proof using. autos*. Qed.
 
-Lemma assoc_eq_mem_assoc : forall A B `{Inhab B} (l : list (A * B)) a,
+Lemma assoc_eq_mem_assoc : forall A B `{Inhab B} `{Comparable A} (l : list (A * B)) a,
   mem (a, assoc a l) l = mem_assoc a l.
 Proof using.
   introv. induction l as [|[a' b'] l].
    reflexivity.
-   simpl. cases_if; extens; iff I; rewrite mem_assoc_cons in *; rew_refl*.
-    rew_refl in I. repeat inverts I as I; tryfalse. rewrite* <- IHl.
-    rew_refl in I. inverts I; tryfalse~. right. rewrite~ IHl.
+   simpl. extens. case_if; iff I; rewrite mem_assoc_cons in *; rew_refl in *.
+    repeat inverts I as I.
+     autos~.
+     rewrite* <- IHl.
+    inverts I; substs*.
+    rew_refl in I. inverts I; tryfalse. right. rewrite~ <- IHl.
+    rew_refl. inverts I; tryfalse~. right. rewrite~ IHl.
 Qed.
 
 Lemma mem_mem_assoc : forall A B (l : list (A * B)) a b,
@@ -1249,14 +1247,14 @@ Lemma keys_mem_assoc : forall A B (l : list (A * B)) a,
   mem a (keys l) = mem_assoc a l.
 Proof using. introv. unfold keys. rewrite~ <- mem_assoc_map_fst. Qed.
 
-Lemma mem_assoc_remove_assoc_neq : forall A B x x' (l : list (A * B)),
+Lemma mem_assoc_remove_assoc_neq : forall A B `{Comparable A} x x' (l : list (A * B)),
   x <> x' ->
   mem_assoc x (remove_assoc x' l) = mem_assoc x l.
 Proof using.
   introv N. induction l.
    reflexivity.
-   destruct a. rewrite remove_assoc_cons. cases_if~.
-    rewrite mem_assoc_cons. extens. rew_refl*.
+   destruct a. rewrite remove_assoc_cons. case_if~.
+    rewrite mem_assoc_cons. extens. rew_refl. iff* I. inverts~ I; tryfalse.
     repeat rewrite mem_assoc_cons. rewrite~ IHl.
 Qed.
 
