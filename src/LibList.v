@@ -1091,7 +1091,7 @@ Fixpoint remove_assoc k l : list (A*B) :=
   | nil => nil
   | (x,v)::l' => 
       ifb k = x
-        then l' 
+        then remove_assoc k l' 
         else (x,v)::(remove_assoc k l')
   end.
 
@@ -1139,7 +1139,7 @@ Lemma remove_assoc_nil : forall x,
 Proof using. auto. Qed.
 Lemma remove_assoc_cons : forall x x' y l,
   remove_assoc x ((x',y)::l) = 
-    ifb x = x' then l else (x',y)::remove_assoc x l.
+    ifb x = x' then remove_assoc x l else (x',y)::remove_assoc x l.
 Proof using. auto. Qed.
 
 Lemma assoc_remove_assoc : forall x x' l,
@@ -1198,6 +1198,13 @@ Lemma mem_assoc_nil : forall A B a,
   mem_assoc a (nil : list (A * B)) = false.
 Proof using. autos*. Qed.
 
+Lemma mem_mem_assoc : forall A B (l : list (A * B)) a b,
+  mem (a, b) l ->
+  mem_assoc a l.
+Proof using.
+  introv I. induction~ l. simpl in I. rewrite mem_assoc_cons. rew_refl in *. inverts* I.
+Qed.
+
 Lemma assoc_eq_mem_assoc : forall A B `{Inhab B} `{Comparable A} (l : list (A * B)) a,
   mem (a, assoc a l) l = mem_assoc a l.
 Proof using.
@@ -1210,17 +1217,6 @@ Proof using.
     inverts I; substs*.
     rew_refl in I. inverts I; tryfalse. right. rewrite~ <- IHl.
     rew_refl. inverts I; tryfalse~. right. rewrite~ IHl.
-Qed.
-
-Lemma mem_mem_assoc : forall A B (l : list (A * B)) a b,
-  mem (a, b) l ->
-  mem_assoc a l.
-Proof using.
-  introv M. induction l as [|[a' b'] l].
-   false*.
-   simpl in M. rew_refl in M. rewrite mem_assoc_cons. rew_refl. inverts M as M.
-    inverts* M.
-    right*.
 Qed.
 
 Lemma mem_assoc_exists_mem : forall A B (l : list (A * B)) a,
@@ -1254,8 +1250,20 @@ Proof using.
   introv N. induction l.
    reflexivity.
    destruct a. rewrite remove_assoc_cons. case_if~.
-    rewrite mem_assoc_cons. extens. rew_refl. iff* I. inverts~ I; tryfalse.
-    repeat rewrite mem_assoc_cons. rewrite~ IHl.
+    rewrite mem_assoc_cons. rewrite IHl. extens. rew_refl. iff* I.
+     inverts~ I. false*.
+    repeat rewrite mem_assoc_cons. extens. rew_refl. iff* I.
+     inverts~ I. rewrite IHl in *. autos*.
+     inverts~ I. rewrite* IHl.
+Qed.
+
+Lemma mem_assoc_remove_assoc_eq : forall A B `{Comparable A} x (l : list (A * B)),
+  mem_assoc x (remove_assoc x l) = false.
+Proof using.
+  introv. induction l.
+   reflexivity.
+   destruct a. simpl. case_if~. rewrite mem_assoc_cons. fold_bool. rew_refl in *.
+    introv [E|M]; apply IHl; substs*.
 Qed.
 
 End MemAssocProperties.
