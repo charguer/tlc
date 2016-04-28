@@ -45,6 +45,28 @@ Definition make (n:int) (v:A) :=
 End Zindices.
 
 
+(** Automation for [math], to unfold [length] *)
+
+Lemma LibListZ_length_def : forall A (l:list A),
+  length l = LibList.length l.
+Proof using. auto. Qed.
+
+Hint Rewrite LibListZ_length_def : rew_maths.
+
+(* DEMO
+
+  Lemma test1 : forall (L:list Z),
+    length L >= 0.
+  Proof. intros. math. Qed.
+
+  Lemma test2 : forall (L:list Z) (s n:int),
+    s <= n ->
+    s = length L ->
+    n >= 0.
+  Proof. intros. math. Qed.
+*)
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** Typeclasses read & update operations, binds and index predicates *)
 
@@ -653,6 +675,16 @@ Proof using.
 Qed.
 
 Lemma prefix_length:
+  forall ys xs,
+  prefix ys xs ->
+  length ys <= length xs.
+Proof using.
+  intros ys xs [ zs ? ]. subst xs. rew_list.
+  assert (length zs >= 0). { eauto. }
+  math.
+Qed.
+
+Lemma prefix_snoc_length:
   forall ys y xs,
   prefix (ys & y) xs ->
   length ys < length xs.
@@ -702,7 +734,7 @@ Proof using.
   introv [ slack ? ]. rew_list in *. exists (xs ++ slack). eauto.
 Qed.
 
-Lemma use_prefix_snoc:
+Lemma prefix_last: (* TEMPORARY should be: use_prefix_snoc *)
   forall x xs ys,
   prefix (xs & x) ys ->
   prefix xs ys.
@@ -722,5 +754,5 @@ Qed.
 
 End Prefix.
 
-Hint Resolve prefix_nil prefix_reflexive prove_prefix_snoc use_prefix_snoc : prefix.
+Hint Resolve prefix_nil prefix_reflexive prove_prefix_snoc prefix_last : prefix.
 
