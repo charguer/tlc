@@ -1,6 +1,6 @@
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* Option data-structure                                              
+* Option data-structure
 **************************************************************************)
 
 Set Implicit Arguments.
@@ -26,7 +26,7 @@ Definition option_compare `{Comparable A} (o1 o2 : option A) :=
   | _, _ => false
   end.
 
-Global Instance option_comparable : forall `{Comparable A}, 
+Global Instance option_comparable : forall `{Comparable A},
   Comparable (option A).
 Proof using.
   intros.
@@ -44,7 +44,7 @@ Qed.
 (** [is_some o] holds when [o] is of the form [Some x] *)
 
 Definition is_some A (o:option A) :=
-  match o with 
+  match o with
   | None => false
   | Some _ => true
   end.
@@ -58,10 +58,10 @@ Definition unsome_default A d (o:option A) :=
   | Some x => x
   end.
 
-(** [unsome o] returns the content of the option, and returns an arbitrary 
+(** [unsome o] returns the content of the option, and returns an arbitrary
     value in case the option in [None]. *)
 
-Definition unsome `{Inhab A} := 
+Definition unsome `{Inhab A} :=
   unsome_default arbitrary.
 
 (** [map f o] takes an option and returns an option, and maps the function
@@ -75,7 +75,7 @@ Definition map A B (f : A -> B) o :=
 
 (** [map_on o f] is the same as [map f o], only the arguments are swapped. *)
 
-Definition map_on A B o (f : A -> B) := 
+Definition map_on A B o (f : A -> B) :=
   map f o.
 
 (** [apply f o] optionnaly applies a function of type [A -> option B] *)
@@ -115,8 +115,8 @@ Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 
 Implicit Arguments map_inv [A B f x y].
 
-Lemma map_on_inv : forall A B (f : A->B) x y, 
-  map_on x f = Some y -> 
+Lemma map_on_inv : forall A B (f : A->B) x y,
+  map_on x f = Some y ->
   exists z, x = Some z /\ y = f z.
 Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 

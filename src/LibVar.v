@@ -101,7 +101,7 @@ Hint Extern 1 (fresh _ _ _) => simpl.
 
 (* It is possible to build a list of n fresh variables. *)
 
-Lemma var_freshes : forall L n, 
+Lemma var_freshes : forall L n,
   { xs : list var | fresh L n xs }.
 Proof using.
   intros. gen L. induction n; intros L.
@@ -164,7 +164,7 @@ Ltac pick_fresh_gen L Y :=
   (destruct (var_fresh L) as [Y Fr]).
 
 (** [pick_fresh_gens L n Y] expects [L] to be a finite set of variables
-  and adds to the context a list of variables with name [Y] and a proof 
+  and adds to the context a list of variables with name [Y] and a proof
   that [Y] is of length [n] and contains variable fresh for [L] and
   distinct from one another. *)
 
@@ -230,48 +230,48 @@ Implicit Arguments notin_union_l  [x E F].
 (** Tactics to deal with notin.  *)
 
 Ltac notin_solve_target_from x E H :=
-  match type of H with 
+  match type of H with
   | x \notin E => constr:(H)
-  | x \notin (?F \u ?G) =>  
+  | x \notin (?F \u ?G) =>
      let H' :=
-        match F with 
+        match F with
         | context [E] => constr:(notin_union_r1 H)
-        | _ => match G with 
+        | _ => match G with
           | context [E] => constr:(notin_union_r2 H)
           | _ => fail 20
           end
         end in
-     notin_solve_target_from x E H' 
+     notin_solve_target_from x E H'
   end.
 
 Ltac notin_solve_target x E :=
-  match goal with 
+  match goal with
   | H: x \notin ?L |- _ =>
     match L with context[E] =>
       let F := notin_solve_target_from x E H in
-      apply F 
+      apply F
     end
-  | H: x <> ?y |- _ => 
-     match E with \{y} => 
+  | H: x <> ?y |- _ =>
+     match E with \{y} =>
        apply (notin_singleton_l H)
      end
   end.
 
 Ltac notin_solve_one :=
   match goal with
-  | |- ?x \notin \{?y} => 
-     apply notin_singleton_swap; 
-     notin_solve_target y (\{x}) 
-  | |- ?x \notin ?E => 
+  | |- ?x \notin \{?y} =>
+     apply notin_singleton_swap;
+     notin_solve_target y (\{x})
+  | |- ?x \notin ?E =>
     notin_solve_target x E
   (* If x is an evar, tries to instantiate it.
-     Problem: it might loop ! 
-  | |- ?x \notin ?E => 
+     Problem: it might loop !
+  | |- ?x \notin ?E =>
      match goal with y:var |- _ =>
-       match y with 
+       match y with
        | x => fail 1
        | _ =>
-         let H := fresh in cuts H: (y \notin E); 
+         let H := fresh in cuts H: (y \notin E);
          [ apply H | notin_solve_target y E ]
         end
      end
@@ -279,21 +279,21 @@ Ltac notin_solve_one :=
   end.
 
 Ltac notin_simpl :=
-  match goal with 
-  | |- _ \notin (_ \u _) => apply notin_union_l; notin_simpl 
+  match goal with
+  | |- _ \notin (_ \u _) => apply notin_union_l; notin_simpl
   | |- _ \notin (\{}) => apply notin_empty; notin_simpl
   | |- ?x <> ?y => apply notin_singleton_r; notin_simpl
   | |- _ => idtac
   end.
 
 Ltac notin_solve_false :=
-  match goal with 
+  match goal with
   | H: ?x \notin ?E |- _ =>
     match E with context[x] =>
-      apply (@notin_same _ x); 
+      apply (@notin_same _ x);
       let F := notin_solve_target_from x (\{x}) H in
       apply F
-    end 
+    end
   | H: ?x <> ?x |- _ => apply H; reflexivity
   end.
 
@@ -316,9 +316,9 @@ Hint Extern 1 (_ \notin _) => notin_solve.
 Hint Extern 1 (_ <> _ :> var) => notin_solve.
 Hint Extern 1 ((_ \notin _) /\ _) => splits.
 
-(* 
+(*
 LATER:
-  | |- ?x \notin ?E => 
+  | |- ?x \notin ?E =>
 	progress (unfold x); notin_simpl
   | |- (var_gen ?x) \notin _ =>
         apply notin_var_gen; intros; notin_simpl
@@ -356,7 +356,7 @@ Lemma fresh_union_l : forall xs L1 L2 n,
 Proof using.
   induction xs; simpl; intros; destruct n; tryfalse*. auto.
   destruct H. destruct H0. split~.
-  forwards~ K: (@IHxs (L1 \u \{a}) (L2 \u \{a}) n). 
+  forwards~ K: (@IHxs (L1 \u \{a}) (L2 \u \{a}) n).
   rewrite <- (union_same \{a}).
   rewrite union_assoc.
   rewrite <- (union_assoc L1).
@@ -376,7 +376,7 @@ Lemma fresh_length : forall L n xs,
   fresh L n xs -> n = length xs.
 Proof using.
   intros. gen n L. induction xs; simpl; intros n L Fr;
-    destruct n; tryfalse*. 
+    destruct n; tryfalse*.
   auto.
   rew_length. rewrite* <- (@IHxs n (L \u \{a})).
 Qed.
@@ -413,45 +413,45 @@ Proof using.
 Qed.
 
 Ltac fresh_solve_target_from E n xs H :=
-  match type of H with 
+  match type of H with
   | fresh E n xs => constr:(H)
-  | fresh E ?m xs => 
-      match n with 
-      | length xs => constr:(fresh_resize_length H) 
-      | _ => 
-         match goal with 
-         | Eq: m = n |- _ => constr:(fresh_resize H _ (sym_eq Eq)) 
-         | Eq: n = m |- _ => constr:(fresh_resize H _ Eq) 
+  | fresh E ?m xs =>
+      match n with
+      | length xs => constr:(fresh_resize_length H)
+      | _ =>
+         match goal with
+         | Eq: m = n |- _ => constr:(fresh_resize H _ (sym_eq Eq))
+         | Eq: n = m |- _ => constr:(fresh_resize H _ Eq)
          end
       end
-  | fresh (?F \u ?G) ?m xs => 
+  | fresh (?F \u ?G) ?m xs =>
      let H' :=
-        match F with 
+        match F with
         | context [E] => constr:(fresh_union_r1 H)
-        | _ => match G with 
+        | _ => match G with
           | context [E] => constr:(fresh_union_r2 H)
           | _ => fail 20
           end
         end in
-     fresh_solve_target_from E n xs H' 
+     fresh_solve_target_from E n xs H'
   end.
 
 Ltac fresh_solve_target E n xs :=
   match goal with H: fresh ?L _ xs |- _ =>
     match L with context[E] =>
       let F := fresh_solve_target_from E n xs H in
-      apply F 
+      apply F
     end
   end.
 
 Ltac fresh_solve_one :=
-  match goal with 
-  | |- fresh ?E ?n ?xs =>   
-    fresh_solve_target E n xs 
+  match goal with
+  | |- fresh ?E ?n ?xs =>
+    fresh_solve_target E n xs
   | |- fresh \{} ?n ?xs =>
     match goal with H: fresh ?F ?m xs |- _ =>
       apply (fresh_empty H);
-      fresh_solve_target F n xs 
+      fresh_solve_target F n xs
     end
   end.
 
@@ -463,9 +463,9 @@ Ltac fresh_solve_by_notins :=
   simpl; splits; try notin_solve.
 
 Ltac fresh_solve :=
-  fresh_simpl; 
-  first [ fresh_solve_one 
-        | fresh_solve_by_notins 
+  fresh_simpl;
+  first [ fresh_solve_one
+        | fresh_solve_by_notins
         | idtac ].
 
 Hint Extern 1 (fresh _ _ _) => fresh_solve.

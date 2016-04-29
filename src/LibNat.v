@@ -50,24 +50,24 @@ Global Opaque le_nat_inst.
 
 Lemma lt_peano : lt = Peano.lt.
 Proof using.
-  extens. rew_to_le. rewrite le_peano. 
+  extens. rew_to_le. rewrite le_peano.
   unfold strict. intros. omega.
 Qed.
 
 Lemma ge_peano : ge = Peano.ge.
 Proof using.
-  extens. rew_to_le. rewrite le_peano. 
+  extens. rew_to_le. rewrite le_peano.
   unfold flip. intros. omega.
 Qed.
 
 Lemma gt_peano : gt = Peano.gt.
 Proof using.
-  extens. rew_to_le. rewrite le_peano. 
+  extens. rew_to_le. rewrite le_peano.
   unfold strict, flip. intros. omega.
 Qed.
 
 Hint Rewrite le_peano lt_peano ge_peano gt_peano : rew_nat_comp.
-Ltac nat_comp_to_peano := 
+Ltac nat_comp_to_peano :=
   autorewrite with rew_nat_comp in *.
 
 (** [nat_math] calls [omega] after basic pre-processing
@@ -75,7 +75,7 @@ Ltac nat_comp_to_peano :=
     operators with the ones defined in [Peano] library. *)
 
 Ltac nat_math_setup :=
-  intros; 
+  intros;
   try match goal with |- _ /\ _ => split end;
   try match goal with |- _ = _ :> Prop => apply prop_ext; iff end;
   nat_comp_to_peano.
@@ -87,20 +87,20 @@ Ltac nat_math :=
 (* ********************************************************************** *)
 (** * Operations *)
 
-Definition div (n q : nat) := 
-  match q with 
+Definition div (n q : nat) :=
+  match q with
   | 0 => 0
-  | S predq => 
+  | S predq =>
   let aux := fix aux (m r : nat) {struct m} :=
     match m,r with
     | 0, _ => 0
     | S m',0 => (1 + aux m' predq)%nat
     | S m', S r' => aux m' r'
-    end in 
+    end in
   aux n predq
   end.
 
-Fixpoint factorial (n:nat) : nat := 
+Fixpoint factorial (n:nat) : nat :=
   match n with
   | 0 => 1
   | S n' => n * (factorial n')
@@ -110,7 +110,7 @@ Fixpoint factorial (n:nat) : nat :=
 (* ********************************************************************** *)
 (** * Induction *)
 
-Lemma peano_induction : 
+Lemma peano_induction :
   forall (P:nat->Prop),
     (forall n, (forall m, m < n -> P m) -> P n) ->
     (forall n, P n).
@@ -118,10 +118,10 @@ Proof using.
   introv H. cuts* K: (forall n m, m < n -> P m).
   nat_comp_to_peano.
   induction n; introv Le. inversion Le. apply H.
-  intros. apply IHn. nat_math. 
+  intros. apply IHn. nat_math.
 Qed.
 
-Lemma measure_induction : 
+Lemma measure_induction :
   forall (A:Type) (mu:A->nat) (P:A->Prop),
     (forall x, (forall y, mu y < mu x -> P y) -> P x) ->
     (forall x, P x).
@@ -142,7 +142,7 @@ Lemma plus_zero_r : forall n,
 Proof using. nat_math. Qed.
 Lemma plus_zero_l : forall n,
   0 + n = n.
-Proof using. nat_math. Qed. 
+Proof using. nat_math. Qed.
 Lemma minus_zero : forall n,
   n - 0 = n.
 Proof using. nat_math. Qed.
@@ -197,7 +197,7 @@ End CompProp.
 (* ---------------------------------------------------------------------- *)
 (** ** Simplification tactic *)
 
-(** [rew_nat] performs some basic simplification on 
+(** [rew_nat] performs some basic simplification on
     expressions involving natural numbers *)
 
 Hint Rewrite le_SS ge_SS lt_SS gt_SS : rew_nat.

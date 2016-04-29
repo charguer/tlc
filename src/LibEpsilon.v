@@ -18,7 +18,7 @@ Generalizable Variables A B.
 Lemma Inhab_witness : forall `{Inhab A}, { x : A | True }.
 Proof using. intros. destruct H as [H]. apply~ indefinite_description. Qed.
 
-Lemma epsilon_def : forall `{Inhab A} (P : A->Prop), 
+Lemma epsilon_def : forall `{Inhab A} (P : A->Prop),
   { x : A | (exists y, P y) -> P x }.
 Proof using.
   intros A I P. destruct (classicT (exists y, P y)) as [H|H].
@@ -50,7 +50,7 @@ Lemma epsilon_elim : forall `{Inhab A} (P Q : A->Prop) x,
 Proof using. introv Px W. apply W. apply* epsilon_spec_exists. Qed.
 
 Lemma epsilon_eq : forall A {I:Inhab A} (P P':A->Prop),
-  (forall x, P x <-> P' x) -> 
+  (forall x, P x <-> P' x) ->
   epsilon P = epsilon P'.
 Proof using. introv H. fequals. apply~ prop_ext_1. Qed.
 
@@ -68,7 +68,7 @@ Lemma epsilon_spec_exists' : forall A (P : A->Prop) {IA:Inhab A},
 Proof using. intros. applys* epsilon_spec_exists. Qed.
 
 Ltac find_epsilon cont :=
-  match goal with 
+  match goal with
   | |- context [epsilon ?E] => cont E
   | H: context [epsilon ?E] |- _ => cont E
   end.
@@ -76,12 +76,12 @@ Ltac find_epsilon cont :=
 Ltac find_epsilon_in H cont :=
   match type of H with context [epsilon ?E] => cont E end.
 
-Ltac spec_epsilon_post E X W I := 
-   first [ lets I: (>> (@epsilon_spec' _ E W) __ __) 
-         | lets I: (>> (@epsilon_spec' _ E _ W) __)  ]; 
+Ltac spec_epsilon_post E X W I :=
+   first [ lets I: (>> (@epsilon_spec' _ E W) __ __)
+         | lets I: (>> (@epsilon_spec' _ E _ W) __)  ];
    [ | sets X: (epsilon E) ].
 
-Ltac spec_epsilon_exists_post E X I := 
+Ltac spec_epsilon_exists_post E X I :=
    lets I: (>> (@epsilon_spec_exists' _ E) __ __); [ | sets X: (epsilon E) ].
 
 Tactic Notation "sets_epsilon" "as" ident(X) :=
@@ -104,7 +104,7 @@ Tactic Notation "spec_epsilon" "as" ident(X) :=
 Tactic Notation "spec_epsilon" "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
   find_epsilon_in H ltac:(fun E => spec_epsilon_exists_post E X I).
 Tactic Notation "spec_epsilon" "in" hyp(H) "as" ident(X) :=
-  let H := fresh "H" X in spec_epsilon in H as X H. 
+  let H := fresh "H" X in spec_epsilon in H as X H.
 
 Tactic Notation "spec_epsilon" "~" constr(W) "as" ident(X) simple_intropattern(I) :=
   spec_epsilon W as X I; auto_tilde.
@@ -180,7 +180,7 @@ Lemma choose_unique:
   forall a b,
   R a b ->
   choose a = b.
-Proof using IB functional_R. 
+Proof using IB functional_R.
   intros.
   (* [R a b] implies that [a] is in the domain of [R].
      Hence there is an edge from [a] to [choose a]. *)

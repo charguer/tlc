@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibReflect LibOperation 
+Require Import LibTactics LibLogic LibReflect LibOperation
   LibRelation LibOrder LibEpsilon.
 Generalizable Variables A.
 
@@ -233,7 +233,7 @@ Lemma mmin_spec_nat:
   P m /\ (forall x, P x -> m <= x).
 Proof using.
   introv E Q. applys (@mmin_spec _ _ _ P m E Q).
-  applys admits_lower_bound_nat. 
+  applys admits_lower_bound_nat.
   applys bounded_has_minimal_nat.
 Qed.
 
@@ -250,7 +250,7 @@ Definition MMin `{Inhab A} `{Le A} := mmin le.
    ordering can be inferred. *)
 
 Definition MMax `{Inhab A} `{Le A} := mmax le.
-  
+
 
 
 

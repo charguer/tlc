@@ -11,7 +11,7 @@ Generalizable Variable A.
 
 (* ********************************************************************** *)
 (** * Definition of environments and their basic operations *)
- 
+
 (** To avoid definitions being unfolded by [simpl] in an uncontrollable
     manner, we use a module signature to enforce abstraction *)
 
@@ -29,7 +29,7 @@ Parameter empty : env A.
 Parameter empty_def : empty = nil.
 
 Parameter single : var -> A -> env A.
-Parameter single_def : 
+Parameter single_def :
   single = fun x v => (x,v)::nil.
 
 Parameter concat : env A -> env A -> env A.
@@ -37,12 +37,12 @@ Parameter concat_def :
   concat = fun E F => F ++ E.
 
 Parameter singles : list var -> list A -> env A.
-Parameter singles_def : 
+Parameter singles_def :
   singles = fun xs vs =>
     fold_right (fun p acc => concat acc (single (fst p) (snd p))) empty (combine xs vs).
 
 Parameter keys : env A -> list var.
-Parameter keys_def : 
+Parameter keys_def :
   keys = map fst.
 
 Parameter values : env A -> list A.
@@ -50,21 +50,21 @@ Parameter values_def :
   values = map snd.
 
 Parameter fold_vars : (A -> vars) -> env A -> vars.
-Parameter fold_vars_defs : 
+Parameter fold_vars_defs :
   fold_vars = fun fv E =>
     fold_right (fun v acc => fv v \u acc) \{} (values E).
 
 Parameter dom : env A -> vars.
-Parameter dom_def : 
+Parameter dom_def :
   dom = fold_right (fun p E => \{fst p} \u E) \{}.
 
 Parameter map : (A -> B) -> env A -> env B.
-Parameter map_def : 
-  map = fun f E => 
+Parameter map_def :
+  map = fun f E =>
     LibList.map (fun p => (fst p, f (snd p))) E.
 
 Parameter map_keys : (var -> var) -> env A -> env A.
-Parameter map_keys_def : 
+Parameter map_keys_def :
   map_keys = fun f E =>
     LibList.map (fun p => (f (fst p), snd p)) E.
 
@@ -74,7 +74,7 @@ Fixpoint get_impl (k : var) (E : env A) {struct E} : option A :=
   | nil => None
   | (x,v) :: E' => If k = x then Some v else get_impl k E'
   end.
-Parameter get_def : 
+Parameter get_def :
   get = get_impl.
 
 End Definitions.
@@ -97,55 +97,55 @@ Lemma empty_def : empty = nil.
 Proof using. reflexivity. Qed.
 
 Definition single x v : env A := (x,v)::nil.
-Lemma single_def : 
+Lemma single_def :
   single = fun x v => (x,v)::nil.
 Proof using. reflexivity. Qed.
 
 Definition concat (E F : env A) := F ++ E.
-Lemma concat_def : 
+Lemma concat_def :
   concat = fun E F => F ++ E.
 Proof using. reflexivity. Qed.
 
-Definition singles (xs : list var) (vs : list A) : env A := 
+Definition singles (xs : list var) (vs : list A) : env A :=
   fold_right (fun p acc => concat acc (single (fst p) (snd p))) empty (combine xs vs).
-Lemma singles_def : 
+Lemma singles_def :
   singles = fun xs vs =>
    fold_right (fun p acc => concat acc (single (fst p) (snd p))) empty (combine xs vs).
 Proof using. reflexivity. Qed.
 
 Definition keys : env A -> list var :=
   map fst.
-Lemma keys_def : 
+Lemma keys_def :
   keys = map fst.
 Proof using. reflexivity. Qed.
 
 Definition values : env A -> list A :=
   map snd.
-Lemma values_def : 
+Lemma values_def :
   values = map snd.
 Proof using. reflexivity. Qed.
 
 Definition fold_vars (fv : A -> vars) (E : env A) :=
   fold_right (fun v acc => fv v \u acc) \{} (values E).
-Lemma fold_vars_defs : 
+Lemma fold_vars_defs :
   fold_vars = fun fv E => fold_right (fun v acc => fv v \u acc) \{} (values E).
 Proof using. reflexivity. Qed.
 
 Definition map (f:A->B) (E:env A) :=
   LibList.map (fun p => (fst p, f (snd p))) E.
-Lemma map_def : 
+Lemma map_def :
   map = fun f E => LibList.map (fun p => (fst p, f (snd p))) E.
 Proof using. reflexivity. Qed.
 
 Definition map_keys (f:var->var) (E:env A) :=
   LibList.map (fun p => (f (fst p), snd p)) E.
-Lemma map_keys_def : 
+Lemma map_keys_def :
   map_keys = fun f E => LibList.map (fun p => (f (fst p), snd p)) E.
 Proof using. reflexivity. Qed.
 
-Definition dom : env A -> vars :=  
+Definition dom : env A -> vars :=
   fold_right (fun p E => \{fst p} \u E) \{}.
-Lemma dom_def : 
+Lemma dom_def :
   dom = fold_right (fun p E => \{fst p} \u E) \{}.
 Proof using. reflexivity. Qed.
 
@@ -155,7 +155,7 @@ Fixpoint get_impl (k : var) (E : env A) {struct E} : option A :=
   | (x,v) :: E' => If k = x then Some v else get_impl k E'
   end.
 Definition get := get_impl.
-Lemma get_def : 
+Lemma get_def :
   get = get_impl.
 Proof using. reflexivity. Qed.
 
@@ -180,10 +180,10 @@ Notation "xs ~* vs" := (singles xs vs)
 
 (** [E & F] is the notation for concatenation of E and F. *)
 
-Notation "E & F" := (concat E F) 
+Notation "E & F" := (concat E F)
   (at level 28, left associativity) : env_scope.
 
-(** [x # E] to be read x fresh from E captures the fact that 
+(** [x # E] to be read x fresh from E captures the fact that
     x is unbound in E . *)
 
 Notation "x '#' E" := (x \notin (dom E)) (at level 67) : env_scope.
@@ -210,7 +210,7 @@ Inductive ok : env A -> Prop :=
 (** An environment contains a binding from x to a iff the most recent
   binding on x is mapped to a *)
 
-Definition binds x v E := 
+Definition binds x v E :=
   get x E = Some v.
 
 (** Read the value associated to a bound variable *)
@@ -272,7 +272,7 @@ Lemma map_concat : forall f E F,
 Proof using.
   intros. rew_env_defs.
   gen E. induction F as [|(x,v)]; intros.
-  rew_list~. 
+  rew_list~.
   rew_list. fequals.
 Qed.
 Lemma map_push : forall f x v E,
@@ -301,14 +301,14 @@ Lemma get_empty : forall k,
   get k (@empty A) = None.
 Proof using. intros. rew_env_defs. auto. Qed.
 Lemma get_single : forall k x v,
-  get k (x ~ v) = If k = x 
-                    then Some v 
+  get k (x ~ v) = If k = x
+                    then Some v
                     else None.
 Proof using. intros. rew_env_defs. unfold get_impl. auto. Qed.
 Lemma get_concat : forall k E F,
-  get k (E & F) = match get k F with 
-                  | None => get k E 
-                  | Some v => Some v 
+  get k (E & F) = match get k F with
+                  | None => get k E
+                  | Some v => Some v
                   end.
 Proof using.
   intros. rew_env_defs. induction F as [|(x,v)].
@@ -322,13 +322,13 @@ Proof using. rew_env_defs. auto. Qed.
 Lemma dom_single : forall x v,
   dom (x ~ v) = \{x}.
 Proof using.
-  intros. rew_env_defs. 
-  rew_list. rewrite~ union_empty_r. 
+  intros. rew_env_defs.
+  rew_list. rewrite~ union_empty_r.
 Qed.
 Lemma dom_concat : forall E F,
   dom (E & F) = dom E \u dom F.
-Proof using. 
-  intros. rew_env_defs. 
+Proof using.
+  intros. rew_env_defs.
   gen E. induction F as [|(x,v)]; intros.
   rew_list. rewrite~ union_empty_r.
   rew_app. rewrite fold_right_cons. rewrite IHF.
@@ -336,7 +336,7 @@ Proof using.
 Qed.
 Lemma dom_push : forall x v E,
   dom (E & x ~ v) = \{x} \u dom E.
-Proof using.  
+Proof using.
   intros. rewrite dom_concat. rewrite dom_single.
   rewrite~ union_comm.
 Qed.
@@ -345,13 +345,13 @@ End Properties.
 
 Section SinglesProperties.
 Variable A B : Type.
-Implicit Types x : var. 
-Implicit Types v : A. 
+Implicit Types x : var.
+Implicit Types v : A.
 Implicit Types xs : list var.
 Implicit Types vs : list A.
 Implicit Types E F : env A.
 
-Lemma singles_nil : 
+Lemma singles_nil :
   nil ~* nil = (@empty A).
 Proof using. intros. rew_env_defs. auto. Qed.
 
@@ -366,7 +366,7 @@ Proof using. intros. rew_env_defs. simpl. rew_env_defs. fequals. Qed.
 Lemma singles_two : forall x1 x2 v1 v2,
   (x1::x2::nil) ~* (v1::v2::nil) = (x2 ~ v2 & x1 ~ v1).
 Proof using. intros. rew_env_defs. simpl. rew_env_defs. fequals. Qed.
- 
+
 Lemma keys_singles : forall xs vs,
   length xs = length vs ->
   keys (xs ~* vs) = xs.
@@ -380,7 +380,7 @@ Qed.
 Lemma values_singles : forall xs vs,
   length xs = length vs ->
   values (xs ~* vs) = vs.
-Proof using. 
+Proof using.
   intros. rew_env_defs. gen vs.
   induction xs; destruct vs; introv E; tryfalse.
   auto.
@@ -391,8 +391,8 @@ Qed.
 Lemma dom_singles : forall xs vs,
   length xs = length vs ->
   dom (xs ~* vs) = from_list xs.
-Proof using. 
-  intros. rew_env_defs. gen vs. 
+Proof using.
+  intros. rew_env_defs. gen vs.
   induction xs; destruct vs; introv E; tryfalse.
   simpl. rewrite~ from_list_nil.
   simpl. rew_env_defs. rew_list. rewrite from_list_cons. fequals.
@@ -432,7 +432,7 @@ Qed.
 
 Lemma singles_keys_values : forall E,
   E = keys E ~* values E.
-Proof using. 
+Proof using.
   intros. rew_env_defs. induction E as [|[x v] E'].
   auto.
   rew_list. simpl. rew_env_defs. rew_list. fequals.
@@ -488,7 +488,7 @@ Lemma eq_single_inv : forall x1 x2 v1 v2,
 Proof using. introv H. rew_env_defs. inverts~ H. Qed.
 
 Lemma eq_push_inv : forall x1 x2 v1 v2 E1 E2,
-  E1 & x1 ~ v1 = E2 & x2 ~ v2 -> 
+  E1 & x1 ~ v1 = E2 & x2 ~ v2 ->
   x1 = x2 /\ v1 = v2 /\ E1 = E2.
 Proof using. introv H. rew_env_defs. inverts~ H. Qed.
 
@@ -509,7 +509,7 @@ Lemma dom_map : forall (B:Type) (f:A->B) E,
 Proof using.
   induction E using env_ind.
   rewrite map_empty. do 2 rewrite dom_empty. auto.
-  rewrite map_concat. rewrite map_single. 
+  rewrite map_concat. rewrite map_single.
   rewrite_all dom_concat. rewrite_all dom_single. congruence.
 Qed.
 
@@ -521,20 +521,20 @@ Proof using.
 Qed.
 
 Lemma get_push : forall k x v E,
-  get k (E & x ~ v) = 
-    If k = x 
-      then Some v 
+  get k (E & x ~ v) =
+    If k = x
+      then Some v
       else get k E.
 Proof using.
   intros. rewrite get_concat. rewrite get_single. case_if~.
 Qed.
 
 Ltac simpl_dom :=
-  rewrite_all dom_push in *;  
+  rewrite_all dom_push in *;
   rewrite_all dom_empty in *.
 
 Lemma get_some : forall x E,
-  x \in dom E -> exists v, get x E = Some v. 
+  x \in dom E -> exists v, get x E = Some v.
 (* i.e.  [x \in dom E -> exists v, binds x v E] *)
 Proof using. (* beautify *)
   unfold binds.
@@ -548,7 +548,7 @@ Proof using. (* beautify *)
 Qed.
 
 Lemma get_some_inv : forall x v E,
-  get x E = Some v -> x \in dom E. 
+  get x E = Some v -> x \in dom E.
 (* i.e.  [binds x v E -> x \in dom E] *)
 Proof using. (* beautify *)
   unfold binds.
@@ -560,17 +560,17 @@ Proof using. (* beautify *)
 Qed.
 
 Lemma get_none : forall x E,
-  x # E -> get x E = None. 
-Proof using. 
+  x # E -> get x E = None.
+Proof using.
   induction E using env_ind; introv In.
   rewrite~ get_empty.
   rewrite~ get_push. case_if.
-    simpl_dom. subst. notin_false. 
+    simpl_dom. subst. notin_false.
     simpl_dom. auto.
 Qed.
 
 Lemma get_none_inv : forall x E,
-  get x E = None -> x # E. 
+  get x E = None -> x # E.
 Proof using.
   induction E using env_ind; introv Eq.
   simpl_dom. auto.
@@ -580,13 +580,13 @@ Qed.
 
 End MoreProperties.
 
-Lemma binds_get_or_arbitrary : forall `{Inhab A} x v (E:env A), 
+Lemma binds_get_or_arbitrary : forall `{Inhab A} x v (E:env A),
   binds x v E -> get_or_arbitrary x E = v.
 Proof using. introv M. unfold get_or_arbitrary. rewrite~ M. Qed.
 
 Definition indom_dec A (E:env A) x :=
   match get x E with None => false | Some _ => true end.
- 
+
 Global Instance indom_decidable : forall A (E:env A) x,
   Decidable (x \in dom E).
 Proof using.
@@ -603,24 +603,24 @@ Hint Constructors ok.
 
 Hint Rewrite dom_empty dom_single dom_concat : rew_env_dom.
 Hint Rewrite map_empty map_single map_concat : rew_env_map.
-Hint Rewrite map_keys_empty map_keys_single 
+Hint Rewrite map_keys_empty map_keys_single
  map_keys_concat : rew_env_map_keys.
 Hint Rewrite get_empty get_single get_concat : rew_evn_get.
 
 Hint Rewrite concat_empty_r concat_empty_l concat_assoc : rew_env_concat.
 
-Tactic Notation "rew_env_concat" := 
+Tactic Notation "rew_env_concat" :=
   autorewrite with rew_env_concat.
-Tactic Notation "rew_env_concat" "in" hyp(H) := 
+Tactic Notation "rew_env_concat" "in" hyp(H) :=
   autorewrite with rew_env_concat in H.
-Tactic Notation "rew_env_concat" "in" "*" := 
+Tactic Notation "rew_env_concat" "in" "*" :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_env_concat).
   (* autorewrite with rew_env_concat in *. *)
 
 Ltac simpl_dom :=
   rewrite_all dom_map in *;
-  rewrite_all dom_push in *;  
-  rewrite_all dom_concat in *;  
+  rewrite_all dom_push in *;
+  rewrite_all dom_concat in *;
   rewrite_all dom_single in *;
   rewrite_all dom_empty in *.
 
@@ -682,12 +682,12 @@ Qed.
 
 Lemma ok_middle_inv_l : forall E F x v,
   ok (E & x ~ v & F) -> x # E.
-Proof using. introv H. forwards~ [? _]: ok_middle_inv H. Qed. 
+Proof using. introv H. forwards~ [? _]: ok_middle_inv H. Qed.
 
 Lemma ok_middle_inv_r : forall E F x v,
   ok (E & x ~ v & F) -> x # F.
-Proof using. introv H. forwards~ [_ ?]: ok_middle_inv H. Qed. 
- 
+Proof using. introv H. forwards~ [_ ?]: ok_middle_inv H. Qed.
+
 Lemma ok_remove : forall F E G,
   ok (E & F & G) -> ok (E & G).
 Proof using.
@@ -698,7 +698,7 @@ Qed.
 
 Lemma ok_map : forall E (f : A -> B),
   ok E -> ok (map f E).
-Proof using. 
+Proof using.
   induction E using env_ind; introv;
    autorewrite with rew_env_map; rew_env_concat; intros Ok.
   auto. destruct* (ok_push_inv Ok).
@@ -729,9 +729,9 @@ Proof using.
 Qed.
 
 (* LATER: not used
-Lemma singles_ok : forall xs vs E, 
+Lemma singles_ok : forall xs vs E,
   ok E ->
-  fresh (dom E) (length xs) xs -> 
+  fresh (dom E) (length xs) xs ->
   ok (E & xs ~* vs).
 Proof using. ...
   induction xs; simpl; intros. auto.
@@ -740,7 +740,7 @@ Proof using. ...
 *)
 
 (* LATER: not used;
-   missing a precondition unless nil~*vs returns nil 
+   missing a precondition unless nil~*vs returns nil
 Lemma ok_concat_singles : forall n xs vs E,
   ok E ->
   fresh (dom E) n xs ->
@@ -755,7 +755,7 @@ Proof using.
 Qed.
 *)
 
-(* LATER: not used 
+(* LATER: not used
   Lemma ok_concat : forall E F,
     ok E -> ok F -> disjoint (dom E) (dom F) ->
     ok (E & F).
@@ -792,7 +792,7 @@ Hint Extern 1 (ok (?E)) =>
   match goal with H: ok (_ & E) |- _ =>
     apply (ok_concat_inv_r H) end.
 
-(* not used 
+(* not used
 Hint Extern 1 (ok (_ & ?xs ~* ?vs)) =>
   match goal with H: fresh _ ?n xs |- _ =>
   match type of vs with list ?A =>
@@ -818,14 +818,14 @@ Proof using. auto. Qed.
 
 Lemma binds_empty_inv : forall x v,
   binds x v empty -> False.
-Proof using. 
-  unfold binds. introv H. rewrite get_empty in H. false. 
+Proof using.
+  unfold binds. introv H. rewrite get_empty in H. false.
 Qed.
 
 Lemma binds_single_eq : forall x v,
   binds x v (x ~ v).
 Proof using.
-  intros. unfold binds. rewrite get_single. case_if~. 
+  intros. unfold binds. rewrite get_single. case_if~.
 Qed.
 
 Lemma binds_single_inv : forall x1 x2 v1 v2,
@@ -833,14 +833,14 @@ Lemma binds_single_inv : forall x1 x2 v1 v2,
   x1 = x2 /\ v1 = v2.
 Proof using.
   unfold binds. introv H. rewrite get_single in H.
-  case_if; inversions~ H. 
+  case_if; inversions~ H.
 Qed.
 
 Lemma binds_push_inv : forall x1 v1 x2 v2 E,
   binds x1 v1 (E & x2 ~ v2) ->
      (x1 = x2 /\ v1 = v2)
   \/ (x1 <> x2 /\ binds x1 v1 E).
-Proof using.  
+Proof using.
   introv H. unfolds binds. rewrite get_push in H. case_if.
   inverts~ H. auto.
 Qed.
@@ -868,18 +868,18 @@ Proof using. intros. unfold binds. rewrite get_push. cases_if~. Qed.
 
 Lemma binds_push_neq : forall x1 x2 v1 v2 E,
   binds x1 v1 E -> x1 <> x2 -> binds x1 v1 (E & x2 ~ v2).
-Proof using. 
-  introv H N. unfolds binds. rewrite get_push. case_if~. 
+Proof using.
+  introv H N. unfolds binds. rewrite get_push. case_if~.
 Qed.
 
 Lemma binds_concat_inv : forall x v E1 E2,
   binds x v (E1 & E2) ->
      (binds x v E2)
   \/ (x # E2 /\ binds x v E1).
-Proof using. 
+Proof using.
   introv H. induction E2 using env_ind.
   rewrite~ concat_empty_r in H.
-  rewrite concat_assoc in H. 
+  rewrite concat_assoc in H.
    forwards [[? ?]|[? M]]: binds_push_inv H.
      subst. left. apply binds_tail.
      forwards [?|[? ?]]: IHE2 M.
@@ -889,11 +889,11 @@ Qed.
 
 Lemma binds_map : forall x v (f : A -> B) E,
   binds x v E -> binds x (f v) (map f E).
-Proof using. 
+Proof using.
   introv H. unfolds binds. rew_env_defs.
-  induction E as [|[x' v'] E']; simpls. 
+  induction E as [|[x' v'] E']; simpls.
   false.
-  cases_if~. inverts~ H. 
+  cases_if~. inverts~ H.
 Qed.
 
 (** Basic forms *)
@@ -901,8 +901,8 @@ Qed.
 Lemma binds_func : forall x v1 v2 E,
   binds x v1 E -> binds x v2 E -> v1 = v2.
 Proof using.
-  introv H1 H2. unfolds binds. 
-  induction E as [|E' x' v'] using env_ind. 
+  introv H1 H2. unfolds binds.
+  induction E as [|E' x' v'] using env_ind.
   rewrite get_empty in H1. false.
   rewrite get_push in H1,H2. case_if~.
    inverts H1. inverts~ H2.
@@ -911,7 +911,7 @@ Qed.
 Lemma binds_fresh_inv : forall x v E,
   binds x v E -> x # E -> False.
 Proof using.
-  introv H F. unfolds binds. 
+  introv H F. unfolds binds.
   induction E as [|E' x' v'] using env_ind.
   rewrite get_empty in H. false.
   rewrite get_push in H. case_if~. subst.
@@ -932,7 +932,7 @@ Lemma binds_concat_left : forall x v E1 E2,
   binds x v E1 ->
   x # E2 ->
   binds x v (E1 & E2).
-Proof using. 
+Proof using.
   introv H F. induction E2 using env_ind.
   rewrite~ concat_empty_r.
   rewrite concat_assoc. applys~ binds_push_neq.
@@ -943,18 +943,18 @@ Lemma binds_concat_left_ok : forall x v E1 E2,
   ok (E1 & E2) ->
   binds x v E1 ->
   binds x v (E1 & E2).
-Proof using. 
+Proof using.
   introv O H. induction E2 using env_ind.
   rewrite~ concat_empty_r.
   rewrite concat_assoc in O|-*. lets [_ ?]: ok_push_inv O.
-  applys~ binds_push_neq. intro_subst. applys~ binds_fresh_inv H. 
+  applys~ binds_push_neq. intro_subst. applys~ binds_fresh_inv H.
 Qed.
 
 Lemma binds_concat_left_inv : forall x v E1 E2,
   binds x v (E1 & E2) ->
   x # E2 ->
   binds x v E1.
-Proof using. 
+Proof using.
   introv H F. lets~ [M|[? ?]]: binds_concat_inv H.
     false. applys~ binds_fresh_inv M.
 Qed.
@@ -982,7 +982,7 @@ Qed.
 Lemma binds_middle_eq : forall x E1 E2 v,
   x # E2 ->
   binds x v (E1 & x ~ v & E2).
-Proof using. 
+Proof using.
   introv F. applys~ binds_concat_left. applys binds_tail.
 Qed.
 
@@ -1006,7 +1006,7 @@ Lemma binds_remove : forall E2 E1 E3 x v,
   binds x v (E1 & E2 & E3) ->
   x # E2 ->
   binds x v (E1 & E3).
-Proof using. 
+Proof using.
   introv H F. lets [?|[? M]]: binds_concat_inv H.
     applys~ binds_concat_right.
     forwards~: binds_concat_left_inv M. applys~ binds_concat_left.
@@ -1022,18 +1022,18 @@ Lemma binds_middle_eq_inv : forall x E1 E2 v1 v2,
   binds x v1 (E1 & x ~ v2 & E2) ->
   ok (E1 & x ~ v2 & E2) ->
   v1 = v2.
-Proof using. 
+Proof using.
   introv H O. lets [? ?]: ok_middle_inv O.
   forwards~ M: binds_concat_left_inv H.
   applys~ binds_push_eq_inv M.
 Qed.
 
 Lemma binds_middle_inv : forall x1 v1 x2 v2 E1 E2,
-  binds x1 v1 (E1 & x2 ~ v2 & E2) -> 
+  binds x1 v1 (E1 & x2 ~ v2 & E2) ->
      (binds x1 v1 E2)
   \/ (x1 # E2 /\ x1 = x2 /\ v1 = v2)
   \/ (x1 # E2 /\ x1 <> x2 /\ binds x1 v1 E1).
-Proof using. 
+Proof using.
   introv H. lets [?|[? M]]: (binds_concat_inv H).
     left~.
     right. lets [N|[? N]]: (binds_concat_inv M).
@@ -1042,7 +1042,7 @@ Proof using.
 Qed.
 
 Lemma binds_not_middle_inv : forall x v E1 E2 E3,
-  binds x v (E1 & E2 & E3) -> 
+  binds x v (E1 & E2 & E3) ->
   x # E2 ->
      (binds x v E3)
   \/ (x # E3 /\ binds x v E1).
@@ -1055,7 +1055,7 @@ Qed.
 Lemma fv_in_values_binds : forall y fv x v E,
   binds x v E -> y \notin fv_in_values fv E -> y \notin fv v.
 Proof using.
-  unfold fv_in_values. introv H. 
+  unfold fv_in_values. introv H.
   induction E using env_ind; introv M.
   false. applys* binds_empty_inv.
   rewrite values_def in M,IHE.
@@ -1063,23 +1063,23 @@ Proof using.
   lets [[? ?]|[? ?]]: (binds_push_inv H); subst~.
 Qed.
 
-(* unused -- requires a precondition on f 
+(* unused -- requires a precondition on f
 Lemma binds_keys : forall x v f E,
   binds x v E -> binds (f x) v (map_keys f E).
-Proof using. 
+Proof using.
 Qed.
 *)
 
-(* unused 
+(* unused
 Lemma binds_concat_inv_ok : forall x v E1 E2,
   ok (E1 & E2) ->
   binds x v (E1 & E2) ->
      (x # E2 /\ binds x v E1)
   \/ (x # E1 /\ binds x v E2).
-Proof using. 
+Proof using.
   introv O H. induction E2 using env_ind.
   rewrite~ concat_empty_r in H.
-  rewrite concat_assoc in O,H. 
+  rewrite concat_assoc in O,H.
    forwards [[? ?]|[? M]]: binds_push_inv H.
      subst. left. apply conj_dup_r.
      split.
@@ -1100,7 +1100,7 @@ Hint Resolve binds_push_eq binds_push_neq
 
 Tactic Notation "binds_mid" :=
   match goal with H: binds ?x ?v1 (_ & ?x ~ ?v2 & _) |- _ =>
-    asserts: (v1 = v2); [ apply (binds_middle_eq_inv H) | subst; clear H ] 
+    asserts: (v1 = v2); [ apply (binds_middle_eq_inv H) | subst; clear H ]
   end.
 Tactic Notation "binds_mid" "~" :=
   binds_mid; auto_tilde.
@@ -1109,7 +1109,7 @@ Tactic Notation "binds_mid" "*" :=
 
 Tactic Notation "binds_push" constr(H) :=
   match type of H with binds ?x1 ?v1 (_ & ?x2 ~ ?v2) =>
-    destruct (binds_push_inv H) as [[? ?]|[? ?]]; [ subst x2 v2 | ] 
+    destruct (binds_push_inv H) as [[? ?]|[? ?]]; [ subst x2 v2 | ]
   end.
 Tactic Notation "binds_push" "~" constr(H) :=
   binds_push H; auto_tilde.
@@ -1129,7 +1129,7 @@ Lemma extends_refl : forall E,
   extends E E.
 Proof using. intros_all~. Qed.
 
-Lemma extends_push : forall E x v, 
+Lemma extends_push : forall E x v,
   x # E -> extends E (E & x ~ v).
 Proof using.
   introv Fr. intros x' v' B. unfolds binds.
@@ -1140,7 +1140,7 @@ Qed.
 Lemma extends_concat_l : forall E F,
   extends F (E & F).
 Proof using.
-  introv B. unfolds binds. 
+  introv B. unfolds binds.
   rewrite get_concat. rewrite~ B.
 Qed.
 
@@ -1148,11 +1148,11 @@ Lemma extends_concat_r : forall E F,
   disjoint (dom E) (dom F) ->
   extends E (E & F).
 Proof using.
-  introv D B. unfolds binds. 
-  lets: get_some_inv A B. 
+  introv D B. unfolds binds.
+  lets: get_some_inv A B.
   forwards M: get_none A x F.
     applys~ disjoint_in_notin D.
-  rewrite get_concat. rewrite~ M. 
+  rewrite get_concat. rewrite~ M.
 Qed.
 
 (* not used
@@ -1174,7 +1174,7 @@ Hint Resolve extends_refl extends_push.
 Ltac binds_get_nosubst_base H EQ :=
   match type of H with
   | binds ?x ?v1 (?E1 & ?x ~ ?v2 & ?E2) =>
-    forwards EQ: (@binds_middle_eq_inv _ x E1 E2 v1 v2 H); [ auto | ] 
+    forwards EQ: (@binds_middle_eq_inv _ x E1 E2 v1 v2 H); [ auto | ]
   (* | binds ?x1 ?v1 (?E1 & ?x2 ~ ?v2 & ?E2) =>
      forwards EQ: (@binds_middle_inv _ x1 v1 x2 v2 E1 E2); [ | auto ] *)
   end.
@@ -1184,16 +1184,16 @@ Tactic Notation "binds_get_nosubst" constr(H) "as" ident(EQ) :=
 Tactic Notation "binds_get_nosubst" constr(H) :=
   let EQ := fresh "EQ" in binds_get_nosubst H as EQ.
 
-(** [binds_get H] expects an hypothesis [H] of the form 
+(** [binds_get H] expects an hypothesis [H] of the form
   [binds x a (E & x ~ b & F)] and substitute [a] for [b] in the goal. *)
 
 Ltac binds_get H :=
   let EQ := fresh in binds_get_nosubst H as EQ;
-  try match type of EQ with 
+  try match type of EQ with
   | ?f _ = ?f _ => inversions EQ
   | ?x = ?y => subst x end.
 
-(** [binds_single H] derives from an hypothesis [H] of the form 
+(** [binds_single H] derives from an hypothesis [H] of the form
   [binds x a (y ~ b)] the equalities [x = y] and [a = b], then
   it substitutes [x] for [y] in the goal or deduce a contradiction
   if [x <> y] can be found in the context. *)
@@ -1201,12 +1201,12 @@ Ltac binds_get H :=
 Ltac binds_single H :=
   match type of H with binds ?x ?a (?y ~ ?b) =>
     let EQ := fresh "EQ" in
-    destruct (binds_single_inv H) as [? EQ]; 
-    try discriminate; try subst y; 
+    destruct (binds_single_inv H) as [? EQ];
+    try discriminate; try subst y;
     try match goal with N: ?x <> ?x |- _ =>
       false; apply N; reflexivity end end.
 
-(** [binds_case H as B1 B2] derives from an hypothesis [H] of the form 
+(** [binds_case H as B1 B2] derives from an hypothesis [H] of the form
   [binds x a (E & F)] two subcases: [B1: binds x a E] (with a freshness
   condition [x # F]) and [B2: binds x a F]. *)
 
@@ -1217,15 +1217,15 @@ Lemma binds_concat_inv' : forall A, forall x (v:A) E1 E2,
 Proof using. intros. forwards K: binds_concat_inv A H. destruct* K. Qed.
 
 Tactic Notation "binds_case" constr(H) "as" ident(B1) ident(B2) :=
-   let Fr := fresh "Fr" in 
+   let Fr := fresh "Fr" in
    destruct (binds_concat_inv' H) as [[Fr B1] | B2].
 
-(** [binds_case H] makes a case analysis on an hypothesis [H] of the form 
+(** [binds_case H] makes a case analysis on an hypothesis [H] of the form
   [binds x a E] where E can be constructed using concatenation and
   singletons. It calls [binds_single] when reaching a singleton. *)
 
 Ltac binds_cases H :=
-  let go B := clear H; 
+  let go B := clear H;
     first [ binds_single B | binds_cases B | idtac ] in
   let B1 := fresh "B" in let B2 := fresh "B" in
   binds_case H as B1 B2; (*fix_env;*) [ go B1 | go B2 ].
@@ -1235,8 +1235,8 @@ Ltac binds_cases H :=
 Ltac binds_cases_base H :=
   match H with
   | binds _ _ empty => false (binds_empty_inv H)
-  | binds _ _ (_ & _) => 
-     let H1 := fresh "B" in 
+  | binds _ _ (_ & _) =>
+     let H1 := fresh "B" in
      destruct (binds_concat_inv H) as [H1|H1];
      clear H; binds_cases_base H1
   | binds _ _ (_ ~ _) =>

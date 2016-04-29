@@ -16,9 +16,9 @@ Local Open Scope set_scope.
 (* ---------------------------------------------------------------------- *)
 (** ** Notations to help the typechecker *)
 
-Notation "x \indom E" := (x \in (dom E : set _)) 
+Notation "x \indom E" := (x \in (dom E : set _))
   (at level 39) : container_scope.
-Notation "x \notindom E" := (x \notin ((dom E) : set _)) 
+Notation "x \notindom E" := (x \notin ((dom E) : set _))
   (at level 39) : container_scope.
 
 
@@ -37,16 +37,16 @@ Implicit Types x : B.
 Implicit Types M N : map A B.
 Implicit Types E : set A.
 
-Definition empty_impl : map A B := 
+Definition empty_impl : map A B :=
   fun _ => None.
 
-Definition single_bind_impl k x := 
+Definition single_bind_impl k x :=
   fun k' => If k = k' then Some x else None.
 
-Definition binds_impl M k x := 
+Definition binds_impl M k x :=
   M k = Some x.
 
-Definition union_impl M N := 
+Definition union_impl M N :=
   fun k => match N k with
            | None => M k
            | Some v => Some v
@@ -58,10 +58,10 @@ Definition remove_impl M E :=
 Definition restrict_impl M E :=
   fun k => If k \in E then M k else None.
 
-Definition dom_impl M := 
+Definition dom_impl M :=
   set_st (fun k => M k <> None).
 
-Definition disjoint_impl M N := 
+Definition disjoint_impl M N :=
   disjoint (dom_impl M) (dom_impl N).
 
 Definition index_impl M k :=
@@ -77,8 +77,8 @@ Definition read_impl A `{Inhab B} (M:map A B) (k:A) :=
   | Some v => v
   end.
 
-Definition fold_impl A B C (m:monoid_def C) (f:A->B->C) (M:map A B) := 
-  LibBag.fold m (fun p => let '(a,b) := p in f a b) 
+Definition fold_impl A B C (m:monoid_def C) (f:A->B->C) (M:map A B) :=
+  LibBag.fold m (fun p => let '(a,b) := p in f a b)
     (\set{ p | exists k x, p = (k, x) /\ binds_impl M k x }).
 
 
@@ -89,7 +89,7 @@ Instance empty_inst : forall A B, BagEmpty (map A B).
   constructor. rapply (@empty_impl A B). Defined.
 Instance single_bind_inst : forall A B, BagSingleBind A B (map A B).
   constructor. rapply (@single_bind_impl A B). Defined.
-Instance binds_inst : forall A B, BagBinds A B (map A B). 
+Instance binds_inst : forall A B, BagBinds A B (map A B).
   constructor. rapply (@binds_impl A B). Defined.
 Instance union_inst : forall A B, BagUnion (map A B). (* todo: bug pas si on enelve B *)
   constructor. rapply (@union_impl A B). Defined.
@@ -138,12 +138,12 @@ Transparent map empty_inst single_bind_inst binds_inst
 
 Lemma binds_def : forall A `{Inhab B} (M:map A B) x v,
   binds M x v = (x \indom M /\ M[x] = v).
-Proof using. 
+Proof using.
   intros. simpl. unfold dom_impl, read_impl, binds_impl.
   extens. set_norm. iff R (N&R).
     rewrite R. split~. congruence.
     destruct (M x). subst~. false.
-Qed. 
+Qed.
 
 Lemma dom_def_binds : forall A B (M:map A B),
   dom M = \set{ k | exists v, binds M k v }.
@@ -152,30 +152,30 @@ Proof using.
   applys set_st_eq. intros k. iff R.
     destruct (M k). eauto. false.
     destruct R. congruence.
-Qed. 
+Qed.
 
 Lemma index_def : forall A B (M:map A B) k,
   index M k = (k \in (dom M : set A)).
-Proof using. auto. Qed. 
+Proof using. auto. Qed.
 
 Lemma disjoint_def : forall A B (M N:map A B),
   disjoint M N = disjoint (dom M) (dom N).
-Proof using. auto. Qed. 
+Proof using. auto. Qed.
 
 Lemma fold_def_binds : forall A B C (m:monoid_def C) (f:A->B->C) (M:map A B),
-  fold m f M = LibBag.fold m (fun p => let '(a,b) := p in f a b) 
+  fold m f M = LibBag.fold m (fun p => let '(a,b) := p in f a b)
     (\set{ p | exists k x, p = (k, x) /\ binds_impl M k x }).
-Proof using. auto. Qed. 
+Proof using. auto. Qed.
 
 Lemma update_def_union : forall A B (M:map A B) k x,
   M[k:=x] = M \u (k \:= x).
 Proof using. auto. Qed.
 
 (* only for internal use *)
-Lemma update_def_if : forall A B (M:map A B) k x, 
+Lemma update_def_if : forall A B (M:map A B) k x,
   M[k:=x] = (fun k' => If k = k' then Some x else M k').
-Proof using. 
-  intros. rewrite update_def_union. 
+Proof using.
+  intros. rewrite update_def_union.
   simpl. unfold single_bind_impl, union_impl.
   apply func_ext_1. intros k'. case_if~.
 Qed.
@@ -208,7 +208,7 @@ Hint Extern 1 (None <> Some _) => congruence.
 
 Lemma index_from_indom : forall A B (M:map A B) k,
   k \indom M -> index M k.
-Proof using. intros. rewrite~ index_def. Qed. 
+Proof using. intros. rewrite~ index_def. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -263,7 +263,7 @@ Lemma dom_empty_inv : forall A B (M : map A B),
 Proof using.
   introv H. simpls. unfold dom_impl, empty_impl in *.
   apply func_ext_1. (* todo: "extens" should work *) intros k.
-  absurds as G. 
+  absurds as G.
   lets R: @is_empty_inv k H. typeclass. false R. rewrite~ in_set_st_eq.
 Qed. (* todo: simplify proof *)
 
@@ -278,7 +278,7 @@ Qed. (* todo: simplify proof *)
 
 Lemma dom_update : forall A B i v (M:map A B),
   dom (M[i:=v]) = dom M \u \{i}.
-Proof using. 
+Proof using.
   intros. rewrite update_def_if.
   simpl. unfold dom_impl, union_impl, binds_impl in *.
   apply in_extens.  (* "extens" should work directly *)
@@ -288,9 +288,9 @@ Proof using.
 Qed.
 
 Lemma dom_update_index : forall A i `{Inhab B} v (M:map A B), (* needed? *)
-  index M i -> 
+  index M i ->
   dom (M[i:=v]) = dom M.
-Proof using. 
+Proof using.
   introv IB H. rewrite index_def in H. rewrite dom_update.
   set_prove_setup true. tests*: (x = i). (* todo: improve "set_prove" ? *)
 Qed.
@@ -303,7 +303,7 @@ Lemma dom_update_index' : (* TODO: needed? *)
   D = dom M ->
   x \in D ->
   D = dom M'.
-Proof using. intros. subst. rewrite~ dom_update_index. Qed. 
+Proof using. intros. subst. rewrite~ dom_update_index. Qed.
 
 (* indom *)
 
@@ -348,7 +348,7 @@ Proof using. intros. rewrite update_read_if. case_if~. Qed.
 Lemma update_update_eq : forall A i `{Inhab B} v v' (M:map A B),
   M[i:=v][i:=v'] = M[i:=v'].
 Proof using.
-  intros. applys func_ext_1. 
+  intros. applys func_ext_1.
   intros k. do 3 rewrite update_def_if. case_if~.
 Qed.
 
@@ -378,9 +378,9 @@ Proof using. introv K. rewrite* (@binds_def A B H) in K. Qed.
 
 Lemma binds_update_neq : forall A B i j v w (M:map A B),
   i <> j -> binds M i v -> binds (M[j:=w]) i v.
-Proof using. 
+Proof using.
   introv N K. asserts IB: (Inhab B). constructor. exists* v.
-  rewrite (@binds_def A B IB) in *. 
+  rewrite (@binds_def A B IB) in *.
   rewrite~ indom_update. rewrite* update_read_neq.
 Qed. (* later: cleanup proof *)
 
@@ -390,34 +390,34 @@ Proof using. intros. applys* binds_update_neq. Qed.
 
 Lemma binds_update_eq : forall A B i v (M:map A B),
   binds (M[i:=v]) i v.
-Proof using. 
-  intros. 
+Proof using.
+  intros.
   asserts IB: (Inhab B). constructor. exists* v.
-  rewrite (@binds_def A B IB) in *. 
+  rewrite (@binds_def A B IB) in *.
   rewrite~ indom_update. rewrite* update_read_eq.
 Qed.
 
 Lemma binds_update_eq_inv : forall A B i v w (M:map A B),
   binds (M[i:=w]) i v -> v = w.
 Proof using.
-  introv H. 
+  introv H.
   asserts IB: (Inhab B). constructor. exists* v.
-  rewrite (@binds_def A B IB) in *. 
+  rewrite (@binds_def A B IB) in *.
   rewrite~ indom_update in H. rewrite* update_read_eq in H.
 Qed.
 
 Lemma binds_update_neq_inv : forall A B i j v w (M:map A B),
   binds (M[j:=w]) i v -> i <> j -> binds M i v.
 Proof using.
-  introv H N. 
+  introv H N.
   asserts IB: (Inhab B). constructor. exists* v.
-  rewrite (@binds_def A B IB) in *. 
+  rewrite (@binds_def A B IB) in *.
   rewrite~ indom_update in H. rewrite* update_read_neq in H.
 Qed.
 
 Lemma binds_inj : forall A i `{Inhab B} v1 v2 (M:map A B),
   binds M i v1 -> binds M i v2 -> v1 = v2.
-Proof using. 
+Proof using.
   introv IB H1 H2.
   rewrite (@binds_def A B IB) in *.
   destruct H1; destruct H2. congruence. (* todo: cleanup *)
@@ -473,7 +473,7 @@ Qed.
 
 Lemma dom_remove : forall A B (M:map A B) E,
   dom (M\-E) = dom M \- E.
-Proof using. 
+Proof using.
   intros. simpl. unfold remove_impl, dom_impl in *.
   apply in_extens.  (* "extens" should work directly *)
   intros x. set_norm. iff R (R1&R2); case_if~.
@@ -499,23 +499,23 @@ Implicit Arguments index_remove_one_in [A B].
 Lemma update_remove_one_eq : forall A `{Inhab B} (m:map A B) (i:A) (v:B),
   (m[i:=v] \- \{i}) = (m \- \{i}).
 Proof using.
-  intros. applys func_ext_1. 
+  intros. applys func_ext_1.
   intros k. rewrite update_def_if.
-  simpl. unfold remove_impl. do 2 case_if~. 
+  simpl. unfold remove_impl. do 2 case_if~.
 Qed.
 
 Lemma remove_one_read_neq : forall A `{Inhab B} (M:map A B) i j,
-  i <> j -> 
+  i <> j ->
   (M\--i)[j] = M[j].
 Proof using.
   introv N. simpl. unfold remove_impl, read_impl. case_if~.
 Qed.
 
 Lemma remove_one_update_neq : forall A B (M:map A B) i j v,
-  i <> j -> 
+  i <> j ->
   (M\--i)[j:=v] = (M[j:=v] \--i).
 Proof using.
-  introv N. applys func_ext_1. 
+  introv N. applys func_ext_1.
   intros k. do 2 rewrite update_def_if.
   simpl. unfold remove_impl. do 2 case_if~.
 Qed.
@@ -524,11 +524,11 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** restrict *)
 
-Lemma restrict_single : forall A (x:A) `{Inhab B} (M:map A B),  
+Lemma restrict_single : forall A (x:A) `{Inhab B} (M:map A B),
   x \indom M ->
   M \| \{x} = (x \:= (M[x])).
 Proof using.
-  introv N. applys func_ext_1. 
+  introv N. applys func_ext_1.
   intros k. simpls. unfolds dom_impl, restrict_impl, single_bind_impl, read_impl.
   set_norm. do 2 case_if~. destruct (M x); auto_false.
 Qed.
@@ -537,10 +537,10 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** structural decomposition *)
 
-Lemma split_restrict_remove : forall A (E:set A) B (M:map A B), 
+Lemma split_restrict_remove : forall A (E:set A) B (M:map A B),
   M = (M \- E) \u (M \| E).
 Proof using.
-  intros. applys func_ext_1. 
+  intros. applys func_ext_1.
   intros k. simpls. unfolds remove_impl, restrict_impl, union_impl.
   case_if~. destruct~ (M k).
 Qed.
@@ -563,10 +563,10 @@ Proof using. (* LATER *) Qed.
   - repr L E
   - fold f (map i E) = fold (fun x => f (i x)) E
   - i = fun x => (x, M[x])
-  - injective i -> repr E L -> repr (LibSet.map i E) (LibList.map i L) 
+  - injective i -> repr E L -> repr (LibSet.map i E) (LibList.map i L)
   - injective i -> No_duplicates L -> No_dupliactes (map i L)
   - repr E L -> repr E L' -> fold f E = fold f L'
-  
+
 *)
 
 (* ---------------------------------------------------------------------- *)
@@ -575,19 +575,19 @@ Proof using. (* LATER *) Qed.
 Lemma fold_empty : forall A B C (m:monoid_def C) (f:A->B->C),
   fold m f (\{}:map A B) = monoid_neutral m.
 Proof using.
-  intros. rewrite fold_def_binds. 
-  match goal with |- context [ set_st ?X] => 
+  intros. rewrite fold_def_binds.
+  match goal with |- context [ set_st ?X] =>
     cuts_rewrite (set_st X = \{}) end.
   rewrite~ fold_empty.
   set_norm. intros [k x]. set_norm. iff (?&?&M&N) ?; tryfalse.
 Qed.
 
 Lemma fold_single : forall A B C (m:monoid_def C) (f:A->B->C) (k:A) (x:B),
-  Monoid m -> 
+  Monoid m ->
   fold m f (k\:=x) = f k x.
 Proof using.
   intros. rewrite fold_def_binds.
-  match goal with |- context [ set_st ?X] => 
+  match goal with |- context [ set_st ?X] =>
     cuts_rewrite (set_st X = \{(k,x)}) end.
   rewrite~ fold_single.
   set_norm. intros [k' x']. set_norm. iff (?&?&E&R) M.
@@ -626,9 +626,9 @@ Lemma fold_union : forall A `{Inhab B} C (m:monoid_def C) (f:A->B->C) (M N : map
   fold m f (M \u N) = monoid_oper m (fold m f M) (fold m f N).
 Proof using.
   introv IB Hm FM FN HD. do 3 rewrite fold_def_binds.
-  match goal with |- context [ set_st ?X] => 
-    cuts_rewrite (set_st X = 
-       \set{ p | exists k x, p = (k, x) /\ binds_impl M k x} 
+  match goal with |- context [ set_st ?X] =>
+    cuts_rewrite (set_st X =
+       \set{ p | exists k x, p = (k, x) /\ binds_impl M k x}
     \u \set{ p | exists k x, p = (k, x) /\ binds_impl N k x}) end.
   rewrite~ fold_union.
     apply~ finite_to_finite_fold_support.
@@ -645,7 +645,7 @@ Proof using.
     simpl. destruct H as [(k&x&E&R)|(k&x&E&R)].
       inverts E. exists k x. split~. forwards~: binds_impl_dom_impl R.
        cases (N k) as EN.
-         false. applys~ @disjoint_inv k HD. typeclass. 
+         false. applys~ @disjoint_inv k HD. typeclass.
           unfold dom_impl. set_norm. congruence.
          unfolds union_impl, binds_impl. rewrite~ EN.
       inverts E. exists k x. split~. forwards~: binds_impl_dom_impl R.
@@ -663,11 +663,11 @@ End Properties.
 
 Hint Rewrite @indom_update @update_read_neq @update_read_eq : rew_map.
 
-Tactic Notation "rew_map" := 
+Tactic Notation "rew_map" :=
   autorewrite with rew_map.
-Tactic Notation "rew_map" "in" hyp(H) := 
+Tactic Notation "rew_map" "in" hyp(H) :=
   autorewrite with rew_map in H.
-Tactic Notation "rew_map" "in" "*" := 
+Tactic Notation "rew_map" "in" "*" :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_map).
   (* autorewrite with rew_map in *. *)
 
@@ -691,14 +691,14 @@ Transparent map empty_inst single_bind_inst binds_inst
  union_inst dom_inst disjoint_inst.
 
 Global Instance map_union_empty_l : Union_empty_l (T:=map A B).
-Proof using. 
+Proof using.
   constructor. intros m. simpl.
   unfold union_impl, empty_impl, map. extens.
   intros x. destruct~ (m x).
 Qed.
 
 Global Instance map_union_assoc : Union_assoc (T:=map A B).
-Proof using. 
+Proof using.
   constructor. intros M N P. simpl.
   unfold union_impl, map. extens.
   intros k. destruct~ (P k).

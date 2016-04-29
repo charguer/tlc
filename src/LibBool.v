@@ -22,7 +22,7 @@ Proof using. constructor. apply (prove_Inhab true). Qed.
 (* ********************************************************************** *)
 (** * Boolean Operations *)
 
-(* TODO: is it possible to reuse the definition from the library? 
+(* TODO: is it possible to reuse the definition from the library?
    It might be possible, but it requires to fix several proofs *)
 
 Section Definitions.
@@ -30,7 +30,7 @@ Implicit Types x y z : bool.
 
 (** ** Comparison *)
 
-Definition beq_impl x y := 
+Definition beq_impl x y :=
   match x, y with
   | true, true => true
   | false, false => true
@@ -64,37 +64,37 @@ Definition impl x y :=
 (** Negation *)
 
 Definition neg x :=
-  match x with 
+  match x with
   | true => false
   | false => true
   end.
 
 (** Exclusive or*)
 
-Definition xor x y := 
+Definition xor x y :=
   x <> y.
 
 End Definitions.
 
 (** Notations *)
 
-Notation "! x" := (neg x) 
+Notation "! x" := (neg x)
   (at level 35, right associativity) : Bool_scope.
-Infix "&&" := and 
+Infix "&&" := and
   (at level 40, left associativity) : Bool_scope.
-Infix "||" := or 
+Infix "||" := or
   (at level 50, left associativity) : Bool_scope.
 
-Notation "! x" := (neg x) 
+Notation "! x" := (neg x)
   (at level 35, right associativity) : Bool_scope.
-Infix "&&" := and 
+Infix "&&" := and
   (at level 40, left associativity) : Bool_scope.
-Infix "||" := or 
+Infix "||" := or
   (at level 50, left associativity) : Bool_scope.
 
-Infix "&&&" := and 
+Infix "&&&" := and
   (at level 40, left associativity, only parsing) : Bool_scope.
-Infix "|||" := or 
+Infix "|||" := or
   (at level 50, left associativity, only parsing) : Bool_scope.
   (* todo: understand why there is a bug on the && *)
 
@@ -105,26 +105,26 @@ Open Scope Bool_scope.
 
 (* ********************************************************************** *)
 (** * Boolean Decision Procedure : tactic working by exponential case
-      analysis on all variables of type bool. *) 
+      analysis on all variables of type bool. *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** A first simple tactic named [tautob]. *)
 
-Tactic Notation "tautob" := 
+Tactic Notation "tautob" :=
   let rec go _ :=
     (try intros_all); match goal with
     | b : bool |- _ => destruct b; clear b; go tt
     | _ => simpls; try split; intros; try discriminate
     end in go tt.
 
-Tactic Notation "tautob" "~" := 
+Tactic Notation "tautob" "~" :=
    tautob; auto_tilde.
-Tactic Notation "tautob" "*" := 
+Tactic Notation "tautob" "*" :=
    tautob; auto_star.
 
 
 (* ********************************************************************** *)
-(** * Properties of booleans *) 
+(** * Properties of booleans *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of [and], [or] and [neg] *)
@@ -167,17 +167,17 @@ Proof using. tautob~. Qed.
 Lemma comm_and : comm and.
 Proof using. tautob~. Qed.
 
-Lemma assoc_and : assoc and. 
+Lemma assoc_and : assoc and.
 Proof using. tautob*. Qed.
 
-Lemma assoc_or : assoc or. 
+Lemma assoc_or : assoc or.
 Proof using. tautob*. Qed.
 
 Lemma neg_false : ! false = true.
 Proof using. auto. Qed.
 
 Lemma neg_true : ! true = false.
-Proof using. auto. Qed. 
+Proof using. auto. Qed.
 
 Lemma neg_and : @automorphism bool neg and or.
 Proof using. tautob~. Qed.
@@ -202,7 +202,7 @@ Proof. tautob~. Qed.
 
 Section PropertiesIf.
 
-Implicit Types x y z : bool. 
+Implicit Types x y z : bool.
 
 Lemma if_t_x_y : forall x y,
   (if true then x else y) = x.
@@ -236,26 +236,26 @@ End PropertiesIf.
 
 
 (* ********************************************************************** *)
-(** * Tactics *) 
+(** * Tactics *)
 
 (** [fix_neg_neg] is a tactic that simplifies all double negations. *)
 
 Hint Rewrite neg_neg : rew_neg_neg.
-Tactic Notation "fix_neg_neg" := 
-  autorewrite with rew_neg_neg in *.  
-Tactic Notation "fix_neg_neg" "~" := 
+Tactic Notation "fix_neg_neg" :=
+  autorewrite with rew_neg_neg in *.
+Tactic Notation "fix_neg_neg" "~" :=
   fix_neg_neg; auto_tilde.
-Tactic Notation "fix_neg_neg" "*" := 
+Tactic Notation "fix_neg_neg" "*" :=
   fix_neg_neg; auto_star.
 
 (** [rew_bool] simplifies boolean expressions, using rewriting
     lemmas in the database [rew_bool] defined below. *)
 
-Hint Rewrite 
+Hint Rewrite
   neg_false neg_true neg_neg neg_and neg_or
   neutral_l_and neutral_r_and absorb_l_and absorb_r_and
-  neutral_l_or neutral_r_or absorb_l_or absorb_r_or  
-  if_t_x_y if_f_x_y if_x_y_y if_x_t_f if_x_f_t if_x_t_y if_x_y_f       
+  neutral_l_or neutral_r_or absorb_l_or absorb_r_or
+  if_t_x_y if_f_x_y if_x_y_y if_x_t_f if_x_f_t if_x_t_y if_x_y_f
   : bool_rew.
 
 Tactic Notation "rew_bool" :=
@@ -277,6 +277,6 @@ Tactic Notation "rew_bool" "*" "in" "*":=
 (** Making definitions opaque ensures that the [simpl] tactic does
     not break symmetry in proofs. *)
 
-Opaque and or neg. 
+Opaque and or neg.
 
 

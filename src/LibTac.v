@@ -77,9 +77,9 @@ Ltac remove_argindexes n f :=
 
 Ltac label_args n T :=
   lazymatch T with
-  | (forall (a : ?T), @?b a) => 
-    constr:(forall (a : (let a:=n in T)), 
-               ltac:(let b' := eval cbn beta in (b a) in 
+  | (forall (a : ?T), @?b a) =>
+    constr:(forall (a : (let a:=n in T)),
+               ltac:(let b' := eval cbn beta in (b a) in
                      let c:= label_args (S n) b' in exact c))
   | _ => T
   end.
@@ -274,16 +274,16 @@ Inductive libtac_Dyn : Type :=
     - if [E] is already of type [libtac_Dyn], then it returns [E];
     - otherwise, it returns the list [(libtac_dyn E)::nil]. *)
 
-Ltac libtac_dyn_of E := 
-  match type of E with 
+Ltac libtac_dyn_of E :=
+  match type of E with
   | List.list libtac_Dyn => constr:(E)
   | _ => constr:((libtac_dyn E)::nil)
   end.
 
-(** [libtac_wild], written [__] is used as a "wildcard argument" 
+(** [libtac_wild], written [__] is used as a "wildcard argument"
     in LibTac tactics, which cannot reuse the simple wildcard [_]. *)
 
-Inductive libtac_Wild : Set := 
+Inductive libtac_Wild : Set :=
   | libtac_wild : libtac_Wild.
 
 Notation "'__'" := libtac_wild : libtac_scope.
@@ -296,24 +296,24 @@ Open Scope libtac_scope.
 Inductive libtac_Mark : Type :=
   | libtac_mark : libtac_Mark.
 
-(** [libtac_gen_until_mark] repeats [generalize] on hypotheses from the 
+(** [libtac_gen_until_mark] repeats [generalize] on hypotheses from the
     context, starting from the bottom and stopping as soon as reaching
-    an hypothesis of type [Mark]. 
+    an hypothesis of type [Mark].
     It fails if [Mark] does not appear in the context. *)
 
 Ltac libtac_gen_until_mark :=
   match goal with H: ?T |- _ =>
-  match T with 
+  match T with
   | libtac_Mark => clear H
   | _ => generalize H; clear H; libtac_gen_until_mark
   end end.
 
-(** [libtac_intro_until_mark] repeats [intro] until reaching an 
-    hypothesis of type [Mark]. It throws away the hypothesis [Mark]. 
+(** [libtac_intro_until_mark] repeats [intro] until reaching an
+    hypothesis of type [Mark]. It throws away the hypothesis [Mark].
     It fails if [Mark] does not appear as an hypothesis in the goal. *)
 
 Ltac libtac_intro_until_mark :=
-  match goal with 
+  match goal with
   | |- (libtac_Mark -> _) => intros _
   | _ => intro; libtac_intro_until_mark
   end.
@@ -334,7 +334,7 @@ Ltac libtac_get_last_introduced_hyp tt :=
 Definition libtac_to_generalize (A:Type) (x:A) := x.
 
 Ltac libtac_gen_to_generalize :=
-  repeat match goal with 
+  repeat match goal with
     H: libtac_to_generalize _ |- _ => generalize H; clear H end.
 
 Ltac libtac_mark_to_generalize H :=
@@ -355,7 +355,7 @@ Ltac libtac_mark_to_generalize H :=
    it introduces all the dependent variables at the head of the goal.
    In does nothing if there is no visible product at the head of the
    goal.
-  
+
    This tactic fails if there is no non-dependent hypothesis at the
    head of the goal. *)
 
@@ -384,7 +384,7 @@ Ltac ltac_fast_intros_noarg :=
        match goal with
        | |- ?P -> ?Q => idtac
        | |- forall _, _ => =>>_rec
-       end 
+       end
   | |- _ => idtac
   end.
 *)
@@ -395,49 +395,49 @@ Tactic Notation "=>>" simple_intropattern(I1) :=
   libtac_fast_intros_arg I1.
 Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) :=
   =>> I1; =>> I2.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) :=
   =>> I1; =>> I2 I3.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) :=
   =>> I1; =>> I2 I3 I4.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5) :=
   =>> I1; =>> I2 I3 I4 I5.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
  simple_intropattern(I6) :=
   =>> I1; =>> I2 I3 I4 I5 I6.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
  simple_intropattern(I6) simple_intropattern(I7) :=
   =>> I1; =>> I2 I3 I4 I5 I6 I7.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
  simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8) :=
   =>> I1; =>> I2 I3 I4 I5 I6 I7 I8.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
  simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
  simple_intropattern(I9) :=
   =>> I1; =>> I2 I3 I4 I5 I6 I7 I8 I9.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
  simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
  simple_intropattern(I9) simple_intropattern(I10) :=
   =>> I1; =>> I2 I3 I4 I5 I6 I7 I8 I9 I10.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
  simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
  simple_intropattern(I9) simple_intropattern(I10) simple_intropattern(I11) :=
   =>> I1; =>> I2 I3 I4 I5 I6 I7 I8 I9 I10 I11.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
  simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
  simple_intropattern(I9) simple_intropattern(I10) simple_intropattern(I11)
  simple_intropattern(I12) :=
   =>> I1; =>> I2 I3 I4 I5 I6 I7 I8 I9 I10 I11 I2.
-Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
  simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
  simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
  simple_intropattern(I9) simple_intropattern(I10) simple_intropattern(I11)
@@ -453,8 +453,8 @@ Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
     - the hypothesis [H] is cleared from the goal;
     - all generated equalities are substituted away immediately,
       (only the new equalities, not the ones that existed before);
-    - all the fresh variables/hypotheses produced are placed 
-      in the goal, so that they can be named by the user. 
+    - all the fresh variables/hypotheses produced are placed
+      in the goal, so that they can be named by the user.
 *)
 
 (** There are cases where the constructor of an inductive definition
@@ -463,8 +463,8 @@ Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
     equality as [id (x = y)] instead of [x = y], or, alternatively,
     as [x =' y], where [='] is defined as follows:
 
-      Definition eq' := @eq. 
-      Notation "x '='' y" := (@eq' _ x y) 
+      Definition eq' := @eq.
+      Notation "x '='' y" := (@eq' _ x y)
          (at level 70, y at next level).
 *)
 
@@ -478,18 +478,18 @@ Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
     in the the case of inductive definitions with constructors
     of the form [ | Myconstructor: forall (T:Type), ...].
     If you do not like the axiom, simply replace the axiom with
-    the line: [Definition inj_pair2 := True.] 
-    
+    the line: [Definition inj_pair2 := True.]
+
     If you like to use the axiom from Coq stdlib instead, use:
 
      Require Eqdep.
-     Lemma inj_pair2 :  
+     Lemma inj_pair2 :
        forall (U : Type) (P : U -> Type) (p : U) (x y : P p),
        existT P p x = existT P p y -> x = y.
      Proof using. apply Eqdep.EqdepTheory.inj_pair2. Qed.
 *)
-  
-Axiom inj_pair2 :  
+
+Axiom inj_pair2 :
   forall (U : Type) (P : U -> Type) (p : U) (x y : P p),
   existT P p x = existT P p y -> x = y.
 
@@ -497,25 +497,25 @@ Axiom inj_pair2 :
 
 Ltac libtac_invert H :=
   let rec go tt :=
-    match goal with 
+    match goal with
     | |- (libtac_Mark -> _) => intros _
-    | |- (?x = ?y -> _) => let H := fresh "TEMP" in intro H; 
-                           first [ subst x | subst y ]; 
+    | |- (?x = ?y -> _) => let H := fresh "TEMP" in intro H;
+                           first [ subst x | subst y ];
                            go tt
     | |- (existT ?P ?p ?x = existT ?P ?p ?y -> _) =>
-         let H := fresh in intro H; 
+         let H := fresh in intro H;
          generalize (@inj_pair2 _ P p x y H);
          clear H; go tt
-    | |- (forall _, _) => 
-       intro; let H := libtac_get_last_introduced_hyp tt in 
+    | |- (forall _, _) =>
+       intro; let H := libtac_get_last_introduced_hyp tt in
        libtac_mark_to_generalize H; go tt
     end in
-  pose libtac_mark; 
-  inversion H; 
+  pose libtac_mark;
+  inversion H;
   clear H;
-  generalize libtac_mark; 
-  libtac_gen_until_mark; 
-  go tt; 
+  generalize libtac_mark;
+  libtac_gen_until_mark;
+  go tt;
   libtac_gen_to_generalize;
   unfold libtac_to_generalize in *.
 
@@ -532,20 +532,20 @@ Tactic Notation "invert_nosubst" hyp(H) :=
 (* ********************************************************************** *)
 (** * First-match applications *)
 
-(** DISCLAIMER: FOR TECHNICAL REASONS, THIS SYNTAX ONLY WORKS WHEN 
+(** DISCLAIMER: FOR TECHNICAL REASONS, THIS SYNTAX ONLY WORKS WHEN
     USED IN THE FOLLOWING TACTICS:
-      [put I: (# E0 E1 .. EN)] 
+      [put I: (# E0 E1 .. EN)]
       [forward I: (# E0 E1 .. EN)]
-      [applys (# E0 E1 .. EN)] 
+      [applys (# E0 E1 .. EN)]
 *)
 
 (** The expression [# E0 E1 .. EN] is essentially equivalent to
     [E0 _ .. _ E1 _ .. .. _ EN] with the right number of underscores,
     as determined by a "first-match" greedy algorithm.
 
-    In some cases, we have a term [E0] that expects two arguments of 
+    In some cases, we have a term [E0] that expects two arguments of
     the same type, but we only want to specify the second argument.
-    In this case, we can use the [__] place-holder, and write 
+    In this case, we can use the [__] place-holder, and write
     [#E0 __ E2].
 
     Another use of [__] is as last argument. [# E0 .. EN __] is the
@@ -568,12 +568,12 @@ Ltac libtac_app_assert t P cont :=
 
 Ltac libtac_app_evar t A cont :=
   let x := fresh "TEMP" in
-  evar (x:A); 
+  evar (x:A);
   let t' := constr:(t x) in
   let t'' := (eval unfold x in t') in
   subst x; cont t''.
 
-Ltac libtac_app_arg t P v cont := 
+Ltac libtac_app_arg t P v cont :=
   let H := fresh "TEMP" in
   assert (H : P); [ apply v | cont(t H); try clear H ].
 
@@ -590,75 +590,75 @@ Ltac libtac_dynlist_next_type vs :=
 
 Ltac libtac_build_app_alls t final :=
   let rec go t :=
-    match type of t with 
+    match type of t with
     | ?P -> ?Q => libtac_app_assert t P go
-    | forall _:?A, _ => 
+    | forall _:?A, _ =>
         first [ libtac_app_evar t A go
               | libtac_app_typeclass t go
               | fail 3 ]
     | _ => final t
-    end in 
+    end in
   go t.
 
 Ltac ltac_first_match_app_cont_aux t vs final :=
   let rec go t vs :=
     match vs with
-    | nil => 
+    | nil =>
         first [ final t | fail 1 ]
-    | (libtac_dyn libtac_wild)::nil => 
+    | (libtac_dyn libtac_wild)::nil =>
         first [ libtac_build_app_alls t final | fail 1 ]
-    | (libtac_dyn ?v)::?vs' => 
+    | (libtac_dyn ?v)::?vs' =>
         let cont t' := go t' vs in
         let cont' t' := go t' vs' in
-        let T := type of t in 
+        let T := type of t in
         let T := eval hnf in T in
         match v with
-        | libtac_wild => 
+        | libtac_wild =>
            first [ let U := libtac_dynlist_next_type vs' in
              match U with
              | libtac_wild =>
-               match T with  
+               match T with
                | ?P -> ?Q => first [ libtac_app_assert t P cont' | fail 3 ]
                | forall _:?A, _ => first [ libtac_app_typeclass t cont'
-                                         | libtac_app_evar t A cont' 
-                                         | fail 3 ] 
-               end 
+                                         | libtac_app_evar t A cont'
+                                         | fail 3 ]
+               end
              | _ =>
-               match T with 
+               match T with
                (* might be more efficient to test T for unifiability here *)
                | U -> ?Q => first [ libtac_app_assert t U cont' | fail 3 ]
-               | forall _:U, _ => first 
+               | forall _:U, _ => first
                    [ libtac_app_typeclass t cont'
-                   | libtac_app_evar t U cont' 
-                   | fail 3 ] 
+                   | libtac_app_evar t U cont'
+                   | fail 3 ]
                | ?P -> ?Q => first [ libtac_app_assert t P cont | fail 3 ]
-               | forall _:?A, _ => first 
+               | forall _:?A, _ => first
                    [ libtac_app_typeclass t cont
                    | libtac_app_evar t A cont
-                   | fail 3 ] 
-               end 
+                   | fail 3 ]
+               end
              end
            | fail 2 ]
-      | _ => 
+      | _ =>
           match T with
           | ?P -> ?Q => first [ libtac_app_arg t P v cont'
                               | libtac_app_assert t P cont
                               | fail 3 ]
-          | forall _:Type, _ => 
-              match type of v with 
-              | Type => first [ cont' (t v) 
+          | forall _:Type, _ =>
+              match type of v with
+              | Type => first [ cont' (t v)
                               | libtac_app_evar t Type cont
                               | fail 3 ]
               | _ => first [ libtac_app_evar t Type cont
                            | fail 3 ]
-              end 
-          | forall _:?A, _ => 
+              end
+          | forall _:?A, _ =>
              let V := type of v in
              match type of V with
              | Prop => first [ libtac_app_typeclass t cont
                               | libtac_app_evar t A cont
                               | fail 3 ]
-             | _ => first [ cont' (t v) 
+             | _ => first [ cont' (t v)
                           | libtac_app_typeclass t cont
                           | libtac_app_evar t A cont
                           | fail 3 ]
@@ -668,9 +668,9 @@ Ltac ltac_first_match_app_cont_aux t vs final :=
     end in
   go t vs.
 
-Ltac libtac_first_match_app_cont args final := 
-  first [ 
-    match args with (@libtac_dyn ?T ?t)::?vs => 
+Ltac libtac_first_match_app_cont args final :=
+  first [
+    match args with (@libtac_dyn ?T ?t)::?vs =>
       let t := constr:(t:T) in
       ltac_first_match_app_cont_aux t vs final
       (*fast_rm_inside args*)
@@ -767,30 +767,30 @@ Notation "'#' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12" :=
 (* ********************************************************************** *)
 (** * [put] tactic *)
 
-(** [put I: E] is a convenient syntax for adding an hypothesis 
+(** [put I: E] is a convenient syntax for adding an hypothesis
     of name [I] and of proof-term [E] into the goal.
 
-    Remark: [put I: E] is like [generalize E; intros I] 
+    Remark: [put I: E] is like [generalize E; intros I]
     or like [set (I:=E); clearbody I]. *)
 
 Tactic Notation "put" simple_intropattern(I) ":" constr(E) :=
   (* FUTURE IMPLEMENTATION:  generalize E; intros I. *)
-  let args := libtac_dyn_of E in 
+  let args := libtac_dyn_of E in
   libtac_first_match_app_cont args ltac:(fun R => generalize R; intros I).
 
 
 (* ********************************************************************** *)
 (** * [forward] tactic *)
 
-(** [forward I: E] is essentially a convenient syntax for 
-    [put I: (# E __)], which instantiates all visible arguments 
-    from lemma [E] with fresh unification variables, and names 
-    [I] the instantiated lemma. 
-    *) 
+(** [forward I: E] is essentially a convenient syntax for
+    [put I: (# E __)], which instantiates all visible arguments
+    from lemma [E] with fresh unification variables, and names
+    [I] the instantiated lemma.
+    *)
 
 Tactic Notation "forward" simple_intropattern(I) ":" constr(E) :=
   (* FUTURE IMPLEMENTATION:  put I: (# E __). *)
-  let args := libtac_dyn_of E in 
+  let args := libtac_dyn_of E in
   let args := (eval simpl in (args ++ ((libtac_dyn __)::nil))) in
   libtac_first_match_app_cont args ltac:(fun R => generalize R; intros I).
 
@@ -799,7 +799,7 @@ Tactic Notation "forward" simple_intropattern(I) ":" constr(E) :=
 (** * [applys] tactic *)
 
 (** [applys E] is the same as [eapply E] except that it supports the
-    [applys (# E0 .. EN)] form. FUTURE: it won't be needed anymore. *) 
+    [applys (# E0 .. EN)] form. FUTURE: it won't be needed anymore. *)
 
 Tactic Notation "applys" constr(E) :=
   match type of E with
@@ -836,7 +836,7 @@ Ltac dup_tactic N :=
   | S ?N' => apply dup_lemma; [ | dup_tactic N' ]
   end.
 
-Tactic Notation "dup" constr(N) := 
+Tactic Notation "dup" constr(N) :=
   dup_tactic N.
 
 
@@ -853,16 +853,16 @@ Lemma demo_intro_fast_1 :
 Proof using.
   dup 4.
   (* [=>>] introduces all the variables which are not hypotheses,
-     more precisely all the variables used dependently. *) 
+     more precisely all the variables used dependently. *)
   - =>>.
-  (* if there is no more head variables, and no definition can 
+  (* if there is no more head variables, and no definition can
      be unfolded at head of the goal, it does not do anything *)
-    =>>. admit. 
+    =>>. admit.
   (* [=>> A] introduces all variables, then does [intros A] *)
-  - =>> A. =>> B. =>>. intros C D. admit. 
+  - =>> A. =>> B. =>>. intros C D. admit.
   (* [=>>] may take several arguments, as illustrated below *)
-  - =>> A B. =>>. admit. 
-  - =>> A B C D. admit. 
+  - =>> A B. =>>. admit.
+  - =>> A B C D. admit.
 Admitted.
 
 Lemma demo_intro_fast_2 :
@@ -870,7 +870,7 @@ Lemma demo_intro_fast_2 :
 Proof using.
   (* Notice that variables which are not used dependently
      are treated as hypotheses, e.g. variable [c] below. *)
-  =>> c E F. admit. 
+  =>> c E F. admit.
 Admitted.
 
 Definition Same (x y : nat) := True -> x = y.
@@ -881,13 +881,13 @@ Lemma demo_intro_fast_3 :
 Proof using.
   dup 4.
   (* [=>>] introduces a variable but no subsequent definition *)
-  - =>>. admit. 
+  - =>>. admit.
   (* [=>> E] unfolds definitions until finding an hypothesis *)
-  - =>> E. =>> F. admit. 
+  - =>> E. =>> F. admit.
   (* [=>> E F] unfolds several definitions if needed *)
   - =>> E F. admit.
   (* [=>> ? _] shows that all intro pattern are accepted *)
-  - =>> ? _. admit. 
+  - =>> ? _. admit.
 Admitted.
 
 Lemma demo_intro_fast_4 :
@@ -901,9 +901,9 @@ Proof using.
   (* introduces [a = 0] and [a = y] *)
   - =>> E F. admit.
   (* introduces [a = 0] and [a = y] and [True] *)
-  - =>> E F G. admit. 
+  - =>> E F G. admit.
   (* introduction of more names fails *)
-  - try (=>> E F G H). admit. 
+  - try (=>> E F G H). admit.
 Admitted.
 
 Lemma demo_intro_fast_5 :
@@ -911,9 +911,9 @@ Lemma demo_intro_fast_5 :
 Proof using.
   dup 2. (* playing with negation *)
   (* introduces [a = 0] *)
-  - =>> E. admit. 
+  - =>> E. admit.
   (* introduces [a = 0] and [Sym a] *)
-  - =>> E F. admit. 
+  - =>> E F. admit.
 Admitted.
 
 End IntroFastDemo.
@@ -927,10 +927,10 @@ End IntroFastDemo.
 
 Inductive adds2 : nat -> nat -> Prop :=
   | adds2_0 : adds2 0 2
-  | adds2_SS : forall n m, adds2 n m -> 
+  | adds2_SS : forall n m, adds2 n m ->
               adds2 (S (S n)) (S (S m)).
 
-Lemma demo_invert_1 : 
+Lemma demo_invert_1 :
   adds2 4 8 -> False.
 Proof using.
   intros P. dup 4.
@@ -962,9 +962,9 @@ Proof using.
   =>> P. dup 3.
   (* When [invert] produces several subgoals, you can name
      the variables in each of the goals, when you reach to them. *)
-  - invert P. 
+  - invert P.
     + intros n. constructor.
-    + intros n m R. constructor. admit.  
+    + intros n m R. constructor. admit.
   (* Alternatively, you can name variables immediately *)
   - invert P; [ intros n | intros n m R ].
     + constructor.
@@ -976,25 +976,25 @@ Proof using.
 Admitted.
 
 (** The predicate [behave] relates a value of type nat and
-    a value of type [behavior]. It is meant to illustrate 
+    a value of type [behavior]. It is meant to illustrate
     an example where [inversion] produces a dependent equality. *)
 
-Inductive behavior : Type := 
-  | behavior_intro : 
+Inductive behavior : Type :=
+  | behavior_intro :
       forall (A:Type) (F:A->nat) (P:A->Prop), behavior.
 
 Inductive behave : nat -> behavior -> Prop :=
   | behave_intro : forall (A:Type) (F:A->nat) (P:A->Prop) V,
       P V -> behave (F V) (@behavior_intro A F P).
 
-Lemma demo_invert_3 : 
+Lemma demo_invert_3 :
   behave 4 (behavior_intro (fun x:nat => x) (fun x:nat => x <> 3))
   -> False.
 Proof using.
   intros H. dup 2.
   (* [inversion] can generate some dependently-typed equalities *)
-  - inversion H. admit. 
-  (* [inverts] carries out all the substitution properly *) 
+  - inversion H. admit.
+  (* [inverts] carries out all the substitution properly *)
   - invert H. =>> R1 R2 R3. admit.
 Admitted.
 
@@ -1005,16 +1005,16 @@ Admitted.
 Section PutDemo.
 Variables H1 H2 H3 H4 : Prop.
 
-Lemma demo_put : 
+Lemma demo_put :
   (H1 -> H2 -> H3 /\ H4) -> (H1 -> H2) -> H1 -> H3.
 Proof using.
   intros P Q R.
-  (* [put] a tactic for naming a term *) 
-  put U: (Q R). 
+  (* [put] a tactic for naming a term *)
+  put U: (Q R).
   (* [put] can decompose terms with a patterns *)
   put [V W]: (P R U).
   (* [put] accepts any intro-pattern in fact *)
-  put (V'&_): (P R U). 
+  put (V'&_): (P R U).
   (* [put] can be used in particular to copy an hypothesis,
      for example if you need to save it before an [invert]. *)
   put U': U.
@@ -1031,19 +1031,19 @@ End PutDemo.
 
 Lemma demo_put_forward_sharp : forall (x y : nat) (A B : Prop),
   (x > 0) ->
-  (x <> y) -> 
+  (x <> y) ->
   (A <-> B) ->
   (forall n, n > 0 -> forall m, n <> m -> exists k, k <> m) ->
-  (forall n : nat, 
+  (forall n : nat,
    n > 0 ->
    forall P Q : Prop,
    (P <-> Q) ->
    forall m : nat,
    n <> m ->
    forall K : nat -> Prop,
-   K n -> 
+   K n ->
    forall p,
-   K (m+p) -> 
+   K (m+p) ->
    True) ->
   True.
 Proof using.
@@ -1053,7 +1053,7 @@ Proof using.
   (* Specializes the lemma [M] to the hypothesis [Iff], skipping [n,Pos,P,Q] *)
   - put P2: (#M Pos Iff). admit.
   (* Specializes even further dosnw *)
-  - put P: (#M Neq). eauto. eauto. admit. 
+  - put P: (#M Neq). eauto. eauto. admit.
   (* Specializes only on [n] *)
   - put P: (#M x). admit.
   (* Specializes only on [m], which has the same type as [n], using [__] *)
@@ -1065,7 +1065,7 @@ Proof using.
   (* Using an introduction pattern to open an existential *)
   - put (k&K): (#L Neq). eauto. admit.
   (* Using a trailing [__] to instantiate all that remains *)
-  - put [k K]: (#L Pos __). eauto. admit. 
+  - put [k K]: (#L Pos __). eauto. admit.
   (* More extreme instantiation *)
   - put R: (#L __). eauto. eauto. admit.
   (* Alternative syntax using [forward] *)
@@ -1075,19 +1075,19 @@ Proof using.
 Admitted.
 
 Lemma demo_forward_1 : forall x : nat, x > 1 ->
-  (forall z, z > 1 -> exists y, z < 2 /\ z <> y) -> 
+  (forall z, z > 1 -> exists y, z < 2 /\ z <> y) ->
   True.
 Proof using.
   =>> Le H. dup 2.
   (* [forward] is used to instantiate a lemma entirely, generating one
-     subgoal for each hypothesis and one existential variable for 
+     subgoal for each hypothesis and one existential variable for
      each universally quantified variable *)
-  - forward Q: H. eauto. admit. 
+  - forward Q: H. eauto. admit.
   (* an introduction-pattern can be used to decompose the result *)
-  - forward [y [R1 R2]]: H. eauto. admit. 
+  - forward [y [R1 R2]]: H. eauto. admit.
 Admitted.
 
-Lemma demo_forward_2 : 
+Lemma demo_forward_2 :
   (forall x y : nat, x = y -> x <= y) ->
   forall a b : nat, a <= a.
 Proof using.
@@ -1101,14 +1101,14 @@ Definition mydef := forall (n m : nat), n = m -> False.
 Lemma demo_forward_3 :
   forall (i:nat), mydef -> i <> i.
 Proof using.
-  =>> H. dup 3. 
+  =>> H. dup 3.
   (** forward does nothing if no quantifier is visible *)
   - forward I: H. admit.
   (** work-around is to force underscore *)
   - forward I: (#H __). apply (refl_equal i). admit.
   (** or to force one arguments *)
   - forward I: (H i). reflexivity. admit.
-Admitted. 
+Admitted.
 
 (** On the other hand, definitions that are not at head
     position are not unfolded *)
@@ -1116,7 +1116,7 @@ Admitted.
 Definition outerdef := mydef.
 Definition nesteddef := forall (n:nat), mydef.
 
-Lemma demo_forward_4 : 
+Lemma demo_forward_4 :
   forall (i:nat), nesteddef -> outerdef.
 Proof using.
   intros i H. dup 5.
@@ -1124,9 +1124,9 @@ Proof using.
   - forward K: (#H i). admit.
   (** it is nevertheless possible to instantiate arguments
       inside [mydef] if providing explicit arguments *)
-  - forward K: (#H i i). admit. admit. 
+  - forward K: (#H i i). admit. admit.
   (* or by adding a [__] *)
-  - forward K: (#H i __). admit. admit. 
+  - forward K: (#H i __). admit. admit.
   (* illustrating the interest of several [__] *)
   - forward K: (#H __ __). exact i. apply (refl_equal 0). admit.
   (** but usually it is simpler to unfold explicitly *)
@@ -1136,14 +1136,14 @@ Admitted.
 
 Lemma demo_applys : forall (x y : nat) (A B : Prop),
   (x > 0) ->
-  (x <> y) -> 
+  (x <> y) ->
   (A <-> B) ->
-  (forall n : nat, 
+  (forall n : nat,
    n > 0 ->
    forall P Q : Prop,
    (P <-> Q) ->
    forall m : nat,
-   m <> n -> 
+   m <> n ->
    True) ->
   True.
 Proof using.

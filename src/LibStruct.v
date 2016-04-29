@@ -13,7 +13,7 @@ Generalizable Variables A B.
 (* --------------------------------------------------------------------- *)
 (** * Structures *)
 
-Record monoid_def (A:Type) : Type := monoid_ { 
+Record monoid_def (A:Type) : Type := monoid_ {
    monoid_oper : oper2 A;
    monoid_neutral : A }.
 
@@ -55,7 +55,7 @@ Section MonoidInst.
 (* TODO: use M as explicit hypothesis *)
 Context {A:Type} {m:monoid_def A}.
 
-Global Instance Monoid_Monoid_assoc : 
+Global Instance Monoid_Monoid_assoc :
   forall {M:Monoid m},
   Monoid_assoc (m:=m).
 Proof using.
@@ -69,21 +69,21 @@ Proof using.
   introv M. constructor. destruct M as [? U ?]. destruct m. simpl. apply U.
 Qed.
 
-Global Instance Monoid_Monoid_neutral_r : 
+Global Instance Monoid_Monoid_neutral_r :
   forall {M:Monoid m},
   Monoid_neutral_r (m:=m).
 Proof using.
   introv M. constructor. destruct M as [? ? U]. destruct m. simpl. apply U.
 Qed.
 
-Global Instance Monoid_commutative_Monoid : 
+Global Instance Monoid_commutative_Monoid :
   forall {M:Monoid_commutative m},
   Monoid m.
 Proof using.
   introv M. destruct M as [U ?]. destruct m. simpl. apply U.
 Qed.
 
-Global Instance Monoid_commutative_Monoid_comm : 
+Global Instance Monoid_commutative_Monoid_comm :
   forall {M:Monoid_commutative m},
   Monoid_comm (m:=m).
 Proof using.

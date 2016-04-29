@@ -19,7 +19,7 @@ Open Scope env_scope.
     the following two tactics. *)
 
 Ltac case_if_eq_base E F H :=
-  destruct (classicT (E = F)) as [H|H]; 
+  destruct (classicT (E = F)) as [H|H];
   [tryfalse; try subst E | tryfalse ].
 
 Tactic Notation "case_if_eq" constr(E) constr(F) "as" ident(H) :=
@@ -74,21 +74,21 @@ Ltac apply_fresh_base_simple lemma gather :=
 
 Ltac intros_fresh x :=
    first [
-     let Fr := fresh "Fr" x in 
+     let Fr := fresh "Fr" x in
      intros x Fr
-  |  let x2 := 
+  |  let x2 :=
        match goal with |- forall _:?T, _ =>
-       match T with 
+       match T with
        | var => fresh "y"
-       | vars => fresh "ys" 
-       | list var => fresh "ys" 
+       | vars => fresh "ys"
+       | list var => fresh "ys"
        | _ => fresh "y"
        end end in
-     let Fr := fresh "Fr" x2 in 
+     let Fr := fresh "Fr" x2 in
      intros x2 Fr ].
 
 Ltac apply_fresh_base lemma gather var_name :=
-  apply_fresh_base_simple lemma gather; 
+  apply_fresh_base_simple lemma gather;
   try (match goal with
     | |- forall _:_, _ \notin _ -> _ => intros_fresh var_name
     | |- forall _:_, fresh _ _ _ -> _ => intros_fresh var_name
@@ -105,7 +105,7 @@ Ltac exists_fresh_gen G y Fry :=
 (* ********************************************************************** *)
 (** * Applying lemma modulo a simple rewriting *)
 
-(** [do_rew] is used to perform the sequence: 
+(** [do_rew] is used to perform the sequence:
     rewrite the goal, execute a tactic, rewrite the goal back *)
 
 Tactic Notation "do_rew" constr(E) tactic(T) :=
@@ -139,11 +139,11 @@ Tactic Notation "do_rew_all" "<-" constr(E) tactic(T) :=
 (* ********************************************************************** *)
 (** ** Tactics for applying lemmas on empty environments *)
 
-(** Tactic to apply an induction hypothesis modulo a rewrite of 
+(** Tactic to apply an induction hypothesis modulo a rewrite of
   the associativity of the environment necessary to handle the
   inductive rules dealing with binders. [apply_ih_bind] is in
-  fact just a syntactical sugar for [do_rew concat_assoc (eapply H)] 
-  which stands for 
+  fact just a syntactical sugar for [do_rew concat_assoc (eapply H)]
+  which stands for
   [rewrite concat_assoc; eapply H; rewrite <- concat_assoc]. *)
 
 Tactic Notation "apply_ih_bind" constr(H) :=
@@ -162,15 +162,15 @@ Tactic Notation "apply_ih_map_bind" constr(H) :=
 
 Tactic Notation "apply_ih_map_bind" "*" constr(H) :=
   do_rew* concat_assoc_map_push (applys H);
-  try solve [ rewrite concat_assoc; reflexivity ].  
+  try solve [ rewrite concat_assoc; reflexivity ].
 
 (** [clean_empty H] simplifies terms in H terms of the form
     [map f empty] and of the form [E & empty] *)
 
 Tactic Notation "clean_empty" hyp(H) :=
-  repeat (match type of H with context [map ?f empty] => 
+  repeat (match type of H with context [map ?f empty] =>
     rewrite (map_empty f) in H end);
-  repeat (match type of H with context [?E & empty] => 
+  repeat (match type of H with context [?E & empty] =>
     rewrite (concat_empty_r E) in H end).
 
 (** [apply_empty] applies a lemma of the form "forall E:env, P E"
@@ -181,11 +181,11 @@ Tactic Notation "clean_empty" hyp(H) :=
 
 Ltac apply_empty_base H :=
   let M := fresh "TEMP" in
-  lets M: (@H empty);  
+  lets M: (@H empty);
   specializes_vars M;
   clean_empty M;
-  first [ apply M | eapply M | applys M ]; 
-  clear M. 
+  first [ apply M | eapply M | applys M ];
+  clear M.
 
 Tactic Notation "apply_empty" constr(H) :=
   apply_empty_base H.
@@ -199,7 +199,7 @@ Tactic Notation "apply_empty" "*" constr(H) :=
 (** * Some results on lists *)
 
 (** We use [List.nth] instead of [LibList.nth] so that we can
-    have control over the default value returned in case of 
+    have control over the default value returned in case of
     invalid index *)
 
 Lemma list_map_nth : forall A (f : A -> A) (d : A) (l : list A) (n : nat),
@@ -214,7 +214,7 @@ Definition list_for_n (A : Set) (P : A -> Prop) (n : nat) (L : list A) :=
   n = length L /\ Forall P L.
 
 Lemma list_for_n_concat : forall (A : Set) (P : A -> Prop) n1 n2 L1 L2,
-  list_for_n P n1 L1 -> 
+  list_for_n P n1 L1 ->
   list_for_n P n2 L2 ->
   list_for_n P (n1+n2) (L1 ++ L2).
 Proof using.
@@ -223,12 +223,12 @@ Proof using.
   apply* Forall_app.
 Qed.
 
-Hint Extern 1 (?n = length ?xs) => 
- match goal with H: list_for_n _ ?n ?xs |- _ => 
+Hint Extern 1 (?n = length ?xs) =>
+ match goal with H: list_for_n _ ?n ?xs |- _ =>
   apply (proj1 H) end.
 
-Hint Extern 1 (length ?xs = ?n) => 
- match goal with H: list_for_n _ ?n ?xs |- _ => 
+Hint Extern 1 (length ?xs = ?n) =>
+ match goal with H: list_for_n _ ?n ?xs |- _ =>
   apply (sym_eq (proj1 H)) end.
 
 

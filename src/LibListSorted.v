@@ -18,14 +18,14 @@ Variable A : Type.
 (* ---------------------------------------------------------------------- *)
 (** ** Definition *)
 
-(** We could define permutation in terms of multisets, 
+(** We could define permutation in terms of multisets,
     but this would impose additional constraints on the
     type of elements. So instead, we use a definition
     in terms of permutation of two inner segment of lists,
     taking the reflexive-transitive closure. *)
 
 Inductive permut_one : list A -> list A -> Prop :=
-  | permut_one_intro : forall l1 l2 l3 l4, 
+  | permut_one_intro : forall l1 l2 l3 l4,
       permut_one (l1++l2++l3++l4) (l1++l3++l2++l4).
 
 Hint Constructors permut_one.
@@ -44,7 +44,7 @@ Proof using. intros. apply rtclosure_refl. Qed.
 
 Lemma permut_sym : forall l1 l2,
   permut l1 l2 -> permut l2 l1.
-Proof using. 
+Proof using.
   intros. induction H.
   apply permut_refl.
   applys rtclosure_last. apply IHrtclosure. inverts~ H.
@@ -81,7 +81,7 @@ Proof using.
   introv H. gen l1. induction H; intros.
   apply permut_refl.
   specializes IHrtclosure l1. inverts H.
-   rewrite <- app_assoc in *. eapply permut_trans. 
+   rewrite <- app_assoc in *. eapply permut_trans.
    applys* rtclosure_step. apply permut_refl.
 Qed.
 
@@ -91,7 +91,7 @@ Lemma permut_app_lr : forall l1 l1' l2 l2',
 Proof using.
   intros. applys rtclosure_trans.
   sapply* permut_app_l.
-  apply* permut_app_r.  
+  apply* permut_app_r.
 Qed.
 
 Lemma permut_cons : forall x l1 l1',
@@ -109,28 +109,28 @@ Lemma permut_rev : forall l,
 Proof using.
   induction l. apply permut_refl. rew_rev.
   lets: (@permut_flip (a::nil) (rev l)). rew_app in *.
-  apply~ (@permut_trans (a::rev l)). apply~ permut_cons. 
+  apply~ (@permut_trans (a::rev l)). apply~ permut_cons.
 Qed.
 
 (** Properties of elements are preserved by permutation *)
 
-Lemma Forall_permut_one : forall (P:A->Prop) l1 l2, 
+Lemma Forall_permut_one : forall (P:A->Prop) l1 l2,
   Forall P l1 -> permut_one l1 l2 -> Forall P l2.
 Proof using.
   introv F Per. inverts Per.
   lets F0 F345: (Forall_app_inv _ _ F).
-  lets F3 F45: (Forall_app_inv _ _ F345).  
+  lets F3 F45: (Forall_app_inv _ _ F345).
   lets F4 F5: (Forall_app_inv _ _ F45).
   apply~ Forall_app. apply~ Forall_app. apply~ Forall_app.
-Qed. 
+Qed.
 
-Lemma Forall_permut : forall (P:A->Prop) l1 l2, 
+Lemma Forall_permut : forall (P:A->Prop) l1 l2,
   Forall P l1 -> permut l1 l2 -> Forall P l2.
 Proof using.
   introv F1 Per. gen F1. induction Per.
-  auto. 
+  auto.
   autos* Forall_permut_one.
-Qed. 
+Qed.
 
 End Permutation.
 
@@ -150,9 +150,9 @@ Lemma permut_get_1 : forall l1 l2,
 Proof using. intros. apply permut_refl. Qed.
 Lemma permut_get_2 : forall l1 l2 l3,
   permut (l1 ++ l2 ++ l3) (l2 ++ l1 ++ l3).
-Proof using. 
-  intros. apply rtclosure_once. 
-  applys (@permut_one_intro _ nil l1 l2 l3). 
+Proof using.
+  intros. apply rtclosure_once.
+  applys (@permut_one_intro _ nil l1 l2 l3).
 Qed.
 Lemma permut_get_3 : forall l1 l2 l3 l4,
   permut (l1 ++ l2 ++ l3 ++ l4) (l2 ++ l3 ++ l1 ++ l4).
@@ -161,21 +161,21 @@ Proof using.
   apply permut_get_2.
 Qed.
 Lemma permut_get_4 : forall l1 l2 l3 l4 l5,
-  permut (l1 ++ l2 ++ l3 ++ l4 ++ l5) 
+  permut (l1 ++ l2 ++ l3 ++ l4 ++ l5)
          (l2 ++ l3 ++ l4 ++ l1 ++ l5).
 Proof using.
   intros. do 2 rewrite <- (@app_assoc _ l2).
   apply permut_get_3.
 Qed.
 Lemma permut_get_5 : forall l1 l2 l3 l4 l5 l6,
-  permut (l1 ++ l2 ++ l3 ++ l4 ++ l5 ++ l6) 
+  permut (l1 ++ l2 ++ l3 ++ l4 ++ l5 ++ l6)
          (l2 ++ l3 ++ l4 ++ l5 ++ l1 ++ l6).
 Proof using.
   intros. do 2 rewrite <- (@app_assoc _ l2).
   apply permut_get_4.
 Qed.
 Lemma permut_get_6 : forall l1 l2 l3 l4 l5 l6 l7,
-  permut (l1 ++ l2 ++ l3 ++ l4 ++ l5 ++ l6 ++ l7) 
+  permut (l1 ++ l2 ++ l3 ++ l4 ++ l5 ++ l6 ++ l7)
          (l2 ++ l3 ++ l4 ++ l5 ++ l6 ++ l1 ++ l7).
 Proof using.
   intros. do 2 rewrite <- (@app_assoc _ l2).
@@ -219,16 +219,16 @@ Ltac permut_lemma_get n :=
   | 2 => constr:(permut_get_2)
   | 3 => constr:(permut_get_3)
   | 4 => constr:(permut_get_4)
-  | 5 => constr:(permut_get_5) 
+  | 5 => constr:(permut_get_5)
   end.
 
 Ltac permut_isolate_cons :=
   do 20 try (* todo : repeat *)
     match goal with |- context [?x::?l] =>
-      match l with 
+      match l with
       | nil => fail 1
       | _ => rewrite <- (@app_cons_one _ x l)
-      end 
+      end
     end.
 
 Ltac permut_simpl_prepare :=
@@ -239,9 +239,9 @@ Ltac permut_simpl_prepare :=
    repeat rewrite app_assoc.
 
 
-(** [permut_simplify] simplifies a goal of the form 
-    [permut l l'] where [l] and [l'] are lists built with 
-    concatenation and consing, by cancelling syntactically 
+(** [permut_simplify] simplifies a goal of the form
+    [permut l l'] where [l] and [l'] are lists built with
+    concatenation and consing, by cancelling syntactically
     equal elements *)
 
 Ltac permut_index_of l lcontainer :=
@@ -255,14 +255,14 @@ Ltac permut_index_of l lcontainer :=
   | _ => constr:(0) (* not found *)
   end.
 
-Ltac permut_simpl_once := 
+Ltac permut_simpl_once :=
   match goal with
   | |- permut (_ ++ nil) _ => fail 1
-  | |- permut (_ ++ (?l ++ _)) ?l' => 
+  | |- permut (_ ++ (?l ++ _)) ?l' =>
      match permut_index_of l l' with
      | 0 => apply permut_tactic_keep
      | ?n => let F := permut_lemma_get n in
-            eapply permut_tactic_trans; 
+            eapply permut_tactic_trans;
             [ apply F
             | apply permut_tactic_simpl ]
      end
@@ -290,7 +290,7 @@ Implicit Types le : binary A.
 Inductive sorted le : list A -> Prop :=
   | sorted_nil : sorted le nil
   | sorted_one : forall x, sorted le (x::nil)
-  | sorted_two : forall x y l, 
+  | sorted_two : forall x y l,
      sorted le (y::l) -> le x y ->
      sorted le (x::y::l).
 
@@ -326,7 +326,7 @@ Hint Resolve sorted_nil sorted_one.
 
 Lemma sorted_inv : forall x l,
   sorted le (x::l) -> head_of_le le x l /\ sorted le l.
-Proof using. introv H. inverts H; simpls~. Qed. 
+Proof using. introv H. inverts H; simpls~. Qed.
 
 Lemma sorted_sub : forall x l,
   sorted le (x::l) -> sorted le l.
@@ -358,7 +358,7 @@ Lemma head_le_nil_r : forall l,
 Proof using. intros. unfolds. destruct~ l. Qed.
 
 Lemma sorted_cons_head : forall l1 l2 x,
-  head_le le (x::l1) l2 -> 
+  head_le le (x::l1) l2 ->
   sorted le l2 ->
   sorted le (x::l2).
 Proof using. introv H S2. destruct l2. auto. apply~ sorted_cons. Qed.
@@ -409,7 +409,7 @@ Hint Constructors sorted.
 
 Lemma rsorted_inv : forall x l,
   rsorted le (x::l) -> head_of_le (flip le) x l /\ rsorted le l.
-Proof using. introv H. inverts H; simpls~. Qed. 
+Proof using. introv H. inverts H; simpls~. Qed.
 
 Lemma head_le_from_rsorted : forall x l1 l2,
   rsorted le (x::l2) ->
@@ -420,13 +420,13 @@ Proof using.
 Qed.
 
 Lemma rsorted_cons_head : forall l1 l2 x,
-  head_le (flip le) (x::l1) l2 -> 
+  head_le (flip le) (x::l1) l2 ->
   rsorted le l2 ->
   rsorted le (x::l2).
 Proof using. introv H S2. destruct~ l2. Qed.
 
 Lemma sorted_app : forall l1 l2,
-  head_le le l1 l2 -> rsorted le l1 -> sorted le l2 -> 
+  head_le le l1 l2 -> rsorted le l1 -> sorted le l2 ->
   sorted le ((rev l1) ++ l2).
 Proof using.
   introv. gen l2. induction l1; introv Hd S1 S2; rew_rev. auto.
@@ -438,7 +438,7 @@ Qed.
 End RSortedProperties.
 
 Lemma rsorted_app : forall (A : Type) (le : binary A) l1 l2,
-  head_le le l2 l1 -> sorted le l1 -> rsorted le l2 -> 
+  head_le le l2 l1 -> sorted le l1 -> rsorted le l2 ->
   rsorted le ((rev l1) ++ l2).
 Proof using.
   unfold rsorted. intros. apply sorted_app.
@@ -482,7 +482,7 @@ Lemma sorts_app_rev : forall le l1 l2,
 Proof using.
   introv H S1 S2. split.
   apply permut_app_l. apply permut_rev.
-  apply~ sorted_app. 
+  apply~ sorted_app.
 Qed.
 
 Lemma rsorts_app_rev : forall le l1 l2,
@@ -491,15 +491,15 @@ Lemma rsorts_app_rev : forall le l1 l2,
 Proof using.
   introv H S1 S2. split.
   apply permut_app_l. apply permut_rev.
-  apply~ rsorted_app. 
+  apply~ rsorted_app.
 Qed.
 
 Lemma sorts_permut : forall l1 l2 l' le,
   sorts le l1 l' -> permut l2 l1 ->
   sorts le l2 l'.
 Proof using.
-  introv [P1 S1] Per. split~. 
-  apply* (@permut_trans _ l1). 
+  introv [P1 S1] Per. split~.
+  apply* (@permut_trans _ l1).
 Qed.
 
 Lemma rsorts_permut : forall l1 l2 l' le,
@@ -511,7 +511,7 @@ Lemma sorts_cons : forall le l l' x,
   sorts le l l' -> head_of_le le x l' ->
   sorts le (x::l) (x::l').
 Proof using.
-  introv [P S] Hd. split. 
+  introv [P S] Hd. split.
   apply~ permut_cons. apply~ sorted_cons.
 Qed.
 
@@ -563,7 +563,7 @@ Qed.
 Lemma sorts_length_lt_2 : forall le l,
   length l < 2 -> sorts le l l.
 Proof using.
-  intros. apply sorts_refl. destruct~ l. 
+  intros. apply sorts_refl. destruct~ l.
   destruct~ l. rew_length in *. false. nat_math.
 Qed.
 

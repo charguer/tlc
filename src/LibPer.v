@@ -79,11 +79,11 @@ Lemma per_add_edge_per : forall A (R : binary A) a b,
 Proof using.
   introv [Rs Rt]. unfold per_add_edge. constructor.
   introv H. induction* H.
-  introv H1. gen z. induction* H1. 
+  introv H1. gen z. induction* H1.
 Qed.
 
 Lemma per_dom_add_edge : forall A (B:binary A) x y,
-  per B -> x \in per_dom B -> y \in per_dom B -> 
+  per B -> x \in per_dom B -> y \in per_dom B ->
   per_dom (per_add_edge B x y) = per_dom B \u \{x} \u \{y}.
 Proof using.
   introv [Sy Tr] Bx By. unfold per_add_edge. apply set_ext. intros z.
@@ -104,7 +104,7 @@ Lemma per_add_node_per : forall A (B:binary A) r,
 Proof using.
   introv [Sy Tr]. unfold per_add_node, per_single, Rel.union.
   constructors.
-  intros_all. hnf in Sy. intuition.  
+  intros_all. hnf in Sy. intuition.
   intros_all. hnf in Tr. intuition; subst*.
 Qed.
 
@@ -113,8 +113,8 @@ Lemma per_dom_add_node : forall A (B:binary A) x,
 Proof using.
   intros. unfold per_add_node. apply set_ext. intros y.
   unfold Rel.union. unfold per_dom. unfold per_single.
-  rewrite in_union_eq. rewrite in_single_eq. do 2 rewrite in_set_st_eq. 
-  intuition. 
+  rewrite in_union_eq. rewrite in_single_eq. do 2 rewrite in_set_st_eq.
+  intuition.
 Qed.
 
 (* TODO: rename lemma *)

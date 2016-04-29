@@ -78,7 +78,7 @@ Implicit Types E : fset A.
 
 (** Extensionality *)
 
-Parameter fset_extens : forall E F, 
+Parameter fset_extens : forall E F,
   subset E F -> subset F E -> E = F.
 
 (** Finiteness *)
@@ -89,7 +89,7 @@ Parameter fset_finite : forall E,
 (** Semantics of basic operations *)
 
 Parameter in_empty : forall x,
-  x \in \{} = False. 
+  x \in \{} = False.
 
 Parameter in_singleton : forall x y,
   x \in \{y} = (x = y).
@@ -118,7 +118,7 @@ Module Export FsetImpl : FsetSig.
 
 Close Scope container_scope.
 
-Definition finite A (U:set A) := 
+Definition finite A (U:set A) :=
   exists L, forall x, is_in x U -> Mem x L.
 
 Definition fset A := sig (@finite A).
@@ -128,20 +128,20 @@ Definition build_fset A (U:set A) (F:finite U) :=
 
 Section Operations.
 Variables (A:Type).
- 
+
 Definition mem (x:A) (E:fset A) :=
   is_in x (proj1_sig E).
 
 Lemma finite_empty : @finite A LibBag.empty.
 Proof using. exists (@nil A). intros x. rewrite in_empty_eq. auto_false. Qed.
 
-Definition empty : fset A := 
+Definition empty : fset A :=
   build_fset finite_empty.
 
 Lemma singleton_finite : forall (x:A),
   finite (LibBag.single x).
 Proof using.
-  intros. exists (x::nil). intros y. 
+  intros. exists (x::nil). intros y.
   rewrite in_single_eq. intro_subst. constructor.
 Qed.
 
@@ -152,7 +152,7 @@ Lemma union_finite : forall U V : set A,
   finite U -> finite V -> finite (union U V).
 Proof using.
   introv [L1 E1] [L2 E2]. exists (L1 ++ L2). intros x.
-  rewrite in_union_eq. rewrite Mem_app_or_eq. introv [H|H]; auto. 
+  rewrite in_union_eq. rewrite Mem_app_or_eq. introv [H|H]; auto.
 Qed.
 
 Definition union (E F : fset A) :=
@@ -172,7 +172,7 @@ Lemma remove_finite : forall U V : set A,
   finite U -> finite V -> finite (remove U V).
 Proof using.
   introv [L1 E1] [L2 E2]. exists L1. intros x.
-  rewrite in_remove_eq. introv [H1 H2]; auto. 
+  rewrite in_remove_eq. introv [H1 H2]; auto.
 Qed.
 
 Definition remove (E F : fset A) :=
@@ -230,9 +230,9 @@ Lemma fset_extens_eq : forall E F,
 Proof using.
   unfold mem. intros [U FU] [V FV] H. simpls.
   apply exist_eq. apply in_extens. intros. rewrite* H.
-Qed. 
+Qed.
 
-Lemma fset_extens : forall E F, 
+Lemma fset_extens : forall E F,
   subset E F -> subset F E -> E = F.
 Proof using. intros. apply fset_extens_eq. extens*. Qed.
 
@@ -260,7 +260,7 @@ Lemma from_list_spec : forall x L,
   x \in from_list L = Mem x L.
 Proof using.
   unfold from_list. induction L; rew_list.
-  rewrite in_empty. rewrite~ Mem_nil_eq. 
+  rewrite in_empty. rewrite~ Mem_nil_eq.
   rewrite in_union, in_singleton. rewrite~ Mem_cons_eq. congruence.
 Qed.
 
@@ -275,11 +275,11 @@ Proof using.
     specializes H M. induction L'.
       inverts H.
       rewrite filter_cons. inverts H.
-        rewrite (is_True M). rewrite~ isTrue_True. 
+        rewrite (is_True M). rewrite~ isTrue_True.
         case_if; fold_bool; fold_prop; auto.
     clear H. induction L'.
       rewrite filter_nil in M. inverts M.
-      rewrite filter_cons in M. cases_if; fold_bool; fold_prop. 
+      rewrite filter_cons in M. cases_if; fold_bool; fold_prop.
         inverts~ M.
         apply~ IHL'.
 Qed.
@@ -334,7 +334,7 @@ Qed.
 Lemma union_empty_l : forall E,
   \{} \u E = E.
 Proof using.
-  intros. apply fset_extens; 
+  intros. apply fset_extens;
    intros x; rewrite_all in_union.
     intros [ H | H ]. false. rewrite~ in_empty in H. auto.
     autos*.
@@ -378,10 +378,10 @@ Qed.
 Lemma inter_empty_l : forall E,
   \{} \n E = \{}.
 Proof using.
-  intros. apply fset_extens; 
+  intros. apply fset_extens;
    intros x; rewrite_all in_inter.
     intros. false* in_empty_elim.
-    intros. false* in_empty_elim. 
+    intros. false* in_empty_elim.
 Qed.
 
 Lemma inter_empty_r : forall E,
@@ -398,7 +398,7 @@ Qed.
 
 (* Properties of [from_list] *)
 
-Lemma from_list_nil : 
+Lemma from_list_nil :
   from_list (@nil A) = \{}.
 Proof using. auto. Qed.
 

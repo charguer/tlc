@@ -5,19 +5,19 @@
 (*-----------*)
 Lemma demo_lets_of : forall (x y : nat) (A B : Prop),
   (x > 0) ->
-  (x <> y) -> 
+  (x <> y) ->
   (A <-> B) ->
   (forall n, n > 0 -> forall m, n <> m -> exists k, k <> m) ->
-  (forall n : nat, 
+  (forall n : nat,
    n > 0 ->
    forall P Q : Prop,
    (P <-> Q) ->
    forall m : nat,
    n <> m ->
    forall K : nat -> Prop,
-   K n -> 
+   K n ->
    forall p,
-   K (m+p) -> 
+   K (m+p) ->
    True) ->
   True.
 Proof using.
@@ -45,7 +45,7 @@ Ltac lets_build I Ei :=
 
 
  lets_build I ((boxer M)::(boxer Iff)::nil).
-  let args := list_boxer_of Ei in 
+  let args := list_boxer_of Ei in
   let args := args_unfold_head_if_not_product_but_params args in
 (*    let Ei''' := args_unfold_head_if_not_product Ei'' in*)
   build_app args ltac:(fun R => lets_base I R).
@@ -55,9 +55,9 @@ Ltac lets_build I Ei :=
   build_app ((boxer M)::(boxer Iff)::nil) ltac:(fun E => pose E).
 
 
-Ltac  := 
-  first [ 
-    match args with (@boxer ?T ?t)::?vs => 
+Ltac  :=
+  first [
+    match args with (@boxer ?T ?t)::?vs =>
       let t := constr:(t:T) in
       build_app_hnts t vs final;
       fast_rm_inside args
@@ -102,7 +102,7 @@ Ltac dup_tactic N :=
   | S ?N' => apply dup_lemma; [ | dup_tactic N' ]
   end.
 
-Tactic Notation "dup" constr(N) := 
+Tactic Notation "dup" constr(N) :=
   dup_tactic N.
 
 
@@ -119,9 +119,9 @@ Lemma demo_introv_1 :
 Proof using.
   dup 4.
   (* [introv] introduces all the variables which are not hypotheses,
-     more precisely all the variables used dependently. *) 
+     more precisely all the variables used dependently. *)
   introv.
-  (* if there is no more head variables, and no definition can 
+  (* if there is no more head variables, and no definition can
      be unfolded at head of the goal, it does not do anything *)
   introv. skip.
   (* [introv A] introduces all variables, then does [intros A] *)
@@ -140,7 +140,7 @@ Lemma demo_introv_2 :
 Proof using.
   dup 4.
   (* [introv] introduces a variable but no subsequent definition *)
-  introv. 
+  introv.
   (* [introv] unfolds definition if no variable is visible *)
   introv. skip.
   (* [introv E] unfolds definitions until finding an hypothesis *)
@@ -197,7 +197,7 @@ Definition AllSame := forall x, AllSameAs x.
 Lemma demo_introv_6 :
   AllSame.
 Proof using.
-  dup 2. 
+  dup 2.
   (* introduces only [x], then only [y] *)
   introv. introv. skip.
   (* introduces [x] and [y] and [True] *)
@@ -209,7 +209,7 @@ Definition AllSameAgain := AllSame.
 Lemma demo_introv_7 :
   AllSameAgain.
 Proof using.
-  dup 2.  
+  dup 2.
   (* introduces only [x], then only [y] *)
   introv. introv. skip.
   (* introduces [x] and [y] and [True] *)
@@ -246,7 +246,7 @@ Definition testing f :=
   forall (x:nat), f x -> True.
 
 Lemma demo_introv_what_to_do : testing (fun a => a = 0).
-Proof using.   
+Proof using.
   dup 2.
     intro. skip. (* does beta-reduce f *)
     hnf. intro. skip. (* does not beta-reduce f *)
@@ -261,10 +261,10 @@ End IntrovTest.
 
 Inductive even_shift : nat -> nat -> Prop :=
   | even_0 : even_shift 0 2
-  | even_SS : forall n m, even_shift n m -> 
+  | even_SS : forall n m, even_shift n m ->
               even_shift (S (S n)) (S (S m)).
 
-Lemma demo_invert : 
+Lemma demo_invert :
   even_shift 4 8 -> False.
 Proof using.
   intros P. dup 12.
@@ -273,13 +273,13 @@ Proof using.
   (* [inversions H] is short for [inversion H; subst; clear H] *)
   inversions P. inversions H7. inversions H8.
   (* [invert] is same as [inversion H; clear H] except that it
-     generalizes the generated hypotheses so that they can 
+     generalizes the generated hypotheses so that they can
      be named manually using intros or introv *)
   invert P. introv P' EQ1 EQ2. skip.
   (* [invert as] can be used to name the generated hypotheses
      directly, in the [introv] fashion *)
   invert P as P' EQ1 EQ2. skip.
-  (* [inverts] does the same as [inversion; clear], then it 
+  (* [inverts] does the same as [inversion; clear], then it
      substitutes all the generated equalities (and only
      these fresh equalities, not the older ones) *)
   inverts P. inverts H7. inverts H8.
@@ -287,7 +287,7 @@ Proof using.
   inverts P as P'. inverts P' as P''. inverts P''.
   (* it is even possible to reuse the same name *)
   inverts P as P. inverts P as P. inverts P.
-  (* [invert as] without arguments leaves the hypotheses 
+  (* [invert as] without arguments leaves the hypotheses
      that have been generated in the goal *)
   inverts P as. introv P'. skip.
   (* one may add the keyword [keep] in order to keep the
@@ -295,29 +295,29 @@ Proof using.
   invert keep P. intros. skip.
   inverts keep P as P' EQ1 EQ2. skip.
   inverts keep P as. introv P'. skip.
-  (* [lets_inverts] need to be used to invert expressions 
+  (* [lets_inverts] need to be used to invert expressions
      that are not simply the name of an hypothesis *)
   lets_inverts (conj P P) as H1 H2. skip.
 Qed.
-   
+
 (* TODO: false_invert *)
 
-Inductive Behave : Type := 
-  | Behave_intro : 
+Inductive Behave : Type :=
+  | Behave_intro :
       forall (A:Type) (F:A->nat) (P:A->Prop), Behave.
 
 Inductive behave : nat -> Behave -> Prop :=
   | behave_intro : forall (A:Type) (F:A->nat) (P:A->Prop) V,
       P V -> behave (F V) (@Behave_intro A F P).
 
-Lemma demo_dependent_invert : 
+Lemma demo_dependent_invert :
   behave 4 (Behave_intro (fun x:nat => x) (fun x:nat => x <> 3))
   -> False.
 Proof using.
   intros H. dup 3.
   (* [inversion] can generate some dependently-typed equalities *)
   inversion H. (* look at H9 and H10 *) skip.
-  (* [inverts] carries out all the substitution properly *) 
+  (* [inverts] carries out all the substitution properly *)
   inverts H. skip.
   (* again, it is possible to name the new hypotheses *)
   inverts H as R1 R2 R3. skip.
@@ -331,7 +331,7 @@ Proof using.
   injection EQ. skip.
   (* [inject] does the same *)
   inject EQ. skip.
-  (* but it is also able to name these hypotheses *) 
+  (* but it is also able to name these hypotheses *)
   inject EQ as EQ1 EQ2 EQ3. skip.
   (* and [injects] can substitute these hypotheses *)
   injects EQ. skip.
@@ -348,19 +348,19 @@ Qed.
 
 Lemma demo_lets_of : forall (x y : nat) (A B : Prop),
   (x > 0) ->
-  (x <> y) -> 
+  (x <> y) ->
   (A <-> B) ->
   (forall n, n > 0 -> forall m, n <> m -> exists k, k <> m) ->
-  (forall n : nat, 
+  (forall n : nat,
    n > 0 ->
    forall P Q : Prop,
    (P <-> Q) ->
    forall m : nat,
    n <> m ->
    forall K : nat -> Prop,
-   K n -> 
+   K n ->
    forall p,
-   K (m+p) -> 
+   K (m+p) ->
    True) ->
   True.
 Proof using.
@@ -391,12 +391,12 @@ Qed.
 
 
 Lemma demo_forwards_1 : forall x : nat, x > 1 ->
-  (forall z, z > 1 -> exists y, z < 2 /\ z <> y) -> 
+  (forall z, z > 1 -> exists y, z < 2 /\ z <> y) ->
   True.
 Proof using.
   introv Le H. dup 4.
   (* [forwards] is used to instantiate a lemma entirely, generating one
-     subgoal for each hypothesis and one existential variable for 
+     subgoal for each hypothesis and one existential variable for
      each universally quantified variable *)
   forwards Q: H. eauto. skip.
   (* an introduction-pattern can be used to decompose the result *)
@@ -407,7 +407,7 @@ Proof using.
   forwards: Le. skip.
 Qed.
 
-Lemma demo_forwards_2 : 
+Lemma demo_forwards_2 :
   (forall x y : nat, x = y -> x <= y) ->
   forall a b : nat, a <= a.
 Proof using.
@@ -418,14 +418,14 @@ Qed.
 
 Lemma demo_applys_specializes : forall (x y : nat) (A B : Prop),
   (x > 0) ->
-  (x <> y) -> 
+  (x <> y) ->
   (A <-> B) ->
-  (forall n : nat, 
+  (forall n : nat,
    n > 0 ->
    forall P Q : Prop,
    (P <-> Q) ->
    forall m : nat,
-   m <> n -> 
+   m <> n ->
    True) ->
   True.
 Proof using.
@@ -438,7 +438,7 @@ Proof using.
   applys (>> M x Iff). eauto. eauto.
   applys M x Iff. eauto. eauto.
   (* [specializes] is used to instantiate an hypothesis in-place *)
-  specializes M (>> 3). auto. 
+  specializes M (>> 3). auto.
   specializes M (>> 3 A B). auto. auto.
   specializes M (>> A __ __). eauto. eauto. auto.
   specializes M (>> Pos Iff 2). eauto. auto.
@@ -452,7 +452,7 @@ Proof using.
      to request the argument of [rm] to be removed from the context. *)
   applys (>> M (rm Pos) Iff). (* [Pos] is gone here *) eauto.
   (* In fact, [rm] can be applied in depth inside terms *)
-  specializes M (>> (proj1 (conj (rm Pos) Neq))). (* [Pos] is gone *) auto. 
+  specializes M (>> (proj1 (conj (rm Pos) Neq))). (* [Pos] is gone *) auto.
 Qed.
 
 (** Similar demos, showing how head definitions are unfolded *)
@@ -462,7 +462,7 @@ Definition mydef := forall (n m : nat), n = m -> False.
 Lemma demo_specializes_definition :
   forall (i:nat), mydef -> i <> i.
 Proof using.
-  introv H. dup 6. 
+  introv H. dup 6.
   (** specializes one by one *)
   specializes H i. specializes H i.
    specializes H (refl_equal i). false.
@@ -476,13 +476,13 @@ Proof using.
   forwards M: H i. reflexivity. false.
   (** build using lets *)
   lets: (>> H (refl_equal i)). false.
-Qed. 
+Qed.
 
 (** Unfolding occurs recursively *)
 
 Definition outerdef := mydef.
 
-Lemma demo_specializes_definition_2 : 
+Lemma demo_specializes_definition_2 :
   forall (i:nat), outerdef -> i <> i.
 Proof using.
   introv H. dup 6.
@@ -499,14 +499,14 @@ Proof using.
   forwards M: H i. reflexivity. false.
   (** build using lets *)
   lets: (>> H (refl_equal i)). false.
-Qed. 
+Qed.
 
 (** On the other hand, definitions that are not at head
     position are not unfolded *)
 
 Definition nesteddef := forall (n:nat), mydef.
 
-Lemma demo_specializes_definition_3 : 
+Lemma demo_specializes_definition_3 :
   forall (i:nat), nesteddef -> outerdef.
 Proof using.
   intros i H. dup 4.

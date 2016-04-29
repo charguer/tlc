@@ -6,12 +6,12 @@
 Set Implicit Arguments.
 Require Import LibTactics.
 
-(** For now on, this file is not used because the standard Prelude of Coq 
+(** For now on, this file is not used because the standard Prelude of Coq
     is used instead. *)
 
 
 (* ********************************************************************** *)
-(** * Basic data types 
+(** * Basic data types
      -- should be moved to other files, as soon as tactics can be
         implemented without them *)
 
@@ -46,7 +46,7 @@ Inductive option A : Type :=
 (** Sum -- move to LibSum *)
 
 Inductive sum A B : Type :=
-  | inl : A -> sum A B 
+  | inl : A -> sum A B
   | inr : B -> sum A B.
 
 Hint Constructors sum : core.
@@ -78,7 +78,7 @@ Definition snd A B (p:A*B) := let '(_,y) := p in y.
 (** Definition of [True] *)
 
 Inductive True : Prop :=
-  | True_intro : True. 
+  | True_intro : True.
 
 Hint Constructors True : core.
 
@@ -101,7 +101,7 @@ Hint Unfold not : core.
     and associated projections *)
 
 Inductive and (P Q : Prop) : Prop :=
-  | conj : P -> Q -> and P Q. 
+  | conj : P -> Q -> and P Q.
 
 Notation "P /\ Q" := (and P Q) : type_scope.
 
@@ -148,7 +148,7 @@ Notation "'IF' c1 'then' c2 'else' c3" := (IF_then_else c1 c2 c3)
 (** Definition of equality, [eq], written [x = y] or [x = y :> A] *)
 
 Inductive eq (A : Type) (x : A) : A -> Prop :=
-  | eq_refl : eq x x. 
+  | eq_refl : eq x x.
 
 Notation "x = y :> A" := (@eq A x y) : type_scope.
 Notation "x = y" := (eq x y) : type_scope.
@@ -167,7 +167,7 @@ Inductive eq_dep (A : Type) (P : A -> Type) (p : A) (x : P p)
   : forall q, P q -> Prop :=
   | eq_dep_refl : eq_dep P p x p x.
 
-Implicit Arguments eq_dep [A P]. 
+Implicit Arguments eq_dep [A P].
 
 Hint Constructors eq_dep : core.
 
@@ -199,10 +199,10 @@ Hint Constructors ex : core.
 Definition unique_st (A : Type) (P : A -> Prop) (x : A) :=
   P x /\ forall y, P y -> x = y.
 
-Hint Unfold unique_st. 
+Hint Unfold unique_st.
 
 Definition ex_unique (A : Type) (P : A -> Prop) :=
-  ex (unique_st P). 
+  ex (unique_st P).
 
 Notation "'exists' ! x , P" := (ex_unique (fun x => P))
   (at level 200, x ident, right associativity,
@@ -227,7 +227,7 @@ Notation "'exists' ! x : A , P" :=
 (** Definition *)
 
 Inductive sig (A : Type) (P : A -> Prop) : Type :=
-  | exist : forall x, P x -> sig P. 
+  | exist : forall x, P x -> sig P.
 
 (* --todo: implicit Arguments exist [A P x]. ?*)
 
@@ -239,10 +239,10 @@ Add Printing Let sig.
 
 Section SigProj.
 Variables (A : Type) (P : A -> Prop).
-Definition sig_1 (e:sig P) : A := 
+Definition sig_1 (e:sig P) : A :=
   let (a,_) := e in a.
 
-Definition sig_2 (e:sig P) : P (sig_1 e) := 
+Definition sig_2 (e:sig P) : P (sig_1 e) :=
   let (_,b) := e in b.
 End SigProj.
 
@@ -265,9 +265,9 @@ Add Printing Let sigT.
 
 Section SigProj.
 Variables (A : Type) (P : A -> Type).
-Definition sigT_1 (e:sigT P) : A := 
+Definition sigT_1 (e:sigT P) : A :=
   let (a,_) := e in a.
-Definition sigT_2 (e:sigT P) : P (sigT_1 e) := 
+Definition sigT_2 (e:sigT P) : P (sigT_1 e) :=
   let (_,b) := e in b.
 End SigProj.
 
@@ -302,7 +302,7 @@ Inductive Acc (A : Type) (R : A -> A -> Prop) (x : A) : Prop :=
 
 (** A relation is well-founded if all the elements are accessibles *)
 
-Definition wf (A : Type) (R : A -> A -> Prop) := 
+Definition wf (A : Type) (R : A -> A -> Prop) :=
   forall a, Acc R a.
 
 

@@ -14,7 +14,7 @@ Set Implicit Arguments.
     extensionality and indefinite description.
 
     All other comomn axioms are derivable, including: the excluded middle,
-    the strong excluded middle, propositional degenerency, proof irrelevance, 
+    the strong excluded middle, propositional degenerency, proof irrelevance,
     injectivity of equality on dependent pairs, predicate extensionality,
     definite description, and all the versions of the axiom of choice. *)
 
@@ -32,7 +32,7 @@ Axiom func_ext_dep : forall (A:Type) (B:A->Type) (f g : forall x, B x),
 
 (** Two propositions that are equivalent can be considered to be equal. *)
 
-Axiom prop_ext : forall (P Q : Prop), 
+Axiom prop_ext : forall (P Q : Prop),
   (P <-> Q) -> P = Q.
 
 
@@ -42,5 +42,5 @@ Axiom prop_ext : forall (P Q : Prop),
 (** Proofs of existence can be reified from [Prop] to [Type]. The lemma
     below is a concise statement for [(exists x, P x) -> { x : A | P x }]. *)
 
-Axiom indefinite_description : forall (A : Type) (P : A->Prop), 
+Axiom indefinite_description : forall (A : Type) (P : A->Prop),
    ex P -> sig P.

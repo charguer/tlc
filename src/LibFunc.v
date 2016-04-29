@@ -11,16 +11,16 @@ Generalizable Variables A.
 (* ********************************************************************** *)
 (** ** Indentity function *)
 
-Definition id {A} (x : A) := 
+Definition id {A} (x : A) :=
   x.
 
 
 (* ********************************************************************** *)
 (** Constant functions *)
 
-Definition const {A B} (v : B) : A -> B := 
+Definition const {A B} (v : B) : A -> B :=
   fun _ => v.
-Definition const1 := 
+Definition const1 :=
   @const.
 Definition const2 {A1 A2 B} (v:B) : A1->A2->B :=
   fun _ _ => v.
@@ -44,10 +44,10 @@ Definition apply_to (A : Type) (x : A) (B : Type) (f : A -> B) :=
 (* ********************************************************************** *)
 (** Function composition *)
 
-Definition compose {A B C} (g : B -> C) (f : A -> B) := 
+Definition compose {A B C} (g : B -> C) (f : A -> B) :=
   fun x => g (f x).
 
-Notation "f1 \o f2" := (compose f1 f2) 
+Notation "f1 \o f2" := (compose f1 f2)
   (at level 49, right associativity) : func_scope.
 
 Section Combinators.
@@ -55,14 +55,14 @@ Open Scope func_scope.
 Variables (A B C D : Type).
 
 Lemma compose_id_l : forall (f:A->B),
-  id \o f = f. 
+  id \o f = f.
 Proof using. intros. apply~ func_ext_1. Qed.
 
 Lemma compose_id_r : forall (f:A->B),
-  f \o id = f. 
+  f \o id = f.
 Proof using. intros. apply~ func_ext_1. Qed.
 
-Lemma compose_assoc : forall (f:C->D) (g:B->C) (h:A->B), 
+Lemma compose_assoc : forall (f:C->D) (g:B->C) (h:A->B),
   (f \o g) \o h = f \o (g \o h).
 Proof using. intros. apply~ func_ext_1. Qed.
 
@@ -91,11 +91,11 @@ End Combinators.
 (* TODO: not used; might become deprecated *)
 
 Hint Rewrite compose_id_l compose_id_r compose_assoc : rew_compose.
-Tactic Notation "rew_compose" := 
+Tactic Notation "rew_compose" :=
   autorewrite with rew_compose.
-Tactic Notation "rew_compose" "in" "*" := 
+Tactic Notation "rew_compose" "in" "*" :=
   autorewrite with rew_compose in *.
-Tactic Notation "rew_compose" "in" hyp(H) := 
+Tactic Notation "rew_compose" "in" hyp(H) :=
   autorewrite with rew_compose in H.
 
 
@@ -132,7 +132,7 @@ Open Scope set_scope.
 Require Import LibList.
 
 Definition image A B (f : A -> B) (E : set A) : set B :=
-  \set{ y | exists_ x \in E, y = f x }.  
+  \set{ y | exists_ x \in E, y = f x }.
 
 Lemma in_image_prove_eq : forall A B x (f : A -> B) (E : set A),
   x \in E -> f x \in image f E.

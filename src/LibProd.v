@@ -35,14 +35,14 @@ Qed.
 
 (** Decomposition as projection *)
 
-Lemma tuple2_from_proj : forall A1 A2 (x:A1*A2), 
+Lemma tuple2_from_proj : forall A1 A2 (x:A1*A2),
   (fst x, snd x) = x.
 Proof using. intros. destruct~ x. Qed.
 
 (** Structural equality *)
 
 Section Properties.
-Variables (A1 A2 A3 A4 : Type). 
+Variables (A1 A2 A3 A4 : Type).
 Lemma eq_prod2 : forall (x1 y1:A1) (x2 y2:A2),
   x1 = y1 -> x2 = y2 -> (x1, x2) = (y1, y2).
 Proof using. intros. subst~. Qed.
@@ -74,7 +74,7 @@ Implicit Arguments snd [[A] [B]].
 (** ** Notation for projections *)
 
 (** N-ary projections are defined as notations and not as
-    definitions, which has appeared to be more flexible with 
+    definitions, which has appeared to be more flexible with
     respect to type inference.
     TODO: investigate the possibility of using definitions. *)
 
@@ -103,7 +103,7 @@ Notation "'proj55' P" := (proj2 (proj2 (proj2 (proj2 P)))) (at level 69).
 
 Section Currying.
 Variables (A1 A2 A3 A4 A5 B : Type).
-Definition curry1 f : A1 -> B := 
+Definition curry1 f : A1 -> B :=
   f.
 Definition curry2 f : A1 -> A2 -> B :=
   fun x1 x2 => f (x1,x2).
@@ -120,7 +120,7 @@ End Currying.
 
 Section Uncurrying.
 Variables (A1 A2 A3 A4 A5 B : Type).
-Definition uncurry1 f : A1 -> B := 
+Definition uncurry1 f : A1 -> B :=
   f.
 Definition uncurry2 f : A1*A2 -> B :=
   fun p => match p with (x1,x2) =>
@@ -144,7 +144,7 @@ End Uncurrying.
 
 Section Uncurryp.
 Variables (A1 A2 A3 A4 B : Type).
-Definition uncurryp1 f : A1 -> A1 -> B := 
+Definition uncurryp1 f : A1 -> A1 -> B :=
   f.
 Definition uncurryp2 f : A1*A2 -> A1*A2 -> B :=
   fun p1 p2 => match p1,p2 with (x1,x2),(y1,y2) =>

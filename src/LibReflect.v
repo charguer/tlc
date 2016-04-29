@@ -20,21 +20,21 @@ Generalizable Variable P.
 (* ---------------------------------------------------------------------- *)
 (** ** Translation from booleans into propositions *)
 
-(** Any boolean [b] can be viewed as a proposition through the 
+(** Any boolean [b] can be viewed as a proposition through the
     relation [b = true]. *)
 
-Coercion istrue (b : bool) : Prop := (b = true). 
+Coercion istrue (b : bool) : Prop := (b = true).
 
 (** Specification of the coercion [istrue] *)
 
-Lemma istrue_def : forall b, 
-  istrue b = (b = true). 
+Lemma istrue_def : forall b,
+  istrue b = (b = true).
 Proof using. reflexivity. Qed.
 
-Lemma istrue_true_eq : istrue true = True. 
+Lemma istrue_true_eq : istrue true = True.
 Proof using. rewrite istrue_def. extens*. Qed.
 
-Lemma istrue_false_eq : istrue false = False. 
+Lemma istrue_false_eq : istrue false = False.
 Proof using. rewrite istrue_def. extens. iff; auto_false. Qed.
 
 (** Update of the unfolding tactics to go through the coercion
@@ -46,7 +46,7 @@ Ltac apply_to_head_of E cont ::=
   | istrue ?A => go A
   | istrue (neg ?A) => go A
   | ?A = ?B => first [ go A | go B ]
-  | ?A => go A 
+  | ?A => go A
   end.
 
 Global Opaque istrue.
@@ -55,14 +55,14 @@ Global Opaque istrue.
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics for proving boolean goals [true] and [false] *)
 
-(** Proving the goals [true] and [~ false] *) 
+(** Proving the goals [true] and [~ false] *)
 
-Lemma istrue_true : true. 
+Lemma istrue_true : true.
 Proof using. reflexivity. Qed.
 
 Hint Resolve istrue_true.
 
-Lemma istrue_not_false : ~ false. 
+Lemma istrue_not_false : ~ false.
 Proof using. rewrite istrue_false_eq. intuition. Qed.
 
 Hint Resolve istrue_not_false.
@@ -72,7 +72,7 @@ Hint Resolve istrue_not_false.
 Lemma False_to_false : False -> false.
 Proof using. intros K. false. Qed.
 
-Hint Extern 1 (istrue false) => 
+Hint Extern 1 (istrue false) =>
   apply False_to_false.
 
 Lemma false_to_False : false -> False.
@@ -84,10 +84,10 @@ Hint Extern 1 (False) => match goal with
 (* ---------------------------------------------------------------------- *)
 (** ** Translation from propositions into booleans *)
 
-(** The expression [isTrue P] evaluates to [true] if and only if 
+(** The expression [isTrue P] evaluates to [true] if and only if
     the proposition [P] is [True]. *)
 
-Definition isTrue (P : Prop) : bool := 
+Definition isTrue (P : Prop) : bool :=
   If P then true else false.
 
 (** Simplification lemmas *)
@@ -192,7 +192,7 @@ Proof using.
   extens. do 4 rewrite isTrue_def.
   destruct (classicT P1).
     destruct* (classicT P2).
-    destruct* (classicT P3). 
+    destruct* (classicT P3).
 Qed.
 
 End DistribIsTrue.
@@ -216,7 +216,7 @@ Proof using. intros. rewrite isTrue_not. rewrite~ isTrue_istrue. Qed.
 
 (** [rew_reflect] distributes [istrue]. *)
 
-Hint Rewrite istrue_true_eq istrue_false_eq istrue_isTrue 
+Hint Rewrite istrue_true_eq istrue_false_eq istrue_isTrue
   istrue_neg istrue_and istrue_or : rew_reflect.
 
 Tactic Notation "rew_reflect" :=
@@ -243,7 +243,7 @@ Tactic Notation "rew_reflect" "*" "in" "*" :=
 
 (** [rew_unreflect] distributes [istrue]. *)
 
-Hint Rewrite isTrue_True isTrue_False isTrue_istrue 
+Hint Rewrite isTrue_True isTrue_False isTrue_istrue
  isTrue_not isTrue_and isTrue_or : rew_unreflect.
 
 Tactic Notation "rew_unreflect" :=
@@ -271,9 +271,9 @@ Tactic Notation "rew_unreflect" "*" "in" "*" :=
 (** [rew_refl] distributes [istrue] and [isTrue]
     and replaces [decide] with [isTrue]. *)
 
-Hint Rewrite isTrue_True isTrue_False isTrue_istrue 
- isTrue_not isTrue_and isTrue_or isTrue_if 
- istrue_true_eq istrue_false_eq istrue_isTrue 
+Hint Rewrite isTrue_True isTrue_False isTrue_istrue
+ isTrue_not isTrue_and isTrue_or isTrue_if
+ istrue_true_eq istrue_false_eq istrue_isTrue
  istrue_neg istrue_and istrue_or : rew_refl.
 
 Tactic Notation "rew_refl" :=
@@ -359,7 +359,7 @@ Lemma bool_eq_true :
   b -> b = true.
 Proof using. auto. Qed.
 
-Lemma eq_true_l : 
+Lemma eq_true_l :
   true = b -> b.
 Proof using. tautob~. Qed.
 
@@ -371,11 +371,11 @@ Lemma eq_false_l :
   false = b -> !b.
 Proof using. tautob~. Qed.
 
-Lemma eq_false_r : 
+Lemma eq_false_r :
   b = false -> !b.
 Proof using. tautob~. Qed.
 
-Lemma eq_true_l_back : 
+Lemma eq_true_l_back :
   b -> true = b.
 Proof using. tautob~. Qed.
 
@@ -387,19 +387,19 @@ Lemma eq_false_l_back :
   !b -> false = b.
 Proof using. tautob~. Qed.
 
-Lemma eq_false_r_back : 
+Lemma eq_false_r_back :
   !b -> b = false.
 Proof using. tautob~. Qed.
 
-Lemma eq_false_r_back_not : 
+Lemma eq_false_r_back_not :
   (~b) -> b = false.
 Proof using. destruct b; auto_false. Qed. (*todo:tautob~.*)
 
-Lemma neg_neg_back : 
+Lemma neg_neg_back :
   b -> !!b.
 Proof using. tautob~. Qed.
 
-Lemma neg_neg_forward : 
+Lemma neg_neg_forward :
   !!b -> b.
 Proof using. tautob~. Qed.
 
@@ -414,13 +414,13 @@ Proof using. tautob*. Qed.
 
 End FoldingBool.
 
-Ltac fold_bool := 
-  repeat match goal with 
+Ltac fold_bool :=
+  repeat match goal with
   | H: true = ?b |- _ => applys_to H eq_true_l
   | H: ?b = true |- _ => applys_to H eq_true_r
   | H: false = ?b |- _ => applys_to H eq_false_l
   | H: ?b = false |- _ => applys_to H eq_false_r
-  | H: istrue (!! ?b) |- _ => applys_to H neg_neg_forward 
+  | H: istrue (!! ?b) |- _ => applys_to H neg_neg_forward
   | |- true = ?b => apply eq_true_l_back
   | |- ?b = true => apply eq_true_r_back
   | |- false = ?b => apply eq_false_l_back
@@ -432,7 +432,7 @@ Ltac fold_bool :=
 (* ---------------------------------------------------------------------- *)
 (** ** DEPRECATED --- Tactic [fold_prop] *)
 
-(** Tactic [fold_prop] simplifies goal and hypotheses of the form 
+(** Tactic [fold_prop] simplifies goal and hypotheses of the form
     [istrue b] or [~ istrue b], or [P = True] or [P = False]
     as well as their symmetric *)
 
@@ -490,32 +490,32 @@ Lemma prop_neq_False_back :
   P -> (P <> False).
 Proof using. introv M K. rewrite~ <- K. Qed.
 
-Lemma not_istrue_isTrue_forw : 
+Lemma not_istrue_isTrue_forw :
   ~ istrue (isTrue P) -> ~ P.
 Proof using. apply contrapose_intro. rewrite~ istrue_isTrue. Qed.
 
-Lemma not_istrue_not_isTrue_forw : 
+Lemma not_istrue_not_isTrue_forw :
   ~ istrue (! isTrue P) -> P.
 Proof using.
   rewrite <- (@not_not P). apply contrapose_intro.
-  rewrite~ istrue_neg_isTrue. 
+  rewrite~ istrue_neg_isTrue.
 Qed. (* todo: missing lemma from lib logic about ~A->B *)
 
-Lemma not_istrue_isTrue_back : 
+Lemma not_istrue_isTrue_back :
   ~ P -> ~ istrue (isTrue P).
 Proof using. apply contrapose_intro. rewrite~ istrue_isTrue. Qed.
 
-Lemma not_istrue_not_isTrue_back : 
+Lemma not_istrue_not_isTrue_back :
   P -> ~ istrue (! isTrue P).
-Proof using. 
+Proof using.
   rewrite <- (@not_not P). apply contrapose_intro.
-  rewrite~ istrue_neg_isTrue. 
+  rewrite~ istrue_neg_isTrue.
 Qed.
 
 End FoldingProp.
 
-Ltac fold_prop := 
-  repeat match goal with 
+Ltac fold_prop :=
+  repeat match goal with
   | H: istrue (isTrue ?P) |- _ => applys_to H istrue_isTrue_forw
   | H: istrue (! isTrue ?P) |- _ => applys_to H istrue_not_isTrue_forw
   | H: ~ istrue (isTrue ?P) |- _ => applys_to H not_istrue_isTrue_forw
@@ -524,7 +524,7 @@ Ltac fold_prop :=
   | H: (?P = False) |- _ => applys_to H prop_eq_False_forw
   | H: (True = ?P) |- _ => symmetry in H; applys_to H prop_eq_True_forw
   | H: (False = ?P) |- _ => symmetry in H; applys_to H prop_eq_False_forw
-  | H: ~ (~ ?P) |- _ => applys_to H not_not_elim 
+  | H: ~ (~ ?P) |- _ => applys_to H not_not_elim
   | |- istrue (isTrue ?P) => apply istrue_isTrue_back
   | |- istrue (! isTrue ?P) => apply istrue_not_isTrue_back
   | |- ~ istrue (isTrue ?P) => apply not_istrue_isTrue_back
@@ -559,15 +559,15 @@ Ltac tests_dispatch E H1 H2 ::=
 (* ---------------------------------------------------------------------- *)
 (** ** Lemmas for testing booleans *)
 
-Lemma bool_cases : forall (b : bool), 
+Lemma bool_cases : forall (b : bool),
   b \/ !b.
 Proof using. tautob*. Qed.
 
-Lemma bool_cases_eq : forall (b : bool), 
+Lemma bool_cases_eq : forall (b : bool),
   b = true \/ b = false.
 Proof using. tautob*. Qed.
 
-Lemma xor_cases : forall (b1 b2 : bool), 
+Lemma xor_cases : forall (b1 b2 : bool),
   xor b1 b2 -> (b1 = true /\ b2 = false)
             \/ (b1 = false /\ b2 = true).
 Proof using. tautob; auto_false*. Qed.
@@ -624,27 +624,27 @@ Lemma prop_neq_False : forall P,
 Proof using.
   intro. rew_logic*. iff.
   apply not_not_elim. intros E. apply H. autos*.
-  intros E. rewrite* <- E. 
+  intros E. rewrite* <- E.
 Qed.
 
 End Logics.
 
-Hint Rewrite 
+Hint Rewrite
   true_eq_isTrue isTrue_eq_true
   false_eq_isTrue isTrue_eq_false
-  isTrue_eq_isTrue not_not_eq 
-  istrue_true_eq istrue_false_eq istrue_isTrue 
+  isTrue_eq_isTrue not_not_eq
+  istrue_true_eq istrue_false_eq istrue_isTrue
   istrue_neg istrue_and istrue_or
   : rew_isTrue.
 
 Ltac rew_isTrue :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_isTrue).
 
-Tactic Notation "logics" := 
+Tactic Notation "logics" :=
   rew_isTrue.
-Tactic Notation "logics" "~" := 
+Tactic Notation "logics" "~" :=
   logics; auto_tilde.
-Tactic Notation "logics" "*" := 
+Tactic Notation "logics" "*" :=
   logics; auto_star.
 
 
@@ -682,25 +682,25 @@ Hint Rewrite @decide_spec : rew_refl.
 Implicit Arguments decide [[Decidable]].
 Extraction Inline decide.
 
-(** Notation [ifb P then x else y] can be used for 
+(** Notation [ifb P then x else y] can be used for
     testing a proposition [P] for which there exists an
     instance of [Decidable P]. *)
 
-Notation "'ifb' P 'then' v1 'else' v2" := 
+Notation "'ifb' P 'then' v1 'else' v2" :=
   (if decide P then v1 else v2)
   (at level 200, right associativity) : type_scope.
 
 (** In classical logic, any proposition is decidable; of course,
-    we do not want to use this lemma as an instance because 
+    we do not want to use this lemma as an instance because
     it cannot be extracted to executable code. *)
 
 Lemma prop_decidable : forall (P:Prop), Decidable P.
 Proof using. intros. applys~ decidable_make (isTrue P). Qed.
 
-(** In constructive logic, any proposition with a proof of 
+(** In constructive logic, any proposition with a proof of
     that is constructively true or false is decidable. *)
 
-Definition sumbool_decidable : forall (P:Prop),  
+Definition sumbool_decidable : forall (P:Prop),
   {P}+{~P} -> Decidable P.
 Proof using.
   introv H. applys decidable_make
@@ -764,11 +764,11 @@ Defined.
 
 (** Extending the [case_if] tactic to support [if decide] *)
 
-Lemma Decidable_dec : forall (P:Prop) {H: Decidable P} (A:Type) (x y:A),  
+Lemma Decidable_dec : forall (P:Prop) {H: Decidable P} (A:Type) (x y:A),
   exists (Q : {P}+{~P}),
   (if decide P then x else y) = (if Q then x else y).
 Proof using.
-  intros. exists (classicT P). 
+  intros. exists (classicT P).
   rewrite decide_spec.
   tautotest P; case_if as C; case_if as C';
   first [ rewrite isTrue_True in C
@@ -785,7 +785,7 @@ Ltac case_if_on_tactic_core E Eq ::=
   | _ =>
     match type of E with
     | {_}+{_} => destruct E as [Eq|Eq]; try subst_hyp Eq
-    | _ => let X := fresh in 
+    | _ => let X := fresh in
            sets_eq <- X Eq: E;
            destruct X
     end
@@ -866,7 +866,7 @@ Hint Resolve @comparable : typeclass_instances.
 Extraction Inline comparable.
 
 (** In classical logic, any type is comparable; of course,
-    we do not want to use this lemma as an instance because 
+    we do not want to use this lemma as an instance because
     it cannot be extracted to executable code. *)
 
 Lemma type_comparable : forall (A:Type), Comparable A.
@@ -879,8 +879,8 @@ Lemma comparable_beq : forall A (f:A->A->bool),
   (forall x y, (istrue (f x y)) <-> (x = y)) ->
   Comparable A.
 Proof using.
-  introv H. constructors. intros. 
-  applys decidable_make (f x y). 
+  introv H. constructors. intros.
+  applys decidable_make (f x y).
   rewrite isTrue_def. extens.
   rewrite H. case_if; auto_false*.
 Qed.
@@ -916,19 +916,19 @@ Proof using.
   iff E.
     do 2 rewrite isTrue_def in E.
      extens. case_if; case_if; auto_false*.
-    subst*. 
+    subst*.
 Qed.
 
 
 (**************************************************************)
 (** * Computable epsilon operator *)
 
-(** [Pickable P] asserts the existence of computable witness 
+(** [Pickable P] asserts the existence of computable witness
     of a value that satisfies the predicate [P]. When an
     instance of [Pickable P] can be derived using the typeclass
     mechanism, one may write [pick P] to denote an arbitrary
     value that satisfies the predicate P. This operation is
-    typically useful for extraction, in order to associate 
+    typically useful for extraction, in order to associate
     computable values to predicates. *)
 
 Class Pickable (A : Type) (P : A -> Prop) := pickable_make {

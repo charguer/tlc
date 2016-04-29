@@ -3,7 +3,7 @@
 * Lists accessed with integers (not nat) and using LibBag typeclasses     *
 **************************************************************************)
 
-Set Implicit Arguments. 
+Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibOperation LibReflect
   LibProd LibNat LibInt LibOption LibWf.
@@ -30,11 +30,11 @@ Ltac auto_tilde ::= eauto with maths.
 
 (** Functions *)
 
-Definition length (l:list A) := 
+Definition length (l:list A) :=
   (length l) : int.
 
 Definition nth `{Inhab A} (i:int) (l:list A) :=
-  If i < 0 then arbitrary else nth (abs i) l. 
+  If i < 0 then arbitrary else nth (abs i) l.
 
 Definition update (i:int) (v:A) (l:list A) :=
   If i < 0 then l else LibList.update (abs i) v l.
@@ -74,7 +74,7 @@ Hint Rewrite LibListZ_length_def : rew_maths.
     in the specifications. *)
 
 Definition card_impl A (l:list A) : nat :=
-  LibList.length l. 
+  LibList.length l.
   (* todo: should it return a nat or an int? might change... *)
 
 Definition read_impl `{Inhab A} (l:list A) (i:int) : A :=
@@ -99,7 +99,7 @@ Instance index_inst : forall A, BagIndex int (list A).
 Global Opaque card_inst read_inst update_inst index_inst.
 
 (* LATER
-Definition binds_impl A (l:list A) (i:int) (v:A) : Prop := 
+Definition binds_impl A (l:list A) (i:int) (v:A) : Prop :=
   index_impl l i /\ nth i l = v.
   (* deprecated:  ZNth i l v. *)
 Instance binds_inst : forall A, BagBinds int A (list A).
@@ -117,7 +117,7 @@ Ltac auto_tilde ::= eauto with maths.
 
 Lemma length_nonneg : forall A (L: list A), 0 <= length L.
 Proof using. intros. unfold length. math. Qed.
-Lemma length_nil : 
+Lemma length_nil :
   length (@nil A) = 0.
 Proof using. auto. Qed.
 Lemma length_cons : forall x l,
@@ -267,7 +267,7 @@ Proof using.
   introv. unfold index_inst, index_impl, update_inst, update_impl, update,
     read_inst, read_impl, nth. simpl. introv N. rewrite int_index_def in N.
   case_if. math.
-  case_if. case_if. auto. case_if. 
+  case_if. case_if. auto. case_if.
     rewrite~ nth_update_eq. apply nat_int_lt. rewrite abs_pos; try math.
     rewrite~ nth_update_neq. apply nat_int_lt. rewrite abs_pos; try math.
       apply nat_int_neq. rewrite abs_pos; try math. rewrite abs_pos; try math.
@@ -283,10 +283,10 @@ Proof using. introv N. rewrite~ read_update_case. case_if; auto_false~. Qed.
 
 Lemma update_update_eq : forall `{Inhab A} (l:list A) (i:int) (v w:A),
   index l i -> l[i:=v][i:=w] = l[i:=w].
-Proof using. 
+Proof using.
   intros. eapply ext_eq_index; repeat rewrite length_update.
   { reflexivity. }
-  intros j. 
+  intros j.
   repeat rewrite index_update_eq.
   intros Hj.
   repeat rewrite read_update_case by eauto using index_update.
@@ -313,15 +313,15 @@ End UpdateProperties.
 
 (** [rew_arr] is a light normalization tactic for array *)
 
-(* TODO: rename to [rew_array_nocase] *) 
-Hint Rewrite @read_make @length_make @length_update @read_update_eq 
+(* TODO: rename to [rew_array_nocase] *)
+Hint Rewrite @read_make @length_make @length_update @read_update_eq
   : rew_arr.
 
-Tactic Notation "rew_arr" := 
+Tactic Notation "rew_arr" :=
   autorewrite with rew_arr.
-Tactic Notation "rew_arr" "in" hyp(H) := 
+Tactic Notation "rew_arr" "in" hyp(H) :=
   autorewrite with rew_arr in H.
-Tactic Notation "rew_arr" "in" "*" := 
+Tactic Notation "rew_arr" "in" "*" :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_arr).
   (* autorewrite with rew_arr in *. *)
 
@@ -343,11 +343,11 @@ Tactic Notation "rew_arr" "*" "in" "*" :=
 Hint Rewrite @read_make @length_make @length_update @read_update_eq
   @read_update_case : rew_array.
 
-Tactic Notation "rew_array" := 
+Tactic Notation "rew_array" :=
   autorewrite with rew_array.
-Tactic Notation "rew_array" "in" hyp(H) := 
+Tactic Notation "rew_array" "in" hyp(H) :=
   autorewrite with rew_array in H.
-Tactic Notation "rew_array" "in" "*" := 
+Tactic Notation "rew_array" "in" "*" :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_array).
   (* autorewrite with rew_array in *. *)
 
@@ -384,7 +384,7 @@ Proof using. intros. subst. rewrite~ index_def. Qed.
 
 Lemma index_bounds : forall A (l:list A) i,
   index l i = (0 <= i < length l).
-Proof using. auto. Qed. 
+Proof using. auto. Qed.
 
 Lemma index_bounds_impl : forall A (l:list A) i,
   0 <= i < length l -> index l i.
@@ -411,7 +411,7 @@ Require Import LibWf.
 
 (* TODO: implement a non-decidable version of count *)
 
-Axiom count : (* UNDER CONSTRUCTION *) 
+Axiom count : (* UNDER CONSTRUCTION *)
   forall A (P:A->Prop) (l:list A), int.
 
 (* currently not used
@@ -432,7 +432,7 @@ Axiom count_bounds : (* UNDER CONSTRUCTION *)
 
 (** The following lemma is used to argue that the update to a sequence,
     when writing a value that satisfies [P] in place of one that did not
-    satisfy [P], decreases the total number of values that satisfying 
+    satisfy [P], decreases the total number of values that satisfying
     [P] in the sequence. *)
 
 Lemma count_upto : forall `{Inhab A} (P:A->Prop) (l:list A) (n i:int) (v:A),
@@ -441,7 +441,7 @@ Lemma count_upto : forall `{Inhab A} (P:A->Prop) (l:list A) (n i:int) (v:A),
 Proof using.
   introv Ni Pv Hi Le. forwards K: (count_bounds (l[i:=v]) P). split.
   rewrite length_update in K. math.
-  lets M: (@count_update A _). rewrite~ M. clear M. 
+  lets M: (@count_update A _). rewrite~ M. clear M.
   do 2 (case_if; tryfalse). math.
 Qed.
 
@@ -476,10 +476,10 @@ Ltac auto_tilde ::= eauto with maths.
 
 (** Predicates *)
 
-Definition ZInbound i l := 
+Definition ZInbound i l :=
   0 <= i /\ i < length l.
 
-Definition ZNth i l x := 
+Definition ZNth i l x :=
   Nth (abs i) l x /\ 0 <= i.
 
 Definition ZUpdate i x l l' :=
@@ -491,7 +491,7 @@ Definition ZUpdate i x l l' :=
 
 Lemma ZNth_here : forall i x l,
   i = 0 -> ZNth i (x::l) x.
-Proof using. intros. subst. split~. constructor. Qed. 
+Proof using. intros. subst. split~. constructor. Qed.
 
 Lemma ZNth_zero : forall x l,
   ZNth 0 (x::l) x.
@@ -501,9 +501,9 @@ Lemma ZNth_next : forall i j x y l,
   ZNth j l x -> i = j+1 -> ZNth i (y::l) x.
 Proof using.
   introv [H P] M. subst. split~.
-  applys_eq* Nth_next 3. rew_abs_pos~. 
+  applys_eq* Nth_next 3. rew_abs_pos~.
 Qed.
- 
+
 Lemma ZNth_app_l : forall i x l1 l2,
   ZNth i l1 x -> ZNth i (l1 ++ l2) x.
 Proof using. introv [H P]. split~. apply~ Nth_app_l. Qed.
@@ -511,8 +511,8 @@ Proof using. introv [H P]. split~. apply~ Nth_app_l. Qed.
 Lemma ZNth_app_r : forall i j x l1 l2,
   ZNth j l2 x -> i = j + length l1 -> ZNth i (l1 ++ l2) x.
 Proof using.
-  introv [H P]. unfold length. split~. subst. 
-  apply* Nth_app_r. rew_abs_pos~. 
+  introv [H P]. unfold length. split~. subst.
+  apply* Nth_app_r. rew_abs_pos~.
 Qed.
 
 Lemma ZNth_nil_inv : forall i x,
@@ -520,13 +520,13 @@ Lemma ZNth_nil_inv : forall i x,
 Proof using. introv [H P]. apply* Nth_nil_inv. Qed.
 
 Lemma ZNth_cons_inv : forall i x l,
-  ZNth i l x -> 
+  ZNth i l x ->
      (exists q, l = x::q /\ i = 0)
   \/ (exists y q j, l = y::q /\ ZNth j q x /\ i = j+1).
 Proof using.
   introv [H P]. forwards~: (@abs_pos i).
   destruct (Nth_cons_inv H); unpack.
-  left. exists___. split~. 
+  left. exists___. split~.
   right. exists___. splits~.
    split. rewrite* abs_pos_nat. math.
    math.
@@ -535,8 +535,8 @@ Qed.
 Lemma ZNth_inbound : forall i l,
    ZInbound i l -> exists x, ZNth i l x.
 Proof using.
-  introv [P U]. unfolds length. gen_eq n: (abs i). 
-  gen i l. induction n; intros; 
+  introv [P U]. unfolds length. gen_eq n: (abs i).
+  gen i l. induction n; intros;
     forwards~: (@abs_pos i); destruct l; rew_length in U; try math.
   math_rewrite (i = 0). exists __. split~. constructor.
   forwards~ [x [M P']]: (>> IHn (i-1) l).
@@ -550,18 +550,18 @@ Qed.
 
 Lemma ZInbound_zero : forall x l,
   ZInbound 0 (x::l).
-Proof using. split; unfold length; rew_list~. Qed. 
+Proof using. split; unfold length; rew_list~. Qed.
 
 Lemma ZInbound_zero_not_nil : forall x l,
   l <> nil -> ZInbound 0 l.
 Proof using.
   intros. split~. unfold length.
-  destruct l; tryfalse. rew_list~. 
+  destruct l; tryfalse. rew_list~.
 Qed.
 
 Lemma ZInbound_cons : forall i j x l,
   ZInbound j l -> j = i-1 -> ZInbound i (x::l).
-Proof using. introv [P U] H. split; rew_list~. Qed. 
+Proof using. introv [P U] H. split; rew_list~. Qed.
 
 Lemma ZInbound_nil_inv : forall i,
   ZInbound i nil -> False.
@@ -589,7 +589,7 @@ Qed.
 
 Lemma ZInbound_app_l_inv : forall i l1 l2,
   ZInbound i (l1++l2) -> i < length l1 -> ZInbound i l1.
-Proof using. introv [P U] H. split~. Qed. 
+Proof using. introv [P U] H. split~. Qed.
 
 Lemma ZInbound_app_r_inv : forall i j l1 l2,
   ZInbound j (l1++l2) -> j = length l1 + i -> i >= 0 -> ZInbound i l2.
@@ -608,7 +608,7 @@ Lemma ZUpdate_cons : forall i j x y l l',
 Proof using.
   introv [U P] H. split~. applys_eq~ Update_cons 4.
   subst. rew_abs_pos~.
-Qed.  
+Qed.
 
 Lemma ZUpdate_app_l : forall i x l1 l1' l2,
   ZUpdate i x l1 l1' -> ZUpdate i x (l1++l2) (l1'++l2).
@@ -617,7 +617,7 @@ Proof using. introv [U P]. split~. apply~ Update_app_l. Qed.
 Lemma ZUpdate_app_r : forall i j x l1 l2 l2',
   ZUpdate j x l2 l2' -> i = j + length l1 -> ZUpdate i x (l1++l2) (l1++l2').
 Proof using.
-  introv [U P] H. unfolds length. split~. apply~ Update_app_r. 
+  introv [U P] H. unfolds length. split~. apply~ Update_app_r.
   subst. rew_abs_pos~.
 Qed.
 
@@ -629,8 +629,8 @@ Lemma ZUpdate_length : forall i x l l',
   ZUpdate i x l l' -> length l = length l'.
 Proof using.
   introv [U P]. unfolds length.
-  forwards~: Update_length. 
-Qed. 
+  forwards~: Update_length.
+Qed.
 
 
 End ZindicesOld.
