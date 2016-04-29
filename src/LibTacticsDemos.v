@@ -297,9 +297,9 @@ Lemma demo_arrow_1 :
 Proof using.
   dup 4.
   (* [=>>] introduces all the variables which are not hypotheses,
-     more precisely all the variables used dependently. *) 
+     more precisely all the variables used dependently. *)
   =>>.
-  (* if there is no more head variables, and no definition can 
+  (* if there is no more head variables, and no definition can
      be unfolded at head of the goal, it does not do anything *)
   =>>. skip.
   (* [=>> A] introduces all variables, then does [intros A] *)
@@ -314,7 +314,7 @@ Lemma demo_arrow_2 :
 Proof using.
   dup 4.
   (* [=>>] introduces a variable but no subsequent definition *)
-  =>>. 
+  =>>.
   (* [=>>] unfolds definition if no variable is visible *)
   =>>. skip.
   (* [=>> E] unfolds definitions until finding an hypothesis *)
@@ -364,7 +364,7 @@ Qed.
 Lemma demo_arrow_6 :
   AllSame.
 Proof using.
-  dup 2. 
+  dup 2.
   (* introduces only [x], then only [y] *)
   =>>. =>>. skip.
   (* introduces [x] and [y] and [True] *)
@@ -374,7 +374,7 @@ Qed.
 Lemma demo_arrow_7 :
   AllSameAgain.
 Proof using.
-  dup 2.  
+  dup 2.
   (* introduces only [x], then only [y] *)
   =>>. =>>. skip.
   (* introduces [x] and [y] and [True] *)
