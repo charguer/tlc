@@ -113,6 +113,36 @@ Qed.
 Hint Resolve measure2_wf : wf.
 
 
+(*-----------------------------------------------------*)
+(** Extension of [induction_wf] tactic *)
+
+Ltac induction_wf_core_then IH E X cont ::=
+  let T := type of E in
+  let T := eval hnf in T in
+  let clearX tt := 
+    first [ clear X | fail 3 "the variable on which the induction is done appears in the hypotheses" ] in
+  match T with
+  (* Support for measures from LibWf, add this: *)
+  | ?A -> nat =>
+     induction_wf_core_then IH (measure_wf E) X cont
+ 
+  | ?A -> ?A -> Prop =>
+     pattern X; 
+     first [
+       applys well_founded_ind E; 
+       clearX tt;
+       [ (* Support for [wf] from LibWf *)
+         change well_founded with wf; auto with wf 
+       | intros X IH; cont tt ]
+     | fail 2 ]
+  | _ => 
+    pattern X; 
+    applys well_founded_ind E; 
+    clearX tt; 
+    intros X IH; 
+    cont tt
+  end.
+
 
 (*-----------------------------------------------------*)
 (** ** The relation "greater than" on the set of 

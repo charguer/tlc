@@ -21,6 +21,14 @@ Generalizable Variables A B P.
 Class Inhab (A:Type) : Prop := 
   { inhabited : (exists (x:A), True) }.
 
+(** Extension of the definition of [=>>] *)
+
+Ltac intro_nondeps_aux_special_intro G ::=
+  match G with
+  | (Inhab _) => idtac
+  end.
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** Arbitrary values for inhabited types *)
 

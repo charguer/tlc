@@ -426,6 +426,17 @@ Tactic Notation "dup" :=
 
 
 (* ---------------------------------------------------------------------- *)
+(** ** Testing non-evars *)
+
+(** [is_not_evar E] succeeds only if [E] is not an evar;
+    it fails otherwise. It thus implements the negation of [is_evar] *)
+
+Ltac is_not_evar E :=
+  first [ is_evar E; fail 1
+        | idtac ].
+
+
+(* ---------------------------------------------------------------------- *)
 (** ** Check no evar in goal *)
 
 Ltac check_noevar M :=
@@ -1213,11 +1224,18 @@ Tactic Notation "forwards" simple_intropattern(I) ":" constr(E0)
  constr(A1) constr(A2) constr(A3) constr(A4) constr(A5) :=
   forwards I: (>> E0 A1 A2 A3 A4 A5).
 
-  (* for use by tactics -- todo: factorize better *)
+(** [forwards_nounfold I: E] is like [forwards I: E] but does not
+    unfold the head constant of [E] if there is no visible quantification
+    or hypothesis in [E]. It is meant to be used mainly by tactics. *)
+
 Tactic Notation "forwards_nounfold" simple_intropattern(I) ":" constr(Ei) :=
   let args := list_boxer_of Ei in
   let args := (eval simpl in (args ++ ((boxer ___)::nil))) in
   build_app args ltac:(fun R => lets_base I R).
+
+(** [forwards_nounfold_then E ltac:(fun K => ..)] 
+    is like [forwards: E] but it provides the resulting term 
+    to a continuation, under the name [K]. *)
 
 Ltac forwards_nounfold_then Ei cont :=
   let args := list_boxer_of Ei in
@@ -1615,7 +1633,7 @@ Ltac false_neq_self_hyp :=
 (** * Introduction and generalization *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Introduction *)
+(** ** Introduction using [=>>] *)
 
 (** [introv] is used to name only non-dependent hypothesis.
  - If [introv] is called on a goal of the form [forall x, H],
@@ -1726,6 +1744,115 @@ Tactic Notation "intros_all" :=
 Tactic Notation "intro_hnf" :=
   intro; match goal with H: _ |- _ => hnf in H end.
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Introduction using [=>] and [=>>] *)
+
+(* [=> I1 .. IN] is the same as [intros I1 .. IN] *)
+
+Ltac ltac_intros_post := idtac.
+
+Tactic Notation "=>" :=
+  intros.
+Tactic Notation "=>" simple_intropattern(I1) :=
+  intros I1.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) :=
+  intros I1 I2.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) :=
+  intros I1 I2 I3.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) :=
+  intros I1 I2 I3 I4.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5) :=
+  intros I1 I2 I3 I4 I5.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) :=
+  intros I1 I2 I3 I4 I5 I6.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) :=
+  intros I1 I2 I3 I4 I5 I6 I7.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8) :=
+  intros I1 I2 I3 I4 I5 I6 I7 I8.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
+ simple_intropattern(I9) :=
+  intros I1 I2 I3 I4 I5 I6 I7 I8 I9.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
+ simple_intropattern(I9) simple_intropattern(I10) :=
+  intros I1 I2 I3 I4 I5 I6 I7 I8 I9 I10.
+
+(* [=>>] first introduces all non-dependent variables,
+   then behaves as [intros]. It unfolds the head of the goal using [hnf] 
+   if there are not head visible quantifiers. 
+   
+   Remark: instances of [Inhab] are treated as non-dependent and
+   are introduced automatically. *)
+
+(* NOTE: this tactic is later redefined for supporting Inhab *)
+Ltac intro_nondeps_aux_special_intro G :=
+  fail.
+
+Ltac intro_nondeps_aux is_already_hnf := 
+  match goal with
+  | |- (?P -> ?Q) => idtac
+  | |- ?G -> _ => intro_nondeps_aux_special_intro G;
+                  intro; intro_nondeps_aux true 
+  | |- (forall _,_) => intros ?; intro_nondeps_aux true
+  | |- _ => 
+     match is_already_hnf with
+     | true => idtac
+     | false => hnf; intro_nondeps_aux true  
+     end
+  end.
+
+Ltac intro_nondeps tt := intro_nondeps_aux false.
+
+Tactic Notation "=>>" :=
+  intro_nondeps tt.
+Tactic Notation "=>>" simple_intropattern(I1) :=
+  =>>; intros I1.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) :=
+  =>>; intros I1 I2.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) :=
+  =>>; intros I1 I2 I3.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) :=
+  =>>; intros I1 I2 I3 I4.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5) :=
+  =>>; intros I1 I2 I3 I4 I5.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) :=
+  =>>; intros I1 I2 I3 I4 I5 I6.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) :=
+  =>>; intros I1 I2 I3 I4 I5 I6 I7.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8) :=
+  =>>; intros I1 I2 I3 I4 I5 I6 I7 I8.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
+ simple_intropattern(I9) :=
+  =>>; intros I1 I2 I3 I4 I5 I6 I7 I8 I9.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) 
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
+ simple_intropattern(I9) simple_intropattern(I10) :=
+  =>>; intros I1 I2 I3 I4 I5 I6 I7 I8 I9 I10.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2951,13 +3078,53 @@ Tactic Notation "inductions" ident(E) "gen" ident(X1) ident(X2)
     principle, for a given well-founded relation. It applies to a goal
     [PX] where [PX] is a proposition on [X]. First, it sets up the
     goal in the form [(fun a => P a) X], using [pattern X], and then
-    it applies the well-founded induction principle instantiated on [E],
-    where [E] is a term of type [well_founded R], and [R] is a binary
-    relation.
+    it applies the well-founded induction principle instantiated on [E].
+
+    Here [E] may be either: 
+   - a proof of [wf R] for [R] of type [A->A->Prop]
+   - a binary relation of type [A->A->Prop]
+   - a measure of type [A -> nat] // only when LibWf is used
+
     Syntaxes [induction_wf: E X] and [induction_wf E X]. *)
 
+(* DEPRECATED
 Tactic Notation "induction_wf" ident(IH) ":" constr(E) ident(X) :=
   pattern X; apply (well_founded_ind E); clear X; intros X IH.
+*)
+
+(* Tactic is later extended in module LibWf *)
+Ltac induction_wf_core_then IH E X cont :=
+  let T := type of E in
+  let T := eval hnf in T in
+  let clearX tt := 
+    first [ clear X | fail 3 "the variable on which the induction is done appears in the hypotheses" ] in
+  match T with
+  (* Support for measures from LibWf, add this:
+  | ?A -> nat =>
+     induction_wf_core_then IH (measure_wf E) X cont
+  *)
+  | ?A -> ?A -> Prop =>
+     pattern X; 
+     first [
+       applys well_founded_ind E; 
+       clearX tt;
+       [ (* Support for [wf] from LibWf
+         change well_founded with wf; auto with wf *)
+       | intros X IH; cont tt ]
+     | fail 2 ]
+  | _ => 
+    pattern X; 
+    applys well_founded_ind E; 
+    clearX tt; 
+    intros X IH; 
+    cont tt
+  end.
+
+Ltac induction_wf_core IH E X :=
+  induction_wf_core_then IH E X ltac:(fun _ => idtac).
+
+Tactic Notation "induction_wf" ident(IH) ":" constr(E) ident(X) :=
+  induction_wf_core IH E X.
 Tactic Notation "induction_wf" ":" constr(E) ident(X) :=
   let IH := fresh "IH" in induction_wf IH: E X.
 Tactic Notation "induction_wf" ":" constr(E) ident(X) :=
@@ -4693,6 +4860,27 @@ Tactic Notation "skip_induction" constr(E) :=
 
 Tactic Notation "skip_induction" constr(E) "as" simple_intropattern(I) :=
   let IH := fresh "IH" in skip_goal IH; destruct E as I.
+
+(** [forwards_nounfold_skip_sides_then E ltac:(fun K => ..)] 
+    is like [forwards: E] but it provides the resulting term 
+    to a continuation, under the name [K], and it admits
+    any side-condition produced by the instantiation of [E],
+    using the [skip] tactic. *)
+
+Inductive ltac_goal_to_discard := ltac_goal_to_discard_intro.
+
+Ltac forwards_nounfold_skip_sides_then S cont :=
+  let MARK := fresh in 
+  generalize ltac_goal_to_discard_intro; 
+  intro MARK;
+  forwards_nounfold_then S ltac:(fun K =>
+    clear MARK;
+    cont K);
+  match goal with
+  | MARK: ltac_goal_to_discard |- _ => skip 
+  | _ => idtac
+  end.
+
 
 
 (* ********************************************************************** *)

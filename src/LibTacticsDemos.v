@@ -285,6 +285,104 @@ Qed.
 
 End IntrovTest.
 
+(*------------------------*)
+(** * Arrow Introduction  *)
+
+Section ArrowTest.
+
+Variables P1 P2 P3 : nat -> Prop.
+
+Lemma demo_arrow_1 :
+  forall a b, P1 a -> P2 b -> forall c d, P3 c -> P1 d -> c = b.
+Proof using.
+  dup 4.
+  (* [=>>] introduces all the variables which are not hypotheses,
+     more precisely all the variables used dependently. *) 
+  =>>.
+  (* if there is no more head variables, and no definition can 
+     be unfolded at head of the goal, it does not do anything *)
+  =>>. skip.
+  (* [=>> A] introduces all variables, then does [intros A] *)
+  =>> A. =>> B. =>>. =>> C D. skip.
+  (* [=>>] may take several arguments, as illustrated below *)
+  =>> A B. =>>. skip.
+  =>> A B. =>>. =>> C D. skip.
+Qed.
+
+Lemma demo_arrow_2 :
+  forall a, Sym a.
+Proof using.
+  dup 4.
+  (* [=>>] introduces a variable but no subsequent definition *)
+  =>>. 
+  (* [=>>] unfolds definition if no variable is visible *)
+  =>>. skip.
+  (* [=>> E] unfolds definitions until finding an hypothesis *)
+  =>> E. =>> F. skip.
+  (* [=>> E ? F] unfolds several definitions if needed *)
+  =>> E ? F. skip.
+  (* [=>>] may unfold definition without any introduction *)
+  =>> x E. =>>. skip.
+Qed.
+
+Lemma demo_arrow_3 :
+  forall (a:nat), a = 0%nat -> Sym a.
+Proof using.
+  dup 5. (* more examples *)
+  (* introduces [a] only *)
+  =>>. skip.
+  (* introduces [a = 0] *)
+  =>> E. skip.
+  (* introduces [a = 0] and [a = y] *)
+  =>> E; =>> F. skip.
+  (* introduces [a = 0] and [a = y] and [True] *)
+  =>> E; =>> F G. skip.
+  (* introduction of more names fails *)
+  try (=>> E; =>> F G H). skip.
+Qed.
+
+Lemma demo_arrow_4 :
+  TestSym.
+Proof using.
+  dup 2. (* same as before, except the goal itself is a definition *)
+  (* introduces [a] only *)
+  =>>. skip.
+  (* introduces [a = 0] *)
+  =>> E. skip.
+Qed.
+
+Lemma demo_arrow_5 :
+  forall a:nat, a = 0%nat -> ~ Sym a.
+Proof using.
+  dup 2. (* playing with negation *)
+  (* introduces [a = 0] *)
+  =>> E. skip.
+  (* introduces [a = 0] and [Sym a] *)
+  =>> E F. skip.
+Qed.
+
+Lemma demo_arrow_6 :
+  AllSame.
+Proof using.
+  dup 2. 
+  (* introduces only [x], then only [y] *)
+  =>>. =>>. skip.
+  (* introduces [x] and [y] and [True] *)
+  =>> ? E. skip.
+Qed.
+
+Lemma demo_arrow_7 :
+  AllSameAgain.
+Proof using.
+  dup 2.  
+  (* introduces only [x], then only [y] *)
+  =>>. =>>. skip.
+  (* introduces [x] and [y] and [True] *)
+  =>> ? E. skip.
+Qed.
+
+End ArrowTest.
+
 
 (* ********************************************************************** *)
 (** * Generalization, naming *)
