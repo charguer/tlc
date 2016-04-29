@@ -718,6 +718,16 @@ Proof using.
   subst. rew_list. unfold prefix. eauto.
 Qed.
 
+Lemma eliminate_common_prefix:
+  forall xs ys zs,
+  prefix (xs ++ ys) (xs ++ zs) ->
+  prefix ys zs.
+Proof using.
+  introv [ slack ? ]. exists slack.
+  rew_list in *.
+  eauto using app_cancel_l.
+Qed.
+
 Lemma prove_prefix_snoc:
   forall x xs ys zs,
   xs ++ x :: ys = zs ->
@@ -734,6 +744,17 @@ Proof using.
   introv [ slack ? ]. rew_list in *. exists (xs ++ slack). eauto.
 Qed.
 
+Lemma use_prefix_snoc:
+  forall x xs ys zs,
+  prefix (xs & x) ys ->
+  ys = xs ++ zs ->
+  exists zs', zs = x :: zs'.
+Proof.
+  introv h ?. subst.
+  forwards: eliminate_common_prefix h.
+  eauto using use_prefix_cons.
+Qed.
+
 Lemma prefix_last: (* TEMPORARY should be: use_prefix_snoc *)
   forall x xs ys,
   prefix (xs & x) ys ->
@@ -742,17 +763,6 @@ Proof using.
   introv [ zs ? ]. exists (x :: zs). rew_list in *. eauto.
 Qed.
 
-Lemma eliminate_common_prefix:
-  forall xs ys zs,
-  prefix (xs ++ ys) (xs ++ zs) ->
-  prefix ys zs.
-Proof using.
-  introv [ slack ? ]. exists slack.
-  rew_list in *.
-  eauto using app_cancel_l.
-Qed.
-
 End Prefix.
 
 Hint Resolve prefix_nil prefix_reflexive prove_prefix_snoc prefix_last : prefix.
-
