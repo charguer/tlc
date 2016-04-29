@@ -343,6 +343,16 @@ Proof using.
    repeat rewrite app_cons in E. inverts~ E.
 Qed.
 
+Lemma app_cancel_nil_l:
+  forall (xs ys : list A),
+  xs = xs ++ ys ->
+  ys = nil.
+Proof using.
+  induction xs; introv h.
+  { eauto. }
+  { rewrite app_cons in h. injection h. eauto. }
+Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** FoldRight *)
@@ -2808,4 +2818,3 @@ Proof using.
 Qed.
 
 End ListEquiv.
-
