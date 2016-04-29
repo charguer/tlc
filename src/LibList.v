@@ -1575,6 +1575,12 @@ Proof using.
    left~. right*.
 Qed.
 
+Lemma app_eq_prefix_inv_l : forall l1 l2 l2',
+  l1 ++ l2 = l1 ++ l2' -> l2 = l2'.
+Proof using.
+  introv E. induction l1; rew_list in *. auto. inverts* E.
+Qed.
+
 Lemma last_inv : forall l, (* TODO: rename to last_inv_pos_length *)
   (length l > 0%nat) ->
   exists x l', l = l' & x.
