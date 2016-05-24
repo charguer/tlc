@@ -819,6 +819,23 @@ Proof using.
   applys~ LibList.fold_equiv. intros. rewrite EQ2. rewrite* EQ1.
 Qed.
 
+Lemma fold_induction:
+  forall A B (m : monoid_def B) (f : A -> B) (P : B -> Prop),
+  Monoid_commutative m ->
+  P (monoid_neutral m) ->
+  (forall x a, P x -> P (monoid_oper m (f a) x)) ->
+  forall E,
+  finite E ->
+  P (fold m f E).
+Proof using.
+  introv ? Hbase Hstep Hfinite.
+  assert (forall xs, P (LibList.fold m f xs)).
+  { induction xs; unfold LibList.fold; simpl; eauto. }
+  forwards: finite_list_repr Hfinite.
+  erewrite fold_eq by eauto.
+  eauto.
+Qed.
+
 Lemma fold_congruence : forall A B (m : monoid_def B) (f g : A -> B) (E : set A),
   Monoid_commutative m ->
   finite E ->
