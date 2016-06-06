@@ -94,13 +94,15 @@ endif
 
 ifdef SERIOUS
 
-%.vo: %.v 
+%.vo: %.v
 	$(COQC) $(COQINCLUDE) $<
 
 endif
 
-_CoqProject:
+_CoqProject: .FORCE
 	echo $(COQINCLUDE) > $@
+
+.FORCE:
 
 ############################################################################
 # Dependencies
@@ -134,4 +136,3 @@ clean::
 	rm -f *~
 	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob *.cache
 	rm -rf .coq-native .coqide
-
