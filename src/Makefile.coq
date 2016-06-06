@@ -21,10 +21,20 @@ ifndef V
 	V := $(wildcard *.v)
 endif
 
-VD := $(patsubst %.v,%.v.d,$(V))
+# We usually refer to the .v files using relative paths (such as Foo.v)
+# but [coqdep -R] produces dependencies that refer to absolute paths
+# (such as /bar/Foo.v). This confuses [make], which does not recognize
+# that these files are the same. As a result, [make] does not respect
+# the dependencies.
+# We fix this, for the moment, by using absolute paths everywhere.
+# Not sure if this is quite right:
+PWD := $(shell pwd)
+V   := $(patsubst %,$(PWD)/%,$(wildcard *.v))
+
+VD  := $(patsubst %.v,%.v.d,$(V))
 VIO := $(patsubst %.v,%.vio,$(V))
-VQ := $(patsubst %.v,%.vq,$(V))
-VO := $(patsubst %.v,%.vo,$(V))
+VQ  := $(patsubst %.v,%.vq,$(V))
+VO  := $(patsubst %.v,%.vo,$(V))
 
 ############################################################################
 # Binaries
