@@ -800,6 +800,23 @@ Proof using.
   rewrite disjoint_single_r_eq. auto.
 Qed.
 
+Lemma card_diff_single:
+  forall A (E : set A) x,
+  finite E ->
+  x \in E ->
+  (card (E \-- x) = card E - 1)%nat.
+Proof using.
+  intros.
+  assert (h1: (E \-- x) \u \{x} = E).
+  { rewrite union_comm. erewrite set_isolate by eauto. reflexivity. }
+  forwards h2: card_disjoint_union_single (E \-- x) x.
+  { eauto with finite. }
+  { unfold notin. rewrite set_in_remove_eq.
+    rew_logic. right.
+    eapply in_single_self. }
+  rewrite h1 in h2.
+  math.
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** fold *)
