@@ -135,7 +135,9 @@ Proof using. intros. unfolds length. applys~ LibList.length_zero_inv. Qed.
 Lemma length_tail : forall l,
   l <> nil -> length (tail l) = length l - 1.
 Proof using. induction l; intros; simpl; unfold length; rew_length. congruence. math. Qed.
-
+Lemma length_tail_le : forall l,
+  length (tail l) <= length l.
+Proof using. destruct l; simpl; unfold length; rew_length; math. Qed.
 
 End LengthProperties.
 
