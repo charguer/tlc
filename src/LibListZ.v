@@ -138,6 +138,13 @@ Proof using. induction l; intros; simpl; unfold length; rew_length. congruence. 
 Lemma length_tail_le : forall l,
   length (tail l) <= length l.
 Proof using. destruct l; simpl; unfold length; rew_length; math. Qed.
+Lemma length_le_1_implies_nil_tail : forall l,
+  length l <= 1 -> tail l = nil.
+Proof using.
+  intros. destruct l; eauto.
+  simpl. unfold length in *. rew_length in *.
+  eapply length_zero_inv. math.
+Qed.
 
 End LengthProperties.
 
