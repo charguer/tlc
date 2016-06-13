@@ -27,6 +27,8 @@ endif
 # that these files are the same. As a result, [make] does not respect
 # the dependencies.
 # We fix this, for the moment, by using absolute paths everywhere.
+# Note that the paths specified by the user via -R options MUST be
+# absolute paths, too!
 # Not sure if this is quite right:
 PWD := $(shell pwd)
 V   := $(patsubst %,$(PWD)/%,$(wildcard *.v))
