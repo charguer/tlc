@@ -141,13 +141,9 @@ ide: _CoqProject
 ############################################################################
 # Clean
 
-# Do not delete intermediate files.
-.SECONDARY: %.v.d %.vio
-.PRECIOUS: %.v.d %.vio
-
 .PHONY: clean
 
 clean::
 	rm -f *~
 	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob *.cache *.crashcoqide
-	rm -rf .coq-native .coqide 
+	rm -rf .coq-native .coqide
