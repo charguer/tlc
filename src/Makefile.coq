@@ -68,14 +68,17 @@ proof_vo: $(VO)
 ############################################################################
 # Verbosity control.
 
-# Our command lines are pretty long (due, among other things, to the use of
+# Our commands are pretty long (due, among other things, to the use of
 # absolute paths everywhere). So, we hide them by default, and echo a short
-# message instead. However, sometimes one wants to see the actual command. By
-# default, $(AT) is @, and the command is not echoed. If $(AT) is defined as
-# the empty string, then the command is echoed.
+# message instead. However, sometimes one wants to see the command.
 
-ifndef AT
-  AT := @
+# By default, VERBOSE is undefined, so the .SILENT directive is read, so no
+# commands are echoed. If VERBOSE is defined by the user, then the .SILENT
+# directive is ignored, so commands are echoed, unless they begin with an
+# explicit @.
+
+ifndef VERBOSE
+.SILENT:
 endif
 
 ############################################################################
@@ -98,13 +101,13 @@ endif
 # B.vio: B.v A.vio
 
 %.v.d: %.v
-	$(AT) $(COQDEP) $(COQINCLUDE) $< > $@
+	$(COQDEP) $(COQINCLUDE) $< > $@
 
 ifndef SERIOUS
 
 %.vo: %.vio
 	@echo "Compiling `basename $*`..."
-	$(AT) set -o pipefail; ( \
+	set -o pipefail; ( \
 	  $(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* \
 	  2>&1 | (grep -v 'Checking task' || true))
 
@@ -117,15 +120,15 @@ ifndef SERIOUS
 # one invocation of make.
 %.vio: %.v
 	@echo "Digesting `basename $*`..."
-	$(AT) rm -f $*.vo
-	$(AT) $(COQC) $(COQINCLUDE) -quick $<
+	rm -f $*.vo
+	$(COQC) $(COQINCLUDE) -quick $<
 
 %.vq: %.vio
 	@echo "Checking `basename $*`..."
-	$(AT) set -o pipefail; ( \
+	set -o pipefail; ( \
 	  $(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< \
 	  2>&1 | (grep -v 'Checking task' || true))
-	$(AT) touch $@
+	touch $@
 
 endif
 
@@ -133,7 +136,7 @@ ifdef SERIOUS
 
 %.vo: %.v
 	@echo "Compiling `basename $*`..."
-	$(AT) $(COQC) $(COQINCLUDE) $<
+	$(COQC) $(COQINCLUDE) $<
 
 endif
 
