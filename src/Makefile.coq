@@ -66,6 +66,19 @@ quick: $(VIO)
 proof_vo: $(VO)
 
 ############################################################################
+# Verbosity control.
+
+# Our command lines are pretty long (due, among other things, to the use of
+# absolute paths everywhere). So, we hide them by default, and echo a short
+# message instead. However, sometimes one wants to see the actual command. By
+# default, $(AT) is @, and the command is not echoed. If $(AT) is defined as
+# the empty string, then the command is echoed.
+
+ifndef AT
+  AT := @
+endif
+
+############################################################################
 # Verbosity filter.
 
 # Coq is way too verbose when using one of the -schedule-* commands.
@@ -85,38 +98,47 @@ proof_vo: $(VO)
 # B.vio: B.v A.vio
 
 %.v.d: %.v
-	@$(COQDEP) $(COQINCLUDE) $< > $@
+	$(AT) $(COQDEP) $(COQINCLUDE) $< > $@
 
 ifndef SERIOUS
 
 %.vo: %.vio
 	@echo "Compiling `basename $*`..."
-	@set -o pipefail; ( \
+	$(AT) set -o pipefail; ( \
 	  $(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* \
 	  2>&1 | (grep -v 'Checking task' || true))
 
+# The recipe for producing %.vio destroys %.vo. In other words, we do not
+# allow a young .vio file to co-exist with an old (possibly out-of-date) .vo
+# file, because this seems to lead Coq into various kinds of problems
+# ("inconsistent assumption" errors, "undefined universe" errors, warnings
+# about the existence of both files, and so on). Destroying %.vo should be OK
+# as long as the user does not try to build a mixture of .vo and .vio files in
+# one invocation of make.
 %.vio: %.v
 	@echo "Digesting `basename $*`..."
-	@$(COQC) $(COQINCLUDE) -quick $<
+	$(AT) rm -f $*.vo
+	$(AT) $(COQC) $(COQINCLUDE) -quick $<
 
 %.vq: %.vio
 	@echo "Checking `basename $*`..."
-	@set -o pipefail; ( \
+	$(AT) set -o pipefail; ( \
 	  $(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< \
 	  2>&1 | (grep -v 'Checking task' || true))
-	@touch $@
+	$(AT) touch $@
 
 endif
 
 ifdef SERIOUS
 
 %.vo: %.v
-	$(COQC) $(COQINCLUDE) $<
+	@echo "Compiling `basename $*`..."
+	$(AT) $(COQC) $(COQINCLUDE) $<
 
 endif
 
 _CoqProject: .FORCE
-	echo $(COQINCLUDE) > $@
+	@echo $(COQINCLUDE) > $@
 
 .FORCE:
 
