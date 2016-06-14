@@ -85,21 +85,22 @@ proof_vo: $(VO)
 # B.vio: B.v A.vio
 
 %.v.d: %.v
-	$(COQDEP) $(COQINCLUDE) $< > $@
+	@$(COQDEP) $(COQINCLUDE) $< > $@
 
 ifndef SERIOUS
 
 %.vo: %.vio
-	@echo "Compiling $*..."
+	@echo "Compiling `basename $*`..."
 	@set -o pipefail; ( \
 	  $(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* \
 	  2>&1 | (grep -v 'Checking task' || true))
 
 %.vio: %.v
-	$(COQC) $(COQINCLUDE) -quick $<
+	@echo "Digesting `basename $*`..."
+	@$(COQC) $(COQINCLUDE) -quick $<
 
 %.vq: %.vio
-	@echo "Checking $*..."
+	@echo "Checking `basename $*`..."
 	@set -o pipefail; ( \
 	  $(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< \
 	  2>&1 | (grep -v 'Checking task' || true))
