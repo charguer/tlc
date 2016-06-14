@@ -10,7 +10,8 @@
 ############################################################################
 # Compilation
 
-COQINCLUDE := -R $(shell pwd) TLC
+PWD := $(shell pwd)
+COQINCLUDE := -R $(PWD) TLC
 include Makefile.coq
 
 ############################################################################
@@ -24,5 +25,7 @@ include Makefile.coq
 
 .PHONY: install
 
-install: all
+install: 
 	ln -s `pwd` `$(COQC) -where`/user-contrib/TLC
+
+# LATER: install could force creation of *.vo files, for end user

@@ -17,10 +17,6 @@ SHELL := /bin/bash
 # SERIOUS    (default: undefined)
 #            (if defined, coqc is used to produce .vo files in the old way)
 
-ifndef V
-	V := $(wildcard *.v)
-endif
-
 # We usually refer to the .v files using relative paths (such as Foo.v)
 # but [coqdep -R] produces dependencies that refer to absolute paths
 # (such as /bar/Foo.v). This confuses [make], which does not recognize
@@ -30,13 +26,20 @@ endif
 # Note that the paths specified by the user via -R options MUST be
 # absolute paths, too!
 # Not sure if this is quite right:
-PWD := $(shell pwd)
-V   := $(patsubst %,$(PWD)/%,$(wildcard *.v))
 
-VD  := $(patsubst %.v,%.v.d,$(V))
+ifndef V
+	PWD := $(shell pwd)
+	V := $(wildcard $(PWD)/*.v)
+endif
+
+ifndef VD
+	VD  := $(patsubst %.v,%.v.d,$(V))
+endif
+
 VIO := $(patsubst %.v,%.vio,$(V))
 VQ  := $(patsubst %.v,%.vq,$(V))
 VO  := $(patsubst %.v,%.vo,$(V))
+
 
 ############################################################################
 # Binaries
@@ -146,5 +149,5 @@ ide: _CoqProject
 
 clean::
 	rm -f *~
-	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob *.cache
-	rm -rf .coq-native .coqide
+	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob *.cache *.crashcoqide
+	rm -rf .coq-native .coqide 
