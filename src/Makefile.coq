@@ -171,5 +171,6 @@ ide: _CoqProject
 
 clean::
 	rm -f *~
-	rm -f *.vio *.v.d *.vo *.vq *.vk *.aux .*.aux *.glob *.cache *.crashcoqide
+	rm -f $(VIO) $(VD) $(VO) $(VQ) *.aux .*.aux *.glob *.cache *.crashcoqide
 	rm -rf .coq-native .coqide
+# TEMPORARY *~, *.aux, etc. do not make sense in a multi-directory setting
