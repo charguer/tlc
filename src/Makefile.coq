@@ -14,7 +14,7 @@ SHELL := /bin/bash
 # COQBIN     (default: empty)
 # COQINCLUDE (default: empty)
 # V          (default: *.v)
-# V_ALL      (default: $(V))
+# V_AUX      (default: undefined/empty)
 # SERIOUS    (default: undefined)
 #            (if defined, coqc is used to produce .vo files in the old way)
 # VERBOSE    (default: undefined)
@@ -35,17 +35,13 @@ ifndef V
 endif
 
 # Typically, $(V) should list only the .v files that we are ultimately
-# interested in checking, whereas $(V_ALL) should list every .v file in the
-# project. $(VD) is obtained from $(V_ALL), so [make] sees all dependencies
-# and can rebuild files anywhere in the project, if needed, and only if
-# needed.
-
-ifndef V_ALL
-       V_ALL := $(V)
-endif
+# interested in checking. $(V_AUX) should list every other .v file in the
+# project. $(VD) is obtained from $(V) and $(V_AUX), so [make] sees all
+# dependencies and can rebuild files anywhere in the project, if needed, and
+# only if needed.
 
 ifndef VD
-	VD  := $(patsubst %.v,%.v.d,$(V_ALL))
+	VD  := $(patsubst %.v,%.v.d,$(V) $(V_AUX))
 endif
 
 VIO := $(patsubst %.v,%.vio,$(V))
