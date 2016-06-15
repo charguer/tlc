@@ -32,6 +32,10 @@ ifndef V
 	V := $(wildcard $(PWD)/*.v)
 endif
 
+# Typically, $(V) should list only the .v files that we are ultimately
+# interested in checking, whereas $(VD) should list every .v.d file in
+# the project.
+
 ifndef VD
 	VD  := $(patsubst %.v,%.v.d,$(V))
 endif
@@ -171,6 +175,8 @@ ide: _CoqProject
 
 clean::
 	rm -f *~
-	rm -f $(VIO) $(VD) $(VO) $(VQ) *.aux .*.aux *.glob *.cache *.crashcoqide
+	rm -f $(patsubst %.v,%.v.d,$(V)) # not $(VD)
+	rm -f $(VIO) $(VO) $(VQ)
+	rm -f *.aux .*.aux *.glob *.cache *.crashcoqide
 	rm -rf .coq-native .coqide
 # TEMPORARY *~, *.aux, etc. do not make sense in a multi-directory setting
