@@ -14,18 +14,20 @@ SHELL := /bin/bash
 # COQBIN     (default: empty)
 # COQINCLUDE (default: empty)
 # V          (default: *.v)
+# V_ALL      (default: $(V))
 # SERIOUS    (default: undefined)
 #            (if defined, coqc is used to produce .vo files in the old way)
+# VERBOSE    (default: undefined)
+#            (if defined, commands are displayed)
 
 # We usually refer to the .v files using relative paths (such as Foo.v)
 # but [coqdep -R] produces dependencies that refer to absolute paths
 # (such as /bar/Foo.v). This confuses [make], which does not recognize
 # that these files are the same. As a result, [make] does not respect
 # the dependencies.
-# We fix this, for the moment, by using absolute paths everywhere.
-# Note that the paths specified by the user via -R options MUST be
-# absolute paths, too!
-# Not sure if this is quite right:
+
+# We fix this by using ABSOLUTE PATHS EVERYWHERE. The paths used in targets,
+# in -R options, etc., must be absolute paths.
 
 ifndef V
 	PWD := $(shell pwd)
@@ -33,11 +35,17 @@ ifndef V
 endif
 
 # Typically, $(V) should list only the .v files that we are ultimately
-# interested in checking, whereas $(VD) should list every .v.d file in
-# the project.
+# interested in checking, whereas $(V_ALL) should list every .v file in the
+# project. $(VD) is obtained from $(V_ALL), so [make] sees all dependencies
+# and can rebuild files anywhere in the project, if needed, and only if
+# needed.
+
+ifndef V_ALL
+       V_ALL := $(V)
+endif
 
 ifndef VD
-	VD  := $(patsubst %.v,%.v.d,$(V))
+	VD  := $(patsubst %.v,%.v.d,$(V_ALL))
 endif
 
 VIO := $(patsubst %.v,%.vio,$(V))
