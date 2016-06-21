@@ -25,7 +25,8 @@ include Makefile.coq
 
 .PHONY: install
 
-install: 
+install:
+	mkdir -p `$(COQC) -where`/user-contrib
 	ln -s `pwd` `$(COQC) -where`/user-contrib/TLC
 
 # LATER: install could force creation of *.vo files, for end user
