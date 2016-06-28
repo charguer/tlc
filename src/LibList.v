@@ -2824,3 +2824,134 @@ Proof using.
 Qed.
 
 End ListEquiv.
+
+(* -------------------------------------------------------------------------- *)
+
+(* The [prefix] ordering on lists. *)
+
+Section Prefix.
+
+Variable A : Type.
+
+(* A definition in terms of concatenation. See also [LibListZ]. *)
+
+Definition prefix (ys xs : list A) :=
+  exists zs, ys ++ zs = xs.
+
+  (* TODO one could give an alternate definition of [prefix] as an
+     inductive predicate with two cases: [Nil/Cons] and [Cons/Cons].
+     This would give rise to a potentially useful induction principle.
+     Or just prove this induction principle directly. *)
+
+(* Ordering. *)
+
+Lemma prefix_reflexive:
+  forall xs,
+  prefix xs xs.
+Proof using.
+  intros. exists (@nil A). eapply app_nil_r.
+Qed.
+
+Lemma prefix_antisymmetric:
+  forall xs ys,
+  prefix xs ys ->
+  prefix ys xs ->
+  xs = ys.
+Proof using.
+  introv (ws&?) (zs&?). subst ys. rew_list in *.
+  forwards: app_eq_self_inv_l. { eauto. }
+  forwards: app_eq_nil_inv. { eauto. }
+  unpack. subst ws zs. rew_list. eauto.
+Qed.
+
+Lemma prefix_transitive:
+  forall xs ys zs,
+  prefix xs ys ->
+  prefix ys zs ->
+  prefix xs zs.
+Proof using.
+  introv [ xs' ? ] [ ys' ? ].
+  subst. rew_list. unfold prefix. eauto.
+Qed.
+
+(* [prefix] and [nil]. *)
+
+Lemma prefix_nil:
+  forall xs,
+  prefix nil xs.
+Proof using.
+  intros. exists xs. eapply app_nil_l.
+Qed.
+
+(* [prefix] and [cons]. *)
+
+Lemma use_prefix_cons:
+  forall x xs ys,
+  prefix (x :: xs) ys ->
+  exists ys', ys = x :: ys'.
+Proof using.
+  introv [ slack ? ]. rew_list in *. exists (xs ++ slack). eauto.
+Qed.
+
+(* [prefix] and [++]. *)
+
+Lemma eliminate_common_prefix:
+  forall xs ys zs,
+  prefix (xs ++ ys) (xs ++ zs) ->
+  prefix ys zs.
+Proof using.
+  introv [ slack ? ]. exists slack.
+  rew_list in *.
+  eauto using app_cancel_l.
+Qed.
+
+(* [prefix] and [snoc]. *)
+
+Lemma prove_prefix_snoc:
+  forall x xs ys zs,
+  xs ++ x :: ys = zs ->
+  prefix (xs & x) zs.
+Proof using.
+  intros. exists ys. rew_list. eauto.
+Qed.
+
+Lemma use_prefix_snoc:
+  forall x xs ys zs,
+  prefix (xs & x) ys ->
+  ys = xs ++ zs ->
+  exists zs', zs = x :: zs'.
+Proof.
+  introv h ?. subst.
+  forwards: eliminate_common_prefix h.
+  eauto using use_prefix_cons.
+Qed.
+
+Lemma prefix_last: (* TEMPORARY should be: use_prefix_snoc *)
+  forall x xs ys,
+  prefix (xs & x) ys ->
+  prefix xs ys.
+Proof using.
+  introv [ zs ? ]. exists (x :: zs). rew_list in *. eauto.
+Qed.
+
+(* [prefix] and [length]. See also [LibListZ]. *)
+
+Lemma prefix_length:
+  forall ys xs,
+  prefix ys xs ->
+  length ys <= length xs.
+Proof using.
+  intros ys xs [ zs ? ]. subst xs. rew_list. math.
+Qed.
+
+Lemma prefix_snoc_length:
+  forall ys y xs,
+  prefix (ys & y) xs ->
+  length ys < length xs.
+Proof using.
+  intros ys y xs [ zs ? ]. subst xs. rew_list. math.
+Qed.
+
+End Prefix.
+
+Hint Resolve prefix_reflexive prefix_nil prove_prefix_snoc : prefix.

@@ -646,19 +646,22 @@ End ZindicesOld.
 
 (* -------------------------------------------------------------------------- *)
 
-(* Prefixes of lists. *)
+(* The [prefix] ordering on lists has been defined in [LibList]. Here, we
+   provide an alternate definition, as well as more properties. *)
+
+(* TEMPORARY characterize [prefix] as pointwise equality *)
 
 Section Prefix.
 
 Variable A : Type.
-
-Definition prefix (ys xs : list A) :=
-  exists zs, ys ++ zs = xs.
+Implicit Types xs ys : list A.
 
 Lemma le_implies_ge: forall x y, x <= y -> y >= x.
 Proof. math. Qed.
 
 Local Hint Resolve le_implies_ge length_nonneg.
+
+(* [prefix], [snoc], and read access. *)
 
 Lemma prefix_read:
   forall `{Inhab A} ys xs y,
@@ -683,6 +686,8 @@ Proof using.
     simpl. eapply IHys. exists zs. rew_list. congruence. }
 Qed.
 
+(* [prefix] and [length]. *)
+
 Lemma prefix_length:
   forall ys xs,
   prefix ys xs ->
@@ -703,75 +708,4 @@ Proof using.
   math.
 Qed.
 
-Lemma prefix_nil:
-  forall xs,
-  prefix nil xs.
-Proof using.
-  intros. exists xs. eapply app_nil_l.
-Qed.
-
-Lemma prefix_reflexive:
-  forall xs,
-  prefix xs xs.
-Proof using.
-  intros. exists (@nil A). eapply app_nil_r.
-Qed.
-
-Lemma prefix_transitive:
-  forall xs ys zs,
-  prefix xs ys ->
-  prefix ys zs ->
-  prefix xs zs.
-Proof using.
-  introv [ xs' ? ] [ ys' ? ].
-  subst. rew_list. unfold prefix. eauto.
-Qed.
-
-Lemma eliminate_common_prefix:
-  forall xs ys zs,
-  prefix (xs ++ ys) (xs ++ zs) ->
-  prefix ys zs.
-Proof using.
-  introv [ slack ? ]. exists slack.
-  rew_list in *.
-  eauto using app_cancel_l.
-Qed.
-
-Lemma prove_prefix_snoc:
-  forall x xs ys zs,
-  xs ++ x :: ys = zs ->
-  prefix (xs & x) zs.
-Proof using.
-  intros. exists ys. rew_list. eauto.
-Qed.
-
-Lemma use_prefix_cons:
-  forall x xs ys,
-  prefix (x :: xs) ys ->
-  exists ys', ys = x :: ys'.
-Proof using.
-  introv [ slack ? ]. rew_list in *. exists (xs ++ slack). eauto.
-Qed.
-
-Lemma use_prefix_snoc:
-  forall x xs ys zs,
-  prefix (xs & x) ys ->
-  ys = xs ++ zs ->
-  exists zs', zs = x :: zs'.
-Proof.
-  introv h ?. subst.
-  forwards: eliminate_common_prefix h.
-  eauto using use_prefix_cons.
-Qed.
-
-Lemma prefix_last: (* TEMPORARY should be: use_prefix_snoc *)
-  forall x xs ys,
-  prefix (xs & x) ys ->
-  prefix xs ys.
-Proof using.
-  introv [ zs ? ]. exists (x :: zs). rew_list in *. eauto.
-Qed.
-
 End Prefix.
-
-Hint Resolve prefix_nil prefix_reflexive prove_prefix_snoc prefix_last : prefix.
