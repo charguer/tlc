@@ -2883,9 +2883,30 @@ Proof using.
   intros. exists xs. eapply app_nil_l.
 Qed.
 
+Lemma prefix_nil_inverse:
+  forall xs,
+  prefix xs nil ->
+  xs = nil.
+Proof using.
+  introv (ys&?).
+  forwards: app_eq_nil_inv. eauto.
+  unpack. eauto.
+Qed.
+
 (* [prefix] and [cons]. *)
 
-Lemma use_prefix_cons:
+Lemma prefix_cons_inverse: (* TEMPORARY rename: [prefix_cons_r_inverse] *)
+  forall xs y ys,
+  prefix xs (y :: ys) ->
+  xs = nil \/ exists xs', xs = y :: xs' /\ prefix xs' ys.
+Proof using.
+  introv (zs&Heq).
+  destruct xs; [ eauto | right ].
+  rew_list in Heq. injects Heq.
+  unfold prefix. eauto.
+Qed.
+
+Lemma use_prefix_cons: (* TEMPORARY rename: [prefix_cons_l_inverse] *)
   forall x xs ys,
   prefix (x :: xs) ys ->
   exists ys', ys = x :: ys'.
@@ -2893,7 +2914,41 @@ Proof using.
   introv [ slack ? ]. rew_list in *. exists (xs ++ slack). eauto.
 Qed.
 
+Lemma prefix_cons_cons:
+  forall x xs1 xs2,
+  prefix xs1 xs2 ->
+  prefix (x :: xs1) (x :: xs2).
+Proof using.
+  introv (ys&?). subst. exists ys. rew_list. eauto.
+Qed.
+
+Lemma prefix_cons_cons_inverse:
+  forall x1 x2 xs1 xs2,
+  prefix (x1 :: xs1) (x2 :: xs2) ->
+  x1 = x2 /\ prefix xs1 xs2.
+Proof using.
+  intros.
+  forwards: prefix_cons_inverse; eauto.
+  branches; unpack; try split; congruence.
+Qed.
+
+Lemma prefix_cons_cons_eq:
+  forall x xs1 xs2,
+  prefix (x :: xs1) (x :: xs2) = prefix xs1 xs2.
+Proof using.
+  intros. extens. split.
+  { eapply prefix_cons_cons_inverse. }
+  { eapply prefix_cons_cons. }
+Qed.
+
 (* [prefix] and [++]. *)
+
+Lemma prove_prefix:
+  forall xs ys,
+  prefix xs (xs ++ ys).
+Proof using.
+  unfold prefix. eauto.
+Qed.
 
 Lemma eliminate_common_prefix:
   forall xs ys zs,
@@ -2903,6 +2958,25 @@ Proof using.
   introv [ slack ? ]. exists slack.
   rew_list in *.
   eauto using app_cancel_l.
+Qed.
+
+Lemma prefix_app_r_inverse:
+  forall ys1 xs ys2,
+  prefix xs (ys1 ++ ys2) ->
+  prefix xs ys1 \/
+  exists ys2a, xs = ys1 ++ ys2a /\ prefix ys2a ys2.
+Proof using.
+  induction ys1 as [ | y ys1 ]; simpl; intros.
+  { right. exists xs. rew_list in *. eauto. }
+  { destruct xs as [ | x xs ].
+    { eauto using prefix_nil. }
+    { rew_list in *.
+      forwards: prefix_cons_cons_inverse. { eauto. } unpack. subst y.
+      forwards [ ? | (ys2a&?&?) ]: IHys1. { eauto. }
+      { eauto using prefix_cons_cons. }
+      { right. eexists ys2a. rew_list. subst xs. eauto. }
+    }
+  }
 Qed.
 
 (* [prefix] and [snoc]. *)
@@ -2954,4 +3028,75 @@ Qed.
 
 End Prefix.
 
-Hint Resolve prefix_reflexive prefix_nil prove_prefix_snoc : prefix.
+Hint Resolve prefix_reflexive prefix_nil prefix_cons_cons prove_prefix_snoc : prefix.
+
+(* -------------------------------------------------------------------------- *)
+
+Section PrefixClosed.
+
+Variable A : Type.
+
+Implicit Types xs ys : list A.
+
+(* Prefix-closedness. *)
+
+Definition prefix_closed (P : list A -> Prop) :=
+  forall xs ys,
+  P ys ->
+  prefix xs ys ->
+  P xs.
+
+Lemma prefix_closed_nil:
+  forall (P : list A -> Prop) xs,
+  prefix_closed P ->
+  P xs ->
+  P nil.
+Proof using.
+  eauto with prefix.
+Qed.
+
+(* Prefix closure. *)
+
+Definition prefix_closure (P : list A -> Prop) : list A -> Prop :=
+  fun xs => exists ys, prefix xs ys /\ P ys.
+
+Definition prefix_closure_alt (P : list A -> Prop) : list A -> Prop :=
+  fun xs => exists ys, P (xs ++ ys).
+
+Lemma prefix_closure_eq:
+  forall P,
+  prefix_closure P = prefix_closure_alt P.
+Proof using.
+  intros. extens; intros xs; split; unfold prefix_closure, prefix_closure_alt, prefix.
+  { introv (ys&(zs&?)&?). subst. eauto. }
+  { introv (ys&?). eauto. }
+Qed.
+
+Lemma prefix_closure_is_prefix_closed:
+  forall P,
+  prefix_closed (prefix_closure P).
+Proof.
+  unfold prefix_closed, prefix_closure.
+  introv (zs&?&?). eauto using prefix_transitive.
+Qed.
+
+(* The relation [fun xs => prefix xs ys] is the prefix closure of the
+   singleton [ys]. Thus, it is prefix-closed. *)
+
+Lemma prefix_closure_singleton:
+  forall ys : list A,
+  (fun xs => prefix xs ys) = prefix_closure (= ys).
+Proof using.
+  intros. extens; intros xs. unfold prefix_closure.
+  split. eauto. intros (?&?&?). subst. eauto.
+Qed.
+
+Lemma prefix_closed_prefix:
+  forall ys : list A,
+  prefix_closed (fun xs => prefix xs ys).
+Proof using.
+  intros. rewrite prefix_closure_singleton.
+  eapply prefix_closure_is_prefix_closed.
+Qed.
+
+End PrefixClosed.
