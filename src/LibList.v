@@ -2943,11 +2943,21 @@ Qed.
 
 (* [prefix] and [++]. *)
 
-Lemma prove_prefix:
-  forall xs ys,
-  prefix xs (xs ++ ys).
+Lemma prefix_concat:
+  forall xs ys zs,
+  prefix xs ys ->
+  prefix xs (ys ++ zs).
 Proof using.
-  unfold prefix. eauto.
+  unfold prefix. introv (ws&?). subst ys.
+  exists (ws ++ zs). rew_list. eauto.
+Qed.
+
+Lemma prefix_concat_simplify:
+  forall xs ys1 ys2,
+  prefix ys1 ys2 ->
+  prefix (xs ++ ys1) (xs ++ ys2).
+Proof using.
+  introv (ws&?). subst ys2. exists ws. rew_list. eauto.
 Qed.
 
 Lemma eliminate_common_prefix:
@@ -3028,7 +3038,14 @@ Qed.
 
 End Prefix.
 
-Hint Resolve prefix_reflexive prefix_nil prefix_cons_cons prove_prefix_snoc : prefix.
+Hint Resolve
+  prefix_reflexive
+  prefix_nil
+  prefix_cons_cons
+  prefix_concat
+  prefix_concat_simplify
+  prove_prefix_snoc
+: prefix.
 
 (* -------------------------------------------------------------------------- *)
 
