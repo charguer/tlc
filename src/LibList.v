@@ -3036,6 +3036,19 @@ Proof using.
   intros ys y xs [ zs ? ]. subst xs. rew_list. math.
 Qed.
 
+(* [prefix] and [No_duplicates]. *)
+
+Lemma no_duplicates_prefix:
+  forall xs ys,
+  No_duplicates ys ->
+  prefix xs ys ->
+  No_duplicates xs.
+Proof using.
+  introv ? (zs&?). subst.
+  forwards: No_duplicates_inv_app; eauto.
+  tauto.
+Qed.
+
 End Prefix.
 
 Hint Resolve
