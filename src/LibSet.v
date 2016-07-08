@@ -64,6 +64,9 @@ Definition list_repr_impl (E:set A) (l:list A) :=
 Definition to_list (E:set A) :=
   epsilon (list_repr_impl E).
 
+Definition to_set (xs : list A) : set A :=
+  set_st (fun x => Mem x xs).
+
 Definition list_covers_impl (E:set A) L :=
   forall x, E x -> Mem x L.
 
@@ -483,6 +486,8 @@ Qed.
 (* LATER : finite_remove_inv
    finite (E \- F) -> finite F -> finite E
 *)
+
+(* The following lemma pushed here due to dependencies. *)
 
 Lemma list_repr_nil:
   list_repr \{} (@nil A).
@@ -942,6 +947,51 @@ Proof using.
   intros. do 2 rewrite fold_def.
   applys~ LibList.fold_pointwise.
   intros x. forwards~ (_&EQ): finite_list_repr E. rewrite (EQ x). auto.
+Qed.
+
+(* ---------------------------------------------------------------------- *)
+(** [to_set] *)
+
+Lemma list_repr_to_set:
+  forall A (xs : list A),
+  No_duplicates xs ->
+  list_repr (to_set xs) xs.
+Proof using.
+  unfold list_repr, to_set. induction 1; split.
+  { econstructor. }
+  { tauto. }
+  { econstructor; eauto. }
+  { tauto. }
+Qed.
+
+Lemma list_repr_to_set_inverse:
+  forall A (E : set A) (xs : list A),
+  list_repr E xs ->
+  E = to_set xs.
+Proof using.
+  unfold list_repr, to_set. introv (_ & ?).
+  generalize dependent E. generalize dependent xs.
+  induction xs; introv H; rewrite set_ext_eq; intros x;
+  rewrite in_set_st_eq; rewrite H; tauto.
+Qed.
+
+Lemma to_set_nil:
+  forall A,
+  to_set (@nil A) = \{}.
+Proof using.
+  intros.
+  erewrite <- list_repr_to_set_inverse by eapply list_repr_nil.
+  eauto.
+Qed.
+
+Lemma prefix_to_set:
+  forall A (xs ys : list A),
+  prefix xs ys ->
+  to_set xs \c to_set ys.
+Proof using.
+  unfold to_set. introv (zs&?). subst.
+  rewrite set_incl_in_eq. intros. rewrite in_set_st_eq in *.
+  rewrite Mem_app_or_eq. tauto.
 Qed.
 
 (* ---------------------------------------------------------------------- *)
