@@ -297,6 +297,14 @@ Proof using.
       rewrite <- QE. rewrite* <- QF.
 Qed.
 
+Lemma list_repr_no_duplicates:
+  forall (E : set A) xs,
+  list_repr E xs ->
+  No_duplicates xs.
+Proof using.
+  unfold list_repr. tauto.
+Qed.
+
 (* see also [list_repr_nil] further on *)
 
 (* ---------------------------------------------------------------------- *)
