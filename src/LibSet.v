@@ -297,6 +297,7 @@ Proof using.
       rewrite <- QE. rewrite* <- QF.
 Qed.
 
+(* see also [list_repr_nil] further on *)
 
 (* ---------------------------------------------------------------------- *)
 (** to_list *)
@@ -475,6 +476,12 @@ Qed.
    finite (E \- F) -> finite F -> finite E
 *)
 
+Lemma list_repr_nil:
+  list_repr \{} (@nil A).
+Proof using.
+  rewrite <- to_list_empty.
+  eapply to_list_spec; eauto using finite_empty.
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** card *)
