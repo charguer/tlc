@@ -3530,14 +3530,26 @@ Ltac unpack_core :=
       destruct H as [name ?]
   end.
 
-Ltac unpack_from H :=
-  first [ progress (unpack_core)
-        | destruct H; unpack_core ].
+Ltac unpack_hypothesis H :=
+  try match type of H with
+  | _ /\ _ =>
+      let h1 := fresh in
+      let h2 := fresh in
+      destruct H as [ h1 h2 ];
+      unpack_hypothesis h1;
+      unpack_hypothesis h2
+  | exists (varname: _), _ =>
+      (* kludge to preserve the name of the quantified variable *)
+      let name := fresh varname in
+      let body := fresh in
+      destruct H as [name body];
+      unpack_hypothesis body
+  end.
 
 Tactic Notation "unpack" :=
   unpack_core.
 Tactic Notation "unpack" constr(H) :=
-  unpack_from H.
+  unpack_hypothesis H.
 
 
 (* ********************************************************************** *)
