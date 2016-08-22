@@ -3524,7 +3524,10 @@ Tactic Notation "exists_all" := exists___.
 Ltac unpack_core :=
   repeat match goal with
   | H: _ /\ _ |- _ => destruct H
-  | H: exists a, _ |- _ => destruct H
+  | H: exists (varname: _), _ |- _ =>
+      (* kludge to preserve the name of the quantified variable *)
+      let name := fresh varname in
+      destruct H as [name ?]
   end.
 
 Ltac unpack_from H :=
@@ -5176,6 +5179,3 @@ Ltac autorewrite_in_star_patch cont :=
   generalize_all_prop;
   cont tt;
   intro_until_mark.
-
-
-

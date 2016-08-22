@@ -2271,7 +2271,7 @@ Proof using.
   inverts H. left~.
    forwards* M: IHl1. destruct M.
     left~. unpack. rew_length.
-    right*. exists x0. split~. math.
+    right*. exists m. split~. math.
 Qed.
 
 Lemma Nth_nil_inv : forall n x,
