@@ -4,7 +4,7 @@
 # We need bash. We use the pipefail option to control the exit code of a
 # pipeline.
 
-SHELL := /bin/bash
+SHELL := /usr/bin/env bash
 
 ############################################################################
 # Configuration
