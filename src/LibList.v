@@ -1049,6 +1049,15 @@ Proof using.
   simpl. rewrite length_cons. math.
 Qed.
 
+Lemma cons_make: forall n A (x : A),
+  0 < n ->
+  x :: make (n - 1) x = make n x.
+Proof.
+  induction n; intros; simpl.
+  { math. }
+  { rewrite <- minus_n_O. eauto. }
+Qed.
+
 (* ---------------------------------------------------------------------- *)
 (** * Fold *)
 

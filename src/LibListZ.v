@@ -115,7 +115,7 @@ Variable A : Type.
 Implicit Types l : list A.
 Ltac auto_tilde ::= eauto with maths.
 
-Lemma length_nonneg : forall A (L: list A), 0 <= length L.
+Lemma length_nonneg : forall (l: list A), 0 <= length l.
 Proof using. intros. unfold length. math. Qed.
 Lemma length_nil :
   length (@nil A) = 0.
@@ -123,6 +123,8 @@ Proof using. auto. Qed.
 Lemma length_cons : forall x l,
   length (x::l) = 1 + length l.
 Proof using. intros. unfold length. rew_length~. Qed.
+Lemma length_singleton: forall (x : A), length (x :: nil) = 1.
+Proof using. reflexivity. Qed.
 Lemma length_app : forall l1 l2,
   length (l1 ++ l2) = length l1 + length l2.
 Proof using. intros. unfold length. rew_length~. Qed.
@@ -175,6 +177,21 @@ Proof using.
   introv N. unfold make. case_if. math.
   unfold length. rewrite LibList.length_make.
   rewrite~ abs_pos.
+Qed.
+
+Lemma cons_make: forall n A (x : A), 0 < n -> x :: make (n - 1) x = make n x.
+Proof.
+  intros.
+  unfold make. do 2 (case_if; [ math | ]).
+  (* This is really painful. *)
+  rewrite abs_minus by math.
+  change (abs 1) with 1%nat.
+  assert (0 < abs n)%nat.
+  { change 0%nat with (abs 0%Z).
+    eapply Zabs.Zabs_nat_lt.
+    math. }
+  eapply LibList.cons_make.
+  math.
 Qed.
 
 End MakeProperties.
