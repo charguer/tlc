@@ -351,6 +351,18 @@ Proof.
   { eapply Zabs2Nat.inj_add; math. }
 Qed.
 
+Lemma update_app_right_here:
+  forall A i (xs ys : list A) x y,
+  i = length xs ->
+  (xs ++ y :: ys)[i := x] = xs & x ++ ys.
+Proof.
+  intros.
+  unfold LibBag.update, update_inst, update_impl.
+  unfold update. case_if; [ math | ].
+  eapply LibList.update_app_right_here.
+  eauto using abs_length.
+Qed.
+
 End UpdateProperties.
 
 
