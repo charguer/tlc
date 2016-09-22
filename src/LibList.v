@@ -1029,6 +1029,33 @@ Proof using.
     simpl. do 2 rewrite nth_succ. apply~ IHj. rewrite length_cons in B. math.
 Qed.
 
+Lemma update_app_right:
+  forall A ys j xs i ij (v : A),
+  i = length xs ->
+  ij = i + j ->
+  update ij v (xs ++ ys) = xs ++ update j v ys.
+Proof.
+  induction xs as [| x xs ]; intros.
+  { repeat rewrite app_nil_l.
+    rewrite length_nil in *. replace ij with j by math.
+    reflexivity. }
+  { rewrite length_cons in *.
+    repeat rewrite app_cons.
+    replace ij with (1 + (length xs + j)) by math. simpl.
+    erewrite (IHxs (i - 1)) by math.
+    reflexivity. }
+Qed.
+
+Lemma update_app_right_here:
+  forall A i (xs ys : list A) x y,
+  i = length xs ->
+  update i x (xs ++ y :: ys) = xs & x ++ ys.
+Proof.
+  intros.
+  rewrite app_assoc.
+  erewrite update_app_right with (j := 0) by eauto.
+  reflexivity. (* !? *)
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** * Make *)
