@@ -116,7 +116,7 @@ Implicit Types l : list A.
 Ltac auto_tilde ::= eauto with maths.
 
 Lemma length_nonneg : forall (l: list A), 0 <= length l.
-Proof using. intros. unfold length. math. Qed.
+Proof using. intros. math. Qed.
 Lemma length_nil :
   length (@nil A) = 0.
 Proof using. auto. Qed.
@@ -146,6 +146,15 @@ Proof using.
   intros. destruct l; eauto.
   simpl. unfold length in *. rew_length in *.
   eapply length_zero_inv. math.
+Qed.
+Lemma abs_length:
+  forall i l,
+  i = length l ->
+  abs i = LibList.length l.
+Proof.
+  unfold length. intros. subst.
+  generalize (LibList.length l). clear A l. (* for clarity *)
+  rew_maths. eapply Zabs2Nat.id.
 Qed.
 
 End LengthProperties.
@@ -329,6 +338,21 @@ Proof using.
   intros Hk.
   repeat rewrite read_update_case by eauto using index_update.
   repeat case_if; reflexivity.
+Qed.
+
+Lemma update_app_right:
+  forall A ys j xs i ij (v : A),
+  i = length xs ->
+  0 <= j ->
+  ij = i + j ->
+  (xs ++ ys)[ij:=v] = xs ++ ys[j:=v].
+Proof.
+  intros. subst ij.
+  unfold LibBag.update, update_inst, update_impl.
+  unfold update. do 2 (case_if; [ math | ]).
+  eapply LibList.update_app_right with (i := abs i).
+  { eauto using abs_length. }
+  { eapply Zabs2Nat.inj_add; math. }
 Qed.
 
 End UpdateProperties.
