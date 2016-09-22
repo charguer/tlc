@@ -53,18 +53,14 @@ Proof using. auto. Qed.
 
 Hint Rewrite LibListZ_length_def : rew_maths.
 
-(* DEMO
+(* DEMO: *)
 
-  Lemma test1 : forall (L:list Z),
-    length L >= 0.
-  Proof. intros. math. Qed.
+Goal forall A (l : list A), 0 <= length l.
+Proof. intros. math. Qed.
 
-  Lemma test2 : forall (L:list Z) (s n:int),
-    s <= n ->
-    s = length L ->
-    n >= 0.
-  Proof. intros. math. Qed.
-*)
+Goal forall (l : list Z) (s n : int),
+     s <= n -> s = length l -> n >= 0.
+Proof. intros. math. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
