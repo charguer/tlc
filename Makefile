@@ -1,4 +1,4 @@
-.PHONY: all install
+.PHONY: all install uninstall
 
-all install:
+all install uninstall:
 	@ $(MAKE) -C src $@
