@@ -1,19 +1,21 @@
 ############################################################################
-# Compilation
+# Compilation.
 
-PWD := $(shell pwd)
-COQINCLUDE := -R $(PWD) TLC
-SERIOUS := 1 # request .vo files
-include Makefile.coq
+export COQINCLUDE := -R $(shell pwd) TLC
+export SERIOUS    := 1 # request .vo files
+
+.PHONY: all clean
+
+all clean:
+	$(MAKE) -f Makefile.coq $@
 
 ############################################################################
-# Installation
-# "make install" should be run with appropriate permissions.
+# Installation.
+
+CONTRIB := $(shell $(COQBIN)coqc -where)/user-contrib
+TARGET  := $(CONTRIB)/TLC
 
 .PHONY: install uninstall
-
-CONTRIB := $(shell $(COQC) -where)/user-contrib
-TARGET  := $(CONTRIB)/TLC
 
 install:
 	rm -rf $(TARGET)
