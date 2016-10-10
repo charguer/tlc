@@ -13,3 +13,4 @@ Compilation
 To compile everything:
 
     make
+    make install
