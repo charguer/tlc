@@ -12,21 +12,22 @@
 
 PWD := $(shell pwd)
 COQINCLUDE := -R $(PWD) TLC
+SERIOUS := 1 # request .vo files
 include Makefile.coq
 
 ############################################################################
 # Installation
 # "make install" should be run with appropriate permissions.
 
-# As of now, it creates a symbolic link from Coq's user-contrib directory to
-# this directory (src). This should be convenient for TLC developers, who have
-# a working copy of the TLC git repository at hand. For end users, we might
-# wish to copy this directory instead of creating a symbolic link to it.
+.PHONY: install uninstall
 
-.PHONY: install
+CONTRIB := $(shell $(COQC) -where)/user-contrib
+TARGET  := $(CONTRIB)/TLC
 
 install:
-	mkdir -p `$(COQC) -where`/user-contrib
-	ln -s `pwd` `$(COQC) -where`/user-contrib/TLC
+	rm -rf $(TARGET)
+	mkdir -p $(TARGET)
+	install -m 644 *.v *.vo *.glob Makefile.coq $(TARGET)
 
-# LATER: install could force creation of *.vo files, for end user
+uninstall:
+	rm -rf $(TARGET)
