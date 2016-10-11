@@ -15,8 +15,9 @@ SHELL := /usr/bin/env bash
 # COQINCLUDE (default: empty)
 # V          (default: *.v)
 # V_AUX      (default: undefined/empty)
-# SERIOUS    (default: undefined)
-#            (if defined, coqc is used to produce .vo files in the old way)
+# SERIOUS    (default: 1)
+#            (if 0, we produce .vio files)
+#            (if 1, we produce .vo files in the old way)
 # VERBOSE    (default: undefined)
 #            (if defined, commands are displayed)
 
@@ -48,6 +49,7 @@ VIO := $(patsubst %.v,%.vio,$(V))
 VQ  := $(patsubst %.v,%.vq,$(V))
 VO  := $(patsubst %.v,%.vo,$(V))
 
+SERIOUS := 1
 
 ############################################################################
 # Binaries
@@ -63,7 +65,7 @@ COQCHK := $(COQBIN)coqchk
 .PHONY: all proof depend quick proof_vo proof_vq
 
 all: proof
-ifndef SERIOUS
+ifeq ($(SERIOUS),0)
 proof: proof_vq
 else
 proof: proof_vo
@@ -111,7 +113,7 @@ endif
 %.v.d: %.v
 	$(COQDEP) $(COQINCLUDE) $< > $@
 
-ifndef SERIOUS
+ifeq ($(SERIOUS),0)
 
 %.vo: %.vio
 	@echo "Compiling `basename $*`..."
@@ -140,7 +142,7 @@ ifndef SERIOUS
 
 endif
 
-ifdef SERIOUS
+ifeq ($(SERIOUS),1)
 
 %.vo: %.v
 	@echo "Compiling `basename $*`..."
