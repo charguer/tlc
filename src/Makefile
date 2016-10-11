@@ -43,7 +43,7 @@ ifndef ARTHUR
 install:
 	rm -rf $(TARGET)
 	mkdir -p $(TARGET)
-	install -m 644 *.v *.vo *.glob Makefile.coq $(TARGET)
+	install -m 644 *.v *.vo *.glob Makefile Makefile.coq $(TARGET)
 ifeq ($(SERIOUS),0)
 	install -m 644 *.vio $(TARGET)
 endif
