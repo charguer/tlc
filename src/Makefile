@@ -7,7 +7,6 @@
 # A .vio file can be 80x larger than the corresponding .vo file.
 
 export COQINCLUDE := -R $(shell pwd) TLC
-export SERIOUS    := 1 # request .vo files
 
 .PHONY: all clean
 
