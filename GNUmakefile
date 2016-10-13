@@ -55,10 +55,10 @@ package:
 
 # Our ssh upload command.
 RSYNC   := scp -p -B -C
-# Our Web site: ssh upload target.
-TARGET  := yquem.inria.fr:public_html/tlc/
-# Our Web site: public URL.
-WWW     := http://gallium.inria.fr/~fpottier/tlc/
+# Our Web site: ssh upload target. (With trailing slash.)
+TARGET  := scm.gforge.inria.fr:/home/groups/tlc/htdocs/releases/
+# Our Web site: public URL. (With trailing slash.)
+WWW     := http://tlc.gforge.inria.fr/releases/
 
 # The name of our opam package.
 NAME    := coq-tlc
