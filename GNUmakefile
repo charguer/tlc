@@ -7,7 +7,7 @@
 .PHONY: all clean install uninstall
 
 all clean install uninstall:
-	@ $(MAKE) -f Makefile $@
+	@ $(MAKE) -C src $@
 
 # -------------------------------------------------------------------------
 
