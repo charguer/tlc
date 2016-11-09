@@ -296,6 +296,9 @@ Ltac math_5 := omega.
 Ltac math_debug := math_0; math_1; math_2; math_3; math_4.
 Ltac math_base := math_debug; math_5.
 
+Ltac math_lia := math_debug; lia.
+Ltac math_nia := math_debug; nia.
+
 Tactic Notation "math" := math_base.
 
 Tactic Notation "math" simple_intropattern(I) ":" constr(E) :=
@@ -333,18 +336,18 @@ Lemma Z_div_mod' : forall a b : int,
 Proof using. applys Z_div_mod. Qed.
 
 Ltac Zdiv_eliminate_step tt :=
-  match goal with |- context[ Z.div_eucl ?X ?Y ] =>   
+  match goal with |- context[ Z.div_eucl ?X ?Y ] =>
      generalize (@Z_div_mod' X Y);
      destruct (Z.div_eucl X Y)
   end.
 
 Ltac math_dia_generalize_all_prop tt :=
-  repeat match goal with H: ?T |- _ => 
+  repeat match goal with H: ?T |- _ =>
     match type of T with Prop => gen H end end.
 
 Ltac Zdiv_eliminate tt :=
   math_dia_generalize_all_prop tt;
-  unfold Z.div; 
+  unfold Z.div;
   repeat (Zdiv_eliminate_step tt).
 
 (* todo: deal differently with iterated divisions,
@@ -352,16 +355,16 @@ Ltac Zdiv_eliminate tt :=
 
 Ltac Zdiv_instantiate_hyp_steps tt :=
   match goal with H: Zdiv_hyp ?P -> _ |- _ =>
-    specializes H __; 
+    specializes H __;
     [ idtac
-    | try Zdiv_instantiate_hyp_steps tt ]  
+    | try Zdiv_instantiate_hyp_steps tt ]
   end.
 
 Ltac Zdiv_instantiate_hyp tt :=
   Zdiv_instantiate_hyp_steps tt.
 
 Ltac math_dia_setup :=
-  math_0; math_1; math_2; math_3; Zdiv_eliminate tt; 
+  math_0; math_1; math_2; math_3; Zdiv_eliminate tt;
   intros; try Zdiv_instantiate_hyp_steps tt; unfolds Zdiv_hyp.
 
 Tactic Notation "math_dia" :=
@@ -369,46 +372,46 @@ Tactic Notation "math_dia" :=
 
 (*--in progress
 
-Lemma math_nia_demo_1 : forall (a b N : int), 
-  N > 0 -> 
+Lemma math_nia_demo_1 : forall (a b N : int),
+  N > 0 ->
   a * N <= b * N ->
   a <= b.
 Proof using. math_nia. Qed.
 
-Lemma math_dia_demo_1 : forall (a b t : int), 
+Lemma math_dia_demo_1 : forall (a b t : int),
   t > 0 ->
   a <= b ->
   a / t <= b / t.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_2 : forall (a t : int), 
-  t > 1 -> 
+Lemma math_dia_demo_2 : forall (a t : int),
+  t > 1 ->
   a > 0 ->
   a / t <= a.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_3 : forall (a b t : int), 
+Lemma math_dia_demo_3 : forall (a b t : int),
   t > 0 ->
   0 <= a <= b ->
   a / t <= b / t.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_4 : forall (a b N : int), 
-  N > 0 -> 
+Lemma math_dia_demo_4 : forall (a b N : int),
+  N > 0 ->
   a > 0 ->
   b > 0 ->
   a * N <= b * N ->
   a <= b.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_5 : forall (a b N t : int), 
-  N > 0 -> 
-  t > 1 -> 
+Lemma math_dia_demo_5 : forall (a b N t : int),
+  N > 0 ->
+  t > 1 ->
   a > 0 ->
   b > 0 ->
   a * N <= b * N ->
   a / t <= b.
-Proof using. 
+Proof using.
   intros.
   (* math_dia_setup. math_dia. *)
   try math_dia.
@@ -417,12 +420,12 @@ Proof using.
   math_dia.
 Qed.
 
-Lemma math_dia_demo_span_1 : forall (a b t n N : int), 
+Lemma math_dia_demo_span_1 : forall (a b t n N : int),
   N > 0 ->
   n > 0 ->
-  t > 0 -> 
+  t > 0 ->
   a >= 0 ->
-  b >= 0 -> 
+  b >= 0 ->
   a <= b * (1 + N/t) + n * t/N ->
   (   a <= b * (1 + N/t) + (n+1) * t/N
   /\ (a+1) <= (b+1) * (1 + N/t) + (n+1) * t/N
@@ -499,41 +502,61 @@ Tactic Notation "math_rewrite" "*" constr(E) "in" "*" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Hint externs for calling math in the hint base [maths] *)
 
-Hint Extern 3 (_ = _ :> nat) => math : maths.
-Hint Extern 3 (_ = _ :> int) => math : maths.
-Hint Extern 3 (_ <> _ :> nat) => math : maths.
-Hint Extern 3 (_ <> _ :> int) => math : maths.
-Hint Extern 3 (istrue (isTrue (_ = _ :> nat))) => math : maths.
-Hint Extern 3 (istrue (isTrue (_ = _ :> int))) => math : maths.
-Hint Extern 3 (istrue (isTrue (_ <> _ :> nat))) => math : maths.
-Hint Extern 3 (istrue (isTrue (_ <> _ :> int))) => math : maths.
-Hint Extern 3 ((_ <= _)%nat) => math : maths.
-Hint Extern 3 ((_ >= _)%nat) => math : maths.
-Hint Extern 3 ((_ < _)%nat) => math : maths.
-Hint Extern 3 ((_ > _)%nat) => math : maths.
-Hint Extern 3 ((_ <= _)%Z) => math : maths.
-Hint Extern 3 ((_ >= _)%Z) => math : maths.
-Hint Extern 3 ((_ < _)%Z) => math : maths.
-Hint Extern 3 ((_ > _)%Z) => math : maths.
-Hint Extern 3 (@le nat _ _ _) => math : maths.
-Hint Extern 3 (@lt nat _ _ _) => math : maths.
-Hint Extern 3 (@ge nat _ _ _) => math : maths.
-Hint Extern 3 (@gt nat _ _ _) => math : maths.
-Hint Extern 3 (@le int _ _ _) => math : maths.
-Hint Extern 3 (@lt int _ _ _) => math : maths.
-Hint Extern 3 (@ge int _ _ _) => math : maths.
-Hint Extern 3 (@gt int _ _ _) => math : maths.
-Hint Extern 3 (~ @le int _ _ _) => unfold not; math : maths.
-Hint Extern 3 (~ @lt int _ _ _) => unfold not; math : maths.
-Hint Extern 3 (~ @ge int _ _ _) => unfold not; math : maths.
-Hint Extern 3 (~ @gt int _ _ _) => unfold not; math : maths.
-Hint Extern 3 (~ @eq int _ _) => unfold not; math : maths.
-Hint Extern 3 (@le int _ _ _ -> False) => math : maths.
-Hint Extern 3 (@lt int _ _ _ -> False) => math : maths.
-Hint Extern 3 (@ge int _ _ _ -> False) => math : maths.
-Hint Extern 3 (@gt int _ _ _ -> False) => math : maths.
+Ltac math_hint := math.
 
+Hint Extern 3 (_ = _ :> nat) => math_hint : maths.
+Hint Extern 3 (_ = _ :> int) => math_hint : maths.
+Hint Extern 3 (_ <> _ :> nat) => math_hint : maths.
+Hint Extern 3 (_ <> _ :> int) => math_hint : maths.
+Hint Extern 3 (istrue (isTrue (_ = _ :> nat))) => math_hint : maths.
+Hint Extern 3 (istrue (isTrue (_ = _ :> int))) => math_hint : maths.
+Hint Extern 3 (istrue (isTrue (_ <> _ :> nat))) => math_hint : maths.
+Hint Extern 3 (istrue (isTrue (_ <> _ :> int))) => math_hint : maths.
+Hint Extern 3 ((_ <= _)%nat) => math_hint : maths.
+Hint Extern 3 ((_ >= _)%nat) => math_hint : maths.
+Hint Extern 3 ((_ < _)%nat) => math_hint : maths.
+Hint Extern 3 ((_ > _)%nat) => math_hint : maths.
+Hint Extern 3 ((_ <= _)%Z) => math_hint : maths.
+Hint Extern 3 ((_ >= _)%Z) => math_hint : maths.
+Hint Extern 3 ((_ < _)%Z) => math_hint : maths.
+Hint Extern 3 ((_ > _)%Z) => math_hint : maths.
+Hint Extern 3 (@le nat _ _ _) => math_hint : maths.
+Hint Extern 3 (@lt nat _ _ _) => math_hint : maths.
+Hint Extern 3 (@ge nat _ _ _) => math_hint : maths.
+Hint Extern 3 (@gt nat _ _ _) => math_hint : maths.
+Hint Extern 3 (@le int _ _ _) => math_hint : maths.
+Hint Extern 3 (@lt int _ _ _) => math_hint : maths.
+Hint Extern 3 (@ge int _ _ _) => math_hint : maths.
+Hint Extern 3 (@gt int _ _ _) => math_hint : maths.
+Hint Extern 3 (~ @le int _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @lt int _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @ge int _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @gt int _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @eq int _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (@le int _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@lt int _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@ge int _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@gt int _ _ _ -> False) => math_hint : maths.
 
+(* ---------------------------------------------------------------------- *)
+(** ** Extend [zify] to handle [Z.to_nat]. *)
+
+Lemma Z_of_nat_zify : forall x, Z.of_nat (Z.to_nat x) = Z.max 0 x.
+Proof.
+  intros x. destruct x.
+  - rewrite Z2Nat.id; reflexivity.
+  - rewrite Z2Nat.inj_pos. math_lia.
+  - rewrite Z2Nat.inj_neg. math_lia.
+Qed.
+
+Ltac zify_nat_op_extended :=
+  match goal with
+  | H : context [ Z.of_nat (Z.to_nat ?a) ] |- _ => rewrite (Z_of_nat_zify a) in H
+  | |- context [ Z.of_nat (Z.to_nat ?a) ] => rewrite (Z_of_nat_zify a)
+  | _ => zify_nat_op
+  end.
+
+Ltac zify_nat ::= repeat zify_nat_rel; repeat zify_nat_op_extended; unfold Z_of_nat' in *.
 
 (* ********************************************************************** *)
 (** * Simplification lemmas *)
@@ -820,13 +843,24 @@ Proof using. intros. unfolds min. case_if; math. Qed.
 
 End Min.
 
+(************************************************************)
+(* * Pow function *)
+
 Require Import Zpow_facts.
+
+Lemma power_pos:
+  forall k n,
+  0 < n ->
+  0 <= k ->
+  1 <= n^k.
+Proof using.
+  intros. math_rewrite (1 = n^0). reflexivity.
+  apply Zpower_le_monotone; math.
+Qed.
 
 Lemma pow2_pos : forall n, n >= 0 -> 2^n >= 1.
 Proof using.
-  intros. math_rewrite (1 = 2^0). reflexivity.
-  rewrite ge_is_flip_le. unfolds.
-  apply Zpower_le_monotone; math.
+  intros. forwards: power_pos n 2; math.
 Qed.
 
 Lemma pow2_succ : forall n, n >= 0 -> 2^(n+1) = 2*2^n.
@@ -834,6 +868,89 @@ Proof using.
   intros. math_rewrite (n+1 = Zsucc n).
   rewrite Zpower_Zsucc; math.
 Qed.
+
+(* A tactic that helps dealing with goals containing "b^m" for multiple m *)
+Require Import List.
+
+Ltac subst_eq_boxer_list l rewrite_tac :=
+  match l with
+  | nil => idtac
+  | (@boxer _ ?p) :: ?Hs =>
+    match p with
+      (?tm, ?Htm) =>
+      rewrite_tac Htm; clear Htm; clear tm;
+      subst_eq_boxer_list Hs rewrite_tac
+    end
+  end.
+
+(* Develop occurences of (b ^ m) in H into (b ^ (m - min_e) * b ^ min_e).
+   (and try to simplify/compute b^(m - min_e)).
+ *)
+Ltac rew_pow_develop b m min_e H :=
+  let m_eq_plusminus := fresh in
+  assert (m = min_e + (m - min_e)) as m_eq_plusminus
+      by (rewrite Zplus_minus; reflexivity);
+  rewrite m_eq_plusminus in H; clear m_eq_plusminus;
+  rewrite (Z.pow_add_r b min_e (m - min_e)) in H; [
+    rewrite Z.mul_comm in H;
+    let tm' := fresh "tm'" in
+    let H' := fresh "H'" in
+    remember (b ^ (m - min_e)) as tm' eqn:H' in H;
+    let e := fresh "e" in
+    evar (e: int);
+    let Heqe := fresh in
+    assert (e = m - min_e) as Heqe
+        by (ring_simplify; subst e; reflexivity);
+    rewrite <-Heqe in H'; clear Heqe; unfold e in H'; ring_simplify in H';
+    rewrite H' in H; clear H'; clear tm'; clear e;
+    try rewrite Z.mul_1_l in H
+  | ring_simplify; auto with zarith ..].
+
+Ltac rew_pow_aux_goal b min_e normalized_acc :=
+  match goal with
+  | |- context [ b ^ ?m ] =>
+    let tm := fresh "tm" in
+    let Heqtm := fresh "Heqtm" in
+    remember (b ^ m) as tm eqn:Heqtm in |- *;
+    rew_pow_develop b m min_e Heqtm; [
+      rew_pow_aux_goal b min_e ((boxer (tm, Heqtm)) :: normalized_acc)
+    | ..]
+  | _ => subst_eq_boxer_list normalized_acc ltac:(fun E => rewrite E)
+  end.
+
+Ltac rew_pow_aux_in b min_e H normalized_acc :=
+  match type of H with
+  | context [ b ^ ?m ] =>
+    let tm := fresh "tm" in
+    let Heqtm := fresh "Heqtm" in
+    remember (b ^ m) as tm eqn:Heqtm in H;
+    rew_pow_develop b m min_e Heqtm; [
+      rew_pow_aux_in b min_e H ((boxer (tm, Heqtm)) :: normalized_acc)
+    | ..]
+  | _ => subst_eq_boxer_list normalized_acc ltac:(fun E => rewrite E in H)
+  end.
+
+Tactic Notation "rew_pow" constr(b) constr(min_e) :=
+  rew_pow_aux_goal b min_e (@nil Boxer).
+Tactic Notation "rew_pow" "~" constr(b) constr(min_e) :=
+  rew_pow_aux_goal b min_e (@nil Boxer); auto_tilde.
+Tactic Notation "rew_pow" "*" constr(b) constr(min_e) :=
+  rew_pow_aux_goal b min_e (@nil Boxer); auto_star.
+Tactic Notation "rew_pow" constr(b) constr(min_e) "in" hyp(H) :=
+  rew_pow_aux_in b min_e H (@nil Boxer).
+Tactic Notation "rew_pow" "~" constr(b) constr(min_e) "in" hyp(H) :=
+  rew_pow_aux_in b min_e H (@nil Boxer); auto_tilde.
+Tactic Notation "rew_pow" "*" constr(b) constr(min_e) "in" hyp(H) :=
+  rew_pow_aux_in b min_e H (@nil Boxer); auto_star.
+
+(* Test *)
+Axiom P : int -> Prop.
+(* Goal forall n, P (1 + 2 ^ (n + 3) + 2 ^ n + 2 ^ (n+1)). *)
+(* Proof. *)
+(*   intros. *)
+(*   skip_asserts: (3 = 2 ^ (n+3)). rew_pow 2 n in H. *)
+(*   rew_pow 2 n. *)
+(* Admitted. *)
 
 (* ********************************************************************** *)
 (** * Advanced induction *)

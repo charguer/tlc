@@ -5,6 +5,7 @@
 
 Set Implicit Arguments.
 Require Export Arith Div2 Omega.
+Require Import Psatz.
 Require Import LibTactics LibReflect LibBool LibOperation LibRelation LibOrder.
 Require Export LibOrder.
 Global Close Scope positive_scope.
@@ -83,6 +84,30 @@ Ltac nat_math_setup :=
 Ltac nat_math :=
   nat_math_setup; omega.
 
+Ltac nat_math_lia :=
+  nat_math_setup; lia.
+
+Ltac nat_math_nia :=
+  nat_math_setup; nia.
+
+(* ---------------------------------------------------------------------- *)
+(** ** Hint externs for calling nat_math{_lia,_nia} in the hint base
+       [nat_maths]. *)
+
+Ltac nat_math_hint := nat_math.
+
+Hint Extern 3 (_ = _ :> nat) => nat_math_hint : nat_maths.
+Hint Extern 3 (_ <> _ :> nat) => nat_math_hint : nat_maths.
+Hint Extern 3 (istrue (isTrue (_ = _ :> nat))) => nat_math_hint : nat_maths.
+Hint Extern 3 (istrue (isTrue (_ <> _ :> nat))) => nat_math_hint : nat_maths.
+Hint Extern 3 (_ <= _) => nat_math_hint : nat_maths.
+Hint Extern 3 (_ >= _) => nat_math_hint : nat_maths.
+Hint Extern 3 (_ < _) => nat_math_hint : nat_maths.
+Hint Extern 3 (_ > _) => nat_math_hint : nat_maths.
+Hint Extern 3 (@le nat _ _ _) => nat_math_hint : nat_maths.
+Hint Extern 3 (@lt nat _ _ _) => nat_math_hint : nat_maths.
+Hint Extern 3 (@ge nat _ _ _) => nat_math_hint : nat_maths.
+Hint Extern 3 (@gt nat _ _ _) => nat_math_hint : nat_maths.
 
 (* ********************************************************************** *)
 (** * Operations *)
@@ -226,6 +251,16 @@ Tactic Notation "rew_nat" "*" "in" hyp(H) :=
   rew_nat in H; auto_star.
 
 
+(* ---------------------------------------------------------------------- *)
+(* Total order instance *)
+
+Instance nat_le_total_order : Le_total_order (A:=nat).
+Proof using.
+  constructor. constructor. constructor; unfolds.
+  nat_math. nat_math. unfolds. nat_math. unfolds.
+  intros. tests: (x <= y). left~. right. nat_math.
+Qed.
+
 (* ********************************************************************** *)
 (** * Other lemmas *)
 
@@ -248,5 +283,3 @@ Proof using.
   destruct~ n. simpl. omega.
   simpl. rew_nat. apply~ H. nat_math. nat_math.
 Qed.
-
-

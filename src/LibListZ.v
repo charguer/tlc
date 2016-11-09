@@ -53,18 +53,14 @@ Proof using. auto. Qed.
 
 Hint Rewrite LibListZ_length_def : rew_maths.
 
-(* DEMO
+(* DEMO: *)
 
-  Lemma test1 : forall (L:list Z),
-    length L >= 0.
-  Proof. intros. math. Qed.
+Goal forall A (l : list A), 0 <= length l.
+Proof. intros. math. Qed.
 
-  Lemma test2 : forall (L:list Z) (s n:int),
-    s <= n ->
-    s = length L ->
-    n >= 0.
-  Proof. intros. math. Qed.
-*)
+Goal forall (l : list Z) (s n : int),
+     s <= n -> s = length l -> n >= 0.
+Proof. intros. math. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -115,14 +111,16 @@ Variable A : Type.
 Implicit Types l : list A.
 Ltac auto_tilde ::= eauto with maths.
 
-Lemma length_nonneg : forall A (L: list A), 0 <= length L.
-Proof using. intros. unfold length. math. Qed.
+Lemma length_nonneg : forall (l: list A), 0 <= length l.
+Proof using. intros. math. Qed.
 Lemma length_nil :
   length (@nil A) = 0.
 Proof using. auto. Qed.
 Lemma length_cons : forall x l,
   length (x::l) = 1 + length l.
 Proof using. intros. unfold length. rew_length~. Qed.
+Lemma length_singleton: forall (x : A), length (x :: nil) = 1.
+Proof using. reflexivity. Qed.
 Lemma length_app : forall l1 l2,
   length (l1 ++ l2) = length l1 + length l2.
 Proof using. intros. unfold length. rew_length~. Qed.
@@ -144,6 +142,15 @@ Proof using.
   intros. destruct l; eauto.
   simpl. unfold length in *. rew_length in *.
   eapply length_zero_inv. math.
+Qed.
+Lemma abs_length:
+  forall i l,
+  i = length l ->
+  abs i = LibList.length l.
+Proof.
+  unfold length. intros. subst.
+  generalize (LibList.length l). clear A l. (* for clarity *)
+  rew_maths. eapply Zabs2Nat.id.
 Qed.
 
 End LengthProperties.
@@ -175,6 +182,21 @@ Proof using.
   introv N. unfold make. case_if. math.
   unfold length. rewrite LibList.length_make.
   rewrite~ abs_pos.
+Qed.
+
+Lemma cons_make: forall n A (x : A), 0 < n -> x :: make (n - 1) x = make n x.
+Proof.
+  intros.
+  unfold make. do 2 (case_if; [ math | ]).
+  (* This is really painful. *)
+  rewrite abs_minus by math.
+  change (abs 1) with 1%nat.
+  assert (0 < abs n)%nat.
+  { change 0%nat with (abs 0%Z).
+    eapply Zabs.Zabs_nat_lt.
+    math. }
+  eapply LibList.cons_make.
+  math.
 Qed.
 
 End MakeProperties.
@@ -314,6 +336,51 @@ Proof using.
   repeat case_if; reflexivity.
 Qed.
 
+Lemma update_app_right:
+  forall A ys j xs i ij (v : A),
+  i = length xs ->
+  0 <= j ->
+  ij = i + j ->
+  (xs ++ ys)[ij:=v] = xs ++ ys[j:=v].
+Proof.
+  intros. subst ij.
+  unfold LibBag.update, update_inst, update_impl.
+  unfold update. do 2 (case_if; [ math | ]).
+  eapply LibList.update_app_right with (i := abs i).
+  { eauto using abs_length. }
+  { eapply Zabs2Nat.inj_add; math. }
+Qed.
+
+Lemma update_app_right_here:
+  forall A i (xs ys : list A) x y,
+  i = length xs ->
+  (xs ++ y :: ys)[i := x] = xs & x ++ ys.
+Proof.
+  intros.
+  unfold LibBag.update, update_inst, update_impl.
+  unfold update. case_if; [ math | ].
+  eapply LibList.update_app_right_here.
+  eauto using abs_length.
+Qed.
+
+Lemma read_cons_case : forall `{IA:Inhab A} (l:list A) (i:int) (v:A),
+  (v::l)[i] = (If i = 0 then v else l[i-1]).
+Proof using.
+  introv. simpl. unfold read_impl, nth.
+  case_if.
+  - case_if. math. case_if~. math.
+  - case_if~. case_if. math. rewrite~ abs_spos. math.
+Qed.
+
+Lemma read_last_case : forall `{IA:Inhab A} (l:list A) (i:int) (v:A),
+  (l & v)[i] = (If i = LibList.length l then v else l[i]).
+Proof using.
+  introv. simpl. unfold read_impl, nth.
+  case_if.
+  - case_if~; math.
+  - admit. (* lemmas missing about "&" and LibList.nth *)
+Qed.
+
 End UpdateProperties.
 
 
@@ -350,7 +417,7 @@ Tactic Notation "rew_arr" "*" "in" "*" :=
 (** [rew_array] is a normalization tactic for array *)
 
 Hint Rewrite @read_make @length_make @length_update @read_update_eq
-  @read_update_case : rew_array.
+  @read_update_case @read_cons_case @read_last_case : rew_array.
 
 Tactic Notation "rew_array" :=
   autorewrite with rew_array.

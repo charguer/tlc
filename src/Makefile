@@ -1,32 +1,61 @@
-############################################################################
-# To specify the location of the Coq binaries, create a file called
-# settings.sh and define the variable COQBIN (with trailing slash),
-# e.g.
-#   COQBIN=/var/tmp/coq/bin/
-# If this file is absent, then COQBIN is empty and "coqc" is used.
+##############################################################################
+# Certain custom settings can be defined in settings.sh.
 
+# To specify the location of the Coq binaries, define COQBIN (with a
+# trailing slash), e.g. COQBIN=/var/tmp/coq/bin/.
+# If COQBIN is undefined, then "coqc" is used.
+
+# To request installation via a symbolic link, as opposed to
+# installation via a copy, define ARTHUR.
+
+# To request creation of .vio files, as opposed to creation of .vo
+# files, define SERIOUS=0.
+
+SERIOUS := 1
 -include settings.sh
 
 ############################################################################
-# Compilation
+# Compilation.
 
-PWD := $(shell pwd)
-COQINCLUDE := -R $(PWD) TLC
-include Makefile.coq
+# By default, we compile and install only .vo files. We could compile
+# and install both .vio and .vo files (by using the targets "quick"
+# and "proof_vo" in succession), but would it be a good idea? A .vio
+# file can be 80x larger than the corresponding .vo file.
+
+export COQINCLUDE := -R $(shell pwd) TLC
+export SERIOUS
+
+.PHONY: all clean
+
+all clean:
+	$(MAKE) -f Makefile.coq $@
 
 ############################################################################
-# Installation
-# "make install" should be run with appropriate permissions.
+# Installation.
 
-# As of now, it creates a symbolic link from Coq's user-contrib directory to
-# this directory (src). This should be convenient for TLC developers, who have
-# a working copy of the TLC git repository at hand. For end users, we might
-# wish to copy this directory instead of creating a symbolic link to it.
+CONTRIB := $(shell $(COQBIN)coqc -where)/user-contrib
+TARGET  := $(CONTRIB)/TLC
 
-.PHONY: install
+.PHONY: install uninstall
+
+ifndef ARTHUR
 
 install:
-	mkdir -p `$(COQC) -where`/user-contrib
-	ln -s `pwd` `$(COQC) -where`/user-contrib/TLC
+	rm -rf $(TARGET)
+	mkdir -p $(TARGET)
+	install -m 644 *.v *.vo *.glob Makefile Makefile.coq $(TARGET)
+ifeq ($(SERIOUS),0)
+	install -m 644 *.vio $(TARGET)
+endif
 
-# LATER: install could force creation of *.vo files, for end user
+else
+
+install:
+	rm -rf $(TARGET)
+	mkdir -p $(CONTRIB)
+	ln -s `pwd` $(TARGET)
+
+endif
+
+uninstall:
+	rm -rf $(TARGET)
