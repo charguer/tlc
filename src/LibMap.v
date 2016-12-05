@@ -329,7 +329,7 @@ Proof using. intros. rewrite~ indom_update. Qed.
 
 Hint Resolve indom_update_self. (* TODO: move *)
 
-(* read *)
+(* update *)
 
 Lemma update_read_if : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
   (m[i:=v])[j] = If i = j then v else m[j].
@@ -423,6 +423,35 @@ Proof using.
   destruct H1; destruct H2. congruence. (* todo: cleanup *)
 Qed.
 
+
+(* ---------------------------------------------------------------------- *)
+(* union *)
+
+Lemma union_read_l : forall A `{Inhab B} (m1 m2:map A B) (i:A),
+  i \indom m1 ->
+  dom m1 \# dom m2 ->
+  m1[i] = (m1 \u m2)[i].
+Proof.
+  introv M D. rewrite set_disjoint_eq in D.
+  simpl. unfold read_impl, union_impl. cases (m2 i).
+  { false D M. applys~ binds_dom. simpl. unfolds* binds_impl. }
+    (* LATER: simplify line above *)
+  { cases~ (m1 i). }
+Qed.
+
+Lemma union_read_r : forall A `{Inhab B} (m1 m2:map A B) (i:A),
+  i \indom m2 ->
+  dom m1 \# dom m2 ->
+  m2[i] = (m1 \u m2)[i].
+Proof.
+  introv M D. rewrite set_disjoint_eq in D.
+  simpl. unfold read_impl, union_impl. cases (m2 i).
+  { auto. } 
+  { cases (m1 i) as C.
+    { false D M. applys~ binds_dom. simpl. unfolds* binds_impl. }
+    (* LATER: simplify line above *)
+    { auto. } }
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 
