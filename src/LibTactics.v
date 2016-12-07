@@ -2649,7 +2649,7 @@ Tactic Notation "inverts" "keep" hyp(H) "as" simple_intropattern(I1)
     clears hypothesis [H]. *)
 
 Tactic Notation "inverts" hyp(H) :=
-  inverts keep H; clear H.
+  inverts keep H; try clear H.
 
 (** [inverts H as X1 .. XN] is the same as [inverts keep H as X1 .. XN]
     but it also clears the hypothesis [H]. *)
@@ -2795,7 +2795,9 @@ Tactic Notation "inject" hyp(H) "as" ident(X1) ident(X2) ident(X3)
     are similar to [inverts] and [injects] except that they perform
     substitution on all equalities from the context and not only
     the ones freshly generated. The counterpart is that they have
-    simpler implementations. *)
+    simpler implementations. 
+
+    DEPRECATED: these tactics should no longer be used. *)
 
 (** [inversions keep H] is the same as [inversions H] but it does
     not clear hypothesis [H]. *)
@@ -2811,7 +2813,7 @@ Tactic Notation "inversions" "keep" hyp(H) :=
     too slow. *)
 
 Tactic Notation "inversions" hyp(H) :=
-  inversion H; subst; clear H.
+  inversion H; subst; try clear H.
 
 (** [injections keep H] is the same as [injection H] followed
     by [intros] and [subst]. It is a rough implementation of

@@ -24,10 +24,11 @@ SERIOUS := 1
 
 export COQINCLUDE := -R $(shell pwd) TLC
 export SERIOUS
+export COQFLAGS
 
 .PHONY: all clean
 
-all clean:
+all clean _CoqProject:
 	$(MAKE) -f Makefile.coq $@
 
 ############################################################################

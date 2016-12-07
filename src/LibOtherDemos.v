@@ -6,13 +6,14 @@
 Set Implicit Arguments.
 Require Import LibTactics.
 
+Require LibLogic LibList LibRelation LibWf LibList LibLN.
 
 (* ********************************************************************** *)
 (** * How to do recursion/induction on terms with list of subterms *)
 
 Module SubtermIndDemos.
 
-Require Import LibLogic LibList.
+Import LibLogic LibList.
 
 (** Definition of trees with list of subtrees *)
 
@@ -160,7 +161,7 @@ Qed.
 
 (** Definition of the relation "immediate subtree of" *)
 
-Require Import LibRelation LibWf.
+Import LibRelation LibWf.
 
 Inductive subtree : binary tree :=
   | subtree_intro : forall t ts,
@@ -201,7 +202,7 @@ End SubtermIndDemos.
 (** * Tactics exported by LibVar *)
 
 Module LibVarDemos.
-Require Import LibList LibLN.
+Import LibList LibLN.
 Section LibVarDemo.
 Implicit Types x y : var.
 

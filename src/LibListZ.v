@@ -11,7 +11,7 @@ Require Export LibList LibNat.
 Require Import LibInt.
 Require Export LibBag.
 
-Open Local Scope comp_scope.
+Local Open Scope comp_scope.
 
 
 (* ********************************************************************** *)

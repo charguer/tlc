@@ -18,7 +18,7 @@ Proof using. intros. apply (prove_Inhab tt). Qed.
 
 Global Instance unit_comparable : Comparable unit.
 Proof using.
-  apply make_comparable. intros [x]. destruct x.
+  apply make_comparable. intros [] [].
   rewrite* prop_eq_True_back. typeclass.
 Qed.
 

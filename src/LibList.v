@@ -874,8 +874,9 @@ Qed.
 Implicit Arguments length_zero_inv [A l].
 Implicit Arguments take_struct [A].
 
-Module TakeInt.
-Require Import LibInt.
+
+Module TakeInt. (* TODO: move to LibListZ *)
+Import LibInt.
 Section Facts.
 Variables (A:Type).
 Implicit Types x : A.
@@ -901,6 +902,7 @@ Qed.
 End Facts.
 End TakeInt.
 Export TakeInt.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** TakeDropLast *)

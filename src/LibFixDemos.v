@@ -744,7 +744,7 @@ Proof using.
    auto. inversions~ H.
   hnf in H. gen t1 t2. cofix IH.
    intros t1 t2. destruct t1; destruct t2;
-    introv H; lets H1: (H 1); simpl in H1; inversions H1; constructor.
+    introv H; lets H1: (H 1); simpl in H1; inverts H1; constructor.
       apply IH. intros i. lets_simpl HSi: (H (S i)). autos*.
       apply IH. intros i. lets_simpl HSi: (H (S i)). autos*.
 Qed.

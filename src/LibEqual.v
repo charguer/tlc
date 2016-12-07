@@ -189,7 +189,7 @@ Proof using. intros. apply~ prop_ext_4. Qed.
 (* TODO: simplify and beautify the proof *)
 
 Module PIfromExt.
-  Notation Local inhabited A := A (only parsing).
+  Local Notation inhabited A := A (only parsing).
 
   Lemma prop_ext_to_eq_arrow :
     forall (A:Prop), inhabited A -> (A -> A) = A.

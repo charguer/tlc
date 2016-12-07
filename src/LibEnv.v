@@ -852,14 +852,13 @@ Proof using. intros. unfolds binds. rewrite get_push. case_if~. Qed.
 Lemma binds_push_eq_inv : forall x v1 v2 E,
   binds x v1 (E & x ~ v2) -> v1 = v2.
 Proof using.
-  introv H. forwards [|]: binds_push_inv H. autos*. intros [? _]. false.
+  introv H. forwards [|]: binds_push_inv H; auto_false*.
 Qed.
 
 Lemma binds_push_neq_inv : forall x1 x2 v1 v2 E,
   binds x1 v1 (E & x2 ~ v2) -> x1 <> x2 -> binds x1 v1 E.
 Proof using.
-  introv H. forwards [|]: binds_push_inv H.
-  intros [? ?] ?. false. autos*.
+  introv H. forwards [|]: binds_push_inv H; auto_false*.
 Qed.
 
 Lemma binds_tail : forall x v E,

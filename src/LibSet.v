@@ -365,7 +365,7 @@ Proof using.
     exists (x::nil). split.
       constructor*. introv M. inverts M.
       unfold single_inst, single_impl. simple~.
-       iff H. inverts* H. inverts* H1. inverts* H.
+       iff H. inverts* H. inverts* H1. subst*.
   unfolds single_inst, single_impl. simpls~.
   inverts Hl as H H0. destruct (H0 x). specializes~ H2.
   destruct l.

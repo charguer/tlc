@@ -99,7 +99,7 @@ Qed.
 Global Instance int_comparable : Comparable int.
 Proof using.
   applys comparable_beq (fun i j => decide (i ?= j = Eq)). intros x y.
-  simpl; rew_refl; iff H; rewrite Z.compare_eq_iff in * |- *; inverts~ H.
+  simpl; rew_refl; iff H; rewrite Z.compare_eq_iff in * |- *; auto.
 Qed.
 
 
@@ -455,9 +455,13 @@ Proof using. intros. math_dia. Qed.
     the hypotheses if the conclusion is not an arithmetic
     goal. Useful for efficiency. *)
 
-Ltac math_only :=
+Ltac math_only_if_arith_core tt :=
   match goal with |- ?T =>
     match is_arith T with true => math end end.
+
+Tactic Notation "math_only_if_arith" :=
+  math_only_if_arith_core tt.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Calling [maths] after eliminating boolean reflection *)
@@ -468,8 +472,11 @@ Ltac math_only :=
 
 Hint Rewrite istrue_and istrue_or istrue_neg : rew_reflect_and_or_neg.
 
-Ltac maths :=
+Ltac maths_core tt :=
   autorewrite with rew_reflect_and_or_neg in *; intuition math.
+
+Tactic Notation "maths" :=
+  maths_core tt.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Rewriting equalities provable by the [math] tactic *)
