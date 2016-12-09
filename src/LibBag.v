@@ -42,7 +42,7 @@ Definition notin `{BagIn A T} x m :=
 Notation "\{}" := (empty)
   : container_scope.
 Notation "\{ x }" := (single x)
-  : container_scope.
+  (at level 0, format "\{ x }") : container_scope.
 Notation "x '\in' m" := (is_in x m)
   (at level 39) : container_scope.
 Notation "x '\notin' E" := (notin x E)
@@ -77,7 +77,7 @@ Notation "m1 '\#' m2" := (disjoint m1 m2)
 Open Scope container_scope.
 
 (* todo: bug with spaces *)
-Notation "''{' x '}'" := (single x) (format "''{' x '}'")
+Notation "''{' x '}'" := (single x) (format "''{' x '}'", only parsing)
   : container_scope.
 
 Notation "M \-- i" := (M \- \{i}) (at level 35) : container_scope.
