@@ -355,6 +355,8 @@ Class Disjoint_sym :=
   { disjoint_sym : sym disjoint }.
 Class Disjoint_eq :=
   { disjoint_eq : forall E F, (E \# F) = (forall x, x \in E -> x \in F -> False) }.
+Class Disjoint_not_eq :=
+  { disjoint_not_eq : forall E F, (~ (E \# F)) = (exists x, x \in E /\ x \in F) }.
 Class Disjoint_prove :=
   { disjoint_prove : forall E F, (forall x, x \in E -> x \in F -> False) -> E \# F }.
 Class Disjoint_inv :=
@@ -755,6 +757,14 @@ Proof using.
 Qed.
 
 (** Disjoint *)
+
+Global Instance disjoint_not_eq_from_disjoint_eq :
+  Disjoint_eq -> Disjoint_not_eq.
+Proof using.
+  constructor. intros. rewrite disjoint_eq. extens. iff M.
+  { rew_logic in M. destruct M as [x M]. rew_logic* in M. }
+  { destruct M as [x M]. rew_logic. exists x. rew_logic*. }  
+Qed. (* LATER: rew_logic below binder to simplify proof. *)
 
 Global Instance disjoint_prove_from_disjoint_eq :
   Disjoint_eq -> Disjoint_prove.

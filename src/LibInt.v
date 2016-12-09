@@ -943,8 +943,8 @@ Tactic Notation "rew_pow" "~" constr(b) constr(min_e) "in" hyp(H) :=
 Tactic Notation "rew_pow" "*" constr(b) constr(min_e) "in" hyp(H) :=
   rew_pow_aux_in b min_e H (@nil Boxer); auto_star.
 
-(* Test *)
-Axiom P : int -> Prop.
+(* Test  -- TODO: move *)
+(* Axiom P : int -> Prop.  *)
 (* Goal forall n, P (1 + 2 ^ (n + 3) + 2 ^ n + 2 ^ (n+1)). *)
 (* Proof. *)
 (*   intros. *)
