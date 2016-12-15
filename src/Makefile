@@ -24,6 +24,7 @@ SERIOUS := 1
 
 export COQINCLUDE := -R $(shell pwd) TLC
 export SERIOUS
+export COQBIN
 export COQFLAGS
 
 .PHONY: all clean

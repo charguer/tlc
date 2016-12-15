@@ -2000,7 +2000,7 @@ Tactic Notation "set_eq" "<-" ":" constr(E) "in" "|-" :=
     [gen_eq: E] and [gen_eq: E as X] are also accepted. *)
 
 Tactic Notation "gen_eq" ident(X) ":" constr(E) :=
-  let EQ := fresh "TEMP" in sets_eq X EQ: E; revert EQ.
+  let EQ := fresh "EQ" X in sets_eq X EQ: E; revert EQ.
 Tactic Notation "gen_eq" ":" constr(E) :=
   let X := fresh "X" in gen_eq X: E.
 Tactic Notation "gen_eq" ":" constr(E) "as" ident(X) :=
@@ -2891,10 +2891,10 @@ Tactic Notation "case_if" "in" hyp(H) "as" simple_intropattern(Eq) :=
     case_if_on B as Eq end.
 
 Tactic Notation "case_if" :=
-  let Eq := fresh "TEMP" in case_if as Eq.
+  let Eq := fresh "C" in case_if as Eq.
 
 Tactic Notation "case_if" "in" hyp(H) :=
-  let Eq := fresh "TEMP" in case_if in H as Eq.
+  let Eq := fresh "C" in case_if in H as Eq.
 
 
 (** [cases_if] is similar to [case_if] with two main differences:
@@ -2926,10 +2926,10 @@ Tactic Notation "cases_if" "in" hyp(H) "as" simple_intropattern(Eq) :=
     cases_if_on B as Eq end.
 
 Tactic Notation "cases_if" :=
-  let Eq := fresh "TEMP" in cases_if as Eq.
+  let Eq := fresh "C" in cases_if as Eq.
 
 Tactic Notation "cases_if" "in" hyp(H) :=
-  let Eq := fresh "TEMP" in cases_if in H as Eq.
+  let Eq := fresh "C" in cases_if in H as Eq.
 
 (** [case_ifs] is like [repeat case_if] *)
 
@@ -3036,7 +3036,7 @@ Tactic Notation "cases_if'" "as" simple_intropattern(Eq) :=
   end.
 
 Tactic Notation "cases_if'" :=
-  let Eq := fresh "TEMP" in cases_if' as Eq.
+  let Eq := fresh "C" in cases_if' as Eq.
 
 
 (* ********************************************************************** *)

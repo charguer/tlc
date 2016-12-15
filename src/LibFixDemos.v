@@ -368,7 +368,7 @@ Lemma only_even_fix : forall n, even n ->
   only_even n = Only_even only_even n.
 Proof using.
   applys~ (FixFun_fix_partial (@lt nat _)).
-  intros f1 f2 n Pn IH. unfolds. case_if~. case_if as C.
+  intros f1 f2 n Pn IH. unfolds. case_if~. case_if as C'.
   subst. inverts Pn as Pn'. inverts Pn'.
   apply* IH. inverts Pn as Pn'; tryfalse. inverts Pn'. simpl. rew_nat~.
 Qed.
@@ -1079,8 +1079,8 @@ Proof using.
   destruct s as [|c' s']. auto. case_if~. apply E. unfolds. rewrite~ If_l.
   inverts N. asserts M: (forall r s', (r = r1 \/ r = r2) -> select_sub r s' s ->
                 select_sub (regexp_alt r1 r2) s' s).
-    introv C S. hnf in S |- *. simpl. case_if.
-      destruct H1. case_if. auto. inverts C; tryfalse.
+    introv C S. hnf in S |- *. simpl. case_if as C'.
+      destruct C'. case_if. auto. inverts C; tryfalse.
       case_if~.
    fequals.
      applys~ IH. auto 7. eauto 8.

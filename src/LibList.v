@@ -721,9 +721,9 @@ Proof using.
    rewrite filter_nil. iff I; false I.
    rewrite filter_cons. cases_if; iff I.
     simpls. rew_refl in *. inverts I as I; splits*.
-    lets (I'&C): (rm I). simpls. rew_refl in *. inverts* I'.
+    lets (I'&D): (rm I). simpls. rew_refl in *. inverts* I'.
     rewrite IHl in I. splits*. simpl. rew_refl. right*.
-    lets (I'&C): (rm I). simpls. rew_refl in *. inverts* I'. false*.
+    lets (I'&D): (rm I). simpls. rew_refl in *. inverts* I'. false*.
 Qed.
 
 End FilterProp.
