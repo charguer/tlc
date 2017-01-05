@@ -530,47 +530,22 @@ End WfUnion.
 (* ********************************************************************** *)
 (** * Transitive closure *)
 
-(* TODO
-
-Section Wf_Transitive_Closure.
-  Variable A : Type.
-  Variable R : relation A.
-
-  Notation trans_clos := (clos_trans A R).
-
-  Lemma incl_clos_trans : inclusion A R trans_clos.
-    red in |- *; auto with sets.
-  Qed.
-
-  Lemma Acc_clos_trans : forall x:A, Acc R x -> Acc trans_clos x.
-    induction 1 as [x0 _ H1].
-    apply Acc_intro.
-    intros y H2.
-    induction H2; auto with sets.
-    apply Acc_inv with y; auto with sets.
-  Qed.
-
-  Hint Resolve Acc_clos_trans.
-
-  Lemma Acc_inv_trans : forall x y:A, trans_clos y x -> Acc R x -> Acc R y.
-  Proof using.
-    induction 1 as [| x y]; auto with sets.
-    intro; apply Acc_inv with y; assumption.
-  Qed.
-
-  Theorem wf_clos_trans : well_founded R -> well_founded trans_clos.
-  Proof using.
-    unfold well_founded in |- *; auto with sets.
-  Qed.
-
-End Wf_Transitive_Closure.
-
-*)
+Lemma tclosure'_wf : forall A (R:binary A),
+  wf R -> wf (tclosure' R).
+Proof using.
+  unfold wf, well_founded.
+  introv HAcc. intro a. specializes HAcc a. generalize dependent a.
+  induction 1 as [ a _ IH ].
+  constructor. intros b Hba.
+  generalize a b Hba IH. clear a b Hba IH.
+  induction 1; eauto using Acc_inv.
+Qed.
 
 Lemma tclosure_wf : forall A (R:binary A),
   wf R -> wf (tclosure R).
 Proof using.
-Admitted. (* TODO: adapt proof from the standard library; see above *)
+  intros. rewrite tclosure_tclosure'_eq. eauto using tclosure'_wf.
+Qed.
 
 (* end hide *)
 
@@ -605,5 +580,3 @@ Tactic Notation "unfolds_wf" "~" :=
   unfolds_wf; auto_tilde.
 Tactic Notation "unfolds_wf" "*" :=
   unfolds_wf; auto_star.
-
-
