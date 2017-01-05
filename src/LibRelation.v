@@ -771,6 +771,11 @@ Proof.
     apply* tclosure_trans.
 Qed.
 
+Lemma tclosure_tclosure'_eq:
+  tclosure = tclosure'.
+Proof.
+  extens. eauto using tclosure_tclosure'.
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Induction *)
@@ -1058,4 +1063,3 @@ Proof using.
     eapply tclosure_incl_stclosure; [ | eassumption ].
     eapply sclosure_incl_stclosure. }
 Qed.
-
