@@ -86,7 +86,7 @@ Definition Log log n :=
 
 Definition log := FixFun Log.
 
-Lemma fix_log' : forall N n,
+Lemma fix_log : forall N n,
   log n = func_iter N Log log n.
 Proof using.
   applys~ (FixFun_fix_iter (@lt nat _)).
@@ -98,7 +98,7 @@ Definition many_steps := 10.
 
 Lemma log_compute : log 256 = 8.
 Proof using.
-  rewrite (@fix_log' many_steps). dup.
+  rewrite (@fix_log many_steps). dup.
   { reflexivity. }
   { applys eq_trans. unfold Log; simpl. eauto. eauto. }
   (* TODO: eauto bug: it should try reflexivity before applying lemmas *)
@@ -109,6 +109,8 @@ End LogCompute.
 
 (* ********************************************************************** *)
 (** * Loop on odd numbers -- partial function *)
+
+Module OnlyEven.
 
 (** The function [F] defined in this module returns [1]
     on any even number and "loops" on any odd number.
@@ -133,6 +135,46 @@ Proof using.
   subst. inverts Pn as Pn'. inverts Pn'.
   apply* IH. inverts Pn as Pn'; tryfalse. inverts Pn'. simpl. rew_nat~.
 Qed.
+
+End OnlyEven.
+
+(** Same, but now computable version *)
+
+Module OnlyEvenCompute.
+
+Require Import Even.
+
+Definition Only_even only_even n :=
+  if eq_nat_dec n 0 then 1 else
+  if eq_nat_dec n 1 then 1 + only_even 1 else
+  only_even (n - 2).
+
+Definition only_even := FixFun Only_even.
+
+Lemma only_even_fix : forall N n, even n ->
+  only_even n = func_iter N Only_even only_even n.
+Proof using.
+  applys~ (FixFun_fix_partial_iter (@lt nat _)).
+  intros f1 f2 n Pn IH. unfolds. case_if~. case_if as C.
+  subst. inverts Pn as Pn'. inverts Pn'.
+  apply* IH. inverts Pn as Pn'; tryfalse. inverts Pn'. simpl. rew_nat~.
+Qed.
+
+Definition many_steps := 100.
+
+Lemma even_8 : even 8.
+Proof using. Hint Constructors even odd. eauto 8. Qed.
+
+Lemma only_even_compute : only_even 8 = 1.
+Proof using.
+  rewrite (@only_even_fix many_steps); [ | apply even_8 ].
+  { reflexivity. }
+Qed.
+
+(* Note: many_steps needs to exceed the number of levels of recursion,
+   else reflexivity fails. *)
+
+End OnlyEvenCompute.
 
 
 (* ********************************************************************** *)
