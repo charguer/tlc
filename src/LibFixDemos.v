@@ -163,7 +163,7 @@ Qed.
 Definition many_steps := 100.
 
 Lemma even_8 : even 8.
-Proof using. Hint Constructors even odd. eauto 8. Qed.
+Proof using. Hint Constructors even odd. eauto 18. Qed.
 
 Lemma only_even_compute : only_even 8 = 1.
 Proof using.

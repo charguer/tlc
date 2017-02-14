@@ -1780,10 +1780,10 @@ Qed.
 
 (* TODO: add comments *)
 
-Fixpoint func_iter n A B (F:(A->B)->(A->B)) (f:A->B) : A -> B :=
+Fixpoint func_iter n A B (F:(A->B)->(A->B)) (f:A->B) (x:A) : B :=
   match n with
-  | O => f 
-  | S n' => F (func_iter n' F f)
+  | O => f x
+  | S n' => F (func_iter n' F f) x
   end.
 
 Lemma FixFun_fix_partial_iter : forall A (R:binary A) (P:A->Prop)
