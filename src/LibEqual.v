@@ -306,8 +306,8 @@ Inductive eq_dep_nd (A : Type) (P : A -> Type)
  | eq_dep_nd_intro : forall (h : q = p),
     x = eq_rect q P y p h -> eq_dep_nd P p x q y.
 
-Implicit Arguments eq_dep_nd [A P p q].
-Implicit Arguments eq_dep_nd_intro [A P p q x y].
+Arguments eq_dep_nd [A] [P] [p] x [q] y.
+Arguments eq_dep_nd_intro [A] [P] [p] [x] [q] [y].
 
 (** Reflexivity of [eq_dep_nd] *)
 
@@ -372,7 +372,7 @@ Inductive eq_dep (A : Type) (P : A -> Type) (p : A) (x : P p)
   : forall q, P q -> Prop :=
   | eq_dep_refl : eq_dep P p x p x.
 
-Implicit Arguments eq_dep [A P p q].
+Arguments eq_dep [A] [P] [p] x [q].
 
 (** Symmetry of [eq_dep] *)
 
@@ -466,7 +466,7 @@ Qed.
 (** This section contains a reformulation of the lemmas provided by
     the standard library concerning equality. *)
 
-Implicit Arguments eq [[A]].
+Arguments eq {A}.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Equality as an equivalence relation *)
@@ -495,8 +495,8 @@ Proof using. introv H1 H2. destruct~ H2. Qed.
 
 End EqualityProp.
 
-Implicit Arguments eq_trans [A].
-Implicit Arguments eq_trans' [A].
+Arguments eq_trans [A].
+Arguments eq_trans' [A].
 
 (* TODO: two other versions of eq_trans *)
 

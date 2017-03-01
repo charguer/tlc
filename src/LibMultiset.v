@@ -35,7 +35,7 @@ Definition dom_impl E := set_st (fun x => E x > 0).
 (* TODO: update these definitions to match those of finite sets *)
 Definition list_repr_impl (E:multiset A) (l:list (A*nat)) :=
      No_duplicates (LibList.map (@fst _ _) l)
-  /\ forall n x, In (x,n) l <-> (n = E x /\ n > 0).
+  /\ forall n x, Mem (x,n) l <-> (n = E x /\ n > 0).
 Definition to_list_impl (E:multiset A) := epsilon (list_repr_impl E).
 Definition fold_impl (m:monoid_def B) (f:A->nat->B) (E:multiset A) :=
   LibList.fold_right (fun p acc => let (x,n) := p : A*nat in monoid_oper m (f x n) acc)

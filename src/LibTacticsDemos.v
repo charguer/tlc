@@ -11,8 +11,7 @@ Require Import LibTactics.
 (* ********************************************************************** *)
 (** ** Definitions used in demos *)
 
-Variables H1 H2 H3 H4 H5 H6 : Prop.
-Variables P1 P2 P3 : nat -> Prop.
+Parameter H1 H2 H3 H4 H5 H6 : Prop.
 
 
 (* ********************************************************************** *)
@@ -290,7 +289,7 @@ End IntrovTest.
 
 Section ArrowTest.
 
-Variables P1 P2 P3 : nat -> Prop.
+Parameters P1 P2 P3 : nat -> Prop.
 
 Lemma demo_arrow_1 :
   forall a b, P1 a -> P2 b -> forall c d, P3 c -> P1 d -> c = b.

@@ -3,6 +3,8 @@
 * Prelude                                                                 *
 **************************************************************************)
 
+(*
+
 Set Implicit Arguments.
 Require Import LibTactics.
 
@@ -212,6 +214,7 @@ Notation "'exists' ! x : A , P" :=
   (at level 200, x ident, right associativity,
     format "'[' 'exists' !  '/  ' x  :  A ,  '/  ' P ']'") : type_scope.
 
+*)
 
 (* ********************************************************************** *)
 (** * Peano -- move all the contents to LibNat *)

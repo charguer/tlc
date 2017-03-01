@@ -148,6 +148,8 @@ ifeq ($(SERIOUS),1)
 	@echo "Compiling `basename $*`..."
 	$(COQC) $(COQINCLUDE) $<
 
+# 	@echo "$(COQC) $(COQINCLUDE) $<"
+
 endif
 
 _CoqProject: .FORCE

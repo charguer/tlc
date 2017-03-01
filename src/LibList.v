@@ -8,9 +8,9 @@ Generalizable Variables A B.
 Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
 Require Import LibTactics LibLogic LibReflect LibOperation
  LibProd LibOption LibNat LibInt LibWf LibStruct LibRelation.
-Require Export List.
 Local Open Scope nat_scope.
 Local Open Scope comp_scope.
+Global Close Scope list_scope.
 
 
 (* ********************************************************************** *)
@@ -18,6 +18,21 @@ Local Open Scope comp_scope.
 
 Implicit Arguments nil [[A]].
 Implicit Arguments cons [[A]].
+
+Inductive create_liblist_scope.
+Notation "'create_liblist_scope'" := create_liblist_scope : liblist_scope.
+
+Open Scope liblist_scope.
+Delimit Scope liblist_scope with list.
+Bind Scope liblist_scope with list.
+
+Infix "::" := cons (at level 60, right associativity) : liblist_scope.
+
+(* Not loaded by default 
+Notation "[ ]" := nil (format "[ ]") : liblist_scope. 
+Notation "[ x ]" := (cons x nil) : liblist_scope.
+Notation "[ x ; y ; .. ; z ]" :=  (cons x (cons y .. (cons z nil) ..)) : liblist_scope.
+*)
 
 
 (* ********************************************************************** *)
@@ -290,12 +305,12 @@ Implicit Arguments fold [[A] [B]].
 
 (** [l1 ++ l2] concatenates two lists *)
 
-Infix "++" := append (right associativity, at level 60) : list_scope.
+Infix "++" := append (right associativity, at level 60) : liblist_scope.
 
 (** [l & x] extends the list [l] with the value [x] at the right end *)
 
 Notation "l & x" := (l ++ (x::nil))
-  (at level 28, left associativity) : list_scope.
+  (at level 28, left associativity) : liblist_scope.
 
 
 (* ********************************************************************** *)
@@ -306,11 +321,12 @@ Variables A B : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** App *)
 
 Lemma app_cons : forall x l1 l2,
-  (x::l1) ++ l2 = x::(l1++l2).
+  (x::l1) ++ l2 = x :: (l1++l2).
 Proof using. auto. Qed.
 Lemma app_nil_l : forall l,
   nil ++ l = l.
@@ -705,14 +721,6 @@ Qed.
 Lemma filter_last : forall x l,
   filter f (l & x) = filter f l ++ (if f x then x::nil else nil).
 Proof using. intros. rewrite~ filter_app. Qed.
-
-Lemma Forall_filter_same : forall l,
-  Forall f (filter f l).
-Proof using.
-  introv. induction l.
-   rewrite filter_nil. constructors~.
-   rewrite filter_cons. cases_if~.
-Qed.
 
 Lemma filter_mem_eq : forall l a,
   mem a (filter f l) = (mem a l && f a).
@@ -1971,6 +1979,14 @@ Lemma Forall_mem : forall (P : A -> Prop) l a,
   mem a l ->
   P a.
 Proof using. introv F I. rewrite Forall_iff_forall_mem in F. apply~ F. Qed.
+
+Lemma Forall_filter_same : forall (f : A -> bool) l,
+  Forall f (filter f l).
+Proof using.
+  introv. induction l.
+   rewrite filter_nil. constructors~.
+   rewrite filter_cons. cases_if~.
+Qed.
 
 End ForallProp.
 
