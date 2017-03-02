@@ -776,3 +776,36 @@ Proof using.
 Qed.
 
 End Prefix.
+
+
+
+(* -------------------------------------------------------------------------- *)
+(* TODO: cleanup *)
+
+Module TakeInt. (* TODO: move to LibListZ *)
+Import LibInt.
+Section Facts.
+Variables (A:Type).
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma take_cons_pred_int : forall x l (n:int),
+  n > 0 ->
+  take (abs n) (x::l) = x :: (take (abs (n-1)) l).
+Proof using. (* using stdlib *)
+  introv Pos. rewrite take_cons_pred.
+  rewrite abs_minus; try math. auto.
+  forwards: Zabs_nat_lt 0 n; math.
+Qed.
+
+Lemma take_cons_int : forall x l (n:int),
+  n >= 0 ->
+  take (abs (n+1)) (x::l) = x :: (take (abs n) l).
+Proof using.
+  introv Pos. rewrite~ abs_plus.
+  rewrite~ plus_comm. math.
+Qed.
+
+End Facts.
+End TakeInt.
+Export TakeInt.
