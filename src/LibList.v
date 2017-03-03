@@ -1243,7 +1243,7 @@ Implicit Types n : nat.
 Implicit Types x v : A.
 Implicit Types l : list A.
 
-Fixpoint update n v l : list A :=
+Fixpoint update n v l { struct l } : list A :=
   match l with
   | nil => nil
   | x::l' =>
@@ -1253,11 +1253,9 @@ Fixpoint update n v l : list A :=
      end
   end.
 
-(* Should not be exploited 
 Lemma update_nil : forall n v,
   update n v nil = nil.
-Proof using. auto. Qed.
-*) 
+Proof using. auto. Qed. 
 
 Lemma update_cons_match : forall n v x l,
   update n v (x::l) = 
@@ -1296,14 +1294,23 @@ Proof.
     fequals. erewrite* IHl1'. }
 Qed.
 
-Lemma update_app_r_head : forall l1 l2 x v,
+Lemma update_prefix_length : forall l1 l2 x v,
   update (length l1) v (l1 ++ x :: l2) = l1 & v ++ l2.
 Proof.
   intros. rewrite app_assoc. rewrites (>> update_app_r 0).
   { math. } { rew_list~. }
 Qed.
 
-Lemma length_update : forall n v l,
+Lemma update_ge_length : forall n v l,
+  n >= length l ->
+  update n v l = l.
+Proof.
+  introv E. gen n. induction l; rew_list; intros.
+  { auto. }
+  { rewrite update_cons_pos; [|math]. fequals. applys IHl. math. }
+Qed.
+
+Lemma length_update : forall n v l, 
   length (update n v l) = length l.
 Proof using.
   intros. gen n. induction l; intros.
@@ -1340,29 +1347,7 @@ Qed.
 
 End Update.
 
-
-
-
-
-
-Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
- app_cons_one
- mem_nil mem_cons mem_app mem_last
- mem_cons_eq mem_last_eq
- keys_nil keys_cons keys_app keys_last
- assoc_cons assoc_here : rew_lists.
-
-
-Arguments update [A] : simpl never.
-Arguments make [A] : simpl never.
-Arguments fold [A] [B] : simpl never.
-
-
-
-
-
-
-
+Opaque update.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1370,10 +1355,9 @@ Arguments fold [A] [B] : simpl never.
 
 Section Make.
 Context (A:Type) {IA:Inhab A}.
-Implicit Types n : nat.
+Implicit Types i n : nat.
 Implicit Types v : A.
 Implicit Types l : list A.
-
 
 Fixpoint make (n:nat) (v:A) : list A :=
    match n with
@@ -1398,8 +1382,8 @@ Proof using.
     rewrite make_succ. fequals_rec. math. 
 Qed.
 
-Lemma nth_make : forall (i n:nat) (v:A),
-  (i < n)%nat -> 
+Lemma nth_make : forall i n v,
+  i < n -> 
   nth i (make n v) = v.
 Proof using.
   introv. gen n; induction i; introv E.
@@ -1407,7 +1391,7 @@ Proof using.
   destruct n. math. rewrite make_succ. rewrite nth_succ. rewrite~ IHi. math.
 Qed.
 
-Lemma length_make : forall (n:nat) (v:A),
+Lemma length_make : forall n v,
   length (make n v) = n.
 Proof using.
   intros. induction n.
@@ -1416,6 +1400,8 @@ Proof using.
 Qed.
 
 End Make.
+
+Opaque make.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1426,8 +1412,6 @@ Variables (A B:Type) (m:monoid_def B) (L:list A) (f:A->B).
 
 Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
   fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
-
-
 
 Lemma fold_nil :
   fold m f nil = monoid_neutral m.
@@ -1453,11 +1437,26 @@ Proof using.
 Qed.
 End Fold.
 
+Opaque fold.
+
 (* TODO: migrate [fold_pointwise] here, after moving [Mem]. *)
 
 
 (* ********************************************************************** *)
 (** * Association lists *)
+
+
+
+--does not compile yet--
+Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
+ app_cons_one
+ mem_nil mem_cons mem_app mem_last
+ mem_cons_eq mem_last_eq
+ keys_nil keys_cons keys_app keys_last
+ assoc_cons assoc_here : rew_lists.
+
+
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Operations *)

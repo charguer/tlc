@@ -147,7 +147,7 @@ Definition update_cons_succ := update_succ.
 Definition take_cons_pred := take_cons_pos.
 
 Lemma update_app_right := update_app_r. (* reformulated *)
-Lemma update_app_right_here := update_app_r_head. (* reformulated *)
+Lemma update_app_right_here := update_prefix_length. (* reformulated *)
 
 
 (* ********************************************************************** *)
