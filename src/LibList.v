@@ -119,10 +119,10 @@ Definition length :=
 Definition filter (f : predb A) :=
   fold_right (fun x acc => if f x then x::acc else acc) (@nil A).
 
-Definition for_all (f : predb A) :=
+Definition forall_bool (f : predb A) :=
   fold_right (fun x acc => acc && (f x)) true.
 
-Definition exists_st (f : predb A) :=
+Definition exists_bool (f : predb A) :=
   fold_right (fun x acc => acc || (f x)) false.
 
 (* DEPRECATED *)
@@ -226,34 +226,6 @@ End Operations.
 Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
   fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
 
-Arguments fold_left [A] [B] : simpl never.
-Arguments fold_right [A] [B] : simpl never.
-
-Arguments map [A] [B] : simpl never.
-Arguments append [A] : simpl never.
-Arguments concat [A] : simpl never.
-Arguments rev [A] : simpl never.
-Arguments length [A] : simpl never.
-
-Arguments filter [A] : simpl never.
-Arguments for_all [A] : simpl never.
-Arguments exists_st [A] : simpl never.
-Arguments mem [A] : simpl never.
-Arguments remove [A] {CA} : simpl never.
-Arguments removes [A] {CA} : simpl never.
-
-Arguments combine [A]  : simpl never.
-Arguments split [A] [B] : simpl never.
-
-Arguments take [A] : simpl never.
-Arguments drop [A] : simpl never.
-Arguments take_drop_last [A] {IA} : simpl never.
-Arguments nth_def [A] : simpl never.
-Arguments nth [A] {IA} : simpl never.
-Arguments update [A] : simpl never.
-Arguments make [A] : simpl never.
-Arguments fold [A] [B] : simpl never.
-
 
 (* ---------------------------------------------------------------------- *)
 (** ** Notation *)
@@ -269,11 +241,74 @@ Notation "l & x" := (l ++ (x::nil))
 
 
 (* ********************************************************************** *)
-(** * Properties of operations *)
+(** * Normalization tactics *)
 
-(* TODO: many of the rewrite steps in the proofs below could be automated
-   using a complete version of [rew_list], however this requires autorewrite
-   to be very efficient. *)
+(* ---------------------------------------------------------------------- *)
+(** ** [rew_list] for basic list properties *)
+
+(** Normalize 
+  - [fold_left] except on [++]
+  - [fold_right] except on [++]
+  - [++]
+  - [length] 
+  - [rev]
+  - [map]
+  - [concat]
+*)
+
+Tactic Notation "rew_list" :=
+  autorewrite with rew_list.
+Tactic Notation "rew_list" "~" :=
+  rew_list; auto_tilde.
+Tactic Notation "rew_list" "*" :=
+  rew_list; auto_star.
+Tactic Notation "rew_list" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_list).
+  (* autorewrite with rew_list in *. *)
+Tactic Notation "rew_list" "~" "in" "*" :=
+  rew_list in *; auto_tilde.
+Tactic Notation "rew_list" "*" "in" "*" :=
+  rew_list in *; auto_star.
+Tactic Notation "rew_list" "in" hyp(H) :=
+  autorewrite with rew_list in H.
+Tactic Notation "rew_list" "~" "in" hyp(H) :=
+  rew_list in H; auto_tilde.
+Tactic Notation "rew_list" "*" "in" hyp(H) :=
+  rew_list in H; auto_star.
+
+(* ---------------------------------------------------------------------- *)
+(** ** [rew_lists] for set and map operations on lists *)
+
+(** Normalize 
+  - [++]
+  - [mem] 
+  - [keys]
+  - [assoc]
+*)
+
+Tactic Notation "rew_lists" :=
+  autorewrite with rew_lists.
+Tactic Notation "rew_lists" "~" :=
+  rew_lists; auto_tilde.
+Tactic Notation "rew_lists" "*" :=
+  rew_lists; auto_star.
+Tactic Notation "rew_lists" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_lists).
+  (* autorewrite with rew_lists in *. *)
+Tactic Notation "rew_lists" "~" "in" "*" :=
+  rew_lists in *; auto_tilde.
+Tactic Notation "rew_lists" "*" "in" "*" :=
+  rew_lists in *; auto_star.
+Tactic Notation "rew_lists" "in" hyp(H) :=
+  autorewrite with rew_lists in H.
+Tactic Notation "rew_lists" "~" "in" hyp(H) :=
+  rew_lists in H; auto_tilde.
+Tactic Notation "rew_lists" "*" "in" hyp(H) :=
+  rew_lists in H; auto_star.
+
+
+(* ********************************************************************** *)
+(** * Properties of operations *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** App *)
@@ -282,32 +317,49 @@ Section App.
 Variables A B : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
-Lemma app_cons : forall x l1 l2,
+
+Lemma app_cons_l : forall x l1 l2,
   (x::l1) ++ l2 = x :: (l1++l2).
 Proof using. auto. Qed.
+
 Lemma app_nil_l : forall l,
   nil ++ l = l.
 Proof using. auto. Qed.
+
 Lemma app_nil_r : forall l,
   l ++ nil = l.
-Proof using. induction l. auto. rewrite app_cons. fequals~. Qed.
+Proof using. induction l. auto. rewrite app_cons_l. fequals~. Qed.
+
 Lemma app_assoc : forall l1 l2 l3,
   (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
 Proof using.
   intros. induction l1.
-  rewrite_all~ app_nil_l.
-  rewrite_all~ app_cons. fequals~.
+  { rewrite_all~ app_nil_l. }
+  { rewrite_all~ app_cons_l. fequals~. }
 Qed.
-Lemma app_last : forall x l1 l2,
+
+Lemma app_cons_r : forall x l1 l2,
   l1 ++ (x::l2) = (l1 & x) ++ l2.
 Proof using. intros. rewrite~ app_assoc. Qed.
-Lemma app_last_sym : forall x l1 l2,
-  (l1 & x) ++ l2 = l1 ++ (x::l2).
-Proof using. intros. rewrite~ <- app_last. Qed.
+
 Lemma app_cons_one : forall x l,
   (x::nil) ++ l = x::l.
 Proof using. auto. Qed.
+
+Lemma app_last_l : forall x l1 l2,
+  (l1 & x) ++ l2 = l1 ++ (x::l2).
+Proof using. intros. rewrite~ <- app_cons_r. Qed.
+
 End App.
+
+Arguments append [A] : simpl never.
+
+Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
+  app_cons_one : rew_list.
+(* Note: [app_last_l] may be safely added to [rew_list] *)
+
+Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
+  app_cons_one : rew_lists.
 
 (* ---------------------------------------------------------------------- *)
 (** ** FoldRight *)
@@ -317,22 +369,32 @@ Variables A B : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types (f : A -> B -> B) (i : B).
+
 Lemma fold_right_nil : forall f i,
   fold_right f i nil = i.
 Proof using. auto. Qed.
+
 Lemma fold_right_cons : forall f i x l,
   fold_right f i (x::l) = f x (fold_right f i l) .
 Proof using. auto. Qed.
+
 Lemma fold_right_app : forall f i l1 l2,
   fold_right f i (l1 ++ l2) = fold_right f (fold_right f i l2) l1.
 Proof using.
-  intros. induction l1. auto.
-  rewrite app_cons. do 2 rewrite fold_right_cons. fequals~.
+  intros. induction~ l1. 
+  { rew_list. do 2 rewrite fold_right_cons. fequals~. }
 Qed.
+
 Lemma fold_right_last : forall f i x l,
   fold_right f i (l & x) = fold_right f (f x i) l.
 Proof using. intros. rewrite~ fold_right_app. Qed.
+
 End FoldRight.
+
+Arguments fold_right [A] [B] : simpl never.
+
+Hint Rewrite fold_right_nil fold_right_cons fold_right_last : rew_list.
+(* Note: [fold_right_app] may be safely added to [rew_list] *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -343,22 +405,33 @@ Variables A B : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types (f : A -> B -> B) (i : B).
+
 Lemma fold_left_nil : forall f i,
   fold_left f i nil = i.
 Proof using. auto. Qed.
+
 Lemma fold_left_cons : forall f i x l,
   fold_left f i (x::l) = fold_left f (f x i) l.
 Proof using. auto. Qed.
+
 Lemma fold_left_app : forall f i l1 l2,
   fold_left f i (l1 ++ l2) = fold_left f (fold_left f i l1) l2.
 Proof using.
-  intros. gen i. induction l1; intros. auto.
-  rewrite app_cons. do 2 rewrite fold_left_cons. rewrite~ IHl1.
+  intros. gen i. induction~ l1.
+  { intros. rew_list. do 2 rewrite fold_left_cons. rewrite~ IHl1. }
 Qed.
+
 Lemma fold_left_last : forall f i x l,
   fold_left f i (l & x) = f x (fold_left f i l).
 Proof using. intros. rewrite~ fold_left_app. Qed.
+
 End FoldLeft.
+
+Arguments fold_left [A] [B] : simpl never.
+
+Hint Rewrite fold_left_nil fold_left_cons 
+  fold_left_last : rew_list.
+(* Note: [fold_left_app] can be safely added to [rew_list] *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -371,28 +444,31 @@ Implicit Types l : list A.
 Lemma length_nil :
   length (@nil A) = 0.
 Proof using. auto. Qed.
+
 Lemma length_cons : forall x l,
   length (x::l) = 1 + length l.
 Proof using. auto. Qed.
+
 Lemma length_app : forall l1 l2,
   length (l1 ++ l2) = length l1 + length l2.
 Proof using.
   intros. unfold length at 1. rewrite fold_right_app.
-  fold (length l2). induction l1; simple~.
+  fold (length l2). induction l1; rew_list; simple~.
 Qed.
+
 Lemma length_last : forall x l,
   length (l & x) = 1 + length l.
 Proof using.
-  intros. rewrite length_app.
-  rewrite length_cons. rewrite length_nil.
+  intros. rewrite length_app, length_cons, length_nil.
   simpl. math.
 Qed.
-Lemma length_zero_inv : forall l,
-  length l = 0%nat -> l = nil.
-Proof using.
-  destruct l. auto. rewrite length_cons. intros. false.
-Qed.
+
 End Length.
+
+Arguments length [A] : simpl never.
+
+Hint Rewrite length_nil length_cons length_app 
+  length_last : rew_list.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -406,48 +482,40 @@ Implicit Types l : list A.
 Lemma rev_nil :
   rev (@nil A) = nil.
 Proof using. auto. Qed.
+
 Lemma rev_app : forall l1 l2,
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof using.
   intros. unfold rev. asserts K1: (forall l accu,
    fold_left (fun x acc => x :: acc) accu l =
    fold_left (fun x acc => x :: acc) nil l ++ accu).
-   induction l; intros. auto.
-   do 2 rewrite fold_left_cons.
-   rewrite IHl. rewrite (@IHl (a::nil)). rewrite~ app_last.
+  { induction l; intros.
+    { auto. }
+    { rew_list. rewrite IHl. rewrite (@IHl (a::nil)). rew_list~. } }
   asserts K2: (forall accu,
    fold_left (fun x acc => x :: acc) accu (l1 ++ l2) =
    fold_left (fun x acc => x :: acc) nil l2 ++
    fold_left (fun x acc => x :: acc) nil l1 ++ accu).
-  induction l1; intros.
-    do 2 rewrite app_nil_l. apply K1.
-    rewrite app_cons. do 2 rewrite fold_left_cons. rewrite IHl1. 
-     rewrite (@K1 l1 (a::nil)). rewrite~ app_last.
+  { induction l1; intros.
+    { rew_list. apply K1. }
+    { rew_list. rewrite IHl1. rewrite (@K1 l1 (a::nil)). rew_list~. } }
   lets K3: (@K2 nil). rewrite app_nil_r in K3. auto.
 Qed.
+
 Lemma rev_cons : forall x l,
   rev (x::l) = rev l & x.
 Proof using. intros. rewrite <- app_cons_one. rewrite~ rev_app. Qed.
+
 Lemma rev_last : forall x l,
   rev (l & x) = x::(rev l).
 Proof using. intros. rewrite~ rev_app. Qed.
-Lemma rev_cons_app : forall x l1 l2,
-  rev (x :: l1) ++ l2 = rev l1 ++ (x::l2).
-Proof using. intros. rewrite rev_cons. rewrite~ <- app_last. Qed.
-Lemma app_rev_cons : forall x l1 l2,
-  l1 ++ rev (x :: l2) = (l1 ++ rev l2) & x.
-Proof using. intros. rewrite rev_cons. rewrite~ app_assoc. Qed.
+
 Lemma rev_rev : forall l,
   rev (rev l) = l.
 Proof using.
-  induction l. auto. rewrite rev_cons. rewrite rev_last. fequals.
+  intros. induction~ l. { rewrite rev_cons, rev_last. fequals. }
 Qed.
-Lemma length_rev : forall l,
-  length (rev l) = length l.
-Proof using.
-  induction l. auto. rewrite rev_cons.
-  rewrite length_last. rewrite~ length_cons.
-Qed.
+
 Lemma rev_inj : forall l1 l2,
   rev l1 = rev l2 ->
   l1 = l2.
@@ -455,112 +523,25 @@ Proof using.
    introv E. forwards E': f_equal (@rev A) (rm E).
    do 2 rewrite~ rev_rev in E'. 
 Qed.
+
+Lemma length_rev : forall l,
+  length (rev l) = length l.
+Proof using. intros. induction~ l. { rewrite rev_cons. rew_list~. } Qed.
+
 Lemma fold_right_rev : forall B (f : A -> B -> B) i l,
   fold_right f i (rev l) = fold_left f i l.
 Proof using.
   introv. gen i. induction~ l.
-  introv. rewrite rev_cons. rewrite* fold_right_last.
+  { introv. rewrite rev_cons. rewrite* fold_right_last. }
 Qed.
 
 End Rev.
 
+Arguments rev [A] : simpl never.
 
-(* ---------------------------------------------------------------------- *)
-(** ** Mem *)
-
-Section Mem.
-Variable A : Type.
-Implicit Types x : A.
-Implicit Types l : list A.
-
-Implicit Types k : A.
-Lemma mem_nil : forall k,
-  mem k nil = false.
-Proof using. auto. Qed.
-Lemma mem_cons : forall k x l,
-  mem k (x::l) = (k '= x) || (mem k l).
-Proof using. auto. Qed.
-Lemma mem_app : forall f l1 l2,
-  mem f (l1 ++ l2) = (mem f l1) || mem f l2.
-Proof using.
-  intros. induction l1.
-  rew_bool. rewrite~ app_nil_l.
-  rewrite app_cons. do 2 rewrite mem_cons. rewrite~ IHl1.
-  rewrite~ assoc_or.
-Qed.
-Lemma mem_last : forall k x l,
-  mem k (l & x) = (k '= x) || (mem k l).
-Proof using.
-  intros. rewrite mem_app. simpl.
-  rewrite LibBool.comm_or. rew_bool. auto.
-Qed.
-Lemma mem_cons_eq : forall x l,
-  mem x (x::l) = true.
-Proof using. intros. rewrite mem_cons. rewrite~ eqb_self. Qed.
-Lemma mem_last_eq : forall x l,
-  mem x (l & x) = true.
-Proof using. intros. rewrite mem_last. rewrite~ eqb_self. Qed.
-
-Lemma rev_mem : forall l x,
-  mem x l = mem x (rev l).
-Proof using.
-  introv. induction~ l. rewrite mem_cons. rewrite rev_cons.
-  rewrite mem_last. extens. rew_refl. rewrite* IHl.
-Qed.
-
-End Mem.
-
-(* ---------------------------------------------------------------------- *)
-(** ** Concat *)
-
-Section Concat.
-Variable A : Type.
-Implicit Types x : A.
-Implicit Types l : list A.
-
-Lemma concat_nil :
-  concat (@nil (list A)) = nil.
-Proof using. auto. Qed.
-Lemma concat_cons : forall l m,
-  concat (l::m) = l ++ concat m.
-Proof using. auto. Qed.
-Lemma concat_one : forall l,
-  concat (l::nil) = l.
-Proof using.
-  intros. rewrite concat_cons. rewrite concat_nil.
-  rewrite~ app_nil_r.
-Qed.
-Lemma concat_app : forall m1 m2 : list (list A),
-  concat (m1 ++ m2) = concat m1 ++ concat m2.
-Proof using.
-  induction m1; intros.
-  rewrite concat_nil. do 2 rewrite~ app_nil_l.
-  rewrite app_cons. do 2 rewrite concat_cons.
-   rewrite app_assoc. fequals.
-Qed.
-Lemma concat_last : forall l m,
-  concat (m & l) = concat m ++ l.
-Proof using. intros. rewrite~ concat_app. rewrite~ concat_one. Qed.
-
-Lemma concat_mem : forall Ls x,
-  mem x (concat Ls) <->
-  exists L,
-    mem L Ls /\ mem x L.
-Proof using.
-  introv. induction Ls.
-   simpl. iff I; inverts* I.
-  rewrite concat_cons. iff I.
-   rewrite mem_app in I. rew_refl in *. inverts I as I.
-    exists a. splits~. rewrite mem_cons. rew_refl*.
-    apply IHLs in I. lets (l&Il&Ix): (rm I).
-     exists l. rewrite mem_cons. rew_refl*.
-   rewrite mem_app. rew_refl. lets (l&Il&Ix): (rm I).
-    rewrite mem_cons in Il. rew_refl in Il. inverts Il as Il.
-     left~.
-     right~. apply* IHLs.
-Qed.
-
-End Concat.
+Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev : rew_list.
+Hint Rewrite length_rev : rew_list.
+(* Note: [fold_right_rev] may be safely added to [rew_list] *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -575,9 +556,11 @@ Implicit Types f : A -> B.
 Lemma map_nil : forall f,
   map f nil = nil.
 Proof using. auto. Qed.
+
 Lemma map_cons : forall f x l,
   map f (x::l) = f x :: map f l.
 Proof using. auto. Qed.
+
 Lemma map_app : forall f l1 l2,
   map f (l1 ++ l2) = map f l1 ++ map f l2.
 Proof using.
@@ -586,67 +569,102 @@ Proof using.
     fold_right (fun x acc => f x :: acc) accu (l1 ++ l2) =
     fold_right (fun x acc => f x :: acc) nil l1 ++
      fold_right (fun x acc => f x :: acc) nil l2 ++ accu).
-  induction l1; intros; simpl.
-   do 2 rewrite app_nil_l. gen accu.
-   induction l2; intros. 
-     auto.
-     do 2 rewrite fold_right_cons. rewrite IHl2. rewrite~ app_cons.
-   rewrite app_cons. do 2 rewrite fold_right_cons. rewrite~ IHl1.
-  specializes H (@nil B). rewrite~ app_nil_r in H.
+  { induction l1; intros; simpl.
+     { rew_list. gen accu.
+       induction l2; intros. 
+       { auto. }
+       { rew_list. rewrite~ IHl2. } }
+     { rew_list. fequals. } }
+  specializes H (@nil B). rew_list~ in H.
 Qed.
+
 Lemma map_last : forall f x l,
   map f (l & x) = map f l & f x.
 Proof using. intros. rewrite~ map_app. Qed.
+
+Lemma map_rev : forall f l,
+  map f (rev l) = rev (map f l).
+Proof using.
+  intros. induction~ l.
+  { rewrite map_cons. rew_list. rewrite map_last. rewrite~ IHl. }
+Qed.
+
 Lemma length_map : forall f l,
   length (map f l) = length l.
 Proof using.
-  induction l. auto.
-  rewrite map_cons. do 2 rewrite length_cons. auto.
+  intros. induction~ l. 
+  { rewrite map_cons. do 2 rewrite length_cons. auto. }
 Qed.
-Lemma map_eq_nil : forall f l,
-  map f l = nil -> l = nil.
+
+Lemma map_eq_nil_inv : forall f l,
+  map f l = nil -> 
+  l = nil.
 Proof using.
   introv E. destruct~ l. rewrite map_cons in E. false.
 Qed.
+
 Lemma map_inj : forall f l1 l2,
   (forall x y, f x = f y -> x = y) ->
   map f l1 = map f l2 ->
   l1 = l2.
-Proof using. (* TODO: simplify proof *)
-  introv I E. gen l2. induction l1; introv E.
-   rewrite map_nil in E. symmetry in E. forwards~: map_eq_nil E.
-   destruct l2 as [|e l2]; tryfalse. repeat rewrite map_cons in E.
-    inverts E as E1 E2. forwards: I E1. substs. fequals~.
-Qed.
-Lemma map_mem : forall f l (x : B),
-  mem x (map f l) <->
-    exists y, mem y l /\ x = f y.
-Proof using. (* TODO: simplify proof *)
-  induction l; introv.
-   simpl. iff I; false*. inverts* I.
-   rewrite map_cons. iff I.
-     rewrite mem_cons in I. rew_refl in I. inverts I as I.
-     exists a. splits~. rewrite mem_cons in *. rew_refl. left~.
-     apply IHl in I. lets (y&Iy&E): (rm I). exists y. splits~.
-      rewrite mem_cons. rew_refl. right~.
-    lets (y&Iy&E): (rm I). substs. rewrite mem_cons in *. rew_refl in *.
-     inverts Iy as I. left~.
-     right. apply IHl. exists~ y.
-Qed.
-End Map.
-
-Lemma map_rev : forall A B (f : A -> B) l,
-  map f (rev l) = rev (map f l).
 Proof using.
-  intros. induction l.
-  { auto. }
-  { rewrite map_cons. rewrite rev_cons. rewrite map_last. rewrite rev_cons.
-    rewrite~ IHl. }
+  intros f l1. induction l1; introv I E.
+  { rewrite map_nil in E. forwards*: map_eq_nil_inv. }
+  { destruct l2 as [|b l2]; tryfalse. do 2 rewrite map_cons in E.
+    inverts E. fequals*. }
 Qed.
+
+End Map.
 
 Lemma map_id : forall A (l:list A),
   map id l = l.
 Proof using. introv. induction~ l. rewrite map_cons. fequals~. Qed.
+
+Arguments map [A] [B] : simpl never.
+
+Hint Rewrite map_nil map_cons map_app map_last : rew_list.
+(* Note: [map_rev] and [map_id] may be safely added to [rew_list] *)
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Concat *)
+
+Section Concat.
+Variable A : Type.
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma concat_nil :
+  concat (@nil (list A)) = nil.
+Proof using. auto. Qed.
+
+Lemma concat_cons : forall l m,
+  concat (l::m) = l ++ concat m.
+Proof using. auto. Qed.
+
+Lemma concat_one : forall l,
+  concat (l::nil) = l.
+Proof using.
+  intros. rewrite concat_cons. rewrite concat_nil. rew_list~.
+Qed.
+
+Lemma concat_app : forall m1 m2 : list (list A),
+  concat (m1 ++ m2) = concat m1 ++ concat m2.
+Proof using.
+  intros m1. induction m1; intros.
+  { rewrite concat_nil. rew_list~. }
+  { rew_list. do 2 rewrite concat_cons. rew_list. fequals. }
+Qed.
+
+Lemma concat_last : forall l m,
+  concat (m & l) = concat m ++ l.
+Proof using. intros. rewrite~ concat_app. rewrite~ concat_one. Qed.
+
+End Concat.
+
+Arguments concat [A] : simpl never.
+
+Hint Rewrite concat_nil concat_app concat_cons concat_last : rew_list.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -656,52 +674,278 @@ Section Filter.
 Variable (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
-Variable f : A -> bool.
+Implicit Types f : A -> bool.
 
-Lemma filter_nil :
+Lemma filter_nil : forall f,
   filter f nil = nil.
 Proof using. auto. Qed.
 
-Lemma filter_cons : forall x l,
+Lemma filter_cons : forall f x l,
   filter f (x::l) = if f x then x :: filter f l else filter f l.
 Proof using. auto. Qed.
 
-Lemma filter_app : forall l1 l2,
+Lemma filter_app : forall f l1 l2,
   filter f (l1 ++ l2) = filter f l1 ++ filter f l2.
-Proof using.  (* todo: factorise with map_app *)
+Proof using.  
+  (* LATER: investigate how to factorise with proof of map_app *)
   intros. unfold filter.
   assert (forall accu,
     fold_right (fun x acc => if f x then x::acc else acc) accu (l1 ++ l2) =
     fold_right (fun x acc => if f x then x::acc else acc) nil l1 ++
      fold_right (fun x acc => if f x then x::acc else acc) nil l2 ++ accu).
-  induction l1; intros; simpl.
-   do 2 rewrite app_nil_l. gen accu.
-   induction l2; intros.
-     auto.
-     do 2 rewrite fold_right_cons. 
-      case_if. rewrite app_cons. fequals. rewrite IHl2. fequals.
-     rewrite app_cons. do 2 rewrite fold_right_cons. case_if.
-      rewrite app_cons. fequals. rewrite IHl1. fequals.
+  { induction l1; intros; simpl. 
+    do 2 rewrite app_nil_l. gen accu.
+    induction l2; intros.
+    { auto. }
+    { do 2 rewrite fold_right_cons. 
+      case_if. rew_list. fequals. rewrite IHl2. fequals. }
+    { rew_list. case_if. rew_list. fequals. rewrite IHl1. fequals. } }
   specializes H (@nil A). rewrite~ app_nil_r in H.
 Qed.
 
-Lemma filter_last : forall x l,
+Lemma filter_last : forall f x l,
   filter f (l & x) = filter f l ++ (if f x then x::nil else nil).
 Proof using. intros. rewrite~ filter_app. Qed.
 
-Lemma filter_mem_eq : forall l a,
+(* LATER: add length_filter *)
+
+End Filter.
+
+Arguments filter [A] : simpl never.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Mem *)
+
+Section MemBool.
+Variable A : Type.
+Implicit Types x k : A.
+Implicit Types l : list A.
+
+Lemma mem_nil : forall k,
+  mem k nil = false.
+Proof using. auto. Qed.
+
+Lemma mem_cons : forall k x l,
+  mem k (x::l) = (k '= x) || (mem k l).
+Proof using. auto. Qed.
+
+Lemma mem_app : forall f l1 l2,
+  mem f (l1 ++ l2) = (mem f l1) || mem f l2.
+Proof using.
+  intros. induction l1.
+  { rew_bool. rew_list~. }
+  { rew_list. do 2 rewrite mem_cons. rewrite~ IHl1. rewrite~ assoc_or. }
+Qed.
+
+Lemma mem_last : forall k x l,
+  mem k (l & x) = (k '= x) || (mem k l).
+Proof using.
+  intros. rewrite mem_app. rewrite mem_cons.
+  rewrite LibBool.comm_or. rew_bool. auto.
+Qed.
+
+Lemma mem_cons_eq : forall x l,
+  mem x (x::l) = true.
+Proof using. intros. rewrite mem_cons. rewrite~ eqb_self. Qed.
+
+Lemma mem_last_eq : forall x l,
+  mem x (l & x) = true.
+Proof using. intros. rewrite mem_last. rewrite~ eqb_self. Qed.
+
+Lemma mem_rev : forall l x,
+  mem x (rev l) = mem x l.
+Proof using.
+  introv. induction~ l.
+  { rewrite mem_cons. rew_list. rewrite mem_last.
+    extens. rew_refl. rewrite* IHl. }
+Qed.
+
+Lemma mem_filter : forall l f a,
   mem a (filter f l) = (mem a l && f a).
 Proof using.
   introv. extens. induction l.
-   rewrite filter_nil. iff I; false I.
-   rewrite filter_cons. cases_if; iff I; rewrite mem_cons in *.
-    rew_refl in *. inverts I as I; splits*.
-    lets (I'&D): (rm I). simpls. rew_refl in *. inverts* I'.
-    rewrite IHl in I. splits*. rew_refl. right*.
-    lets (I'&D): (rm I). rew_refl in *. inverts* I'. false*.
+  { rewrite filter_nil. iff I; false I. }
+  { rewrite filter_cons. cases_if; iff I; rewrite mem_cons in *.
+    { rew_refl in *. inverts I as I; splits*. }
+    { lets (I'&D): (rm I). simpls. rew_refl in *. inverts* I'. }
+    { rewrite IHl in I. splits*. rew_refl. right*. }
+    { lets (I'&D): (rm I). rew_refl in *. inverts* I'. false*. } }
 Qed.
 
-End Filter.
+End MemBool.
+
+Arguments mem [A] : simpl never.
+
+Hint Rewrite mem_nil mem_cons mem_app mem_last
+ mem_cons_eq mem_last_eq : rew_lists.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Forall_bool *)
+
+(* LATER: properties of [for_all] *)
+
+Arguments forall_bool [A] : simpl never.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Exists_bool *)
+
+(* LATER: properties of [exists_bool] *)
+
+Arguments exists_bool [A] : simpl never.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Combine *)
+
+(* LATER: properties of [combine] *)
+
+Arguments combine [A] : simpl never.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Split *)
+
+(* LATER: properties of [split] *)
+
+Arguments split [A] [B] : simpl never.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Remove *)
+
+(* LATER: properties of [remove] *)
+
+Arguments remove [A] {CA} : simpl never.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Removes *)
+
+(* LATER: properties of [removes] *)
+
+Arguments removes [A] {CA} : simpl never.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Take *)
+
+Section Take.
+Variable (A : Type).
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma take_zero : forall l,
+  take 0 l = nil.
+Proof using. auto. Qed.
+
+Lemma take_succ : forall x l n,
+  take (S n) (x::l) = x :: (take n l).
+Proof using. auto. Qed.
+
+Definition take_cons := take_succ.
+
+Lemma take_cons_pred : forall x l n,
+  (n > 0) ->
+  take n (x::l) = x :: (take (n-1) l).
+Proof using.
+  introv H. destruct n. false; math.
+  rewrite take_cons. fequals_rec. math.
+Qed.
+
+Lemma take_app_l : forall n l l',
+  (n <= length l) ->
+  take n (l ++ l') = take n l.
+Proof using.
+  induction n; destruct l; introv H; rew_list in H; auto.
+  { math. }
+  { rew_list. do 2 rewrite take_cons. fequals. applys IHn. math. }
+Qed.
+
+Lemma take_app_r : forall n l l',
+  (n >= length l) ->
+  take n (l ++ l') = l ++ take (n - length l) l'.
+Proof using.
+  intros. gen n. induction l; introv H.
+  { rewrite length_nil in *. do 2 rewrite app_nil_l.
+    fequals. math. }
+  { rewrite length_cons in *. destruct n as [|n'].
+    { false. math. }
+    { rew_list. rewrite take_cons. fequals. applys IHl. math. } }
+Qed.
+
+Lemma take_app_length : forall l l',
+  take (length l) (l ++ l') = l.
+Proof using.
+  intros. rewrite take_app_r; [|math].
+  math_rewrite (forall a, a - a = 0).
+  rewrite take_zero. rew_list~.
+Qed.
+
+Lemma take_at_length : forall l,
+  take (length l) l = l.
+Proof using.
+  intros. lets H: (@take_app_length l nil). rew_list~ in H.
+Qed.
+
+Lemma length_take : forall n l,
+  n <= length l ->
+  length (take n l) = n.
+Proof using.
+  induction n; introv H.
+  { rewrite~ take_zero. }
+  { destruct l.
+    { rew_list in H. math. } 
+    { rewrite take_cons. rew_list in *. rewrite IHn; math. } }
+Qed.
+
+Lemma take_and_drop : forall n l f r,
+  f = take n l -> 
+  r = drop n l -> 
+  n <= length l ->
+     l = f ++ r 
+  /\ length f = n
+  /\ length r = length l - n.
+Proof using.
+  Local Arguments drop : simpl nomatch. (* TODO: use drop lemma *)
+  induction n; introv F R L; simpls.
+  subst. splits~. math.
+  destruct l.
+    rewrite length_nil in L. math.
+    rewrite length_cons in L.
+     forwards~ (F'&R'&L'): (>> IHn l (take n l) r). math.
+     subst f.
+Arguments length [A] : simpl never.
+Arguments Init.Nat.sub : simpl never.
+ simpl. rewrite take_cons. splits.
+       rewrite app_cons. fequals.
+       rewrite length_cons. math.
+       rewrite length_cons. math.
+Qed.
+
+Lemma take_struct : forall n l,
+  n <= length l ->
+  exists l', length (take n l) = n
+          /\ l = (take n l) ++ l'.
+Proof using.
+  induction n; introv Len.
+  { exists~ l. }
+  { destruct l; rew_list in *. 
+    { math. }
+    { rew_list in *. rewrite take_cons.
+      destruct (IHn l) as [l' [Le Eq]]. { math. }
+      exists l'. rew_list. split.
+     { rewrite~ Le. }
+     { fequals~. } } }
+Qed.
+
+
+End Take.
+
+Arguments take [A] : simpl never.
+Arguments take_struct [A].
 
 
 (* ---------------------------------------------------------------------- *)
@@ -725,122 +969,40 @@ Proof using.
      rewrite app_cons. simpl. fequals~.
 Qed.
 
-(* todo: other properties of drop *)
+(* LATER: other properties of drop *)
 
 End Drop.
 
+Arguments drop [A] : simpl never.
 
-(* ---------------------------------------------------------------------- *)
-(** ** Take *)
 
-Section Take.
-Variable (A : Type).
-Implicit Types x : A.
-Implicit Types l : list A.
 
-Lemma take_nil : forall l,
-  take 0 l = nil.
-Proof using. auto. Qed.
+Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
+ app_cons_one
+ mem_nil mem_cons mem_app mem_last
+ mem_cons_eq mem_last_eq
+ keys_nil keys_cons keys_app keys_last
+ assoc_cons assoc_here : rew_lists.
 
-Lemma take_cons : forall x l n,
-  take (S n) (x::l) = x :: (take n l).
-Proof using. auto. Qed.
 
-Lemma take_cons_pred : forall x l n,
-  (n > 0) ->
-  take n (x::l) = x :: (take (n-1) l).
-Proof using.
-  introv H. destruct n. false; math.
-  rewrite take_cons. fequals_rec. math.
-Qed.
 
-Lemma take_app_l : forall n l l',
-  (n <= length l) ->
-  take n (l ++ l') = take n l.
-Proof using.
-  induction n; destruct l; introv H;
-   try rewrite length_nil in H;
-   try rewrite length_cons in H; auto.
-  math.
-  rewrite app_cons. do 2 rewrite take_cons. fequals.
-   applys IHn. math.
-Qed.
 
-Lemma take_app_r : forall n l l',
-  (n >= length l) ->
-  take n (l ++ l') = l ++ take (n - length l) l'.
-Proof using.
-  intros. gen n. induction l; introv H.
-  rewrite length_nil in *. do 2 rewrite app_nil_l.
-   fequals. math.
-  rewrite length_cons in *. destruct n as [|n'].
-    false. math.
-    do 2 rewrite app_cons. rewrite take_cons.
-    fequals. applys IHl. math.
-Qed.
+Arguments take_drop_last [A] {IA} : simpl never.
+Arguments nth_def [A] : simpl never.
+Arguments nth [A] {IA} : simpl never.
+Arguments update [A] : simpl never.
+Arguments make [A] : simpl never.
+Arguments fold [A] [B] : simpl never.
 
-Lemma take_app_length : forall l l',
-  take (length l) (l ++ l') = l.
-Proof using.
-  intros. rewrite take_app_r.
-  asserts_rewrite (forall a, a - a = 0). math.
-  rewrite take_nil. apply app_nil_r. math.
-Qed.
 
-Lemma take_at_length : forall l,
-  take (length l) l = l.
-Proof using.
-  intros. lets: (@take_app_length l nil).
-  rewrite~ app_nil_r in H.
-Qed.
 
-  (* todo: or name as take_length ? *)
-Lemma length_take : forall n l,
-  n <= length l ->
-  length (take n l) = n.
-Proof using.
-  induction n; introv H.
-  rewrite~ take_nil.
-  destruct l. rewrite length_nil in H. math.
-  rewrite take_cons.
-   rewrite length_cons in *. rewrite IHn; math.
-Qed.
 
-Lemma take_struct : forall n l,
-  n <= length l ->
-  exists l', length (take n l) = n
-          /\ l = (take n l) ++ l'.
-Proof using. (* todo: relate with drop ! *)
-  induction n; introv Len.
-    exists~ l.
-    destruct l.
-      rewrite length_nil in Len. math.
-      rewrite length_cons in *. rewrite take_cons.
-       destruct (IHn l) as [l' [Le Eq]]. math.
-       exists l'. split. rewrite length_cons. rewrite~ Le.
-     rewrite app_cons. fequals~.
-Qed.
 
-Lemma take_and_drop : forall n l f r,
-  f = take n l -> r = drop n l -> n <= length l ->
-  l = f ++ r /\ length f = n /\ length r = length l - n.
-Proof using.
-Local Arguments drop : simpl nomatch.
-  induction n; introv F R L; simpls.
-  subst. splits~. math.
-  destruct l.
-    rewrite length_nil in L. math.
-    rewrite length_cons in L.
-     forwards~ (F'&R'&L'): (>> IHn l (take n l) r). math.
-     subst f. rewrite take_cons. splits.
-       rewrite app_cons. fequals.
-       rewrite length_cons. math.
-       rewrite length_cons. math.
-Qed.
 
-End Take.
 
-Arguments take_struct [A].
+
+
+
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1492,51 +1654,7 @@ Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
  concat_nil concat_app concat_cons concat_last
   map_nil map_cons map_app map_last : rew_list.
 
-Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
- app_cons_one
- mem_nil mem_cons mem_app mem_last
- mem_cons_eq mem_last_eq
- keys_nil keys_cons keys_app keys_last
- assoc_cons assoc_here : rew_lists.
 
-Tactic Notation "rew_list" :=
-  autorewrite with rew_list.
-Tactic Notation "rew_list" "~" :=
-  rew_list; auto_tilde.
-Tactic Notation "rew_list" "*" :=
-  rew_list; auto_star.
-Tactic Notation "rew_list" "in" "*" :=
-  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_list).
-  (* autorewrite with rew_list in *. *)
-Tactic Notation "rew_list" "~" "in" "*" :=
-  rew_list in *; auto_tilde.
-Tactic Notation "rew_list" "*" "in" "*" :=
-  rew_list in *; auto_star.
-Tactic Notation "rew_list" "in" hyp(H) :=
-  autorewrite with rew_list in H.
-Tactic Notation "rew_list" "~" "in" hyp(H) :=
-  rew_list in H; auto_tilde.
-Tactic Notation "rew_list" "*" "in" hyp(H) :=
-  rew_list in H; auto_star.
-
-Tactic Notation "rew_lists" :=
-  autorewrite with rew_lists.
-Tactic Notation "rew_lists" "~" :=
-  rew_lists; auto_tilde.
-Tactic Notation "rew_lists" "*" :=
-  rew_lists; auto_star.
-Tactic Notation "rew_lists" "in" "*" :=
-  autorewrite with rew_lists in *.
-Tactic Notation "rew_lists" "~" "in" "*" :=
-  rew_lists in *; auto_tilde.
-Tactic Notation "rew_lists" "*" "in" "*" :=
-  rew_lists in *; auto_star.
-Tactic Notation "rew_lists" "in" hyp(H) :=
-  autorewrite with rew_lists in H.
-Tactic Notation "rew_lists" "~" "in" hyp(H) :=
-  rew_lists in H; auto_tilde.
-Tactic Notation "rew_lists" "*" "in" hyp(H) :=
-  rew_lists in H; auto_star.
 
 
 (* ********************************************************************** *)
@@ -1616,6 +1734,12 @@ Proof using. destruct l1; destruct l2; intros; tryfalse~; auto. Qed.
 Lemma nil_eq_app_inv : forall l1 l2,
   nil = l1 ++ l2 -> l1 = nil /\ l2 = nil.
 Proof using. intros. symmetry in H. apply* app_eq_nil_inv. Qed.
+
+Lemma length_zero_inv : forall l,
+  length l = 0%nat -> l = nil.
+Proof using.
+  destruct l. auto. rewrite length_cons. intros. false.
+Qed.
 
 Lemma app_eq_self_inv_r : forall l1 l2,
   l2 = l1 ++ l2 -> l1 = nil.
@@ -2453,6 +2577,14 @@ Lemma Mem_cons_eq : forall A (x y:A) l,
   Mem x (y::l) = ((x = y) \/ (Mem x l)).
 Proof using. intros. extens. iff H; inverts~ H. Qed.
 
+Lemma Mem_mem : forall A l (a:A),
+  Mem a l = mem a l.
+Proof using.
+  introv. extens. induction l; iff I; inverts I as I;
+    simpls; fold_bool; rew_refl in *; autos*.
+   inverts* I.
+Qed.
+
 Lemma Mem_app_or_eq : forall (A:Type) (l1 l2 : list A) x,
   Mem x (l1 ++ l2) = (Mem x l1 \/ Mem x l2).
 Proof using.
@@ -2483,6 +2615,23 @@ Proof using.
  lets H: Mem_rev M. rewrite~ rev_rev in H.
 Qed.
 
+Lemma Mem_conct concat_mem : forall Ls x,
+      mem x (concat Ls)
+  <-> exists L, mem L Ls /\ mem x L.
+Proof using.
+  introv. induction Ls.
+   simpl. iff I; inverts* I.
+  rewrite concat_cons. iff I.
+   rewrite mem_app in I. rew_refl in *. inverts I as I.
+    exists a. splits~. rewrite mem_cons. rew_refl*.
+    apply IHLs in I. lets (l&Il&Ix): (rm I).
+     exists l. rewrite mem_cons. rew_refl*.
+   rewrite mem_app. rew_refl. lets (l&Il&Ix): (rm I).
+    rewrite mem_cons in Il. rew_refl in Il. inverts Il as Il.
+     left~.
+     right~. apply* IHLs.
+Qed.
+
 Lemma Mem_inv : forall A (L:list A) x y,
   Mem x (y::L) -> x = y \/ x <> y /\ Mem x L.
 Proof using. introv H. tests: (x = y). eauto. inverts H. false. eauto. Qed.
@@ -2508,13 +2657,6 @@ Proof using.
     iff E. constructors*. inverts* E.
 Qed.
 
-Lemma Mem_mem : forall A l (a:A),
-  Mem a l = mem a l.
-Proof using.
-  introv. extens. induction l; iff I; inverts I as I;
-    simpls; fold_bool; rew_refl in *; autos*.
-   inverts* I.
-Qed.
 
 End MemFacts.
 

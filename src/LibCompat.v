@@ -63,6 +63,75 @@ Proof. destruct xs; reflexivity. Qed.
 Lemma tail_tl (xs : list A) : tail xs = List.tl xs.
 Proof. destruct xs; reflexivity. Qed.
 
+(* Replaced with rev_mem *)
+Lemma rev_mem : forall l x,
+  mem x l = mem x (rev l).
+Proof using.
+  introv. induction~ l. rewrite mem_cons. rewrite rev_cons.
+  rewrite mem_last. extens. rew_refl. rewrite* IHl.
+Qed.
+
+(* replaced with Mem_concat *)
+Lemma concat_mem : forall Ls x,
+      mem x (concat Ls)
+  <-> exists L, mem L Ls /\ mem x L.
+Proof using.
+  introv. induction Ls.
+   simpl. iff I; inverts* I.
+  rewrite concat_cons. iff I.
+   rewrite mem_app in I. rew_refl in *. inverts I as I.
+    exists a. splits~. rewrite mem_cons. rew_refl*.
+    apply IHLs in I. lets (l&Il&Ix): (rm I).
+     exists l. rewrite mem_cons. rew_refl*.
+   rewrite mem_app. rew_refl. lets (l&Il&Ix): (rm I).
+    rewrite mem_cons in Il. rew_refl in Il. inverts Il as Il.
+     left~.
+     right~. apply* IHLs.
+Qed.
+
+Definition app_cons := app_cons_l.
+Definition app_last := app_cons_r.
+Definition app_last_sym := app_last_l.
+
+(* [fold_left_app] is no longer in [rew_list] *)
+
+(* simulate with [rew_list] using [rev_cons] and [app_cons_r] *)
+Lemma rev_cons_app : forall x l1 l2,
+  rev (x :: l1) ++ l2 = rev l1 ++ (x::l2).
+Proof using. intros. rewrite rev_cons. rew_list~. Qed.
+
+(* idem *)
+Lemma app_rev_cons : forall x l1 l2,
+  l1 ++ rev (x :: l2) = (l1 ++ rev l2) & x.
+Proof using. intros. rewrite rev_cons. rewrite~ app_assoc. Qed.
+
+Definition map_eq_nil := map_eq_nil_inv.
+
+(* use Mem_map *)
+Lemma map_mem : forall f l (x : B),
+  mem x (map f l) <->
+    exists y, mem y l /\ x = f y.
+Proof using. (* TODO: simplify proof *)
+  induction l; introv.
+   simpl. iff I; false*. inverts* I.
+   rewrite map_cons. iff I.
+     rewrite mem_cons in I. rew_refl in I. inverts I as I.
+     exists a. splits~. rewrite mem_cons in *. rew_refl. left~.
+     apply IHl in I. lets (y&Iy&E): (rm I). exists y. splits~.
+      rewrite mem_cons. rew_refl. right~.
+    lets (y&Iy&E): (rm I). substs. rewrite mem_cons in *. rew_refl in *.
+     inverts Iy as I. left~.
+     right. apply IHl. exists~ y.
+Qed.
+
+Definition filter_mem_eq := mem_filter.
+
+Definition for_all := forall_bool.
+Definition exists_st := exists_bool.
+
+Definition take_nil := take_zero.
+
+
 
 (* ********************************************************************** *)
 (** Lemmas about [head] *)
