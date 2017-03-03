@@ -247,13 +247,9 @@ Notation "l & x" := (l ++ (x::nil))
 (** ** [rew_list] for basic list properties *)
 
 (** Normalize 
-  - [fold_left] except on [++]
-  - [fold_right] except on [++]
   - [++]
   - [length] 
   - [rev]
-  - [map]
-  - [concat]
 *)
 
 Tactic Notation "rew_list" :=
@@ -275,6 +271,42 @@ Tactic Notation "rew_list" "~" "in" hyp(H) :=
   rew_list in H; auto_tilde.
 Tactic Notation "rew_list" "*" "in" hyp(H) :=
   rew_list in H; auto_star.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** [rew_listx] for more advanced properties 
+  -- different from [rew_list] for efficiency reasons *)
+
+(** Normalize 
+  - what [rew_list] does
+  - [fold_left] except on [++]
+  - [fold_right] except on [++]
+  - [map]
+  - [concat]
+  - [split]
+  - [combine]
+*)
+
+Tactic Notation "rew_listx" :=
+  autorewrite with rew_listx.
+Tactic Notation "rew_listx" "~" :=
+  rew_listx; auto_tilde.
+Tactic Notation "rew_list" "*" :=
+  rew_listx; auto_star.
+Tactic Notation "rew_listx" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_listx).
+  (* autorewrite with rew_list in *. *)
+Tactic Notation "rew_listx" "~" "in" "*" :=
+  rew_listx in *; auto_tilde.
+Tactic Notation "rew_listx" "*" "in" "*" :=
+  rew_listx in *; auto_star.
+Tactic Notation "rew_listx" "in" hyp(H) :=
+  autorewrite with rew_listx in H.
+Tactic Notation "rew_listx" "~" "in" hyp(H) :=
+  rew_listx in H; auto_tilde.
+Tactic Notation "rew_listx" "*" "in" hyp(H) :=
+  rew_listx in H; auto_star.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** [rew_lists] for set and map operations on lists *)
@@ -352,14 +384,19 @@ Proof using. intros. rewrite~ <- app_cons_r. Qed.
 
 End App.
 
-Arguments append [A] : simpl never.
+Opaque append.
+(*Arguments append [A].  : simpl never. *)
 
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one : rew_list.
 (* Note: [app_last_l] may be safely added to [rew_list] *)
 
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
+  app_cons_one : rew_listx.
+
+Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one : rew_lists.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** FoldRight *)
@@ -393,8 +430,8 @@ End FoldRight.
 
 Arguments fold_right [A] [B] : simpl never.
 
-Hint Rewrite fold_right_nil fold_right_cons fold_right_last : rew_list.
-(* Note: [fold_right_app] may be safely added to [rew_list] *)
+Hint Rewrite fold_right_nil fold_right_cons fold_right_last : rew_listx.
+(* Note: [fold_right_app] may be safely added to [rew_listx] *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -430,8 +467,8 @@ End FoldLeft.
 Arguments fold_left [A] [B] : simpl never.
 
 Hint Rewrite fold_left_nil fold_left_cons 
-  fold_left_last : rew_list.
-(* Note: [fold_left_app] can be safely added to [rew_list] *)
+  fold_left_last : rew_listx.
+(* Note: [fold_left_app] can be safely added to [rew_listx] *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -453,7 +490,7 @@ Lemma length_app : forall l1 l2,
   length (l1 ++ l2) = length l1 + length l2.
 Proof using.
   intros. unfold length at 1. rewrite fold_right_app.
-  fold (length l2). induction l1; rew_list; simple~.
+  fold (length l2). induction l1; rew_listx; simple~.
 Qed.
 
 Lemma length_last : forall x l,
@@ -465,10 +502,13 @@ Qed.
 
 End Length.
 
-Arguments length [A] : simpl never.
+(* Arguments length [A]. : simpl never. *)
+Opaque length.
 
 Hint Rewrite length_nil length_cons length_app 
   length_last : rew_list.
+Hint Rewrite length_nil length_cons length_app 
+  length_last : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -491,14 +531,14 @@ Proof using.
    fold_left (fun x acc => x :: acc) nil l ++ accu).
   { induction l; intros.
     { auto. }
-    { rew_list. rewrite IHl. rewrite (@IHl (a::nil)). rew_list~. } }
+    { rew_listx. rewrite IHl. rewrite (@IHl (a::nil)). rew_list~. } }
   asserts K2: (forall accu,
    fold_left (fun x acc => x :: acc) accu (l1 ++ l2) =
    fold_left (fun x acc => x :: acc) nil l2 ++
    fold_left (fun x acc => x :: acc) nil l1 ++ accu).
   { induction l1; intros.
     { rew_list. apply K1. }
-    { rew_list. rewrite IHl1. rewrite (@K1 l1 (a::nil)). rew_list~. } }
+    { rew_listx. rewrite IHl1. rewrite (@K1 l1 (a::nil)). rew_list~. } }
   lets K3: (@K2 nil). rewrite app_nil_r in K3. auto.
 Qed.
 
@@ -539,8 +579,8 @@ End Rev.
 
 Arguments rev [A] : simpl never.
 
-Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev : rew_list.
-Hint Rewrite length_rev : rew_list.
+Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_list.
+Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_listx.
 (* Note: [fold_right_rev] may be safely added to [rew_list] *)
 
 
@@ -573,8 +613,8 @@ Proof using.
      { rew_list. gen accu.
        induction l2; intros. 
        { auto. }
-       { rew_list. rewrite~ IHl2. } }
-     { rew_list. fequals. } }
+       { rew_listx. rewrite~ IHl2. } }
+     { rew_listx. fequals. } }
   specializes H (@nil B). rew_list~ in H.
 Qed.
 
@@ -622,8 +662,8 @@ Proof using. introv. induction~ l. rewrite map_cons. fequals~. Qed.
 
 Arguments map [A] [B] : simpl never.
 
-Hint Rewrite map_nil map_cons map_app map_last : rew_list.
-(* Note: [map_rev] and [map_id] may be safely added to [rew_list] *)
+Hint Rewrite map_nil map_cons map_app map_last : rew_listx.
+(* Note: [map_rev] and [map_id] may be safely added to [rew_listx] *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -664,7 +704,7 @@ End Concat.
 
 Arguments concat [A] : simpl never.
 
-Hint Rewrite concat_nil concat_app concat_cons concat_last : rew_list.
+Hint Rewrite concat_nil concat_app concat_cons concat_last : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -699,7 +739,7 @@ Proof using.
     { auto. }
     { do 2 rewrite fold_right_cons. 
       case_if. rew_list. fequals. rewrite IHl2. fequals. }
-    { rew_list. case_if. rew_list. fequals. rewrite IHl1. fequals. } }
+    { rew_listx. case_if. rew_list. fequals. rewrite IHl1. fequals. } }
   specializes H (@nil A). rewrite~ app_nil_r in H.
 Qed.
 
@@ -784,7 +824,7 @@ Hint Rewrite mem_nil mem_cons mem_app mem_last
 (* ---------------------------------------------------------------------- *)
 (** ** Forall_bool *)
 
-(* LATER: properties of [for_all] *)
+(* LATER: properties of [forall_bool] *)
 
 Arguments forall_bool [A] : simpl never.
 
@@ -800,17 +840,114 @@ Arguments exists_bool [A] : simpl never.
 (* ---------------------------------------------------------------------- *)
 (** ** Combine *)
 
-(* LATER: properties of [combine] *)
+Section Combine.
+Variable (A B : Type).
+Implicit Types r : list A.
+Implicit Types s : list B.
+
+Lemma combine_nil : 
+  combine (@nil A) (@nil A) = nil.
+Proof using. auto. Qed.
+
+Lemma combine_cons : forall x r y s,
+  combine (x::r) (y::s) = (x,y)::(combine r s).
+Proof using. auto. Qed.
+
+Lemma combine_app : forall r1 r2 s1 s2,
+  length r1 = length s1 ->
+  combine (r1++r2) (s1++s2) = (combine r1 s1)++(combine r2 s2).
+Proof using. 
+  intros r1. induction r1; introv E; destruct s1; tryfalse.
+  { auto. }
+  { rew_list in *. do 2 rewrite combine_cons. rew_list. rewrite~ IHr1. }
+Qed.  
+
+Lemma combine_last : forall x r y s,
+  length r = length s ->
+  combine (r&x) (s&y) = (combine r s)&(x,y).
+Proof using. introv E. applys~ combine_app. Qed.
+
+Lemma combine_rev : forall r s,
+  length r = length s ->
+  combine (rev r) (rev s) = rev (combine r s).
+Proof using. 
+  intros r. induction r; introv E; destruct s; tryfalse.
+  { auto. }
+  { rew_list in *. rewrite combine_last, combine_cons.
+    { rewrite IHr. rew_list~. math. }
+    { rew_list. math. } }
+Qed.
+
+Lemma length_combine : forall r s,
+  length r = length s ->
+  length (combine r s) = length r.
+Proof using.
+  intros r. induction r; introv E; destruct s; tryfalse.
+  { auto. }
+  { rewrite combine_cons. rew_list~. }
+Qed.
+
+End Combine.
 
 Arguments combine [A] : simpl never.
+
+Hint Rewrite combine_nil combine_cons : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Split *)
 
-(* LATER: properties of [split] *)
+Section Split.
+Variable (A B : Type).
+Implicit Types (l : list (A*B)).
+
+Lemma split_nil : 
+  @split A B nil = (nil, nil).
+Proof using. auto. Qed.
+
+Lemma split_cons_let : forall x1 x2 l,
+  split ((x1,x2)::l) = let '(l1,l2) := split l in (x1::l1, x2::l2).
+Proof using. auto. Qed.
+
+Lemma split_cons : forall x1 x2 l s1 s2,
+  (s1,s2) = split l ->
+  split ((x1,x2)::l) = (x1::s1, x2::s2).
+Proof using.
+  introv H. rewrite split_cons_let. rewrite~ <- H.
+Qed.
+
+Lemma split_app : forall l1 l2 s11 s12 s21 s22,
+  (s11,s12) = split l1 ->
+  (s21,s22) = split l2 ->
+  split (l1++l2) = (s11++s21, s12++s22).
+Proof using.
+  intros l1. induction l1 as [|[x1 x2] l1']; introv H1 H2.
+  { rewrite split_nil in H1. inverts~ H1. }
+  { rewrite split_cons_let in H1. destruct (split l1') as [s11' s12'].
+    inverts H1. rew_list. rewrite split_cons_let. 
+    erewrite~ (IHl1' l2). }
+Qed.
+
+Lemma split_last : forall x1 x2 l s1 s2,
+  (s1,s2) = split l ->
+  split (l&(x1,x2)) = (s1&x1, s2&x2).
+Proof using. introv H. erewrite split_app; fequals. Qed.
+
+Lemma split_length_l : forall l s1 s2,
+  (s1,s2) = split l ->
+  length s1 = length l.
+Proof using. 
+  intros l. induction l as [|[x1 x2] l']; introv E.
+  { rewrite split_nil in E. inverts~ E. } 
+  { rewrite split_cons_let in E. destruct (split l') as [s1' s2'].
+    inverts E. rew_list. erewrite~ IHl'. }
+Qed.
+
+End Split.
 
 Arguments split [A] [B] : simpl never.
+
+Hint Rewrite split_nil : rew_list_ext.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -847,7 +984,7 @@ Proof using. auto. Qed.
 
 Definition take_cons := take_succ.
 
-Lemma take_cons_pred : forall x l n,
+Lemma take_cons_pos : forall x l n,
   (n > 0) ->
   take n (x::l) = x :: (take (n-1) l).
 Proof using.
@@ -859,9 +996,9 @@ Lemma take_app_l : forall n l l',
   (n <= length l) ->
   take n (l ++ l') = take n l.
 Proof using.
-  induction n; destruct l; introv H; rew_list in H; auto.
-  { math. }
-  { rew_list. do 2 rewrite take_cons. fequals. applys IHn. math. }
+  induction n; destruct l; introv H; rew_list in *; auto.
+  { false. math. }
+  { do 2 rewrite take_cons. fequals. applys IHn. math. }
 Qed.
 
 Lemma take_app_r : forall n l l',
@@ -876,7 +1013,7 @@ Proof using.
     { rew_list. rewrite take_cons. fequals. applys IHl. math. } }
 Qed.
 
-Lemma take_app_length : forall l l',
+Lemma take_prefix_length : forall l l',
   take (length l) (l ++ l') = l.
 Proof using.
   intros. rewrite take_app_r; [|math].
@@ -884,68 +1021,20 @@ Proof using.
   rewrite take_zero. rew_list~.
 Qed.
 
-Lemma take_at_length : forall l,
+Lemma take_full_length : forall l,
   take (length l) l = l.
 Proof using.
-  intros. lets H: (@take_app_length l nil). rew_list~ in H.
+  intros. lets H: (@take_prefix_length l nil). rew_list~ in H.
 Qed.
-
-Lemma length_take : forall n l,
-  n <= length l ->
-  length (take n l) = n.
-Proof using.
-  induction n; introv H.
-  { rewrite~ take_zero. }
-  { destruct l.
-    { rew_list in H. math. } 
-    { rewrite take_cons. rew_list in *. rewrite IHn; math. } }
-Qed.
-
-Lemma take_and_drop : forall n l f r,
-  f = take n l -> 
-  r = drop n l -> 
-  n <= length l ->
-     l = f ++ r 
-  /\ length f = n
-  /\ length r = length l - n.
-Proof using.
-  Local Arguments drop : simpl nomatch. (* TODO: use drop lemma *)
-  induction n; introv F R L; simpls.
-  subst. splits~. math.
-  destruct l.
-    rewrite length_nil in L. math.
-    rewrite length_cons in L.
-     forwards~ (F'&R'&L'): (>> IHn l (take n l) r). math.
-     subst f.
-Arguments length [A] : simpl never.
-Arguments Init.Nat.sub : simpl never.
- simpl. rewrite take_cons. splits.
-       rewrite app_cons. fequals.
-       rewrite length_cons. math.
-       rewrite length_cons. math.
-Qed.
-
-Lemma take_struct : forall n l,
-  n <= length l ->
-  exists l', length (take n l) = n
-          /\ l = (take n l) ++ l'.
-Proof using.
-  induction n; introv Len.
-  { exists~ l. }
-  { destruct l; rew_list in *. 
-    { math. }
-    { rew_list in *. rewrite take_cons.
-      destruct (IHn l) as [l' [Le Eq]]. { math. }
-      exists l'. rew_list. split.
-     { rewrite~ Le. }
-     { fequals~. } } }
-Qed.
-
 
 End Take.
 
-Arguments take [A] : simpl never.
-Arguments take_struct [A].
+(* Arguments take [A] : simpl never. *)
+Opaque take.
+
+Hint Rewrite take_zero take_succ : rew_list.
+(* Note: [take_prefix_length] and [take_full_length] 
+   may be safely added to [rew_list]. *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -956,103 +1045,126 @@ Variable (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 
-Lemma drop_struct : forall n (l:list A),
-  n <= length l -> exists l',
-  length l' = n /\ l = l' ++ (drop n l).
+Lemma drop_zero : forall l,
+  drop 0 l = l.
+Proof using. auto. Qed.
+
+Lemma drop_succ : forall x l n,
+  drop (S n) (x::l) = (drop n l).
+Proof using. auto. Qed.
+
+Definition drop_cons := drop_succ.
+
+Lemma drop_cons_pos : forall x l n,
+  (n > 0) ->
+  drop n (x::l) = drop (n-1) l.
 Proof using.
-  induction n; introv Len.
-    exists~ (@nil A).
-    destruct l. rewrite length_nil in Len. math.
-     destruct (IHn l) as [l' [Le Eq]].
-      rewrite length_cons in Len. math.
-     exists (a::l'). split. rewrite length_cons. rewrite~ Le.
-     rewrite app_cons. simpl. fequals~.
+  introv H. destruct n. false; math.
+  rewrite drop_cons. fequals_rec. math.
 Qed.
 
-(* LATER: other properties of drop *)
+Lemma drop_app_l : forall n l l',
+  (n <= length l) ->
+  drop n (l ++ l') = drop n l ++ l'.
+Proof using.
+  induction n; destruct l; introv H; rew_list in *; auto.
+  { false. math. }
+  { do 2 rewrite drop_cons. fequals. applys IHn. math. }
+Qed.
+
+Lemma drop_app_r : forall n l l',
+  (n >= length l) ->
+  drop n (l ++ l') = drop (n - length l) l'.
+Proof using.
+  induction n; destruct l; introv H; rew_list in *; auto.
+  { false. math. }
+  { rewrite drop_cons. rewrite IHn. fequals. math. }
+Qed.
+
+Lemma drop_app_length : forall l l',
+  drop (length l) (l ++ l') = l'.
+Proof using.
+  intros. rewrite drop_app_r; [|math].
+  math_rewrite (forall a, a - a = 0).
+  rewrite drop_zero. rew_list~.
+Qed.
+
+Lemma drop_at_length : forall l,
+  drop (length l) l = nil.
+Proof using.
+  intros. lets H: (@drop_app_length l nil). rew_list~ in H.
+Qed.
 
 End Drop.
 
-Arguments drop [A] : simpl never.
+Opaque drop.
+(* Arguments drop [A] : simpl never. *)
 
-
-
-Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
- app_cons_one
- mem_nil mem_cons mem_app mem_last
- mem_cons_eq mem_last_eq
- keys_nil keys_cons keys_app keys_last
- assoc_cons assoc_here : rew_lists.
-
-
-
-
-Arguments take_drop_last [A] {IA} : simpl never.
-Arguments nth_def [A] : simpl never.
-Arguments nth [A] {IA} : simpl never.
-Arguments update [A] : simpl never.
-Arguments make [A] : simpl never.
-Arguments fold [A] [B] : simpl never.
-
-
-
-
-
-
-
-
-
-
+Hint Rewrite drop_zero drop_succ : rew_list.
+(* Note: [drop_prefix_length] and [drop_full_length] 
+   may be safely added to [rew_list]. *)
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Split *)
+(** ** Take and Drop decomposition *)
 
-Section Split.
-Variable (A B : Type).
-Implicit Types (l : list (A*B)).
-Lemma split_nil : 
-  @split A B nil = (nil, nil).
-Proof using. auto. Qed.
-Lemma split_cons_let : forall x1 x2 l,
-  split ((x1,x2)::l) = let '(l1,l2) := split l in (x1::l1, x2::l2).
-Proof using. auto. Qed.
-Lemma split_cons : forall x1 x2 l s1 s2,
-  (s1,s2) = split l ->
-  split ((x1,x2)::l) = (x1::s1, x2::s2).
+Section TakeAndDrop.
+Variable (A : Type).
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma take_and_drop_struct : forall n l f r,
+  f = take n l -> 
+  r = drop n l -> 
+  n <= length l ->
+     l = f ++ r 
+  /\ length f = n
+  /\ length r = length l - n.
 Proof using.
-  introv H. rewrite split_cons_let. rewrite~ <- H.
-Qed.
-Lemma split_app : forall l1 l2 s11 s12 s21 s22,
-  (s11,s12) = split l1 ->
-  (s21,s22) = split l2 ->
-  split (l1++l2) = (s11++s21, s12++s22).
-Proof using.
-  intros l1. induction l1 as [|[x1 x2] l1']; introv H1 H2.
-  { rewrite split_nil in H1. inverts~ H1. }
-  { rewrite split_cons_let in H1. destruct (split l1') as [s11' s12'].
-    inverts H1. repeat rewrite app_cons. rewrite split_cons_let. 
-    erewrite~ (IHl1' l2). }
-Qed.
-Lemma split_last : forall x1 x2 l s1 s2,
-  (s1,s2) = split l ->
-  split (l&(x1,x2)) = (s1&x1, s2&x2).
-Proof using. introv H. erewrite split_app; fequals. Qed.
-Lemma split_length_l : forall l s1 s2,
-  (s1,s2) = split l ->
-  length s1 = length l.
-Proof using. 
-  intros l. induction l as [|[x1 x2] l']; introv E.
-  { rewrite split_nil in E. inverts~ E. } 
-  { rewrite split_cons_let in E. destruct (split l') as [s1' s2'].
-    inverts E. do 2 rewrite length_cons. erewrite~ IHl'. }
+  intros n. induction n; introv F R L.
+  { subst. rew_list. splits~. math. }
+  { destruct l; rew_list in L.
+    { rew_list in L. false. math. }
+    { forwards~ (F'&R'&L'): (>> IHn l (take n l) r). { math. }
+      subst f. rew_list. splits. { fequals. } { math. } { math. } } }
 Qed.
 
-End Split.
+Lemma take_struct : forall n l,
+  n <= length l ->
+  exists l', length (take n l) = n
+          /\ l = (take n l) ++ l'.
+Proof using. introv E. forwards* (E1&E2&E3): take_and_drop_struct. Qed.
+
+Lemma length_take : forall n l,
+  n <= length l ->
+  length (take n l) = n.
+Proof using. introv E. forwards~ (l'&N&M): take_struct n l. Qed.
+
+Lemma drop_struct : forall n l,
+  n <= length l ->
+  exists l', length l' = n 
+          /\ l = l' ++ (drop n l).
+Proof using. introv E. forwards* (E1&E2&E3): take_and_drop_struct. Qed.
+
+Lemma length_drop : forall n l,
+  n <= length l ->
+  length (drop n l) = length l - n.
+Proof using.
+  introv E. forwards~ (l'&N&M): drop_struct n l.
+  pattern l at 2. rewrite M. rew_list. math.
+Qed.
+
+End TakeAndDrop.
+
+Arguments take_and_drop_struct [A].
+Arguments take_struct [A].
+Arguments drop_struct [A].
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** TakeDropLast *)
+
+Arguments take_drop_last [A] {IA}.
 
 Section TakeDropLast.
 Context (A:Type) {IA:Inhab A}.
@@ -1076,7 +1188,7 @@ Proof using.
   rewrite take_drop_last_cons in E.
   destruct (take_drop_last t) as [u r].
   { destruct t; inverts E. rewrite* app_nil_l.
-    rewrite app_cons. fequals. applys IHt; auto_false*. }
+    rew_list. fequals. applys IHt; auto_false*. }
 Qed.
 
 Lemma take_drop_last_length : forall l l' x,
@@ -1089,6 +1201,8 @@ Proof using.
 Qed.
 
 End TakeDropLast.
+
+Arguments take_drop_last : simpl never.
 
 Arguments take_drop_last_spec [A] {IA}.
 Arguments take_drop_last_length [A] {IA}.
@@ -1115,11 +1229,19 @@ Lemma nth_def_succ : forall n x l d,
   nth_def d (S n) (x::l) = nth_def d n l.
 Proof using. introv. reflexivity. Qed.
 
+Definition nth_def_cons := nth_def_succ.
+
 End NthDef.
+
+Arguments nth_def [A] : simpl never.
+
+Hint Rewrite nth_def_nil nth_def_zero nth_def_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Nth *)
+
+Arguments nth [A] {IA}.
 
 Section Nth.
 Context (A:Type) {IA: Inhab A}.
@@ -1135,7 +1257,13 @@ Lemma nth_succ : forall n x l,
   nth (S n) (x::l) = nth n l.
 Proof using. intros. apply nth_def_succ. Qed.
 
+Definition nth_cons := nth_succ.
+
 End Nth.
+
+Hint Rewrite nth_zero nth_succ : rew_listx.
+
+Arguments nth : simpl never.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1147,11 +1275,13 @@ Implicit Types n : nat.
 Implicit Types x v : A.
 Implicit Types l : list A.
 
+(* Should not be exploited 
 Lemma update_nil : forall n v,
   update n v nil = nil.
 Proof using. auto. Qed.
+*) 
 
-Lemma update_cons : forall n v x l,
+Lemma update_cons_match : forall n v x l,
   update n v (x::l) = 
     match n with
     | 0 => v::l
@@ -1159,76 +1289,64 @@ Lemma update_cons : forall n v x l,
     end.
 Proof using. auto. Qed.
 
-Lemma update_cons_zero : forall v x l,
+Lemma update_zero : forall v x l,
   update 0 v (x::l) = v::l.
 Proof using. auto. Qed.
 
-Lemma update_cons_succ : forall n v x l,
+Lemma update_succ : forall n v x l,
   update (S n) v (x::l) = x::(update n v l).
 Proof using. auto. Qed.
+
+Definition update_cons := update_succ.
 
 Lemma update_cons_pos : forall n v x l,
   n > 0 ->
   update n v (x::l) = x::(update (n-1) v l).
 Proof using.
   intros. destruct n.
-    math.
-    rewrite~ update_cons_succ. fequals_rec. math.
+  { math. }
+  { rewrite~ update_succ. fequals_rec. math. }
 Qed.
 
-(* TODO: clean up the remaining lemmas in this section *)
-
-Lemma update_app_right : forall ys j xs i ij (v : A),
-  i = length xs ->
-  ij = i + j ->
-  update ij v (xs ++ ys) = xs ++ update j v ys.
+Lemma update_app_r : forall m l1 l2 n v,
+  n = length l1 + m ->
+  update n v (l1 ++ l2) = l1 ++ update m v l2.
 Proof.
-  induction xs as [| x xs ]; intros.
-  { repeat rewrite app_nil_l.
-    rewrite length_nil in *. replace ij with j by math.
-    reflexivity. }
-  { rewrite length_cons in *.
-    repeat rewrite app_cons.
-    replace ij with (1 + (length xs + j)) by math. simpl.
-    rewrite update_cons_succ.
-    erewrite (IHxs (i - 1)) by math.
-    reflexivity. }
+  intros m l1. gen m. induction l1 as [| x l1' ]; introv E; rew_list in *.
+  { fequals. math. }
+  { math_rewrite (n = S (length l1' + m)). rewrite update_cons.
+    fequals. erewrite* IHl1'. }
 Qed.
 
-Lemma update_app_right_here:
-  forall i (xs ys : list A) x y,
-  i = length xs ->
-  update i x (xs ++ y :: ys) = xs & x ++ ys.
+Lemma update_app_r_head : forall l1 l2 x v,
+  update (length l1) v (l1 ++ x :: l2) = l1 & v ++ l2.
 Proof.
-  intros.
-  rewrite app_assoc.
-  erewrite update_app_right with (j := 0) by eauto.
-  reflexivity. (* !? *)
+  intros. rewrite app_assoc. rewrites (>> update_app_r 0).
+  { math. } { rew_list~. }
 Qed.
 
-Lemma length_update : forall (l:list A) (i:nat) (v:A),
-  length (update i v l) = length l.
+Lemma length_update : forall n v l,
+  length (update n v l) = length l.
 Proof using.
-  intros. gen i. induction l; intros.
-  simple~.
-  destruct i as [|i'].
-    rewrite update_cons_zero. do 2 rewrite length_cons. auto.
-    rewrite update_cons_succ. do 2 rewrite length_cons. rewrite~ IHl.
+  intros. gen n. induction l; intros.
+  { auto. } 
+  { destruct n as [|n'].
+    { rewrite update_zero. rew_list~. }
+    { rewrite update_succ. rew_list. rewrite~ IHl. } }
 Qed.
 
-Lemma nth_update_eq : forall (l:list A) (i:nat) (v:A),
-  (i < length l)%nat ->
-  nth i (update i v l) = v.
+Lemma nth_update_eq : forall n l v,
+  (n < length l)%nat ->
+  nth n (update n v l) = v.
 Proof using.
-  introv N. gen l. induction i; intros.
-  destruct l.
-    simpl in N. rewrite length_nil in N. math.
-    simple~.
-  destruct l.
-    simpl in N. rewrite length_nil in N. math.
-    rewrite update_cons_succ. rewrite nth_succ. rewrite~ IHi.
-     rewrite length_cons in N. math.
+  intros n l. gen n. induction l; introv N; rew_list in N. 
+  { false. math. }
+  { destruct n as [|n'].
+    { rewrite update_zero. rew_listx~. }
+    { rewrite update_cons. rew_listx. applys* IHl. math. } }
 Qed.
+
+---
 
 Lemma nth_update_neq : forall `{Inhab A} (l:list A) (i j:nat) (v:A),
   (j < length l)%nat -> 
@@ -1246,6 +1364,30 @@ Proof using.
 Qed.
 
 End Update.
+
+
+
+
+
+
+Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
+ app_cons_one
+ mem_nil mem_cons mem_app mem_last
+ mem_cons_eq mem_last_eq
+ keys_nil keys_cons keys_app keys_last
+ assoc_cons assoc_here : rew_lists.
+
+
+Arguments update [A] : simpl never.
+Arguments make [A] : simpl never.
+Arguments fold [A] [B] : simpl never.
+
+
+
+
+
+
+
 
 
 (* ---------------------------------------------------------------------- *)

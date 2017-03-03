@@ -132,6 +132,25 @@ Definition exists_st := exists_bool.
 Definition take_nil := take_zero.
 
 
+Definition take_app_length := take_prefix_length.
+Definition take_at_length := take_full_length.
+
+Definition take_and_drop := take_and_drop_struct.
+
+(* use [rew_listx] instead of [rew_list] for [map] and [concat] *)
+
+Definition update_cons := update_cons_match.
+
+Definition update_cons_zero := update_zero.
+
+Definition update_cons_succ := update_succ.
+Definition take_cons_pred := take_cons_pos.
+
+Lemma update_app_right := update_app_r. (* reformulated *)
+Lemma update_app_right_here := update_app_r_head. (* reformulated *)
+
+Definition nth_update_eq := nth_update.
+
 
 (* ********************************************************************** *)
 (** Lemmas about [head] *)
