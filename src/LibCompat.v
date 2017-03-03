@@ -149,8 +149,6 @@ Definition take_cons_pred := take_cons_pos.
 Lemma update_app_right := update_app_r. (* reformulated *)
 Lemma update_app_right_here := update_app_r_head. (* reformulated *)
 
-Definition nth_update_eq := nth_update.
-
 
 (* ********************************************************************** *)
 (** Lemmas about [head] *)

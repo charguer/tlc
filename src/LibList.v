@@ -1259,6 +1259,15 @@ Proof using. intros. apply nth_def_succ. Qed.
 
 Definition nth_cons := nth_succ.
 
+Lemma nth_pos : forall n x l,
+  n > 0 ->
+  nth n (x::l) = nth (n-1) l.
+Proof using.
+  intros. destruct n. 
+  { false. math. } 
+  { rewrite nth_succ. fequals. math. } 
+Qed.
+
 End Nth.
 
 Hint Rewrite nth_zero nth_succ : rew_listx.
@@ -1336,7 +1345,7 @@ Proof using.
 Qed.
 
 Lemma nth_update_eq : forall n l v,
-  (n < length l)%nat ->
+  n < length l ->
   nth n (update n v l) = v.
 Proof using.
   intros n l. gen n. induction l; introv N; rew_list in N. 
@@ -1346,21 +1355,18 @@ Proof using.
     { rewrite update_cons. rew_listx. applys* IHl. math. } }
 Qed.
 
----
-
-Lemma nth_update_neq : forall `{Inhab A} (l:list A) (i j:nat) (v:A),
-  (j < length l)%nat -> 
-  (i <> j) ->
-  nth j (update i v l) = nth j l.
+Lemma nth_update_neq : forall n m l v,
+  m < length l -> 
+  n <> m ->
+  nth n (update m v l) = nth n l.
 Proof using.
-  introv. gen l i. induction j; introv B N.
-  destruct i.
-    false.
-    destruct l. rewrite length_nil in B. math. simple~.
-  destruct l. rewrite length_nil in B. math. destruct i.
-    rewrite update_cons_zero. do 2 rewrite nth_succ. auto.
-    rewrite update_cons_succ. do 2 rewrite nth_succ.
-     apply~ IHj. rewrite length_cons in B. math.
+  intros n m l. gen n m. induction l; introv B N; rew_list in B.
+  { false. math. }
+  { destruct m as [|m'].
+    { rewrite update_zero. do 2 (rewrite nth_pos; [|math]). auto. }
+    { rewrite update_succ. destruct n as [|n'].
+      { rew_listx~. }
+      { rew_listx. applys~ IHl. math. } } }
 Qed.
 
 End Update.
