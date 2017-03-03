@@ -71,176 +71,6 @@ Qed.
 
 
 (* ********************************************************************** *)
-(** * Operations *)
-
-(* ---------------------------------------------------------------------- *)
-(** ** Operations on lists *)
-
-Section Folds.
-Variables (A B : Type).
-Implicit Types l a b : list A.
-Implicit Types x : A.
-
-Fixpoint fold_right (f : A -> B -> B) (acc : B) l :=
-  match l with
-  | nil => acc
-  | x::L' => f x (fold_right f acc L')
-  end.
-
-Fixpoint fold_left (f : A -> B -> B) (acc : B) l :=
-  match l with
-  | nil => acc
-  | x::L' => fold_left f (f x acc) L'
-  end.
-
-End Folds.
-
-Section Operations.
-Variables (A B C : Type) (IA : Inhab A) 
-  (CA : Comparable A) (* DEPRECATED *).
-Implicit Types l a b : list A.
-Implicit Types x : A.
-
-Definition map (f : A -> B) :=
-  fold_right (fun x acc => (f x)::acc) (@nil B).
-
-Definition append l1 l2 :=
-  fold_right (fun x (acc:list A) => x::acc) l2 l1.
-
-Definition concat :=
-  fold_right append (@nil A).
-
-Definition rev :=
-  fold_left (fun x acc => x::acc) (@nil A).
-
-Definition length :=
-  fold_right (fun x acc => 1+acc) 0.
-
-Definition filter (f : predb A) :=
-  fold_right (fun x acc => if f x then x::acc else acc) (@nil A).
-
-Definition forall_bool (f : predb A) :=
-  fold_right (fun x acc => acc && (f x)) true.
-
-Definition exists_bool (f : predb A) :=
-  fold_right (fun x acc => acc || (f x)) false.
-
-(* DEPRECATED *)
-Definition count (f : predb A) :=
-  fold_right (fun x acc => (if f x then 1 else 0) + acc) 0.
-
-Fixpoint mem x l :=
-  match l with
-  | nil => false
-  | y::l' => (x '= y) || mem x l'
-  end.
-
-(* DEPRECATED *)
-Definition remove x :=
-  filter (fun y => decide (y <> x)).
-
-(* DEPRECATED *)
-Fixpoint removes l2 l1 :=
-  match l2 with
-  | nil => l1
-  | x::l2' => removes l2' (remove x l1)
-  end.
-
-Fixpoint split (l: list (A*B)) : (list A * list B) :=
-  match l with
-  | nil => (nil,nil)
-  | (a,b)::l' => let (la,lb) := split l' in (a::la, b::lb)
-  end.
-
-Fixpoint combine (la : list A) (lb : list B) : list (A*B) :=
-  match la with
-  | nil => nil
-  | a::la' =>
-    match lb with
-    | nil => arbitrary
-    | b::lb' => (a,b)::(combine la' lb')
-    end
-  end.
-
-(* TODO: a function that combines drop & take *)
-
-Fixpoint drop (n:nat) (l:list A) : list A :=
-  match n with
-  | 0 => l
-  | S n' => match l with
-    | nil => nil
-    | a::l' => drop n' l'
-    end
-  end.
-
-Fixpoint take (n:nat) (l:list A) : list A :=
-  match n with
-  | 0 => nil
-  | S n' => match l with
-    | nil => nil
-    | a::l' => a::(take n' l')
-    end
-  end.
-
-Fixpoint take_drop_last (l:list A) : (list A)*A :=
-  match l with
-  | nil => arbitrary
-  | x::l' =>
-    match l' with
-    | nil => (nil,x)
-    | _ => let (t,y) := take_drop_last l' in
-           (x::t, y)
-    end
-  end.
-
-Fixpoint nth_def (d:A) (n:nat) (l:list A) : A :=
-  match l with
-  | nil => d
-  | x::l' =>
-     match n with
-     | 0 => x
-     | S n' => nth_def d n' l'
-     end
-  end.
-
-Definition nth := nth_def arbitrary.
-
-Fixpoint update (n:nat) (v:A) (l:list A) {struct l} : list A :=
-  match l with
-  | nil => nil
-  | x::l' =>
-     match n with
-     | 0 => v::l'
-     | S n' => x::update n' v l'
-     end
-  end.
-
-Fixpoint make (n:nat) (v:A) : list A :=
-   match n with
-   | 0 => nil
-   | S n' => v :: make n' v
-   end.
-
-End Operations.
-
-Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
-  fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Notation *)
-
-(** [l1 ++ l2] concatenates two lists *)
-
-Infix "++" := append (right associativity, at level 60) : liblist_scope.
-
-(** [l & x] extends the list [l] with the value [x] at the right end *)
-
-Notation "l & x" := (l ++ (x::nil))
-  (at level 28, left associativity) : liblist_scope.
-
-
-(* ********************************************************************** *)
 (** * Normalization tactics *)
 
 (* ---------------------------------------------------------------------- *)
@@ -343,6 +173,34 @@ Tactic Notation "rew_lists" "*" "in" hyp(H) :=
 (** * Properties of operations *)
 
 (* ---------------------------------------------------------------------- *)
+(** ** Core operations *)
+
+Fixpoint fold_right A B (f : A -> B -> B) (acc : B) l :=
+  match l with
+  | nil => acc
+  | x::L' => f x (fold_right f acc L')
+  end.
+
+Definition append A (l1 l2 : list A) :=
+  fold_right (fun x (acc:list A) => x::acc) l2 l1.
+
+(* Properties appear further *)
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Notation *)
+
+(** [l1 ++ l2] concatenates two lists *)
+
+Infix "++" := append (right associativity, at level 60) : liblist_scope.
+
+(** [l & x] extends the list [l] with the value [x] at the right end *)
+
+Notation "l & x" := (l ++ (x::nil))
+  (at level 28, left associativity) : liblist_scope.
+
+
+(* ---------------------------------------------------------------------- *)
 (** ** App *)
 
 Section App.
@@ -385,7 +243,6 @@ Proof using. intros. rewrite~ <- app_cons_r. Qed.
 End App.
 
 Opaque append.
-(*Arguments append [A].  : simpl never. *)
 
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one : rew_list.
@@ -428,7 +285,7 @@ Proof using. intros. rewrite~ fold_right_app. Qed.
 
 End FoldRight.
 
-Arguments fold_right [A] [B] : simpl never.
+Opaque fold_right.
 
 Hint Rewrite fold_right_nil fold_right_cons fold_right_last : rew_listx.
 (* Note: [fold_right_app] may be safely added to [rew_listx] *)
@@ -442,6 +299,12 @@ Variables A B : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types (f : A -> B -> B) (i : B).
+
+Fixpoint fold_left f i l :=
+  match l with
+  | nil => i
+  | x::L' => fold_left f (f x i) L'
+  end.
 
 Lemma fold_left_nil : forall f i,
   fold_left f i nil = i.
@@ -464,7 +327,7 @@ Proof using. intros. rewrite~ fold_left_app. Qed.
 
 End FoldLeft.
 
-Arguments fold_left [A] [B] : simpl never.
+Opaque fold_left.
 
 Hint Rewrite fold_left_nil fold_left_cons 
   fold_left_last : rew_listx.
@@ -478,6 +341,9 @@ Section Length.
 Variable A : Type.
 Implicit Types l : list A.
 
+Definition length l :=
+  fold_right (fun x acc => 1+acc) 0 l.
+
 Lemma length_nil :
   length (@nil A) = 0.
 Proof using. auto. Qed.
@@ -490,7 +356,9 @@ Lemma length_app : forall l1 l2,
   length (l1 ++ l2) = length l1 + length l2.
 Proof using.
   intros. unfold length at 1. rewrite fold_right_app.
-  fold (length l2). induction l1; rew_listx; simple~.
+  fold (length l2). induction l1; rew_listx.
+  { auto. }
+  { rewrite length_cons. rewrite IHl1. math. }
 Qed.
 
 Lemma length_last : forall x l,
@@ -502,7 +370,6 @@ Qed.
 
 End Length.
 
-(* Arguments length [A]. : simpl never. *)
 Opaque length.
 
 Hint Rewrite length_nil length_cons length_app 
@@ -518,6 +385,9 @@ Section Rev.
 Variable A : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
+
+Definition rev l :=
+  fold_left (fun x acc => x::acc) (@nil A) l.
 
 Lemma rev_nil :
   rev (@nil A) = nil.
@@ -560,7 +430,7 @@ Lemma rev_inj : forall l1 l2,
   rev l1 = rev l2 ->
   l1 = l2.
 Proof using.
-   introv E. forwards E': f_equal (@rev A) (rm E).
+   introv E. forwards E': f_equal rev (rm E).
    do 2 rewrite~ rev_rev in E'. 
 Qed.
 
@@ -572,12 +442,12 @@ Lemma fold_right_rev : forall B (f : A -> B -> B) i l,
   fold_right f i (rev l) = fold_left f i l.
 Proof using.
   introv. gen i. induction~ l.
-  { introv. rewrite rev_cons. rewrite* fold_right_last. }
+  { introv. rewrite rev_cons. rew_listx~. }
 Qed.
 
 End Rev.
 
-Arguments rev [A] : simpl never.
+Opaque rev.
 
 Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_list.
 Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_listx.
@@ -592,6 +462,9 @@ Variable (A B : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types f : A -> B.
+
+Definition map f l :=
+  fold_right (fun x acc => (f x)::acc) (@nil B) l.
 
 Lemma map_nil : forall f,
   map f nil = nil.
@@ -660,7 +533,7 @@ Lemma map_id : forall A (l:list A),
   map id l = l.
 Proof using. introv. induction~ l. rewrite map_cons. fequals~. Qed.
 
-Arguments map [A] [B] : simpl never.
+Opaque map.
 
 Hint Rewrite map_nil map_cons map_app map_last : rew_listx.
 (* Note: [map_rev] and [map_id] may be safely added to [rew_listx] *)
@@ -673,6 +546,10 @@ Section Concat.
 Variable A : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
+Implicit Types m : list (list A).
+
+Definition concat m :=
+  fold_right (@append A) (@nil A) m.
 
 Lemma concat_nil :
   concat (@nil (list A)) = nil.
@@ -702,7 +579,7 @@ Proof using. intros. rewrite~ concat_app. rewrite~ concat_one. Qed.
 
 End Concat.
 
-Arguments concat [A] : simpl never.
+Opaque concat.
 
 Hint Rewrite concat_nil concat_app concat_cons concat_last : rew_listx.
 
@@ -715,6 +592,9 @@ Variable (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types f : A -> bool.
+
+Definition filter f l :=
+  fold_right (fun x acc => if f x then x::acc else acc) (@nil A) l.
 
 Lemma filter_nil : forall f,
   filter f nil = nil.
@@ -751,7 +631,7 @@ Proof using. intros. rewrite~ filter_app. Qed.
 
 End Filter.
 
-Arguments filter [A] : simpl never.
+Opaque filter.    
 
 
 (* ---------------------------------------------------------------------- *)
@@ -761,6 +641,12 @@ Section MemBool.
 Variable A : Type.
 Implicit Types x k : A.
 Implicit Types l : list A.
+
+Fixpoint mem x l :=
+  match l with
+  | nil => false
+  | y::l' => (x '= y) || mem x l'
+  end.
 
 Lemma mem_nil : forall k,
   mem k nil = false.
@@ -815,7 +701,7 @@ Qed.
 
 End MemBool.
 
-Arguments mem [A] : simpl never.
+Opaque mem.
 
 Hint Rewrite mem_nil mem_cons mem_app mem_last
  mem_cons_eq mem_last_eq : rew_lists.
@@ -826,7 +712,10 @@ Hint Rewrite mem_nil mem_cons mem_app mem_last
 
 (* LATER: properties of [forall_bool] *)
 
-Arguments forall_bool [A] : simpl never.
+Definition forall_bool A (f : A->bool) (l:list A) :=
+  fold_right (fun x acc => acc && (f x)) true l.
+
+Opaque forall_bool.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -834,7 +723,10 @@ Arguments forall_bool [A] : simpl never.
 
 (* LATER: properties of [exists_bool] *)
 
-Arguments exists_bool [A] : simpl never.
+Definition exists_bool A (f : A->bool) (l:list A) :=
+  fold_right (fun x acc => acc || (f x)) false l.
+
+Opaque forall_bool.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -845,8 +737,18 @@ Variable (A B : Type).
 Implicit Types r : list A.
 Implicit Types s : list B.
 
+Fixpoint combine r s : list (A*B) :=
+  match r with
+  | nil => nil
+  | a::r' =>
+    match s with
+    | nil => arbitrary
+    | b::s' => (a,b)::(combine r' s')
+    end
+  end.
+
 Lemma combine_nil : 
-  combine (@nil A) (@nil A) = nil.
+  combine (@nil A) (@nil B) = nil.
 Proof using. auto. Qed.
 
 Lemma combine_cons : forall x r y s,
@@ -889,7 +791,7 @@ Qed.
 
 End Combine.
 
-Arguments combine [A] : simpl never.
+Opaque combine.
 
 Hint Rewrite combine_nil combine_cons : rew_listx.
 
@@ -901,8 +803,14 @@ Section Split.
 Variable (A B : Type).
 Implicit Types (l : list (A*B)).
 
+Fixpoint split l : (list A * list B) :=
+  match l with
+  | nil => (nil,nil)
+  | (a,b)::l' => let (la,lb) := split l' in (a::la, b::lb)
+  end.
+
 Lemma split_nil : 
-  @split A B nil = (nil, nil).
+  split nil = (nil, nil).
 Proof using. auto. Qed.
 
 Lemma split_cons_let : forall x1 x2 l,
@@ -945,25 +853,36 @@ Qed.
 
 End Split.
 
-Arguments split [A] [B] : simpl never.
+Opaque split.
 
-Hint Rewrite split_nil : rew_list_ext.
+Hint Rewrite split_nil : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Remove *)
 
+Definition remove `{CA:Comparable A} (x:A) (l:list A) :=
+  filter (fun y => decide (y <> x)) l.
+
 (* LATER: properties of [remove] *)
 
-Arguments remove [A] {CA} : simpl never.
+Arguments remove [A] {CA}.
+Opaque remove.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Removes *)
 
+Fixpoint removes `{CA:Comparable A} (l1 l2:list A) :=
+  match l1 with
+  | nil => l2
+  | x::l1' => removes l1' (remove x l2)
+  end.
+
 (* LATER: properties of [removes] *)
 
-Arguments removes [A] {CA} : simpl never.
+Arguments removes [A] {CA}.
+Opaque removes.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -971,8 +890,18 @@ Arguments removes [A] {CA} : simpl never.
 
 Section Take.
 Variable (A : Type).
+Implicit Types n : nat.
 Implicit Types x : A.
 Implicit Types l : list A.
+
+Fixpoint take n l : list A :=
+  match n with
+  | 0 => nil
+  | S n' => match l with
+    | nil => nil
+    | a::l' => a::(take n' l')
+    end
+  end.
 
 Lemma take_zero : forall l,
   take 0 l = nil.
@@ -1042,8 +971,18 @@ Hint Rewrite take_zero take_succ : rew_list.
 
 Section Drop.
 Variable (A : Type).
+Implicit Types n : nat.
 Implicit Types x : A.
 Implicit Types l : list A.
+
+Fixpoint drop n l : list A :=
+  match n with
+  | 0 => l
+  | S n' => match l with
+    | nil => nil
+    | a::l' => drop n' l'
+    end
+  end.
 
 Lemma drop_zero : forall l,
   drop 0 l = l.
@@ -1164,12 +1103,21 @@ Arguments drop_struct [A].
 (* ---------------------------------------------------------------------- *)
 (** ** TakeDropLast *)
 
-Arguments take_drop_last [A] {IA}.
-
 Section TakeDropLast.
 Context (A:Type) {IA:Inhab A}.
 Implicit Types x : A.
 Implicit Types l : list A.
+
+Fixpoint take_drop_last l : (list A)*A :=
+  match l with
+  | nil => arbitrary
+  | x::l' =>
+    match l' with
+    | nil => (nil,x)
+    | _ => let (t,y) := take_drop_last l' in
+           (x::t, y)
+    end
+  end.
 
 Lemma take_drop_last_cons : forall (x:A) (l: list A),
   take_drop_last (x::l) = 
@@ -1202,8 +1150,8 @@ Qed.
 
 End TakeDropLast.
 
-Arguments take_drop_last : simpl never.
-
+Opaque take_drop_last.
+Arguments take_drop_last [A] {IA}.
 Arguments take_drop_last_spec [A] {IA}.
 Arguments take_drop_last_length [A] {IA}.
 
@@ -1216,6 +1164,16 @@ Variables (A:Type).
 Implicit Types n : nat.
 Implicit Types d x : A.
 Implicit Types l : list A.
+
+Fixpoint nth_def d n l : A :=
+  match l with
+  | nil => d
+  | x::l' =>
+     match n with
+     | 0 => x
+     | S n' => nth_def d n' l'
+     end
+  end.
 
 Lemma nth_def_nil : forall n d,
   nth_def d n nil = d.
@@ -1241,13 +1199,13 @@ Hint Rewrite nth_def_nil nth_def_zero nth_def_succ : rew_listx.
 (* ---------------------------------------------------------------------- *)
 (** ** Nth *)
 
-Arguments nth [A] {IA}.
-
 Section Nth.
 Context (A:Type) {IA: Inhab A}.
 Implicit Types n : nat.
 Implicit Types x : A.
 Implicit Types l : list A.
+
+Definition nth := nth_def arbitrary.
 
 Lemma nth_zero : forall x l,
   nth 0 (x::l) = x.
@@ -1270,9 +1228,10 @@ Qed.
 
 End Nth.
 
-Hint Rewrite nth_zero nth_succ : rew_listx.
+Arguments nth [A] {IA}.
+Opaque nth.
 
-Arguments nth : simpl never.
+Hint Rewrite nth_zero nth_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1283,6 +1242,16 @@ Context (A:Type) {IA: Inhab A}.
 Implicit Types n : nat.
 Implicit Types x v : A.
 Implicit Types l : list A.
+
+Fixpoint update n v l : list A :=
+  match l with
+  | nil => nil
+  | x::l' =>
+     match n with
+     | 0 => v::l'
+     | S n' => x::update n' v l'
+     end
+  end.
 
 (* Should not be exploited 
 Lemma update_nil : forall n v,
@@ -1405,6 +1374,13 @@ Implicit Types n : nat.
 Implicit Types v : A.
 Implicit Types l : list A.
 
+
+Fixpoint make (n:nat) (v:A) : list A :=
+   match n with
+   | 0 => nil
+   | S n' => v :: make n' v
+   end.
+
 Lemma make_zero : forall v,
   make 0 v = nil.
 Proof using. auto. Qed.
@@ -1447,6 +1423,12 @@ End Make.
 
 Section Fold.
 Variables (A B:Type) (m:monoid_def B) (L:list A) (f:A->B).
+
+Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
+  fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
+
+
+
 Lemma fold_nil :
   fold m f nil = monoid_neutral m.
 Proof using. auto. Qed.
@@ -3538,3 +3520,8 @@ Proof using.
 Qed.
 
 End PrefixClosed.
+
+
+(* DEPRECATED *)
+Definition count (f : predb A) :=
+  fold_right (fun x acc => (if f x then 1 else 0) + acc) 0.
