@@ -427,17 +427,17 @@ Hint Rewrite fold_right_nil fold_right_cons fold_right_last : rew_listx.
 (* ---------------------------------------------------------------------- *)
 (** ** FoldLeft *)
 
+Fixpoint fold_left A B (f:A->B->B) (i:B) (l:list A) : B :=
+  match l with
+  | nil => i
+  | x::L' => fold_left f (f x i) L'
+  end.
+
 Section FoldLeft.
 Variables A B : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types (f : A -> B -> B) (i : B).
-
-Fixpoint fold_left f i l :=
-  match l with
-  | nil => i
-  | x::L' => fold_left f (f x i) L'
-  end.
 
 Lemma fold_left_nil : forall f i,
   fold_left f i nil = i.
@@ -470,12 +470,12 @@ Hint Rewrite fold_left_nil fold_left_cons
 (* ---------------------------------------------------------------------- *)
 (** ** Length *)
 
+Definition length A (l:list A) : nat :=
+  fold_right (fun x acc => 1+acc) 0 l.
+
 Section Length.
 Variable A : Type.
 Implicit Types l : list A.
-
-Definition length l :=
-  fold_right (fun x acc => 1+acc) 0 l.
 
 Lemma length_nil :
   length (@nil A) = 0.
@@ -661,10 +661,22 @@ Lemma mem_last_inv : forall l x y,
   (x <> y /\ mem x l) \/ x = y.
 Proof using. introv E. rewrite~ mem_last_eq in E. Qed.
 
-Lemma list_no_mem_inv :
+Lemma mem_inv_middle_first : forall l x,
+  mem x l ->
+  exists l1 l2, l = l1++x::l2 /\ ~ mem x l1.
+Proof using.
+  introv M. induction M.
+  { }
+  { }
+Qed.
 
-Lemma nil_mem : forall l,
-  (forall x : A, ~ mem x l) ->
+Lemma mem_inv_middle : forall l x,
+  mem x l ->
+  exists l1 l2, l = l1++x::l2.
+Proof using. introv E. forwards*: mem_inv_middle E. Qed.
+
+Lemma list_no_mem : forall l,
+  (forall x, ~ mem x l) ->
   l = nil.
 Proof using. introv P. destruct~ l. false P. simpl. rew_refl*. Qed.
 
@@ -794,17 +806,9 @@ End Nth.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Nth as a partial function *)
+(** ** [nth] as a partial function with a default *)
 
-(*--- [nth] with a default ---*)
-
-Section NthDef.
-Variables (A:Type).
-Implicit Types n : nat.
-Implicit Types d x : A.
-Implicit Types l : list A.
-
-Fixpoint nth_def d n l : A :=
+Fixpoint nth_def (d:A) (n:nat) (l:list A) : A :=
   match l with
   | nil => d
   | x::l' =>
@@ -813,6 +817,12 @@ Fixpoint nth_def d n l : A :=
      | S n' => nth_def d n' l'
      end
   end.
+
+Section NthDef.
+Variables (A:Type).
+Implicit Types n : nat.
+Implicit Types d x : A.
+Implicit Types l : list A.
 
 Lemma nth_def_nil : forall n d,
   nth_def d n nil = d.
@@ -848,7 +858,9 @@ Arguments nth_def [A] : simpl never.
 
 Hint Rewrite nth_def_nil nth_def_zero nth_def_succ : rew_listx.
 
-(*--- [nth] with an arbitrary default ---*)
+
+(* ---------------------------------------------------------------------- *)
+(** ** [nth] as a partial function *)
 
 Section NthFunc.
 Context (A:Type) {IA: Inhab A}.
@@ -904,16 +916,17 @@ Opaque nth.
 Hint Rewrite nth_zero nth_succ : rew_listx.
 
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Rev *)
+
+Definition rev A (l:list A) : list A :=
+  fold_left (fun x acc => x::acc) (@nil A) l.
 
 Section Rev.
 Variable A : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
-
-Definition rev l :=
-  fold_left (fun x acc => x::acc) (@nil A) l.
 
 Lemma rev_nil :
   rev (@nil A) = nil.
@@ -1034,25 +1047,277 @@ End RevInversion.
 
 
 (* ---------------------------------------------------------------------- *)
-(* ** No_duplicates *)
+(** * Make *)
 
-(** [No_duplicates L] asserts that [L] does not contain any
+Fixpoint make A (n:nat) (v:A) : list A :=
+   match n with
+   | 0 => nil
+   | S n' => v :: make n' v
+   end.
+
+Section Make.
+Context (A:Type) {IA:Inhab A}.
+Implicit Types i n : nat.
+Implicit Types v : A.
+Implicit Types l : list A.
+
+Lemma make_zero : forall v,
+  make 0 v = nil.
+Proof using. auto. Qed.
+
+Lemma make_succ : forall n v,
+  make (S n) v = v::(make n v).
+Proof using. auto. Qed.
+
+Lemma make_pos : forall n v,
+  n > 0 ->
+  make n v = v::(make (n-1) v).
+Proof using.
+  introv E. destruct n.
+    math.
+    rewrite make_succ. fequals_rec. math. 
+Qed.
+
+Lemma length_make : forall n v,
+  length (make n v) = n.
+Proof using.
+  intros. induction n.
+  auto.
+  rewrite make_succ. rewrite length_cons. math.
+Qed.
+
+Lemma nth_make : forall i n v,
+  i < n -> 
+  nth i (make n v) = v.
+Proof using.
+  introv. gen n; induction i; introv E.
+  destruct n. math. auto.
+  destruct n. math. rewrite make_succ. rewrite nth_succ. rewrite~ IHi. math.
+Qed.
+
+End Make.
+
+Opaque make.
+
+
+(* ---------------------------------------------------------------------- *)
+(* ** Update as a relation *)
+
+(** [Update n x L L'] asserts [L'] is the list obtained by substituting
+    in [L] the item at index [n] with [x]. *)
+
+Definition Update A (n:nat) (x:A) l l' :=
+    length l' = length l
+  /\ (forall y m, Nth m l y -> m <> n -> Nth m l' y)
+  /\ Nth n l' x.
+
+Section Update.
+Variables A : Type.
+Implicit Types x : A.
+Implicit Types l : list A.
+Implicit Types n : nat.
+Hint Constructors Nth.
+
+Lemma Update_zero : forall x y l,
+  Update 0 x (y::l) (x::l).
+Proof using.
+  intros. splits.
+  rew_length~.
+  introv M H. inverts* M.
+  autos*.
+Qed.
+
+Lemma Update_cons : forall i x y l l',
+  Update i x l l' -> 
+  Update (S i) x (y::l) (y::l').
+Proof using.
+  introv (L&O&E). splits.
+  rew_length~.
+  introv M H. inverts* M.
+  autos*.
+Qed.
+
+Definition Update_succ := Update_cons.
+
+Lemma Update_app_l : forall i x l1 l1' l2,
+  Update i x l1 l1' -> 
+  Update i x (l1++l2) (l1'++l2).
+Proof using.
+  introv (L&O&E). splits.
+  rew_length~.
+  introv M H. destruct (Nth_app_inv _ _ M).
+    apply~ Nth_app_l.
+    unpack. apply* Nth_app_r. math.
+  apply~ Nth_app_l.
+Qed.
+
+Lemma Update_app_r : forall i j x l1 l2 l2',
+  Update j x l2 l2' -> 
+  i = (j + length l1)%nat -> 
+  Update i x (l1++l2) (l1++l2').
+Proof using.
+  introv (L&O&E) Eq. splits.
+  rew_length~.
+  introv M H. destruct (Nth_app_inv _ _ M).
+    apply~ Nth_app_l.
+    unpack. apply* Nth_app_r. apply* O. math. math.
+  apply* Nth_app_r.
+Qed.
+
+Lemma Update_length : forall i x l l',
+  Update i x l l' -> 
+  length l = length l'.
+Proof using. introv (L&O&E). auto. Qed.
+
+Lemma Update_not_nil_l : forall i x l1 l2,
+  Update i x l1 l2 -> 
+  l1 <> nil.
+Proof using. introv (L&O&E) K. subst. inverts E. Qed.
+
+Lemma Update_not_nil_r : forall i x l1 l2,
+  Update i x l1 l2 -> 
+  l2 <> nil.
+Proof using. introv (L&O&E) K. subst. inverts E. Qed.
+
+End Update.
+
+
+(* ---------------------------------------------------------------------- *)
+(** * Update as a function *)
+
+Fixpoint update A (n:nat) (v:A) (l:list A) { struct l } : list A :=
+  match l with
+  | nil => nil
+  | x::l' =>
+     match n with
+     | 0 => v::l'
+     | S n' => x::update n' v l'
+     end
+  end.
+
+Section Update.
+Context (A:Type) {IA: Inhab A}.
+Implicit Types n : nat.
+Implicit Types x v : A.
+Implicit Types l : list A.
+
+Lemma update_nil : forall n v,
+  update n v nil = nil.
+Proof using. auto. Qed. 
+
+Lemma update_cons_match : forall n v x l,
+  update n v (x::l) = 
+    match n with
+    | 0 => v::l
+    | S n' => x::(update n' v l)
+    end.
+Proof using. auto. Qed.
+
+Lemma update_zero : forall v x l,
+  update 0 v (x::l) = v::l.
+Proof using. auto. Qed.
+
+Lemma update_succ : forall n v x l,
+  update (S n) v (x::l) = x::(update n v l).
+Proof using. auto. Qed.
+
+Definition update_cons := update_succ.
+
+Lemma update_cons_pos : forall n v x l,
+  n > 0 ->
+  update n v (x::l) = x::(update (n-1) v l).
+Proof using.
+  intros. destruct n.
+  { math. }
+  { rewrite~ update_succ. fequals_rec. math. }
+Qed.
+
+Lemma update_app_r : forall m l1 l2 n v,
+  n = length l1 + m ->
+  update n v (l1 ++ l2) = l1 ++ update m v l2.
+Proof.
+  intros m l1. gen m. induction l1 as [| x l1' ]; introv E; rew_list in *.
+  { fequals. math. }
+  { math_rewrite (n = S (length l1' + m)). rewrite update_cons.
+    fequals. erewrite* IHl1'. }
+Qed.
+
+Lemma update_prefix_length : forall l1 l2 x v,
+  update (length l1) v (l1 ++ x :: l2) = l1 & v ++ l2.
+Proof.
+  intros. rewrite app_assoc. rewrites (>> update_app_r 0).
+  { math. } { rew_list~. }
+Qed.
+
+Lemma update_ge_length : forall n v l,
+  n >= length l ->
+  update n v l = l.
+Proof.
+  introv E. gen n. induction l; rew_list; intros.
+  { auto. }
+  { rewrite update_cons_pos; [|math]. fequals. applys IHl. math. }
+Qed.
+
+Lemma length_update : forall n v l, 
+  length (update n v l) = length l.
+Proof using.
+  intros. gen n. induction l; intros.
+  { auto. } 
+  { destruct n as [|n'].
+    { rewrite update_zero. rew_list~. }
+    { rewrite update_succ. rew_list. rewrite~ IHl. } }
+Qed.
+
+Lemma nth_update_eq : forall n l v,
+  n < length l ->
+  nth n (update n v l) = v.
+Proof using.
+  intros n l. gen n. induction l; introv N; rew_list in N. 
+  { false. math. }
+  { destruct n as [|n'].
+    { rewrite update_zero. rew_listx~. }
+    { rewrite update_cons. rew_listx. applys* IHl. math. } }
+Qed.
+
+Lemma nth_update_neq : forall n m l v,
+  m < length l -> 
+  n <> m ->
+  nth n (update m v l) = nth n l.
+Proof using.
+  intros n m l. gen n m. induction l; introv B N; rew_list in B.
+  { false. math. }
+  { destruct m as [|m'].
+    { rewrite update_zero. do 2 (rewrite nth_pos; [|math]). auto. }
+    { rewrite update_succ. destruct n as [|n'].
+      { rew_listx~. }
+      { rew_listx. applys~ IHl. math. } } }
+Qed.
+
+End Update.
+
+Opaque update.
+
+
+(* ---------------------------------------------------------------------- *)
+(* ** Noduplicates *)
+
+(** [noduplicates L] asserts that [L] does not contain any
     duplicated item. *)
 
-Inductive No_duplicates A : list A -> Prop :=
-  | No_duplicates_nil : No_duplicates nil
-  | No_duplicates_cons : forall x l,
-      ~ (Mem x l) -> No_duplicates l -> No_duplicates (x::l).
+Inductive noduplicates A : list A -> Prop :=
+  | noduplicates_nil : noduplicates nil
+  | noduplicates_cons : forall x l,
+      ~ (Mem x l) -> noduplicates l -> noduplicates (x::l).
 
-Section No_duplicates_Prop.
+Section Noduplicates.
 Variable (A : Type).
 Implicit Types l : list A.
 
-Lemma No_duplicates_app : forall l1 l2,
-  No_duplicates l1 ->
-  No_duplicates l2 ->
+Lemma noduplicates_app : forall l1 l2,
+  noduplicates l1 ->
+  noduplicates l2 ->
   (forall x, mem x l1 -> mem x l2 -> False) ->
-  No_duplicates (l1 ++ l2).
+  noduplicates (l1 ++ l2).
 Proof using.
   Hint Constructors Mem.
   intros l1. induction l1; introv N1 N2 EQ; rew_list.
@@ -1062,10 +1327,10 @@ Proof using.
     applys~ IHL1. introv Mx1 Mx2. applys* EQ x.
 Qed.
 
-Lemma No_duplicates_app_inv : forall l1 l2,
-  No_duplicates (l1 ++ l2) ->
-     No_duplicates l1
-  /\ No_duplicates l2 
+Lemma noduplicates_app_inv : forall l1 l2,
+  noduplicates (l1 ++ l2) ->
+     noduplicates l1
+  /\ noduplicates l2 
   /\ ~ (exists x, mem x l1 /\ mem x l2).
 Proof using.
   introv ND. splits.
@@ -1080,8 +1345,8 @@ Proof using.
     apply IHI1. inverts~ ND.
 Qed.
 
-Lemma No_duplicates_length_le : forall l1 l2,
-  No_duplicates l1 ->
+Lemma noduplicates_length_le : forall l1 l2,
+  noduplicates l1 ->
   (forall x, mem x l1 -> mem x l2) ->
   (length l1 <= length l2)%nat.
 Proof using.
@@ -1096,24 +1361,24 @@ Proof using.
    math.
 Qed.
 
-Lemma No_duplicates_length_eq : forall l1 l2,
-  No_duplicates l1 ->
-  No_duplicates l2 ->
+Lemma noduplicates_length_eq : forall l1 l2,
+  noduplicates l1 ->
+  noduplicates l2 ->
   (forall x, mem x l1 <-> mem x l2) ->
   (length l1 = length l2)%nat.
 Proof using.
   introv HL HL' EQ.
-  forwards~: No_duplicates_length_le L L'. intros. rewrite~ <- EQ.
-  forwards~: No_duplicates_length_le L' L. intros. rewrite~ EQ.
+  forwards~: noduplicates_length_le L L'. intros. rewrite~ <- EQ.
+  forwards~: noduplicates_length_le L' L. intros. rewrite~ EQ.
   math.
 Qed.
 
-Lemma No_duplicates_Nth_same  : forall l,
+Lemma noduplicates_Nth_same  : forall l,
   (forall n1 n2 x,
      Nth n1 l x ->
      Nth n2 l x ->
      n1 = n2) ->
-  No_duplicates l.
+  noduplicates l.
 Proof using.
   introv NL. induction L; constructors.
    introv I. rewrite Mem_mem in I. lets (n&N): mem_Nth (rm I).
@@ -1124,8 +1389,8 @@ Proof using.
     inverts~ G.
 Qed.
 
-Lemma No_duplicates_Nth_same_inv : forall l n1 n2 x,
-  No_duplicates l ->
+Lemma noduplicates_Nth_same_inv : forall l n1 n2 x,
+  noduplicates l ->
   Nth n1 l x ->
   Nth n2 l x ->
   n1 = n2.
@@ -1137,22 +1402,22 @@ Proof using.
     apply Nth_mem in N1. rewrite <- Mem_mem in N1. false*.
 Qed.
 
-(* TODO: No_duplicates_rev *)
+(* TODO: noduplicates_rev *)
 
-End No_duplicates_Prop.
+End Noduplicates.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Map *)
+
+Definition map A B (f:A->B) (l:list A) : list B :=
+  fold_right (fun x acc => (f x)::acc) (@nil B) l.
 
 Section Map.
 Variable (A B : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types f : A -> B.
-
-Definition map f l :=
-  fold_right (fun x acc => (f x)::acc) (@nil B) l.
 
 Lemma map_nil : forall f,
   map f nil = nil.
@@ -1240,14 +1505,14 @@ Proof using. introv M. induction M; rew_listx; auto. Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Concat *)
 
+Definition concat A (m:list (list A)) : list A :=
+  fold_right (@append A) (@nil A) m.
+
 Section Concat.
 Variable A : Type.
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types m : list (list A).
-
-Definition concat m :=
-  fold_right (@append A) (@nil A) m.
 
 Lemma concat_nil :
   concat (@nil (list A)) = nil.
@@ -1424,11 +1689,11 @@ Proof using.
     inverts M. false. applys~ IHL.
 Qed.
 
-Lemma No_duplicates_filter : forall P l,
-  No_duplicates L -> 
-  No_duplicates (filter P L).
+Lemma noduplicates_filter : forall P l,
+  noduplicates L -> 
+  noduplicates (filter P L).
 Proof using.
-  Hint Constructors No_duplicates.
+  Hint Constructors noduplicates.
   introv H. induction H.
   rewrite* filter_nil.
   rewrite filter_cons. case_if.
@@ -1452,7 +1717,6 @@ Variable (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 
-
 Lemma mem_remove_inv : forall x (L:list A),
   Mem x (remove x L) ->
   False.
@@ -1475,56 +1739,60 @@ Proof using.
     lets: (filter_length_le L (<> x)). rew_length. math.
 Qed.
 
-
 End Remove.
 
 Arguments remove [A] {CA}.
 Opaque remove.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 (* ---------------------------------------------------------------------- *)
-(** ** Forall_bool *)
+(* ** remove_duplicates *)
 
-(* LATER: properties of [forall_bool] *)
+(** [remove_duplicates L] produces a list [L'] that is the sublist of [L]
+    obtained by keeping only the first occurence of every item. *)
 
-Definition forall_bool A (f : A->bool) (l:list A) :=
-  fold_right (fun x acc => acc && (f x)) true l.
+Fixpoint remove_duplicates A (l:list A) :=
+  match l with
+  | nil => nil
+  | x::l' => x :: (remove x (remove_duplicates l'))
+  end.
 
-Opaque forall_bool.
+Section Remove_duplicates.
+Variable (A : Type).
+Implicit Types l : list A.
+Hint Constructors mem noduplicates.
 
+Lemma remove_duplicates_spec : forall l l',
+  l' = remove_duplicates l ->
+     noduplicates l'
+  /\ (forall x, mem x l' <-> mem x lL)
+  /\ (length l' <= length l)%nat.
+Proof using.
+  introv E.
+  asserts (R1&R2): (noduplicates l' /\ (forall x, mem x l' <-> mem x l)).
+  gen L' E. induction L; introv E; simpls.
+  subst. splits*.
+  sets_eq L'': (remove_duplicates L). forwards~ [E' M]: IHL. splits~.
+    subst L'. constructors. applys filter_neq. applys* noduplicates_filter.
+    subst L'. intros x. lets (M1&M2): M x. iff N.
+      inverts N as R. auto. lets: Filter_Mem_inv R. constructors*.
+      lets [E|(H1&H2)]: Mem_inv N. subst*. constructors. applys* Filter_Mem.
+  splits~. applys~ noduplicates_length_le. introv Hx. rewrite~ <- R2.
+Qed.
 
-(* ---------------------------------------------------------------------- *)
-(** ** Exists_bool *)
+Lemma mem_remove_duplicates : forall x l,
+  mem x (remove_duplicates l) = mem x l.
+Proof using. 
+  introv. extens. repeat rewrite <- Mem_mem. apply~ remove_duplicates_spec. 
+Qed.
 
-(* LATER: properties of [exists_bool] *)
-
-Definition exists_bool A (f : A->bool) (l:list A) :=
-  fold_right (fun x acc => acc || (f x)) false l.
-
-Opaque forall_bool.
+End Remove_duplicates.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Combine *)
 
-Section Combine.
-Variable (A B : Type).
-Implicit Types r : list A.
-Implicit Types s : list B.
-
-Fixpoint combine r s : list (A*B) :=
+Fixpoint combine A B (r:list A) (s:list B) : list (A*B) :=
   match r with
   | nil => nil
   | a::r' =>
@@ -1533,6 +1801,11 @@ Fixpoint combine r s : list (A*B) :=
     | b::s' => (a,b)::(combine r' s')
     end
   end.
+
+Section Combine.
+Variable (A B : Type).
+Implicit Types r : list A.
+Implicit Types s : list B.
 
 Lemma combine_nil : 
   combine (@nil A) (@nil B) = nil.
@@ -1586,15 +1859,15 @@ Hint Rewrite combine_nil combine_cons : rew_listx.
 (* ---------------------------------------------------------------------- *)
 (** ** Split *)
 
-Section Split.
-Variable (A B : Type).
-Implicit Types (l : list (A*B)).
-
-Fixpoint split l : (list A * list B) :=
+Fixpoint split (l:list(A*B)) : (list A * list B) :=
   match l with
   | nil => (nil,nil)
   | (a,b)::l' => let (la,lb) := split l' in (a::la, b::lb)
   end.
+
+Section Split.
+Variable (A B : Type).
+Implicit Types (l : list (A*B)).
 
 Lemma split_nil : 
   split nil = (nil, nil).
@@ -1628,15 +1901,25 @@ Lemma split_last : forall x1 x2 l s1 s2,
   split (l&(x1,x2)) = (s1&x1, s2&x2).
 Proof using. introv H. erewrite split_app; fequals. Qed.
 
-Lemma split_length_l : forall l s1 s2,
+Lemma split_length : forall l s1 s2,
   (s1,s2) = split l ->
-  length s1 = length l.
+  length s1 = length l /\ length s2 = length l.
 Proof using. 
   intros l. induction l as [|[x1 x2] l']; introv E.
   { rewrite split_nil in E. inverts~ E. } 
   { rewrite split_cons_let in E. destruct (split l') as [s1' s2'].
     inverts E. rew_list. erewrite~ IHl'. }
 Qed.
+
+Lemma split_length_l : forall l s1 s2,
+  (s1,s2) = split l ->
+  length s1 = length l.
+Proof using. introv E. forwards*: split_length E. Qed.
+
+Lemma split_length_r : forall l s1 s2,
+  (s1,s2) = split l ->
+  length s2 = length l.
+Proof using. introv E. forwards*: split_length E. Qed.
 
 End Split.
 
@@ -1648,13 +1931,7 @@ Hint Rewrite split_nil : rew_listx.
 (* ---------------------------------------------------------------------- *)
 (** ** Take *)
 
-Section Take.
-Variable (A : Type).
-Implicit Types n : nat.
-Implicit Types x : A.
-Implicit Types l : list A.
-
-Fixpoint take n l : list A :=
+Fixpoint take A (n:nat) (l:list A) : list A :=
   match n with
   | 0 => nil
   | S n' => match l with
@@ -1662,6 +1939,12 @@ Fixpoint take n l : list A :=
     | a::l' => a::(take n' l')
     end
   end.
+
+Section Take.
+Variable (A : Type).
+Implicit Types n : nat.
+Implicit Types x : A.
+Implicit Types l : list A.
 
 Lemma take_zero : forall l,
   take 0 l = nil.
@@ -1716,6 +1999,8 @@ Proof using.
   intros. lets H: (@take_prefix_length l nil). rew_list~ in H.
 Qed.
 
+(* See below for [length_take] and other properties *)
+
 End Take.
 
 (* Arguments take [A] : simpl never. *)
@@ -1729,13 +2014,7 @@ Hint Rewrite take_zero take_succ : rew_list.
 (* ---------------------------------------------------------------------- *)
 (** ** Drop *)
 
-Section Drop.
-Variable (A : Type).
-Implicit Types n : nat.
-Implicit Types x : A.
-Implicit Types l : list A.
-
-Fixpoint drop n l : list A :=
+Fixpoint drop A (n:nat) (l:list A) : list A :=
   match n with
   | 0 => l
   | S n' => match l with
@@ -1743,6 +2022,12 @@ Fixpoint drop n l : list A :=
     | a::l' => drop n' l'
     end
   end.
+
+Section Drop.
+Variable (A : Type).
+Implicit Types n : nat.
+Implicit Types x : A.
+Implicit Types l : list A.
 
 Lemma drop_zero : forall l,
   drop 0 l = l.
@@ -1794,6 +2079,8 @@ Proof using.
   intros. lets H: (@drop_app_length l nil). rew_list~ in H.
 Qed.
 
+(* See below for [length_drop] and other properties *)
+
 End Drop.
 
 Opaque drop.
@@ -1805,14 +2092,14 @@ Hint Rewrite drop_zero drop_succ : rew_list.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Take and Drop decomposition *)
+(** ** Take and drop decomposition of a list *)
 
 Section TakeAndDrop.
 Variable (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 
-Lemma take_and_drop_struct : forall n l f r,
+Lemma take_app_drop : forall n l f r,
   f = take n l -> 
   r = drop n l -> 
   n <= length l ->
@@ -1828,22 +2115,22 @@ Proof using.
       subst f. rew_list. splits. { fequals. } { math. } { math. } } }
 Qed.
 
-Lemma take_struct : forall n l,
+Lemma take_prop : forall n l,
   n <= length l ->
   exists l', length (take n l) = n
           /\ l = (take n l) ++ l'.
-Proof using. introv E. forwards* (E1&E2&E3): take_and_drop_struct. Qed.
+Proof using. introv E. forwards* (E1&E2&E3): take_app_drop. Qed.
 
 Lemma length_take : forall n l,
   n <= length l ->
   length (take n l) = n.
-Proof using. introv E. forwards~ (l'&N&M): take_struct n l. Qed.
+Proof using. introv E. forwards~ (l'&N&M): take_prop n l. Qed.
 
-Lemma drop_struct : forall n l,
+Lemma drop_prop : forall n l,
   n <= length l ->
   exists l', length l' = n 
           /\ l = l' ++ (drop n l).
-Proof using. introv E. forwards* (E1&E2&E3): take_and_drop_struct. Qed.
+Proof using. introv E. forwards* (E1&E2&E3): take_app_drop. Qed.
 
 Lemma length_drop : forall n l,
   n <= length l ->
@@ -1863,12 +2150,10 @@ Arguments drop_struct [A].
 (* ---------------------------------------------------------------------- *)
 (** ** TakeDropLast *)
 
-Section TakeDropLast.
-Context (A:Type) {IA:Inhab A}.
-Implicit Types x : A.
-Implicit Types l : list A.
+(** [take_drop_last l] returns a pair [(q,x)] such that
+    [l = q & x] *)
 
-Fixpoint take_drop_last l : (list A)*A :=
+Fixpoint take_drop_last (l:list A) : (list A)*A :=
   match l with
   | nil => arbitrary
   | x::l' =>
@@ -1878,6 +2163,11 @@ Fixpoint take_drop_last l : (list A)*A :=
            (x::t, y)
     end
   end.
+
+Section TakeDropLast.
+Context (A:Type) {IA:Inhab A}.
+Implicit Types x : A.
+Implicit Types l : list A.
 
 Lemma take_drop_last_cons : forall (x:A) (l: list A),
   take_drop_last (x::l) = 
@@ -1919,241 +2209,127 @@ Arguments take_drop_last_length [A] {IA}.
 
 
 (* ---------------------------------------------------------------------- *)
-(** * Update *)
+(** * Fold *)
 
-Section Update.
-Context (A:Type) {IA: Inhab A}.
-Implicit Types n : nat.
-Implicit Types x v : A.
-Implicit Types l : list A.
+Section Fold.
+Variables (A B:Type) (m:monoid_def B) (L:list A) (f:A->B).
 
-Fixpoint update n v l { struct l } : list A :=
-  match l with
-  | nil => nil
-  | x::l' =>
-     match n with
-     | 0 => v::l'
-     | S n' => x::update n' v l'
-     end
-  end.
+Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
+  fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
 
-Lemma update_nil : forall n v,
-  update n v nil = nil.
-Proof using. auto. Qed. 
-
-Lemma update_cons_match : forall n v x l,
-  update n v (x::l) = 
-    match n with
-    | 0 => v::l
-    | S n' => x::(update n' v l)
-    end.
+Lemma fold_nil :
+  fold m f nil = monoid_neutral m.
 Proof using. auto. Qed.
-
-Lemma update_zero : forall v x l,
-  update 0 v (x::l) = v::l.
+Lemma fold_cons : forall x l,
+  fold m f (x::l) = monoid_oper m (f x) (fold m f l) .
 Proof using. auto. Qed.
-
-Lemma update_succ : forall n v x l,
-  update (S n) v (x::l) = x::(update n v l).
-Proof using. auto. Qed.
-
-Definition update_cons := update_succ.
-
-Lemma update_cons_pos : forall n v x l,
-  n > 0 ->
-  update n v (x::l) = x::(update (n-1) v l).
+Lemma fold_app : forall l1 l2,
+  Monoid m ->
+  fold m f (l1 ++ l2) = monoid_oper m (fold m f l1) (fold m f l2).
 Proof using.
-  intros. destruct n.
-  { math. }
-  { rewrite~ update_succ. fequals_rec. math. }
+  unfold fold. intros. rewrite fold_right_app. gen l2.
+  induction l1; intros.
+  repeat rewrite fold_right_nil. rewrite~ monoid_neutral_l.
+  repeat rewrite fold_right_cons. rewrite <- monoid_assoc. fequals.
 Qed.
-
-Lemma update_app_r : forall m l1 l2 n v,
-  n = length l1 + m ->
-  update n v (l1 ++ l2) = l1 ++ update m v l2.
-Proof.
-  intros m l1. gen m. induction l1 as [| x l1' ]; introv E; rew_list in *.
-  { fequals. math. }
-  { math_rewrite (n = S (length l1' + m)). rewrite update_cons.
-    fequals. erewrite* IHl1'. }
-Qed.
-
-Lemma update_prefix_length : forall l1 l2 x v,
-  update (length l1) v (l1 ++ x :: l2) = l1 & v ++ l2.
-Proof.
-  intros. rewrite app_assoc. rewrites (>> update_app_r 0).
-  { math. } { rew_list~. }
-Qed.
-
-Lemma update_ge_length : forall n v l,
-  n >= length l ->
-  update n v l = l.
-Proof.
-  introv E. gen n. induction l; rew_list; intros.
-  { auto. }
-  { rewrite update_cons_pos; [|math]. fequals. applys IHl. math. }
-Qed.
-
-Lemma length_update : forall n v l, 
-  length (update n v l) = length l.
+Lemma fold_last : forall x l,
+  Monoid m ->
+  fold m f (l & x) = monoid_oper m (fold m f l) (f x).
 Proof using.
-  intros. gen n. induction l; intros.
-  { auto. } 
-  { destruct n as [|n'].
-    { rewrite update_zero. rew_list~. }
-    { rewrite update_succ. rew_list. rewrite~ IHl. } }
+  intros. rewrite~ fold_app. rewrite fold_cons.
+  rewrite fold_nil. rewrite monoid_neutral_r. auto.
 Qed.
+End Fold.
 
-Lemma nth_update_eq : forall n l v,
-  n < length l ->
-  nth n (update n v l) = v.
+Opaque fold.
+
+(* TODO: migrate [fold_pointwise] here, after moving [Mem]. *)
+
+
+Lemma fold_congruence : forall A B (m : monoid_def B) (f g : A -> B) (xs : list A),
+  (forall x, Mem x xs -> f x = g x) ->
+  fold m f xs = fold m g xs.
 Proof using.
-  intros n l. gen n. induction l; introv N; rew_list in N. 
-  { false. math. }
-  { destruct n as [|n'].
-    { rewrite update_zero. rew_listx~. }
-    { rewrite update_cons. rew_listx. applys* IHl. math. } }
+  unfold fold.
+  induction xs as [| x xs ]; intros; simpl.
+  { eauto. }
+  { f_equal; eauto. }
 Qed.
 
-Lemma nth_update_neq : forall n m l v,
-  m < length l -> 
-  n <> m ->
-  nth n (update m v l) = nth n l.
+(* Reasoning about an arbitrary relation under a [fold]. *)
+
+Lemma fold_pointwise:
+  forall B (m : monoid_def B) (leB : B -> B -> Prop),
+  Monoid m ->
+  refl leB ->
+  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
+  forall A (L : list A),
+  forall (f f' : A -> B),
+  (forall x, Mem x L -> leB (f x) (f' x)) ->
+  leB (fold m f L) (fold m f' L).
 Proof using.
-  intros n m l. gen n m. induction l; introv B N; rew_list in B.
-  { false. math. }
-  { destruct m as [|m'].
-    { rewrite update_zero. do 2 (rewrite nth_pos; [|math]). auto. }
-    { rewrite update_succ. destruct n as [|n'].
-      { rew_listx~. }
-      { rew_listx. applys~ IHl. math. } } }
+  introv HM HR HP. induction L; introv HL.
+  do 2 rewrite fold_nil. applys HR.
+  do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHL.
 Qed.
 
-End Update.
-
-Opaque update.
-
-
-(* ---------------------------------------------------------------------- *)
-(** * Make *)
-
-Section Make.
-Context (A:Type) {IA:Inhab A}.
-Implicit Types i n : nat.
-Implicit Types v : A.
-Implicit Types l : list A.
-
-Fixpoint make (n:nat) (v:A) : list A :=
-   match n with
-   | 0 => nil
-   | S n' => v :: make n' v
-   end.
-
-Lemma make_zero : forall v,
-  make 0 v = nil.
-Proof using. auto. Qed.
-
-Lemma make_succ : forall n v,
-  make (S n) v = v::(make n v).
-Proof using. auto. Qed.
-
-Lemma make_pos : forall n v,
-  n > 0 ->
-  make n v = v::(make (n-1) v).
+Lemma fold_equiv_step : forall A B (m:monoid_def B) (f:A->B) (L: list A) a,
+  Monoid_commutative m ->
+  noduplicates L ->
+  Mem a L ->
+  exists L',
+     fold m f L = fold m f (a::L')
+  /\ (forall x, Mem x L <-> Mem x (a::L'))
+  /\ noduplicates (a::L').
 Proof using.
-  introv E. destruct n.
-    math.
-    rewrite make_succ. fequals_rec. math. 
+  introv Hm. induction L as [|b T]; introv DL La. inverts La.
+  tests: (a = b).
+    exists T. splits*.
+    inverts La. false. inverts DL as DLb DT. forwards~ (L'&EL'&EQ&DL'): IHT.
+     exists (b::L'). splits.
+       do 3 rewrite fold_cons. rewrite EL'.
+        rewrite fold_cons. do 2 rewrite monoid_assoc.
+        rewrite~ (monoid_comm (f b)).
+       intros x. specializes EQ x. rewrite Mem_cons_eq in EQ.
+        do 3 rewrite Mem_cons_eq. autos*.
+       inverts DL'. constructors.
+         introv N. inverts N. false. false.
+         constructors~. introv N. applys DLb. rewrite EQ. constructors~.
 Qed.
 
-Lemma nth_make : forall i n v,
-  i < n -> 
-  nth i (make n v) = v.
+Lemma fold_equiv : forall A B (m:monoid_def B) (f:A->B) (L1 L2: list A),
+  Monoid_commutative m ->
+  noduplicates L1 ->
+  noduplicates L2 ->
+  (forall x, Mem x L1 <-> Mem x L2) ->
+  fold m f L1 = fold m f L2.
 Proof using.
-  introv. gen n; induction i; introv E.
-  destruct n. math. auto.
-  destruct n. math. rewrite make_succ. rewrite nth_succ. rewrite~ IHi. math.
-Qed.
-
-Lemma length_make : forall n v,
-  length (make n v) = n.
-Proof using.
-  intros. induction n.
-  auto.
-  rewrite make_succ. rewrite length_cons. math.
-Qed.
-
-End Make.
-
-Opaque make.
-
-
-
-
-(* ********************************************************************** *)
-(** * Other definitions and results *)
-
-
-(* ---------------------------------------------------------------------- *)
-(* ** Function for mapping partial function on lists *)
-
-Definition map_partial (A B : Type) (f : A -> option B) :=
-  fix aux (l : list A) : option (list B) := match l with
-    | nil => Some nil
-    | x::l' => LibOption.apply_on (f x) (fun v =>
-                 LibOption.map (cons v) (aux l'))
-   end.
-
-
-(* ---------------------------------------------------------------------- *)
-(* ** Induction principle on lists *)
-
-Section ListSub.
-Variable (A:Type).
-
-(** Immediate sub-list well-founded order *)
-
-Inductive list_sub : list A -> list A -> Prop :=
-  | list_sub_cons : forall x l,
-      list_sub l (x::l).
-
-Hint Constructors list_sub.
-Lemma list_sub_wf : wf list_sub.
-Proof using.
-  intros l. induction l;
-  apply Acc_intro; introv H; inverts~ H.
-Qed.
-
-End ListSub.
-
-Implicit Arguments list_sub [[A]].
-Hint Constructors list_sub.
-Hint Resolve list_sub_wf : wf.
-
-(** Induction on all but last item *)
-
-Lemma list_ind_last : forall (A : Type) (P : list A -> Prop),
-  P nil ->
-  (forall (a : A) (l : list A), P l -> P (l & a)) ->
-  forall l : list A, P l.
-Proof using.
-  introv H1 H2. intros. induction_wf IH: (measure_wf (@length A)) l.
-  lets [E|(x&l'&E)]: (last_case l); subst. auto.
-  unfolds measure. rewrite length_last in IH. auto with maths.
+  induction L1; introv HM D1 D2 EQ.
+  cuts_rewrite (L2 = nil). rewrite~ fold_nil.
+    destruct L2; auto. forwards~ M: (proj2 (EQ a)). inverts M.
+  inverts D1. asserts L2a: (Mem a L2). rewrite~ <- EQ.
+   forwards* (L2'&V2'&EQ'&D2'): fold_equiv_step f L2a.
+   rewrite V2'. do 2 rewrite fold_cons.
+  inverts D2'.
+  rewrite~ (IHL1 L2'). intros.
+  tests: (x = a).
+    iff; auto_false*.
+  asserts_rewrite (Mem x L1 = Mem x (a::L1)).
+    extens. iff~ M. inverts~ M. false.
+  asserts_rewrite (Mem x L2' = Mem x (a::L2')).
+    extens. iff~ M. inverts~ M. false.
+  rewrite EQ. rewrite* EQ'.
 Qed.
 
 
 
 
-
-(* ********************************************************************** *)
-(** * Properties of predicate on lists *)
 
 
 (* ---------------------------------------------------------------------- *)
 (* ** Forall *)
 
-(** [Forall P L] asserts that all the elements in the list [L]
+(** [Forall P l] asserts that all the elements in the list [l]
     satisfy the predicate [P]. *)
 
 Inductive Forall A (P:A->Prop) : list A -> Prop :=
@@ -2167,13 +2343,74 @@ Section ForallProp.
 Variables A : Type.
 Implicit Types l : list A.
 Implicit Types P : A->Prop.
-
 Hint Constructors Forall.
 
+(* Rewriting *)
+
+Lemma Forall_nil_eq : forall P,
+  Forall P nil = True.
+Proof using.
+Qed.
+
+Lemma Forall_cons_eq : forall P l x,
+  Forall P (x::l) = (P x /\ Forall P l).
+Proof using.
+  intros. induction l.
+  inverts* H.
+  rew_list in *. inverts H. forwards*: IHl.
+Qed.
+
+Lemma Forall_app_eq : forall P l1 l2,
+  Forall P (l1 ++ l2) = (Forall P l1 /\ Forall P l2).
+Proof using.
+  intros. induction l1. auto.
+  rew_app in H. inverts* H.
+Qed.
+
+Lemma Forall_last_eq : forall P l x,
+  Forall P (l & x) = (Forall P l /\ P x).
+Proof using.
+  introv H. induction l.
+  inverts* H.
+  rew_list in *. inverts H. forwards*: IHl.
+Qed.
+
+(* Constructors --TODO: use eq lemmas above *)
+
 Lemma Forall_app : forall P l1 l2,
-  Forall P l1 -> Forall P l2 ->
+  Forall P l1 -> 
+  Forall P l2 ->
   Forall P (l1 ++ l2).
 Proof using. introv H Px. induction H; rew_app; auto. Qed.
+
+Lemma Forall_last : forall P l x,
+  Forall P l -> 
+  P x ->
+  Forall P (l & x).
+Proof using. intros. apply~ Forall_app. Qed.
+
+(* Inversion *)
+
+Lemma Forall_cons_inv : forall P l x,
+  Forall P (x::l) ->
+  P x /\ Forall P l.
+Proof using.
+  introv H. induction l.
+  inverts* H.
+  rew_list in *. inverts H. forwards*: IHl.
+Qed.
+
+Lemma Forall_cons_inv_head : forall P l x,
+  Forall P (x::l) ->
+  P x.
+Proof using.
+Qed.
+
+Lemma Forall_cons_inv_tail : forall P l x,
+  Forall P (x::l) ->
+  Forall P l.
+Proof using.
+Qed.
 
 Lemma Forall_app_inv : forall P l1 l2,
   Forall P (l1 ++ l2) ->
@@ -2182,11 +2419,6 @@ Proof using.
   intros. induction l1. auto.
   rew_app in H. inverts* H.
 Qed.
-
-Lemma Forall_last : forall P l x,
-  Forall P l -> P x ->
-  Forall P (l & x).
-Proof using. intros. apply~ Forall_app. Qed.
 
 Lemma Forall_last_inv : forall P l x,
   Forall P (l & x) ->
@@ -2197,25 +2429,10 @@ Proof using.
   rew_list in *. inverts H. forwards*: IHl.
 Qed.
 
-Lemma Forall_weaken : forall P Q l,
-  Forall P l -> pred_le P Q ->
-  Forall Q l.
-Proof using. induction l; introv H L; inverts* H. Qed.
+(* Others *)
 
-Lemma Forall_inv_tail : forall (P : A -> Prop) (a : A) (l : list A),
-  Forall P (a :: l) -> Forall P l.
-Proof using. introv F. inverts~ F. Qed.
-
-Lemma Forall_inv_head : forall (P : A -> Prop) (a : A) (l : list A),
-  Forall P (a :: l) -> P a.
-Proof using. introv F. inverts~ F. Qed.
-
-Lemma Forall_inv : forall (P : A -> Prop) (a : A) (l : list A),
-  Forall P (a :: l) -> P a /\ Forall P l.
-Proof using. introv F. inverts~ F. Qed.
-
-Lemma Forall_iff_forall_mem : forall (P : A -> Prop) (l : list A),
-  Forall P l <-> (forall x : A, mem x l -> P x).
+Lemma Forall_extens : forall P l,
+  Forall P l <-> (forall x, mem x l -> P x).
 Proof using.
   introv. induction l; iff I.
    introv IN. false.
@@ -2227,17 +2444,24 @@ Proof using.
     apply~ IHl. introv IN. apply~ I. rew_mem. rew_refl*.
 Qed.
 
-Lemma Forall_mem : forall (P : A -> Prop) l a,
+Lemma Forall_mem_inv : forall P l x,
   Forall P l ->
-  mem a l ->
-  P a.
-Proof using. introv F I. rewrite Forall_iff_forall_mem in F. apply~ F. Qed.
+  mem x l ->
+  P x.
+Proof using. introv F I. rewrite Forall_extens in F. apply~ F. Qed.
+
+Lemma Forall_weaken : forall P Q l,
+  Forall P l -> 
+  pred_le P Q ->
+  Forall Q l.
+Proof using. induction l; introv H L; inverts* H. Qed.
 
 End ForallProp.
 
 Section ForallToConj.
 Variables (A : Type) (P : A->Prop).
 Hint Constructors Forall.
+
 Ltac forall_to_conj_prove :=
   extens; iff H;
   repeat (match goal with H: Forall _ _ |- _ => inversion H end);
@@ -2261,24 +2485,6 @@ Proof using. forall_to_conj_prove. Qed.
 
 End ForallToConj.
 
-Hint Resolve has_pair_here has_pair_next.
-
-Global Instance Forall_decidable : forall (A : Type) (P : A->Prop) (l : list A),
-  (forall x, Decidable (P x)) -> Decidable (Forall P l).
-Proof using.  (*todo: optimize proof *)
-  introv H. applys decidable_make
-    (fold_left (fun a b => and b (decide (P a))) true l).
-  tests: (Forall P l).
-   rewrite~ isTrue_true. fold_bool.
-    induction~ C. rew_list. (* TODO: rewrite neutral_l_and. *) simpl. case_if~.
-   rewrite~ isTrue_false. fold_bool.
-    induction~ l.
-     false C. constructor~.
-     rew_list. simpl. case_if~.
-      apply~ IHl. intro F; apply C. constructor~.
-      clear C IHl. induction* l.
-Qed.
-
 
 (* ---------------------------------------------------------------------- *)
 (* ** Forall2 *)
@@ -2290,32 +2496,103 @@ Qed.
 Inductive Forall2 A B (P:A->B->Prop) : list A -> list B -> Prop :=
   | Forall2_nil :
       Forall2 P nil nil
-  | Forall2_cons : forall l1 l2 x1 x2,
-      P x1 x2 -> Forall2 P l1 l2 ->
-      Forall2 P (x1::l1) (x2::l2).
+  | Forall2_cons : forall s r x y,
+      P x y -> 
+      Forall2 P s r ->
+      Forall2 P (x::s) (y::r).
 
-Section PropProperties2.
+Section Forall2.
 Variables A B : Type.
-Implicit Types l : list A.
+Implicit Types x : A.
+Implicit Types y : B.
+Implicit Types s : list A.
 Implicit Types r : list B.
 Implicit Types P : A -> B -> Prop.
 Hint Constructors Forall2.
 
-Lemma Forall2_app : forall P l1 l2 r1 r2,
-      Forall2 P l1 r1 -> Forall2 P l2 r2 ->
-      Forall2 P (l1 ++ l2) (r1 ++ r2).
+(* Basic *)
+
+Lemma Forall2_inv_length : forall P l r,
+  Forall2 P l r -> 
+  length l = length r.
+Proof using.
+  introv H. induction H. simple~.
+  do 2 rewrite~ length_cons.
+Qed.
+
+(* Rewriting *)
+
+Lemma Forall2_nil_eq : forall P,
+  Forall2 P nil nil = True.
+Proof using.
+Qed.
+
+Lemma Forall2_cons_eq : forall P l x,
+  Forall2 P (x::r) (y::s) = (P x y /\ Forall2 P r s).
+Proof using.
+  intros. induction l.
+  inverts* H.
+  rew_list in *. inverts H. forwards*: IHl.
+Qed.
+
+Lemma Forall2_app_eq : forall P l1 l2,
+  length r1 = length s1 ->
+  Forall P (r1 ++ r2) (s1 ++ s2) = (Forall2 P r1 s1 /\ Forall P r2 s2).
+Proof using.
+  intros. induction l1. auto.
+  rew_app in H. inverts* H.
+Qed.
+
+Lemma Forall2_last_eq : forall P r s x y,
+  Forall2 P (r & x) (s & y) = (Forall2 P r s /\ P x y).
+Proof using.
+  intros. rewrite~ Forall_app_eq.
+Qed.
+
+(* Constructors -- TODO: use equalities *)
+
+Lemma Forall2_app : forall P s1 s2 r1 r2,
+  Forall2 P s1 r1 -> 
+  Forall2 P s2 r2 ->
+  Forall2 P (s1 ++ s2) (r1 ++ r2).
 Proof using. introv H H'. induction H; rew_app; auto. Qed.
 
-Lemma Forall2_last : forall P l r x1 x2,
-      Forall2 P l r -> P x1 x2 ->
-      Forall2 P (l & x1) (r & x2).
+Lemma Forall2_last : forall P s r x y,
+  Forall2 P s r -> 
+  P x y ->
+  Forall2 P (s & x) (r & y).
 Proof using. intros. apply~ Forall2_app. Qed.
 
-Lemma Forall2_last_inv : forall P l1 r' x1,
-  Forall2 P (l1 & x1) r' ->
-  exists (r2:list A2) x2,
-  r' = r2 & x2 /\ P x1 x2 /\ Forall2 P l1 r2.
+Hint Resolve Forall2_last.
+
+(* Inversion *)
+
+Lemma Forall2_cons_inv : forall P r s x y,
+  Forall2 P (x::r) (y::s) ->
+  P x y /\ Forall2 P r s.
+Proof using. introv E. rewrite~ Forall2_cons_eq in E. Qed.
+
+Lemma Forall2_cons_l_inv : forall P r1 s x y,
+  Forall2 P (x::r1) s ->
+  exists y s1, s = y::s1 /\ P x y /\ Forall2 P r s.
+Proof using. introv E. rewrite~ Forall2_cons_eq in E. Qed.
+
+Lemma Forall2_app_inv : forall P l1 l2,
+  length r1 = length s1 ->
+  Forall2 P (r1 ++ r2) (s1 ++ s2) ->
+  Forall2 P r1 s1 /\ Forall2 P r2 s2.
+Proof using. introv E. rewrite~ Forall_app_eq in E. Qed.
+
+Lemma Forall2_last_inv : forall P r s x y,
+  Forall2 P (r & x) (s & y) ->
+  Forall2 P r s /\ P x y.
+Proof using. introv E. rewrite~ Forall2_last_eq in E. Qed.
+
+Lemma Forall2_last_l_inv : forall P r1 s x,
+  Forall2 P (r1 & x) s ->
+  exists s1 y, s = s1 & y /\ P x y /\ Forall2 P r1 s1.
 Proof using.
+  ..
   introv H. sets_eq l': (l1&x1). gen l1 x1.
   induction H; intros; subst.
   false* nil_eq_last_inv.
@@ -2324,67 +2601,49 @@ Proof using.
     forwards~ (r2'&x2'&?&?&?): IHForall2. subst. exists~ (x2::r2') x2'.
 Qed.
 
-Lemma Forall2_length : forall P l r,
-  Forall2 P l r -> length l = length r.
-Proof using.
-  introv H. induction H. simple~.
-  do 2 rewrite~ length_cons.
-Qed.
+(* Interactions *)
 
-Lemma Forall2_take : forall P n l r,
-  Forall2 P l r ->
-  Forall2 P (take n l) (take n r).
-Proof using. induction n; introv H; inverts H; simple~. Qed.
-
-Hint Constructors Forall2.
-Hint Resolve Forall2_last.
-
-Lemma Forall2_rev : forall P l r,
-  Forall2 P l r -> Forall2 P (rev l) (rev r).
-Proof using. induction l; introv M; inverts M; rew_rev; auto. Qed.
-
-Lemma Forall2_weaken : forall A B (P Q : A -> B -> Prop) la lb,
-  Forall2 P la lb ->
-  (forall a b, P a b -> Q a b) ->
-  Forall2 Q la lb.
+Lemma Forall2_weaken : forall P Q r s,
+  Forall2 P r s r ->
+  (rel_le P Q ) -> (* forall a b, P a b -> Q a b *)
+  Forall2 Q r s.
 Proof using. introv F W. induction F; constructors~. Qed.
 
-Lemma Forall2_forall_Nth : forall A B (P : A -> B -> Prop) la lb,
-  Forall2 P la lb -> forall n a b,
-    Nth n la a ->
-    Nth n lb b ->
-    P a b.
-Proof using. introv F N1 N2. gen n. induction~ F; introv N1 N2; inverts N1; inverts* N2. Qed.
-
-Lemma Forall2_swap : forall (P : A1 -> A2 -> Prop) l r,
-  Forall2 P l r ->
-  Forall2 (fun b a => P a b) r l.
+Lemma Forall2_swap : forall P r s,
+  Forall2 (fun b a => P a b) r s ->
+  Forall2 P r s.
 Proof using. introv F. induction~ F; constructors~. Qed.
 
-Lemma Forall2_map : forall f (P : A1 -> A2 -> Prop) l,
-  (forall a, P a (f a)) ->
+Lemma Forall2_inv_swap : forall P r s,
+  Forall2 P r s ->
+  Forall2 (fun b a => P a b) r s.
+Proof using. introv F. induction~ F; constructors~. Qed.
+
+Lemma Forall2_take : forall P n r s,
+  Forall2 P r s ->
+  Forall2 P (take n r) (take n s).
+Proof using. intros P n. induction n; introv H; inverts H; simple~. Qed.
+
+Lemma Forall2_rev : forall P r s,
+  Forall2 P r s ->
+  Forall2 P (rev r) (rev s).
+Proof using. intros P r. induction r; introv M; inverts M; rew_rev; auto. Qed.
+
+Lemma Forall2_map_r : forall f P l,
+  (forall x, P x (f x)) ->
   Forall2 P l (map f l).
 Proof using. introv I. induction l; constructors~. Qed.
 
-End PropProperties2.
-
-Implicit Arguments Forall2_last_inv [A1 A2 P l1 r' x1].
-
-(* todo : inversion lemmas for other predicates *)
-
-
-Lemma map_partial_inv : forall (A B:Type) (f: A->option B) lx ly,
-  map_partial f lx = Some ly ->
-  Forall2 (fun x y => f x = Some y) lx ly.
-Proof using.
-  induction lx; simpl map_partial; introv Eq.
-   inverts Eq. apply Forall2_nil.
-   lets fa Fa Eq2: (apply_on_inv Eq).
-    lets ly1 Eqly ?: (map_on_inv Eq2). subst ly.
-    apply* Forall2_cons.
+Lemma Forall2_inv_Nth : forall r s n x y,
+  Forall2 P r s ->
+  Nth n r x ->
+  Nth n s y ->
+  P x y.
+Proof using. 
+  introv F N1 N2. gen n. induction~ F; introv N1 N2; inverts N1; inverts* N2. 
 Qed.
 
-Implicit Arguments map_partial_inv [A B f lx ly].
+End Forall2.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2420,7 +2679,8 @@ Implicit Types l : list A.
 Implicit Types P : A -> Prop.
 
 Lemma Exists_nil_inv : forall P,
-  Exists P nil -> False.
+  Exists P nil -> 
+  False.
 Proof using. introv H. invert* H. Qed.
 
 Lemma Exists_cons_inv : forall P l x,
@@ -2496,37 +2756,6 @@ End ExistsProp.
 
 
 
-
-Lemma mem_split : forall A l (x:A),
-  mem x l ->
-  exists l1 l2,
-    l = l1 ++ x :: l2 /\ ~ mem x l1.
-Proof using.
-  introv M. forwards (l1&?&l2&E&NF&?): Exists_split (fun y => x = y).
-   rewrite Exists_iff_exists_mem. exists x. splits*.
-   substs. rewrite Forall_iff_forall_mem in NF. exists* l1 l2.
-Qed.
-
-Lemma map_partial_inv_none : forall (A B:Type) (f: A->option B) l,
-  map_partial f l = None ->
-  Exists (fun x => f x = None) l.
-Proof using.
-  induction l; simpl map_partial; introv Eq; tryfalse.
-  forwards [E|(b&E1&E2)]: apply_on_inv_none Eq.
-   apply* Exists_here.
-   apply Exists_next. apply~ IHl. destruct~ map_partial. false*.
-Qed.
-
-Lemma map_partial_none : forall (A B:Type) (f: A->option B) l,
-  Exists (fun x => f x = None) l ->
-  map_partial f l = None.
-Proof using.
-  induction l; simpl map_partial; introv Eq; inverts Eq as Eq.
-   rewrite~ Eq.
-   destruct~ (f a). rewrite~ IHl.
-Qed.
-
-
 (* ---------------------------------------------------------------------- *)
 (* ** Exists2 *)
 
@@ -2537,249 +2766,11 @@ Qed.
 Inductive Exists2 A1 A2 (P : A1 -> A2 -> Prop)
   : list A1 -> list A2 -> Prop :=
   | Exists2_here : forall l1 l2 x1 x2,
-      P x1 x2 -> Exists2 P (x1::l1) (x2::l2)
+      P x1 x2 -> 
+      Exists2 P (x1::l1) (x2::l2)
   | Exists2_next : forall l1 l2 x1 x2,
       Exists2 P l1 l2 ->
       Exists2 P (x1::l1) (x2::l2).
-
-
-
-
-
-
-
-(* ---------------------------------------------------------------------- *)
-(** * Fold *)
-
-Section Fold.
-Variables (A B:Type) (m:monoid_def B) (L:list A) (f:A->B).
-
-Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
-  fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
-
-Lemma fold_nil :
-  fold m f nil = monoid_neutral m.
-Proof using. auto. Qed.
-Lemma fold_cons : forall x l,
-  fold m f (x::l) = monoid_oper m (f x) (fold m f l) .
-Proof using. auto. Qed.
-Lemma fold_app : forall l1 l2,
-  Monoid m ->
-  fold m f (l1 ++ l2) = monoid_oper m (fold m f l1) (fold m f l2).
-Proof using.
-  unfold fold. intros. rewrite fold_right_app. gen l2.
-  induction l1; intros.
-  repeat rewrite fold_right_nil. rewrite~ monoid_neutral_l.
-  repeat rewrite fold_right_cons. rewrite <- monoid_assoc. fequals.
-Qed.
-Lemma fold_last : forall x l,
-  Monoid m ->
-  fold m f (l & x) = monoid_oper m (fold m f l) (f x).
-Proof using.
-  intros. rewrite~ fold_app. rewrite fold_cons.
-  rewrite fold_nil. rewrite monoid_neutral_r. auto.
-Qed.
-End Fold.
-
-Opaque fold.
-
-(* TODO: migrate [fold_pointwise] here, after moving [Mem]. *)
-
-
-Lemma fold_congruence : forall A B (m : monoid_def B) (f g : A -> B) (xs : list A),
-  (forall x, Mem x xs -> f x = g x) ->
-  fold m f xs = fold m g xs.
-Proof using.
-  unfold fold.
-  induction xs as [| x xs ]; intros; simpl.
-  { eauto. }
-  { f_equal; eauto. }
-Qed.
-
-(* Reasoning about an arbitrary relation under a [fold]. *)
-
-Lemma fold_pointwise:
-  forall B (m : monoid_def B) (leB : B -> B -> Prop),
-  Monoid m ->
-  refl leB ->
-  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
-  forall A (L : list A),
-  forall (f f' : A -> B),
-  (forall x, Mem x L -> leB (f x) (f' x)) ->
-  leB (fold m f L) (fold m f' L).
-Proof using.
-  introv HM HR HP. induction L; introv HL.
-  do 2 rewrite fold_nil. applys HR.
-  do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHL.
-Qed.
-
-Lemma fold_equiv_step : forall A B (m:monoid_def B) (f:A->B) (L: list A) a,
-  Monoid_commutative m ->
-  No_duplicates L ->
-  Mem a L ->
-  exists L',
-     fold m f L = fold m f (a::L')
-  /\ (forall x, Mem x L <-> Mem x (a::L'))
-  /\ No_duplicates (a::L').
-Proof using.
-  introv Hm. induction L as [|b T]; introv DL La. inverts La.
-  tests: (a = b).
-    exists T. splits*.
-    inverts La. false. inverts DL as DLb DT. forwards~ (L'&EL'&EQ&DL'): IHT.
-     exists (b::L'). splits.
-       do 3 rewrite fold_cons. rewrite EL'.
-        rewrite fold_cons. do 2 rewrite monoid_assoc.
-        rewrite~ (monoid_comm (f b)).
-       intros x. specializes EQ x. rewrite Mem_cons_eq in EQ.
-        do 3 rewrite Mem_cons_eq. autos*.
-       inverts DL'. constructors.
-         introv N. inverts N. false. false.
-         constructors~. introv N. applys DLb. rewrite EQ. constructors~.
-Qed.
-
-Lemma fold_equiv : forall A B (m:monoid_def B) (f:A->B) (L1 L2: list A),
-  Monoid_commutative m ->
-  No_duplicates L1 ->
-  No_duplicates L2 ->
-  (forall x, Mem x L1 <-> Mem x L2) ->
-  fold m f L1 = fold m f L2.
-Proof using.
-  induction L1; introv HM D1 D2 EQ.
-  cuts_rewrite (L2 = nil). rewrite~ fold_nil.
-    destruct L2; auto. forwards~ M: (proj2 (EQ a)). inverts M.
-  inverts D1. asserts L2a: (Mem a L2). rewrite~ <- EQ.
-   forwards* (L2'&V2'&EQ'&D2'): fold_equiv_step f L2a.
-   rewrite V2'. do 2 rewrite fold_cons.
-  inverts D2'.
-  rewrite~ (IHL1 L2'). intros.
-  tests: (x = a).
-    iff; auto_false*.
-  asserts_rewrite (Mem x L1 = Mem x (a::L1)).
-    extens. iff~ M. inverts~ M. false.
-  asserts_rewrite (Mem x L2' = Mem x (a::L2')).
-    extens. iff~ M. inverts~ M. false.
-  rewrite EQ. rewrite* EQ'.
-Qed.
-
-
-
-(* ---------------------------------------------------------------------- *)
-(* ** Remove_duplicates *)
-
-(** [Remove_duplicates L] produces a list [L'] that is the sublist of [L]
-    obtained by keeping only the first occurence of every item. *)
-
-Fixpoint Remove_duplicates A (L:list A) :=
-  match L with
-  | nil => nil
-  | x::L' => x :: (Filter (<> x) (Remove_duplicates L'))
-  end.
-
-Lemma Remove_duplicates_spec : forall A (L L':list A),
-  L' = Remove_duplicates L ->
-     No_duplicates L'
-  /\ (forall x, Mem x L' <-> Mem x L)
-  /\ (length L' <= length L)%nat.
-Proof using.
-  Hint Constructors Mem No_duplicates.
-  introv E.
-  asserts (R1&R2): (No_duplicates L' /\ (forall x, Mem x L' <-> Mem x L)).
-  gen L' E. induction L; introv E; simpls.
-  subst. splits*.
-  sets_eq L'': (Remove_duplicates L). forwards~ [E' M]: IHL. splits~.
-    subst L'. constructors. applys Filter_neq. applys* No_duplicates_Filter.
-    subst L'. intros x. lets (M1&M2): M x. iff N.
-      inverts N as R. auto. lets: Filter_Mem_inv R. constructors*.
-      lets [E|(H1&H2)]: Mem_inv N. subst*. constructors. applys* Filter_Mem.
-  splits~. applys~ No_duplicates_length_le. introv Hx. rewrite~ <- R2.
-Qed.
-
-Lemma Remove_duplicates_mem : forall A (L:list A) a,
-  mem a (Remove_duplicates L) = mem a L.
-Proof using. introv. extens. repeat rewrite <- Mem_mem. apply~ Remove_duplicates_spec. Qed.
-
-
-
-(* ---------------------------------------------------------------------- *)
-(* ** Update as a relation *)
-
-(** [Update n x L L'] asserts [L'] is the list obtained by substituting
-    in [L] the item at index [n] with [x]. *)
-
-Definition Update A (n:nat) (x:A) l l' :=
-    length l' = length l
-  /\ (forall y m, Nth m l y -> m <> n -> Nth m l' y)
-  /\ Nth n l' x.
-
-Section Update.
-Variables A : Type.
-Implicit Types x : A.
-Implicit Types l : list A.
-Implicit Types n : nat.
-Hint Constructors Nth.
-
-Lemma Update_zero : forall x y l,
-  Update 0 x (y::l) (x::l).
-Proof using.
-  intros. splits.
-  rew_length~.
-  introv M H. inverts* M.
-  autos*.
-Qed.
-
-Lemma Update_cons : forall i x y l l',
-  Update i x l l' -> 
-  Update (S i) x (y::l) (y::l').
-Proof using.
-  introv (L&O&E). splits.
-  rew_length~.
-  introv M H. inverts* M.
-  autos*.
-Qed.
-
-Definition Update_succ := Update_cons.
-
-Lemma Update_app_l : forall i x l1 l1' l2,
-  Update i x l1 l1' -> 
-  Update i x (l1++l2) (l1'++l2).
-Proof using.
-  introv (L&O&E). splits.
-  rew_length~.
-  introv M H. destruct (Nth_app_inv _ _ M).
-    apply~ Nth_app_l.
-    unpack. apply* Nth_app_r. math.
-  apply~ Nth_app_l.
-Qed.
-
-Lemma Update_app_r : forall i j x l1 l2 l2',
-  Update j x l2 l2' -> 
-  i = (j + length l1)%nat -> 
-  Update i x (l1++l2) (l1++l2').
-Proof using.
-  introv (L&O&E) Eq. splits.
-  rew_length~.
-  introv M H. destruct (Nth_app_inv _ _ M).
-    apply~ Nth_app_l.
-    unpack. apply* Nth_app_r. apply* O. math. math.
-  apply* Nth_app_r.
-Qed.
-
-Lemma Update_length : forall i x l l',
-  Update i x l l' -> 
-  length l = length l'.
-Proof using. introv (L&O&E). auto. Qed.
-
-Lemma Update_not_nil_l : forall i x l1 l2,
-  Update i x l1 l2 -> 
-  l1 <> nil.
-Proof using. introv (L&O&E) K. subst. inverts E. Qed.
-
-Lemma Update_not_nil_r : forall i x l1 l2,
-  Update i x l1 l2 -> 
-  l2 <> nil.
-Proof using. introv (L&O&E) K. subst. inverts E. Qed.
-
-End Update.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2791,8 +2782,8 @@ End Update.
 Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
   | Assoc_here : forall l ,
       Assoc x v ((x,v)::l)
-  | Assoc_next : forall y l (w:B),
-      Assoc x v l -> x <> y ->
+  | Assoc_next : forall y l w,
+      Assoc x v l -> 
+      x <> y ->
       Assoc x v ((y,w)::l).
-
 

@@ -226,6 +226,52 @@ Opaque removes.
 
 
 
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Forall_bool *)
+
+(* LATER: properties of [forall_bool] *)
+
+Definition forall_bool A (f : A->bool) (l:list A) :=
+  fold_right (fun x acc => acc && (f x)) true l.
+
+Opaque forall_bool.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Exists_bool *)
+
+(* LATER: properties of [exists_bool] *)
+
+Definition exists_bool A (f : A->bool) (l:list A) :=
+  fold_right (fun x acc => acc || (f x)) false l.
+
+Opaque forall_bool.
+
+
+(* ---------------------------------------------------------------------- *)
+
+
+
+Global Instance Forall_decidable : forall (A : Type) (P : A->Prop) (l : list A),
+  (forall x, Decidable (P x)) -> Decidable (Forall P l).
+Proof using.  (*todo: optimize proof *)
+  introv H. applys decidable_make
+    (fold_left (fun a b => and b (decide (P a))) true l).
+  tests: (Forall P l).
+   rewrite~ isTrue_true. fold_bool.
+    induction~ C. rew_list. (* TODO: rewrite neutral_l_and. *) simpl. case_if~.
+   rewrite~ isTrue_false. fold_bool.
+    induction~ l.
+     false C. constructor~.
+     rew_list. simpl. case_if~.
+      apply~ IHl. intro F; apply C. constructor~.
+      clear C IHl. induction* l.
+Qed.
+
+
+
 (* ********************************************************************** *)
 (** * Association lists *)
 

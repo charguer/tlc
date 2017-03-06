@@ -232,13 +232,17 @@ Definition Update_here := udpate_zero.
 
 Definition Update_not_nil := Update_not_nil_r.
 
-Defintion Mem := mem.
-Defintion mem := memb.
+Definition Mem := mem.
+Definition mem := memb.
 (* and same for all associated lemmas *)
 
-Defintion Filter := filter.
-Defintion filter := filterb.
+Definition Filter := filter.
+Definition filter := filterb.
 (* and same for all associated lemmas *)
+
+Definition No_duplicates := noduplicates.
+(* and same for all associated lemmas *)
+
 
 
 Definition mem_app_or := mem_app.
@@ -301,6 +305,83 @@ Definition mem_filter_neq_inv := mem_remove_inv.
 
 Definition filter_neq_Mem_length := length_remove_mem.
 
+Definition remove_duplicates_mem := mem_remove_duplicates.
+
+Definition take_and_drop_struct := take_app_drop.
+
+
+
+Definition Forall_inv_tail := Forall_cons_inv_head.
+Definition Forall_inv_head := Forall_cons_inv_tail.
+Definition Forall_inv := Forall_cons_inv.
+
+Definition Forall_mem := Forall_mem_inv.
+
+
+Definition Forall_iff_forall_mem := Forall_extens.
+
+Definition Forall2_inv_length := Forall2_length.
+Definition Forall2_map := Forall2_map_r.
+
+
+Implicit Arguments Forall2_last_inv [A1 A2 P l1 r' x1].
+
+Lemma Forall2_forall_Nth : forall A B (P : A -> B -> Prop) la lb,
+  Forall2 P la lb -> forall n a b,
+    Nth n la a ->
+    Nth n lb b ->
+    P a b.
+Proof using. introv F N1 N2. gen n. induction~ F; introv N1 N2; inverts N1; inverts* N2. Qed.
+(* => reformulated ad Forall2_inv_Nth *)
+
+Definition Forall2_last_inv := Forall2_last_l_inv.
+
+
+(* ********************************************************************** *)
+(** too specific *)
+
+(* ** Function for mapping partial function on lists *)
+
+Definition map_partial (A B : Type) (f : A -> option B) :=
+  fix aux (l : list A) : option (list B) := match l with
+    | nil => Some nil
+    | x::l' => LibOption.apply_on (f x) (fun v =>
+                 LibOption.map (cons v) (aux l'))
+   end.
+
+
+Lemma map_partial_inv_none : forall (A B:Type) (f: A->option B) l,
+  map_partial f l = None ->
+  Exists (fun x => f x = None) l.
+Proof using.
+  induction l; simpl map_partial; introv Eq; tryfalse.
+  forwards [E|(b&E1&E2)]: apply_on_inv_none Eq.
+   apply* Exists_here.
+   apply Exists_next. apply~ IHl. destruct~ map_partial. false*.
+Qed.
+
+Lemma map_partial_none : forall (A B:Type) (f: A->option B) l,
+  Exists (fun x => f x = None) l ->
+  map_partial f l = None.
+Proof using.
+  induction l; simpl map_partial; introv Eq; inverts Eq as Eq.
+   rewrite~ Eq.
+   destruct~ (f a). rewrite~ IHl.
+Qed.
+
+Lemma map_partial_inv : forall (A B:Type) (f: A->option B) lx ly,
+  map_partial f lx = Some ly ->
+  Forall2 (fun x y => f x = Some y) lx ly.
+Proof using.
+  induction lx; simpl map_partial; introv Eq.
+   inverts Eq. apply Forall2_nil.
+   lets fa Fa Eq2: (apply_on_inv Eq).
+    lets ly1 Eqly ?: (map_on_inv Eq2). subst ly.
+    apply* Forall2_cons.
+Qed.
+
+Implicit Arguments map_partial_inv [A B f lx ly].
+
 
 (* ********************************************************************** *)
 
@@ -321,6 +402,8 @@ Lemma has_pair_next : forall A1 A2 (x1:A1) (x2:A2) y1 y2 l1 l2,
   has_pair x1 x2 l1 l2 ->
   has_pair x1 x2 (y1::l1) (y2::l2).
 Proof using. introv H. apply* Exists2_next. Qed.
+
+Hint Resolve has_pair_here has_pair_next.
 
 
 (* ********************************************************************** *)
