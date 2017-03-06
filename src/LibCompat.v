@@ -261,6 +261,7 @@ Definition length_Nth_lt := Nth_inbound_inv.
 
 Definition Nth_cons_inv := Nth_inv_cons.
 
+(* See: Nth_cons_inv *)
 Lemma Nth_inv_cons : forall n x l,
   Nth n l x ->
      (exists q, l = x::q /\ n = 0%nat)
@@ -270,7 +271,35 @@ Proof using.
   right. eauto 8 with maths.
 Qed.
 
+Definition nth_def_if_in_length := nth_def_to_Nth. (* arguments swapped *)
 
+(** too specific *)
+Lemma Forall2_Nth_nth_def : forall A B (P : A -> B -> Prop) la lb n v d,
+  Forall2 P la lb ->
+  Nth n la v ->
+  Nth n lb (nth_def d n lb).
+Proof using.
+  introv F N. forwards L: Forall2_length F. forwards I: Nth_lt_length N.
+  rewrite L in I. forwards*: nth_def_if_in_length I.
+Qed.
+
+Definition filter_Mem := mem_filter.
+
+Definition filter_Mem_inv := mem_filter_inv.
+
+Definition filter_length_le := length_filter.
+
+Definition filter_eq_Mem_length := length_filter_mem_ge_one.
+
+Definition filter_No_duplicates := No_duplicates_filter.
+
+Definition filter_disjoint_predicates_length := filter_length_two_disjoint.
+
+Definition filter_negated_predicates_length := filter_length_partition.
+
+Definition mem_filter_neq_inv := mem_remove_inv.
+
+Definition filter_neq_Mem_length := length_remove_mem.
 
 
 (* ********************************************************************** *)

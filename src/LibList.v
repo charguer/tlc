@@ -828,6 +828,20 @@ Proof using. introv. reflexivity. Qed.
 
 Definition nth_def_cons := nth_def_succ.
 
+Lemma Nth_to_nth_def : forall n l x dummy,
+  Nth n l x -> 
+  nth_def dummy n l = x.
+Proof using. introv H. induction~ H. Qed.
+
+Lemma nth_def_to_Nth : forall l d n x,
+  nth_def d n l = x ->
+  n < length l ->
+  Nth n l x.
+Proof using.
+  introv I E. forwards (v'&Nv): length_Nth_lt I.
+  erewrite Nth_to_nth_def in E; [| apply~ Nv ]. substs~.
+Qed.
+
 End NthDef.
 
 Arguments nth_def [A] : simpl never.
@@ -863,14 +877,16 @@ Proof using.
   { rewrite nth_succ. fequals. math. } 
 Qed.
 
-End NthFunc.
+Lemma Nth_to_nth : forall n l x,
+  Nth n l x -> 
+  nth n l = x.
+Proof using. introv H. apply~ Nth_to_nth_def. Qed.
 
-Arguments nth [A] {IA}.
-Opaque nth.
-
-Hint Rewrite nth_zero nth_succ : rew_listx.
-
-
+Lemma nth_to_Nth : forall l d n x,
+  nth n l = x ->
+  n < length l ->
+  Nth n l x.
+Proof using. intros. applys* nth_def_inbound_to_Nth. Qed.
 
 Lemma mem_nth : forall l x,
   mem x l -> 
@@ -880,38 +896,12 @@ Proof using.
   exists n. apply~ Nth_to_nth.
 Qed.
 
+End NthFunc.
 
-Lemma Nth_to_nth_def : forall n l x dummy,
-  Nth n l x -> nth_def dummy n l = x.
-Proof using. introv H. induction~ H. Qed.
+Arguments nth [A] {IA}.
+Opaque nth.
 
-Lemma Nth_to_nth : forall n l x,
-  Nth n l x -> nth n l = x.
-Proof using. introv H. apply~ Nth_to_nth_def. Qed.
-
-
-
-
-
-Lemma nth_def_if_in_length : forall l d n v,
-  n < length l ->
-  nth_def d n l = v ->
-  Nth n l v.
-Proof using.
-  introv I E. forwards (v'&Nv): length_Nth_lt I.
-  erewrite Nth_to_nth_def in E; [| apply~ Nv ]. substs~.
-Qed.
-
-Lemma Forall2_Nth_nth_def : forall A B (P : A -> B -> Prop) la lb n v d,
-  Forall2 P la lb ->
-  Nth n la v ->
-  Nth n lb (nth_def d n lb).
-Proof using.
-  introv F N. forwards L: Forall2_length F. forwards I: Nth_lt_length N.
-  rewrite L in I. forwards*: nth_def_if_in_length I.
-Qed.
-
-
+Hint Rewrite nth_zero nth_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -994,6 +984,8 @@ Proof using.
   { introv. rewrite rev_cons. rew_listx~. }
 Qed.
 
+(* TODO: Nth_rev and nth_rev *)
+
 End Rev.
 
 Opaque rev.
@@ -1039,7 +1031,6 @@ Lemma nil_eq_app_rev_inv : forall l1 l2,
 Proof using. intros. apply* app_rev_eq_nil_inv. Qed.
 
 End RevInversion.
-
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1146,6 +1137,8 @@ Proof using.
     apply Nth_mem in N1. rewrite <- Mem_mem in N1. false*.
 Qed.
 
+(* TODO: No_duplicates_rev *)
+
 End No_duplicates_Prop.
 
 
@@ -1238,6 +1231,11 @@ Lemma mem_map : forall (A B:Type) (f:A->B) (l: list A) x,
   mem (f x) (map f l).
 Proof using. introv M. induction M; rew_listx; auto. Qed.
 
+Lemma Nth_map : forall (A B:Type) (f:A->B) (l: list A) x,
+  Nth n x l -> 
+  Nth n (f x) (map f l).
+Proof using. introv M. induction M; rew_listx; auto. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Concat *)
@@ -1316,83 +1314,25 @@ Hint Rewrite concat_nil concat_app concat_cons concat_last : rew_listx.
 (* ---------------------------------------------------------------------- *)
 (** ** Filter *)
 
+(** [filter P l] produces a list [l'] that is the sublist of [l]
+    made exactly of the elements of [l] that satisfy [P]. *)
+
+Definition filter A (P:A->Prop) l :=
+  fold_right (fun x acc => If P x then x::acc else acc) (@nil A) l.
+
 Section Filter.
 Variable (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types P : A -> Prop.
-
-
-  Definition filter f l :=
-    fold_right (fun x acc => if f x then x::acc else acc) (@nil A) l.
-
-  Lemma filter_nil : forall f,
-    filter f nil = nil.
-  Proof using. auto. Qed.
-
-  Lemma filter_cons : forall f x l,
-    filter f (x::l) = if f x then x :: filter f l else filter f l.
-  Proof using. auto. Qed.
-
-  Lemma filter_app : forall f l1 l2,
-    filter f (l1 ++ l2) = filter f l1 ++ filter f l2.
-  Proof using.  
-    (* LATER: investigate how to factorise with proof of map_app *)
-    intros. unfold filter.
-    assert (forall accu,
-      fold_right (fun x acc => if f x then x::acc else acc) accu (l1 ++ l2) =
-      fold_right (fun x acc => if f x then x::acc else acc) nil l1 ++
-       fold_right (fun x acc => if f x then x::acc else acc) nil l2 ++ accu).
-    { induction l1; intros; simpl. 
-      do 2 rewrite app_nil_l. gen accu.
-      induction l2; intros.
-      { auto. }
-      { do 2 rewrite fold_right_cons. 
-        case_if. rew_list. fequals. rewrite IHl2. fequals. }
-      { rew_listx. case_if. rew_list. fequals. rewrite IHl1. fequals. } }
-    specializes H (@nil A). rewrite~ app_nil_r in H.
-  Qed.
-
-  Lemma filter_last : forall f x l,
-    filter f (l & x) = filter f l ++ (if f x then x::nil else nil).
-  Proof using. intros. rewrite~ filter_app. Qed.
-
-  (* TODO: add length_filter *)
-
-
-End Filter.
-
-Opaque filter.    
-
-
-
-Section Filter.
-Variables (A : Type).
-Implicit Types x : A.
-Implicit Types l : list A.
-Implicit Types P : A -> Prop.
-
-
-Lemma Forall_filter_same : forall (f : A -> bool) l,
-  Forall f (filter f l).
-Proof using.
-  introv. induction l.
-   rewrite filter_nil. constructors~.
-   rewrite filter_cons. cases_if~.
-Qed.
-
-(** [filter P L] produces a list [L'] that is the sublist of [L]
-    made exactly of the elements of [L] that satisfy [P]. *)
-
-Definition filter P l :=
-  fold_right (fun x acc => If P x then x::acc else acc) (@nil A) l.
+Hint Constructors Mem.
 
 Lemma filter : forall P,
   filter P nil = nil.
 Proof using. auto. Qed.
 
 Lemma filter_cons : forall x l P,
-  filter P (x::l) = If P x then x :: filter P l else filter P l.
+  filter P (x::l) = (If P x then x :: filter P l else filter P l).
 Proof using. auto. Qed.
 
 Lemma filter_app : forall l1 l2 P,
@@ -1416,65 +1356,52 @@ Lemma filter_last : forall x l P,
   filter P (l & x) = filter P l ++ (If P x then x::nil else nil).
 Proof using. intros. rewrite~ filter_app. Qed.
 
-Lemma filter_neq : forall x (L:list A),
-  ~ Mem x (filter (<> x) L).
+Lemma mem_filter_eq : forall x P l,
+  mem x (filter P l) = (mem x l /\ P x).
 Proof using.
-  intros. induction L.
-  rewrite filter_nil. introv M. inverts M.
-  rewrite filter_cons. case_if.
-    introv M. inverts M; false.
-    auto.
-Qed.
-
-Lemma filter_Mem : forall x (L:list A) (P:A->Prop),
-  Mem x L -> P x -> Mem x (filter P L).
-Proof using.
-  Hint Constructors Mem.
-  introv H Px. induction H using Mem_induct.
-  rewrite filter_cons. case_if*.
-  rewrite filter_cons. case_if*.
-Qed.
-
-Lemma filter_Mem_inv : forall x (L:list A) P,
-  Mem x (filter P L) -> Mem x L /\ P x.
-Proof using.
-  Hint Constructors Mem.
   introv M. induction L.
   rewrite filter_nil in M. inverts M.
   rewrite filter_cons in M. case_if. inverts* M. autos*.
 Qed.
 
-Lemma filter_length_le : forall (L:list A) P,
-  (length (filter P L) <= length L)%nat.
+Lemma mem_filter : forall x P l,
+  mem x l -> 
+  P x -> 
+  mem x (filter P l).
+Proof using. intros. rewrite* mem_filter_eq. Qed.
+
+Lemma mem_filter_inv : forall x P l,
+  mem x (filter P l) -> 
+  mem x L /\ P x.
+Proof using. introv E. rewrite* mem_filter_eq in E. Qed.
+
+Lemma Forall_filter_same : forall P l,
+  Forall P (filter P l).
+Proof using.
+  introv. induction l.
+  { rewrite filter_nil. constructors~. }
+  { rewrite filter_cons. cases_if~. }
+Qed.
+
+Lemma length_filter : forall P l,
+  length (filter P l) <= length l.
 Proof using.
   intros. induction L.
   rewrite filter_nil. math.
   rewrite filter_cons. case_if; rew_length; math.
 Qed.
 
-Lemma filter_eq_Mem_length : forall x (L:list A),
-  Mem x L -> (length (filter (= x) L) >= 1)%nat.
+Lemma filter_length_partition : forall P l,
+    length (filter (fun x => P x) l) 
+  + length (filter (fun x => ~ P x) l) 
+  <= length l.
 Proof using.
-  introv M. induction L.
-  inverts M.
-  rewrite filter_cons. case_if.
-    rew_list. nat_math.
-    inverts M. false. applys~ IHL.
+  intros. applys~ filter_disjoint_predicates_length P (fun x => ~ P x) L.
 Qed.
 
-Lemma filter_neq_Mem_length : forall x (L:list A),
-  Mem x L -> (length (filter (<> x) L) < length L)%nat.
-Proof using.
-  introv M. induction L.
-  inverts M.
-  rewrite filter_cons. case_if.
-    inverts M. false. rew_length. forwards~: IHL. math.
-    lets: (filter_length_le L (<> x)). rew_length. math.
-Qed.
-
-Lemma filter_disjoint_predicates_length : forall (P Q:A-> Prop) L,
+Lemma filter_length_two_disjoint : forall (P Q : A-> Prop) l,
   (forall x, Mem x L -> P x -> Q x -> False) ->
-  (length (filter P L) + length (filter Q L) <= length L)%nat.
+  (length (filter P l) + length (filter Q l) <= length l)%nat.
 Proof using.
   introv. induction L; introv H.
   rew_list. nat_math.
@@ -1486,28 +1413,18 @@ Proof using.
     nat_math.
 Qed.
 
-Lemma filter_negated_predicates_length : forall (P:A-> Prop) L,
-  length (filter (fun x => P x) L) + length (filter (fun x => ~ P x) L) <= length L.
+Lemma length_filter_mem_ge_one : forall x l,
+  Mem x L ->
+  length (filter (= x) L) >= 1.
 Proof using.
-  intros. applys~ filter_disjoint_predicates_length P (fun x => ~ P x) L.
-Qed.
-
-Lemma filter_No_duplicates : forall (L:list A) p,
-  No_duplicates L -> No_duplicates (filter p L).
-Proof using.
-  Hint Constructors No_duplicates.
-  introv H. induction H.
-  rewrite* filter_nil.
+  introv M. induction L.
+  inverts M.
   rewrite filter_cons. case_if.
-    constructors*. introv N. rewrite Mem_mem in N. rewrite filter_mem_eq in N.
-     rew_refl in N. rewrite* <- Mem_mem in N.
-    auto.
+    rew_list. nat_math.
+    inverts M. false. applys~ IHL.
 Qed.
 
-End Filter.
-
-
-Lemma No_duplicates_filter : forall l P,
+Lemma No_duplicates_filter : forall P l,
   No_duplicates L -> 
   No_duplicates (filter P L).
 Proof using.
@@ -1518,6 +1435,62 @@ Proof using.
     constructors*. introv N. false* Filter_Mem_inv N.
     auto.
 Qed.
+
+End Filter.
+
+Opaque filter.    
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Remove *)
+
+Definition remove A (x:A) (l:list A) :=
+  filter (<> x) l.
+
+Section Remove.
+Variable (A : Type).
+Implicit Types x : A.
+Implicit Types l : list A.
+
+
+Lemma mem_remove_inv : forall x (L:list A),
+  Mem x (remove x L) ->
+  False.
+Proof using.
+  intros. induction L.
+  rewrite filter_nil. introv M. inverts M.
+  rewrite filter_cons. case_if.
+    introv M. inverts M; false.
+    auto.
+Qed.
+
+Lemma length_remove_mem : forall x l,
+  Mem x l -> 
+  length (remove x l) < length l.
+Proof using.
+  introv M. induction L.
+  inverts M.
+  rewrite filter_cons. case_if.
+    inverts M. false. rew_length. forwards~: IHL. math.
+    lets: (filter_length_le L (<> x)). rew_length. math.
+Qed.
+
+
+End Remove.
+
+Arguments remove [A] {CA}.
+Opaque remove.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
