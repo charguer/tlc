@@ -1129,16 +1129,16 @@ Lemma make_pos : forall n v,
   make n v = v::(make (n-1) v).
 Proof using.
   introv E. destruct n.
-    math.
-    rewrite make_succ. fequals_rec. math. 
+  { math. }
+  { rewrite make_succ. fequals_rec. math. }
 Qed.
 
 Lemma length_make : forall n v,
   length (make n v) = n.
 Proof using.
   intros. induction n.
-  auto.
-  rewrite make_succ. rewrite length_cons. math.
+  { auto. }
+  { rewrite make_succ. rewrite length_cons. math. }
 Qed.
 
 Lemma nth_make : forall i n v,
@@ -1146,8 +1146,8 @@ Lemma nth_make : forall i n v,
   nth i (make n v) = v.
 Proof using.
   introv. gen n; induction i; introv E.
-  destruct n. math. auto.
-  destruct n. math. rewrite make_succ. rewrite nth_succ. rewrite~ IHi. math.
+  { destruct n. math. auto. }
+  { destruct n. math. rewrite make_succ. rewrite nth_succ. rewrite~ IHi. math. }
 Qed.
 
 End Make.
@@ -1177,7 +1177,7 @@ Lemma Update_zero : forall x y l,
   Update 0 x (y::l) (x::l).
 Proof using.
   intros. splits.
-  rew_length~.
+  rew_list~.
   introv M H. inverts* M.
   autos*.
 Qed.
@@ -1187,7 +1187,7 @@ Lemma Update_cons : forall i x y l l',
   Update (S i) x (y::l) (y::l').
 Proof using.
   introv (L&O&E). splits.
-  rew_length~.
+  rew_list~.
   introv M H. inverts* M.
   autos*.
 Qed.
@@ -1199,7 +1199,7 @@ Lemma Update_app_l : forall i x l1 l1' l2,
   Update i x (l1++l2) (l1'++l2).
 Proof using.
   introv (L&O&E). splits.
-  rew_length~.
+  rew_list~.
   introv M H. destruct (Nth_app_inv _ _ M).
     apply~ Nth_app_l.
     unpack. apply* Nth_app_r. math.
@@ -1212,7 +1212,7 @@ Lemma Update_app_r : forall i j x l1 l2 l2',
   Update i x (l1++l2) (l1++l2').
 Proof using.
   introv (L&O&E) Eq. splits.
-  rew_length~.
+  rew_list~.
   introv M H. destruct (Nth_app_inv _ _ M).
     apply~ Nth_app_l.
     unpack. apply* Nth_app_r. apply* O. math. math.
@@ -1407,8 +1407,8 @@ Lemma noduplicates_length_le : forall l1 l2,
 Proof using.
   Hint Constructors Mem.
   introv NL ML. gen L'. induction L as [|a L]; intros.
-  rew_length. math.
-  rew_length. inverts NL as HM NL'.
+  rew_list. math.
+  rew_list. inverts NL as HM NL'.
    sets_eq L'': (Filter (<> a) L').
    forwards H: Filter_neq_Mem_length a L'. applys* ML.
    rewrite <- EQL'' in H.
@@ -1708,7 +1708,7 @@ Lemma length_filter : forall P l,
 Proof using.
   intros. induction L.
   rewrite filter_nil. math.
-  rewrite filter_cons. case_if; rew_length; math.
+  rewrite filter_cons. case_if; rew_list; math.
 Qed.
 
 Lemma filter_length_partition : forall P l,
@@ -1793,8 +1793,8 @@ Proof using.
   introv M. induction L.
   inverts M.
   rewrite filter_cons. case_if.
-    inverts M. false. rew_length. forwards~: IHL. math.
-    lets: (filter_length_le L (<> x)). rew_length. math.
+    inverts M. false. rew_list. forwards~: IHL. math.
+    lets: (filter_length_le L (<> x)). rew_list. math.
 Qed.
 
 End Remove.
