@@ -154,6 +154,7 @@ Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
 
 End PropExt.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Non-dependend predicates *)
 
@@ -261,6 +262,7 @@ End PIfromExt.
 Lemma proof_irrelevance :
   forall (P : Prop) (p q : P), p = q.
 Proof using. exact PIfromExt.proof_irrelevance. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Consequences of proof irrelevance *)
@@ -500,6 +502,7 @@ Arguments eq_trans' [A].
 
 (* TODO: two other versions of eq_trans *)
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of disequality *)
 
@@ -514,6 +517,7 @@ Lemma neq_sym : forall x y,
 Proof using. introv H K. destruct~ K. Qed.
 
 End DisequalityProp.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Symmetrized induction principles *)
@@ -577,6 +581,7 @@ End FuncEq.
 
 (* TODO: generalize to dependent functions *)
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Equal functions return equal results *)
 
@@ -605,6 +610,7 @@ Lemma func_same_5 : forall f g,
 Proof using. intros. subst~. Qed.
 
 End FuncSame.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Generalization *)
@@ -657,6 +663,9 @@ Class Extensional (A:Type) := {
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactic to exploit extensionality *)
+
+(* TODO: generalize this tactic using a typeclass to lookup extensionality
+   lemmas for every type. *)
 
 (** [extens] is a tactic that can be applied to exploit extensionality
     on any goal of the form [x = y] when [x] and [y] are functions, or

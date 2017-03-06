@@ -1,3 +1,12 @@
+
+
+
+
+(** DISCLAIMER: file under construction *)
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Finite sets                                                             *
@@ -7,7 +16,6 @@ Set Implicit Arguments.
 Require Import LibTactics LibList.
 Require Import LibSet LibLogic LibEqual LibReflect.
 
-(** DISCLAIMER: under construction *)
 
 (* ********************************************************************** *)
 (** * Abstract interface for finite sets *)

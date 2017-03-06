@@ -1,3 +1,6 @@
+(* TODO: rename a bunch of lemmas *)
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Binary relations                                                        *
@@ -346,11 +349,13 @@ Proof using.
 Qed.
 
 Lemma eq_by_flip_l : forall R1 R2,
-  R1 = flip R2 -> flip R1 = R2.
+  R1 = flip R2 -> 
+  flip R1 = R2.
 Proof using. intros. apply flip_injective. rewrite~ flip_flip. Qed.
 
 Lemma eq_by_flip_r : forall R1 R2,
-  flip R1 = R2 -> R1 = flip R2.
+  flip R1 = R2 -> 
+  R1 = flip R2.
 Proof using. intros. apply flip_injective. rewrite~ flip_flip. Qed.
 
 (* TODO: do we really need this extensional version? *)
@@ -437,8 +442,6 @@ Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties about [union] *)
-
-(* TODO: rename lemmas *)
 
 Lemma prove_rel_union_left : forall A (R1 R2 : binary A) x y,
   R1 x y ->

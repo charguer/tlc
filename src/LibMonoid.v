@@ -7,6 +7,7 @@ Set Implicit Arguments.
 Require Import LibTactics LibLogic LibOperation Omega.
 Generalizable Variables A B.
 
+
 (* ********************************************************************** *)
 (** * Monoids *)
 

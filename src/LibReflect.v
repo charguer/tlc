@@ -81,6 +81,7 @@ Proof using. intros K. rewrite~ istrue_false_eq in K. Qed.
 Hint Extern 1 (False) => match goal with
   | H: istrue false |- _ => apply (istrue_not_false H) end.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Translation from propositions into booleans *)
 
@@ -115,6 +116,7 @@ Notation "x ''<>' y" := (isTrue (~ (@eq _ x y)))
 
 Global Opaque isTrue.
 Open Scope comp_scope.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Extensionality for boolean equality *)
@@ -163,6 +165,7 @@ Proof using. extens. tautob*. Qed.
 
 End DistribIstrue.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Rewriting rules for distributing [isTrue] *)
 
@@ -196,6 +199,7 @@ Proof using.
 Qed.
 
 End DistribIsTrue.
+
 
 (* ---------------------------------------------------------------------- *)
 (** Corrolaries obtained by composition *)
@@ -303,15 +307,18 @@ Tactic Notation "rew_refl" "*" "in" "*" :=
 (** ** Properties of boolean comparison *)
 
 Lemma isTrue_true : forall (P:Prop),
-  P -> isTrue P = true.
+  P -> 
+  isTrue P = true.
 Proof using. intros. rewrite isTrue_def. case_if*. Qed.
 
 Lemma isTrue_false : forall (P:Prop),
-  ~ P -> isTrue P = false.
+  ~ P -> 
+  isTrue P = false.
 Proof using. intros. rewrite isTrue_def. case_if*. Qed.
 
 Lemma eqb_eq : forall A (x y:A),
-  x = y -> (x '= y) = true.
+  x = y -> 
+  (x '= y) = true.
 Proof using. intros. subst. apply~ isTrue_true. Qed.
 
 Lemma eqb_self : forall A (x:A),
@@ -319,15 +326,18 @@ Lemma eqb_self : forall A (x:A),
 Proof using. intros. apply~ eqb_eq. Qed.
 
 Lemma eqb_neq : forall A (x y:A),
-  x <> y -> (x '= y) = false.
+  x <> y -> 
+  (x '= y) = false.
 Proof using. intros. subst. apply~ isTrue_false. Qed.
 
 Lemma neqb_eq : forall A (x y:A),
-  x = y -> (x '<> y) = false.
+  x = y -> 
+  (x '<> y) = false.
 Proof using. intros. subst. rewrite~ isTrue_false. Qed.
 
 Lemma neqb_neq : forall A (x y:A),
-  x <> y -> (x '<> y) = true.
+  x <> y ->
+  (x '<> y) = true.
 Proof using. intros. subst. rewrite~ isTrue_true. Qed.
 
 Lemma neqb_self : forall A (x:A),
@@ -587,15 +597,19 @@ Ltac isTrue_prove :=
 Lemma true_eq_isTrue : forall P,
   (true = isTrue P) = P.
 Proof using. isTrue_prove. Qed.
+
 Lemma isTrue_eq_true : forall P,
   (isTrue P = true) = P.
 Proof using. isTrue_prove. Qed.
+
 Lemma false_eq_isTrue : forall P,
   (false = isTrue P) = ~ P.
 Proof using. isTrue_prove. Qed.
+
 Lemma isTrue_eq_false : forall P,
   (isTrue P = false) = ~ P.
 Proof using. isTrue_prove. Qed.
+
 Lemma not_not_eq : forall P,
   (~ ~ P) = P.
 Proof using. intros. rew_logic*. Qed.
@@ -647,6 +661,8 @@ Tactic Notation "logics" "~" :=
 Tactic Notation "logics" "*" :=
   logics; auto_star.
 
+(* TODO: should export "rew_isTrue" as a name, not "logics" *)
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics extended for reflection *)
@@ -664,290 +680,6 @@ Ltac case_if_post ::= logics; tryfalse.
 
 Ltac absurds_post H :=
   rew_logic in H.
-
-
-(* ********************************************************************** *)
-(** * Decidable predicates *)
-
-(** [Decidable P] asserts that there exists a boolean
-    value indicating whether [P] is true. The definition
-    is interesting when this boolean is computable and
-    can lead to code extraction. *)
-
-Class Decidable (P:Prop) := decidable_make {
-  decide : bool;
-  decide_spec : decide = isTrue P }.
-
-Hint Rewrite @decide_spec : rew_refl.
-Implicit Arguments decide [[Decidable]].
-Extraction Inline decide.
-
-(** Notation [ifb P then x else y] can be used for
-    testing a proposition [P] for which there exists an
-    instance of [Decidable P]. *)
-
-Notation "'ifb' P 'then' v1 'else' v2" :=
-  (if decide P then v1 else v2)
-  (at level 200, right associativity) : type_scope.
-
-(** In classical logic, any proposition is decidable; of course,
-    we do not want to use this lemma as an instance because
-    it cannot be extracted to executable code. *)
-
-Lemma prop_decidable : forall (P:Prop), Decidable P.
-Proof using. intros. applys~ decidable_make (isTrue P). Qed.
-
-(** In constructive logic, any proposition with a proof of
-    that is constructively true or false is decidable. *)
-
-Definition sumbool_decidable : forall (P:Prop),
-  {P}+{~P} -> Decidable P.
-Proof using.
-  introv H. applys decidable_make
-    (match H with left _ => true | right _ => false end).
-  rewrite isTrue_def. destruct H; case_if; tryfalse; auto.
-Defined.
-
-Definition decidable_sumbool : forall P : Prop,
-    Decidable P -> {P}+{~P}.
-Proof using.
-  introv D. destruct (decide P) eqn: H; fold_bool; rew_refl in H; [left*|right*].
-Defined.
-
-(** [sumbool_decidable] and [decidable_sumbool] just wrap their
-    property as expected. *)
-
-Lemma sumbool_decidable_decidable_sumbool : forall P (d : {P}+{~P}),
-  decidable_sumbool (sumbool_decidable d) = d.
-Proof.
-  introv. unfolds.
-  asserts R1: (forall (d : bool) B C C1 C2,
-    d ->
-    (if d as b return (d = b -> B) then
-      fun H => C1 H
-    else fun H => C2 H) eq_refl = C ->
-    exists E, C1 E = C).
-   clear. introv D Eq. destruct d; tryfalse. eexists. apply Eq.
-  lets R1': (rm R1) (@decide P (sumbool_decidable d)).
-  asserts R2: (forall (d : bool) B C C1 C2,
-    !d ->
-    (if d as b return (d = b -> B) then
-      fun H => C1 H
-    else fun H => C2 H) eq_refl = C ->
-    exists E, C2 E = C).
-   clear. introv D Eq. destruct d; tryfalse. eexists. apply Eq.
-  lets R2': (rm R2) (@decide P (sumbool_decidable d)).
-  unfold sumbool_decidable. case_if as I.
-   forwards (E&Eq): R1'.
-     rewrite decide_spec. rew_refl*.
-     reflexivity.
-    rewrite <- Eq. fequals.
-   forwards (E&Eq): R2'.
-     rewrite decide_spec. rew_refl*.
-     reflexivity.
-    rewrite <- Eq. fequals.
-Qed.
-
-
-Global Instance Decidable_impl : forall A B : Prop,
-    Decidable A -> Decidable B -> Decidable (A -> B).
-  introv (da&Ha) (db&Hb).
-  destruct da; destruct db; fold_bool; rew_refl in *;
-    ((apply decidable_make with true; solve [ fold_bool; rew_refl* ]) ||
-     (apply decidable_make with false; solve [ fold_bool; rew_refl* ])).
-Defined.
-
-Global Instance Decidable_equiv : forall A B : Prop,
-    (A <-> B) -> Decidable A -> Decidable B.
-  introv E. apply prop_ext in E. substs~.
-Defined.
-
-(** Extending the [case_if] tactic to support [if decide] *)
-
-Lemma Decidable_dec : forall (P:Prop) {H: Decidable P} (A:Type) (x y:A),
-  exists (Q : {P}+{~P}),
-  (if decide P then x else y) = (if Q then x else y).
-Proof using.
-  intros. exists (classicT P).
-  rewrite decide_spec.
-  tautotest P; case_if as C; case_if as C';
-  first [ rewrite isTrue_True in C
-        | rewrite isTrue_False in C
-        | idtac ]; autos*; false*.
-Qed.
-
-Ltac case_if_on_tactic_core E Eq ::=
-  match E with
-  | @decide ?P ?M =>
-      let Q := fresh in let Eq := fresh in
-      forwards (Q&Eq): (@Decidable_dec P M);
-      rewrite Eq in *; clear Eq; destruct Q
-  | _ =>
-    match type of E with
-    | {_}+{_} => destruct E as [Eq|Eq]; try subst_hyp Eq
-    | _ => let X := fresh in
-           sets_eq <- X Eq: E;
-           destruct X
-    end
-  end.
-
-(** Rewriting lemma *)
-
-Lemma istrue_decide : forall `{Decidable P},
-  istrue (decide P) = P.
-Proof using. intros. rew_refl~. Qed.
-
-Lemma decide_prove : forall `{Decidable P},
-  P -> istrue (decide P).
-Proof using. intros. rewrite~ istrue_decide. Qed.
-
-Lemma decide_def : forall `{Decidable P},
-  (decide P) = (If P then true else false).
-Proof using. intros. rewrite decide_spec. rewrite isTrue_def. case_if*. Qed.
-
-Lemma decide_cases : forall `{Decidable P},
-  (P /\ decide P = true) \/ (~ P /\ decide P = false).
-Proof using. intros. rewrite decide_spec. rewrite isTrue_def. case_if*. Qed.
-
-(** Dedicability instances *)
-
-Global Instance true_decidable : Decidable True.
-Proof using. applys decidable_make true. rew_refl~. Qed.
-
-Global Instance false_decidable : Decidable False.
-Proof using. applys decidable_make false. rew_refl~. Qed.
-
-Global Instance bool_decidable : forall (b : bool), Decidable (b).
-Proof using. introv. applys (@decidable_make (istrue b) b). rew_refl~. Qed.
-
-Global Instance not_decidable : forall (P : Prop),
-  Decidable P -> Decidable (~ P).
-Proof using.
-  (* todo: cleanup proof *)
-  introv [dec spec]. applys decidable_make (neg dec).
-  rew_refl. rewrite~ spec.
-Qed.
-
-Global Instance or_decidable : forall (P Q : Prop),
-  Decidable P -> Decidable Q ->
-  Decidable (P \/ Q).
-Proof using.
-  intros. applys decidable_make (decide P || decide Q).
-  rew_refl. subst~.
-Qed.
-
-Global Instance and_decidable : forall P Q,
-  Decidable P -> Decidable Q ->
-  Decidable (P /\ Q).
-Proof using.
-  intros. applys decidable_make (decide P && decide Q).
-  rew_refl. subst~.
-Qed.
-
-Global Instance If_dec : forall P Q R,
-  Decidable P -> Decidable Q -> Decidable R ->
-  Decidable (If P then Q else R).
-Proof using.
-  intros. applys decidable_make (if decide P then decide Q else decide R).
-  rew_refl. subst~.
-Qed.
-
-
-(* ********************************************************************** *)
-(** * Comparable types *)
-
-(** [Comparable A] asserts that there exists a decidable
-    equality over values of type [A] *)
-
-Class Comparable (A:Type) := make_comparable {
-  comparable : forall (x y:A), Decidable (x = y) }.
-
-Hint Resolve @comparable : typeclass_instances.
-Extraction Inline comparable.
-
-(** In classical logic, any type is comparable; of course,
-    we do not want to use this lemma as an instance because
-    it cannot be extracted to executable code. *)
-
-Lemma type_comparable : forall (A:Type), Comparable A.
-Proof using. constructor. intros. applys~ prop_decidable. Qed.
-
-(** [Comparable] can be proved by exhibiting a boolean
-    comparison function *)
-
-Lemma comparable_beq : forall A (f:A->A->bool),
-  (forall x y, (istrue (f x y)) <-> (x = y)) ->
-  Comparable A.
-Proof using.
-  introv H. constructors. intros.
-  applys decidable_make (f x y).
-  rewrite isTrue_def. extens.
-  rewrite H. case_if; auto_false*.
-Qed.
-
-Extraction Inline comparable_beq.
-
-(** [Comparable] can be proved by exhibiting a decidability
-    result in the form of a strong sum *)
-
-Lemma comparable_of_dec : forall (A:Type),
-  (forall x y : A, {x = y} + {x <> y}) ->
-  Comparable A.
-Proof using.
-  introv H. constructors. intros.
-  applys decidable_make (if H x y then true else false).
-  rewrite isTrue_def. destruct (H x y); case_if*.
-Qed.
-
-(** Comparison for booleans *)
-
-Instance bool_comparable : Comparable bool.
-Proof using.
-  applys (comparable_beq Bool.eqb).
-  destruct x; destruct y; simpl; rew_refl; auto_false*.
-Qed.
-
-Global Instance prop_eq_decidable : forall P Q,
-  Decidable P -> Decidable Q ->
-  Decidable (P = Q).
-Proof using.
-  intros. applys decidable_make (decide (decide P = decide Q)).
-  extens. rew_refl.
-  iff E.
-    do 2 rewrite isTrue_def in E.
-     extens. case_if; case_if; auto_false*.
-    subst*.
-Qed.
-
-
-(**************************************************************)
-(** * Computable epsilon operator *)
-
-(** [Pickable P] asserts the existence of computable witness
-    of a value that satisfies the predicate [P]. When an
-    instance of [Pickable P] can be derived using the typeclass
-    mechanism, one may write [pick P] to denote an arbitrary
-    value that satisfies the predicate P. This operation is
-    typically useful for extraction, in order to associate
-    computable values to predicates. *)
-
-Class Pickable (A : Type) (P : A -> Prop) := pickable_make {
-  pick : A;
-  pick_spec : (exists a, P a) -> P pick }.
-
-Implicit Arguments pick [A [Pickable]].
-Extraction Inline pick.
-
-(** Instances of pickable *)
-
-Global Instance eq_pickable : forall (A : Type) (a : A), (* todo: use `{Inhab A} *)
-  Pickable (eq a).
-Proof using.
-  (* todo: clean up proof *)
-  introv. applys pickable_make a.
-  intro. reflexivity.
-Qed.
-
 
 
 

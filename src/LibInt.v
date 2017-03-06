@@ -1,6 +1,15 @@
+
+
+
+
+(** TODO: this file needs a bit of a cleanup *)
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* Integers -- TODO: use typeclasses                                       *
+* Integers                                                                *
 **************************************************************************)
 
 Set Implicit Arguments.
@@ -9,6 +18,7 @@ Require Import LibTactics LibLogic LibReflect LibRelation.
 Require Import Psatz.
 Export LibTacticsCompatibility.
 Require Export LibNat.
+
 
 (* ********************************************************************** *)
 (** * Notation for integers *)
@@ -73,34 +83,6 @@ Ltac nat_from_number N ::=
 Instance int_inhab : Inhab int.
 Proof using. intros. apply (prove_Inhab 0). Qed.
 
-
-(* ********************************************************************** *)
-(** * Comparable *)
-
-(**************************************************************)
-(** ** Extension to Stdlib comparisons *)
-
-(* TODO: remove dependency on stdlib by removing following two lemmas *)
-
-Definition comparison_compare c1 c2 :=
-  match c1, c2 with
-  | Eq, Eq => true
-  | Datatypes.Lt, Datatypes.Lt => true
-  | Datatypes.Gt, Datatypes.Gt => true
-  | _, _ => false
-  end.
-
-Global Instance comparison_comparable : Comparable comparison.
-  applys comparable_beq comparison_compare. intros x y.
-  destruct x; destruct y; simpl; rew_refl; iff H; inverts~ H;
-   tryfalse; auto; try congruence.
-Qed.
-
-Global Instance int_comparable : Comparable int.
-Proof using.
-  applys comparable_beq (fun i j => decide (i ?= j = Eq)). intros x y.
-  simpl; rew_refl; iff H; rewrite Z.compare_eq_iff in * |- *; auto.
-Qed.
 
 
 (* ********************************************************************** *)
@@ -478,6 +460,7 @@ Ltac maths_core tt :=
 Tactic Notation "maths" :=
   maths_core tt.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Rewriting equalities provable by the [math] tactic *)
 
@@ -564,6 +547,7 @@ Ltac zify_nat_op_extended :=
   end.
 
 Ltac zify_nat ::= repeat zify_nat_rel; repeat zify_nat_op_extended; unfold Z_of_nat' in *.
+
 
 (* ********************************************************************** *)
 (** * Simplification lemmas *)
@@ -849,6 +833,7 @@ Lemma min_trans_elim : forall a b x y : int,
 Proof using. intros. unfolds min. case_if; math. Qed.
 
 End Min.
+
 
 (************************************************************)
 (* * Pow function *)

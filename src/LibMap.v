@@ -1,14 +1,21 @@
+
+
+
+
+(** DISCLAIMER: file under construction *)
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Finite maps                                                             *
 **************************************************************************)
 
-(* FILE UNDER CONSTRUCTION *)
-
 Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect LibOption
-  LibRelation LibLogic LibOperation LibEpsilon LibStruct LibSet.
+  LibRelation LibLogic LibOperation LibEpsilon LibMonoid LibSet.
 Require Export LibBag.
 
 Local Open Scope set_scope.

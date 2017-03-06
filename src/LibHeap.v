@@ -1,13 +1,20 @@
+
+
+
+
+(** DISCLAIMER: don't use this file, it's going to be deprecated *)
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Heaps: finite maps from keys to values                                  *
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibReflect LibList LibSet.
+Require Import LibTactics LibReflect LibList LibSet LibExec.
 Generalizable Variable K V.
-
-(* FILE TO BE DEPRECATED SOON *)
 
 
 (***********************************************************)

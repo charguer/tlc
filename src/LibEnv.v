@@ -440,6 +440,7 @@ Qed.
 
 End SinglesProperties.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Structural properties *)
 
@@ -493,6 +494,7 @@ Lemma eq_push_inv : forall x1 x2 v1 v2 E1 E2,
 Proof using. introv H. rew_env_defs. inverts~ H. Qed.
 
 End StructProperties.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** More properties *)
@@ -595,6 +597,7 @@ Proof using.
     lets: (get_some_inv C). rewrite~ isTrue_true.
     lets: (get_none_inv C). rewrite~ isTrue_false.
 Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Hints and rewriting tactics *)
@@ -1091,6 +1094,7 @@ Qed.
 
 End BindsProperties.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics *)
 
@@ -1114,6 +1118,7 @@ Tactic Notation "binds_push" "~" constr(H) :=
   binds_push H; auto_tilde.
 Tactic Notation "binds_push" "*" constr(H) :=
   binds_push H; auto_star.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of environment inclusion *)

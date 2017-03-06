@@ -32,6 +32,7 @@ Proof using.
 Qed.
 (* TEMPORARY functionality -> definedness? *)
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Dependent functional choice *)
 

@@ -1,9 +1,17 @@
+
+
+
+
+(** DISCLAIMER: file under construction *)
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Graphs                                                                  *
 **************************************************************************)
 
-(* under construction *)
 
 Set Implicit Arguments.
 Require Import LibCore LibSet.
@@ -37,6 +45,7 @@ Definition nonneg_edges (g:graph int) :=
   forall x y w, has_edge g x y w -> w >= 0.
   (* forall x y, value_nonneg id (has_edge g x y) *)
 
+
 (*-----------------------------------------------------------*)
 
 Definition path A := list (int*int*A).
@@ -61,6 +70,7 @@ Proof using. introv H. inverts~ H. apply* has_edge_in_nodes_r. Qed.
 Lemma is_path_cons_has_edge : forall A (g:graph A) x y z w p,
   is_path g x z ((y,z,w)::p) -> has_edge g y z w.
 Proof using. introv H. inverts~ H. Qed.
+
 
 (*-----------------------------------------------------------*)
 

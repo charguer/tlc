@@ -1,3 +1,12 @@
+
+
+
+
+(* TODO: cleanup and merge into LibRelation.v *)
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Partial equivalence relations                                           *
@@ -6,6 +15,7 @@
 Set Implicit Arguments.
 Require Import LibTactics LibLogic LibBool LibLogic LibRelation LibBag LibSet.
 Module Rel := LibRelation.
+
 
 (* ********************************************************************** *)
 (** * Partial equivalence relations *)

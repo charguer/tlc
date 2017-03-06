@@ -7,7 +7,7 @@ Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
 Require Import LibTactics LibLogic LibReflect LibOperation
- LibProd LibOption LibNat LibInt LibWf LibStruct LibRelation LibList.
+ LibProd LibOption LibNat LibInt LibWf LibMonoid LibRelation LibList.
 Local Open Scope nat_scope.
 Local Open Scope comp_scope.
 Global Close Scope list_scope.
@@ -250,7 +250,41 @@ Definition exists_bool A (f : A->bool) (l:list A) :=
 Opaque forall_bool.
 
 
+Lemma Exists_exists_st : forall P l,
+  Exists P l <-> exists_st P l.
+Proof using.
+  introv. iff E.
+   induction l.
+    inverts E.
+    unfolds. rewrite fold_right_cons. rew_refl.
+     forwards [Pa|Nl]: Exists_cons_inv E; [right~|left~].
+   induction l.
+    compute in E. false*.
+    unfolds in E. rewrite fold_right_cons in E. rew_refl in E.
+     inverts E as E.
+      apply~ Exists_next.
+      apply~ Exists_here.
+Qed.
+
+
+
 (* ---------------------------------------------------------------------- *)
+
+Global Instance Exists_decidable : forall P l,
+    (forall a : A, Decidable (P a)) ->
+    Decidable (Exists P l).
+  introv D. induction l.
+   applys decidable_make false. fold_bool. rew_refl. intro Abs. inverts Abs.
+   applys decidable_make (decide (P a \/ Exists P l)).
+    rewrite decide_spec. rewrite isTrue_eq_isTrue. iff I.
+     inverts I as I.
+      apply~ Exists_here.
+      apply~ Exists_next.
+     inverts I as I.
+      left~.
+      right~.
+Defined.
+
 
 
 

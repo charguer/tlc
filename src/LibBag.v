@@ -5,7 +5,7 @@
 
 Set Implicit Arguments.
 Require Import LibTactics LibLogic LibReflect
-  LibRelation LibOperation LibInt LibStruct.
+  LibRelation LibOperation LibInt LibMonoid.
 Generalizable Variables A B K T.
 
 (* ********************************************************************** *)

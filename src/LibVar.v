@@ -1,10 +1,10 @@
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* Variable names                                                          *
+* Variable names, and freshness properties                                *
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibList LibLogic LibNat LibEpsilon LibReflect.
+Require Import LibTactics LibList LibLogic LibNat LibEpsilon LibReflect LibExec.
 Require Export LibFset.
 
 
@@ -323,6 +323,7 @@ LATER:
   | |- (var_gen ?x) \notin _ =>
         apply notin_var_gen; intros; notin_simpl
 *)
+
 
 (* ********************************************************************** *)
 (** ** Tactics for fresh *)

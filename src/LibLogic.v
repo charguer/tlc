@@ -224,6 +224,7 @@ Implicit Types P Q : Prop.
 
 (* TODO: simplify the proofs using tautotest or rew_classic *)
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of true and false propositions *)
 
@@ -267,6 +268,7 @@ Proof using. intros. tautotest P Q. Qed.
 Lemma prop_neq_r_inv : forall P Q,
   P <> Q -> (~ P <-> Q).
 Proof using. intros. tautotest P Q. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Double negation and contrapose *)
@@ -329,6 +331,7 @@ Proof using. intros. tautotest P Q. Qed.
 End CombinatorsProp.
 
 Hint Resolve is_True is_False True_neq_False.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of logical equivalence *)
@@ -416,6 +419,7 @@ Proof using. intros. apply* prop_ext. iff H. rewrite~ H. auto. Qed.
 Lemma prop_eq_to_iff : forall P Q, (P = Q) = (P <-> Q).
 Proof using. intros. extens. iff. subst*. apply~ prop_ext. Qed.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Simplification of conjunction and disjunction *)
 
@@ -442,6 +446,7 @@ Proof using. intros. apply* prop_ext. Qed.
 
 Lemma or_False_r : forall P, (P \/ False) = P.
 Proof using. intros. apply* prop_ext. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Distribution of negation *)
@@ -522,6 +527,7 @@ Proof using.
 Qed.
 
 End ClassicQuantifiers.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactic for simplifying expressions *)
@@ -712,6 +718,7 @@ Definition pred_impl (A : Type) (P Q : A -> Prop) :=
 
 Hint Unfold pred_true pred_false.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of combinators *)
 
@@ -720,6 +727,7 @@ Hint Unfold pred_true pred_false.
 Lemma pred_conj_forall_distrib : forall A (P Q: A->Prop),
   ((forall x, P x) /\ (forall x, Q x)) = (forall x, P x /\ Q x).
 Proof using. intros. apply prop_ext. iff H. autos*. split; intros x; apply* (H x). Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Order on predicates *)
@@ -816,6 +824,7 @@ Definition at_most_one_upto (A : Type) (E : A -> A -> Prop) (P : A -> Prop) :=
 (* ********************************************************************** *)
 (** * Conjunctions *)
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Changing the order of branches *)
 
@@ -829,6 +838,7 @@ Proof using. autos*. Qed.
 Lemma conj_dup_l : forall P Q : Prop,
   P -> (P -> Q) -> P /\ Q.
 Proof using. autos*. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Parallel strengthening of a conjunction *)
@@ -852,6 +862,7 @@ Lemma conj_strengthen_5 : forall (Q1 Q2 Q3 Q4 Q5 P1 P2 P3 P4 P5 : Prop),
   (Q1 -> P1) -> (Q2 -> P2) -> (Q3 -> P3) -> (Q4 -> P4) -> (Q5 -> P5) ->
   (Q1 /\ Q2 /\ Q3 /\ Q4 /\ Q5) -> (P1 /\ P2 /\ P3 /\ P4 /\ P5).
 Proof using. autos*. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Projections of lemmas concluding on a conjunction *)

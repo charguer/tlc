@@ -14,25 +14,10 @@ Implicit Arguments None [[A]].
 
 
 (* ********************************************************************** *)
-(** * Inhabited and comparable *)
+(** * Inhabited *)
 
 Instance option_inhab : forall A, Inhab (option A).
 Proof using. intros. apply (prove_Inhab None). Qed.
-
-Definition option_compare `{Comparable A} (o1 o2 : option A) :=
-  match o1, o2 with
-  | None, None => true
-  | Some v1, Some v2 => decide (v1 = v2)
-  | _, _ => false
-  end.
-
-Global Instance option_comparable : forall `{Comparable A},
-  Comparable (option A).
-Proof using.
-  intros.
-  applys (comparable_beq option_compare).
-  destruct x; destruct y; simpl; rew_refl; iff; auto_false*; congruence.
-Qed.
 
 
 (* ********************************************************************** *)
@@ -67,7 +52,7 @@ Definition unsome `{Inhab A} :=
 (** [map f o] takes an option and returns an option, and maps the function
     [f] to the content of the option if it has one. *)
 
-Definition map A B (f : A -> B) o :=
+Definition map A B (f : A -> B) (o : option A) : option B :=
   match o with
   | None => None
   | Some x => Some (f x)
@@ -75,13 +60,13 @@ Definition map A B (f : A -> B) o :=
 
 (** [map_on o f] is the same as [map f o], only the arguments are swapped. *)
 
-Definition map_on A B o (f : A -> B) :=
+Definition map_on A B (o : option A) (f : A -> B) : option B :=
   map f o.
 
 (** [apply f o] optionnaly applies a function of type [A -> option B] *)
 (* --todo: find a more explicit name *)
 
-Definition apply A B (f : A -> option B) o :=
+Definition apply A B (f : A -> option B) (o : option A) : option B :=
   match o with
   | None => None
   | Some x => f x
@@ -89,7 +74,7 @@ Definition apply A B (f : A -> option B) o :=
 
 (** [apply_on o f] is the same as [apply f o] *)
 
-Definition apply_on A B o (f : A -> option B) :=
+Definition apply_on A B (o : option A) (f : A -> option B) : option B:=
   apply f o.
 
 

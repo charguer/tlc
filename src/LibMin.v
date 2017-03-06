@@ -225,7 +225,6 @@ Qed.
 
 Hint Resolve bounded_has_maximal_nat : bounded_has_minimal.
 
-
 Lemma mmin_spec_nat:
   forall (P:nat->Prop) m,
   m = mmin le P ->

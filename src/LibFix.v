@@ -24,6 +24,7 @@ Hint Resolve equiv_refl equiv_sym equiv_trans.
 Ltac auto_tilde ::=
   try solve [ auto | eauto | intros_all; subst_local; simpls; eauto ].
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Post-conditions for functions *)
 
@@ -34,6 +35,7 @@ Definition post_false {A B:Type} : A -> B -> Prop :=
   fun _ _ => False.
 
 Hint Unfold post_true post_false.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Unique values satisfying a property upto equivalence *)
@@ -428,6 +430,7 @@ Definition similar I A (M:family I A) :=
 Definition downward_closed I A (M:family I A) (K:I->Prop) :=
   forall i j, K i -> family_r M j i -> K j.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Ordered Families of Equivalences *)
 
@@ -450,6 +453,7 @@ Proof using.
 Qed.
 
 Hint Resolve similar_equiv.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Complete Ordered Families of Equivalences *)

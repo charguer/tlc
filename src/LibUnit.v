@@ -14,16 +14,6 @@ Proof using. intros. apply (prove_Inhab tt). Qed.
 
 
 (* ********************************************************************** *)
-(** * Comparable *)
-
-Global Instance unit_comparable : Comparable unit.
-Proof using.
-  apply make_comparable. intros [] [].
-  rewrite* prop_eq_True_back. typeclass.
-Qed.
-
-
-(* ********************************************************************** *)
 (** * Structure *)
 
 Lemma unit_unique : forall tt1 tt2 : unit,

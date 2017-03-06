@@ -22,6 +22,7 @@ Variable (A : Type).
 Implicit Types f g : oper2 A.
 Implicit Types i : oper1 A.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Commutativity, associativity *)
 
@@ -39,6 +40,7 @@ Definition assoc f := forall x y z,
 
 Definition comm_assoc f := forall x y z,
   f x (f y z) = f y (f x z).
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Distributivity *)
@@ -62,6 +64,7 @@ Definition distrib_l f g := forall x y z,
 
 Definition distrib_r f g := forall x y z,
   f (g y z) x = g (f y x) (f z x).
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Neutral and absorbant *)
@@ -115,6 +118,7 @@ Definition idempotent2 f := forall x,
 Definition self_neutral f e x :=
   f x x = e.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Inverses *)
 
@@ -145,6 +149,7 @@ Definition self_inverse i x :=
 
 End Definitions.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Morphism and automorphism *)
 
@@ -157,6 +162,7 @@ Definition morphism (A B : Type) (h : A -> B) (f : oper2 A) (g : oper2 B) :=
 
 Definition automorphism A := @morphism A A.
 Implicit Arguments automorphism [A].
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Injectivity *)
@@ -178,24 +184,30 @@ Implicit Types h : oper1 A.
     corresponding left-properties *)
 
 Lemma neutral_r_from_comm_neutral_l : forall f e,
-  comm f -> neutral_l f e -> neutral_r f e.
+  comm f -> 
+  neutral_l f e -> 
+  neutral_r f e.
 Proof using. introv C N. intros_all. rewrite* C. Qed.
 
 Lemma inverse_r_from_comm_inverse_l : forall f e i,
-  comm f -> inverse_l f e i -> inverse_r f e i.
+  comm f -> 
+  inverse_l f e i -> 
+  inverse_r f e i.
 Proof using. introv C I. intros_all. rewrite* C. Qed.
 
 Lemma distrib_r_from_comm_distrib_l : forall f g,
-  comm f -> distrib_l f g -> distrib_r f g.
+  comm f -> 
+  distrib_l f g -> 
+  distrib_r f g.
 Proof using.
   introv C N. intros_all. unfolds distrib_l.
   do 3 rewrite <- (C x). auto.
 Qed.
 
-(** [comm_assoc] derivable *)
-
-Lemma comm_assoc_prove : forall f,
-  comm f -> assoc f -> comm_assoc f.
+Lemma comm_assoc_from_comm_and_assoc : forall f,
+  comm f -> 
+  assoc f -> 
+  comm_assoc f.
 Proof using.
   introv C S. intros_all. rewrite C.
   rewrite <- S. rewrite~ (C x).

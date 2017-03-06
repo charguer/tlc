@@ -317,8 +317,7 @@ Definition Forall_inv := Forall_cons_inv.
 
 Definition Forall_mem := Forall_mem_inv.
 
-
-Definition Forall_iff_forall_mem := Forall_extens.
+Definition Exists_split := Exists_inv_middle_first.
 
 Definition Forall2_inv_length := Forall2_length.
 Definition Forall2_map := Forall2_map_r.
@@ -575,3 +574,28 @@ Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
  concat_nil concat_app concat_cons concat_last
   map_nil map_cons map_app map_last : rew_list.
 
+
+(* ********************************************************************** *)
+
+Definition if_t_x_y := if_true.
+Definition if_f_x_y := if_false.
+Definition if_x_t_f := if_then_true_else_false.
+Definition if_x_y_y := if_then_else_same.
+
+
+
+Definition neutral_l_and := and_true_l.
+Definition neutral_r_and := and_true_r.
+Definition absorb_l_and := and_false_l.
+Definition absorb_r_and := and_false_r.
+
+Definition neutral_l_or := or_false_l.
+Definition neutral_r_or := or_false_r.
+Definition absorb_l_or := or_true_l.
+Definition absorb_r_or := or_true_r.
+
+
+
+Definition beq_impl := eqb.
+
+Definition comm_assoc_prove := comm_assoc_from_comm_and_assoc.

@@ -65,6 +65,7 @@ Fixpoint nth A (n:nat) (s:stream A) : A :=
 Instance stream_inhab : forall `{Inhab A}, Inhab (stream A).
 Proof using. intros. apply (prove_Inhab (const arbitrary)). Qed.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Diagonal stream *)
 

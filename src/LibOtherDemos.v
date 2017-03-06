@@ -367,3 +367,48 @@ End LibVarDemos.
 
 
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Demo of LibSet tactics *)
+
+Require Import LibSet.
+
+Lemma inter_union_disjoint_right:
+  forall A (E F G : set A),
+  F \# G ->
+  (E \u F) \n G = (E \n G).
+Proof using.
+  set_prove.
+  (* intros. set_norm. set_specialize. set_norm. tauto. *)
+Qed. (* demo *)
+
+Lemma inter_union_subset_right:
+  forall A (E F G : set A),
+  F \c G ->
+  (E \u F) \n G = (E \n G) \u F.
+Proof using.
+  set_prove.
+Qed. (* demo *)
+
+Lemma inter_covariant:
+  forall A (E E' F F' : set A),
+  E \c E' ->
+  F \c F' ->
+  (E \n F) \c (E' \n F').
+Proof using.
+  set_prove.
+Qed. (* demo *)
+
+Lemma set_decompose_inter_right :
+  forall A (E F : set A),
+  E = (E \n F) \u (E \- F).
+Proof using.
+  set_prove_classic.
+Qed. (* demo *)
+
+Lemma set_decompose_union_right :
+  forall A (E F : set A),
+  (E \u F) = E \u (F \- E).
+Proof using.
+  set_prove_classic.
+Qed. (* demo *)

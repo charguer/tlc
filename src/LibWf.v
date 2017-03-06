@@ -7,6 +7,7 @@ Set Implicit Arguments.
 Require Import LibTactics LibLogic
  LibProd LibSum LibRelation LibNat.
 
+
 (* ********************************************************************** *)
 (** * Compatibility *)
 
@@ -15,6 +16,7 @@ Definition wf := well_founded.
 Hint Extern 1 (wf ?R) => unfold R : wf.
 
 (** New tactic [splits_all] that does not loop on well-founded goals *)
+(* TODO: deprecate [splits_all] *)
 
 Ltac splits_all_base ::=
   match goal with
@@ -568,11 +570,13 @@ End Wf_Transitive_Closure.
 *)
 
 Lemma tclosure_wf : forall A (R:binary A),
-  wf R -> wf (tclosure R).
+  wf R ->
+  wf (tclosure R).
 Proof using.
 Admitted. (* TODO: adapt proof from the standard library; see above *)
 
 (* end hide *)
+
 
 (* ********************************************************************** *)
 (** * Tactics *)

@@ -15,9 +15,10 @@ Require Import LibTactics LibLogic LibOperation.
 Instance bool_inhab : Inhab bool.
 Proof using. constructor. apply (prove_Inhab true). Qed.
 
-(** For [Extensional bool] and [Comparable bool], see file LibReflect:
-    These results are not in [LibBool] because they depend on definition
+(** For [Extensional bool], see file LibReflect:
+    this result is not in [LibBool] because it depends on definition
     from [LibReflect], which itself depends on [LibBool]. *)
+
 
 (* ********************************************************************** *)
 (** * Boolean Operations *)
@@ -30,7 +31,7 @@ Implicit Types x y z : bool.
 
 (** ** Comparison *)
 
-Definition beq_impl x y :=
+Definition eqb x y :=
   match x, y with
   | true, true => true
   | false, false => true
@@ -137,28 +138,28 @@ Proof using. tautob~. Qed.
 Lemma and_same : idempotent2 and.
 Proof using. tautob~. Qed.
 
-Lemma neutral_l_and : neutral_l and true.
+Lemma and_true_l : neutral_l and true.
 Proof using. tautob~. Qed.
 
-Lemma neutral_r_and : neutral_r and true.
+Lemma and_true_r : neutral_r and true.
 Proof using. tautob~. Qed.
 
-Lemma absorb_l_and : absorb_l and false.
+Lemma and_false_l : absorb_l and false.
 Proof using. tautob~. Qed.
 
-Lemma absorb_r_and : absorb_r and false.
+Lemma and_false_r : absorb_r and false.
 Proof using. tautob~. Qed.
 
-Lemma neutral_l_or : neutral_l or false.
+Lemma or_false_l : neutral_l or false.
 Proof using. tautob~. Qed.
 
-Lemma neutral_r_or : neutral_r or false.
+Lemma or_false_r : neutral_r or false.
 Proof using. tautob~. Qed.
 
-Lemma absorb_l_or : absorb_l or true.
+Lemma or_true_l : absorb_l or true.
 Proof using. tautob~. Qed.
 
-Lemma absorb_r_or : absorb_r or true.
+Lemma or_true_r : absorb_r or true.
 Proof using. tautob~. Qed.
 
 Lemma comm_or : comm or.
@@ -204,32 +205,40 @@ Section PropertiesIf.
 
 Implicit Types x y z : bool.
 
-Lemma if_t_x_y : forall x y,
+Lemma if_true : forall x y,
   (if true then x else y) = x.
 Proof using. auto. Qed.
 
-Lemma if_f_x_y : forall x y,
+Lemma if_false : forall x y,
   (if false then x else y) = y.
 Proof using. auto. Qed.
 
-Lemma if_x_y_y : forall x y,
+Lemma if_then_else_same : forall x y,
   (if x then y else y) = y.
 Proof using. tautob~. Qed.
 
-Lemma if_x_t_f : forall x,
+Lemma if_then_true_else_false : forall x,
   (if x then true else false) = x.
 Proof using. tautob~. Qed.
 
-Lemma if_x_f_t : forall x,
+Lemma if_then_false_else_true : forall x,
   (if x then false else true) = !x.
 Proof using. tautob~. Qed.
 
-Lemma if_x_t_y : forall x y,
+Lemma if_then_true : forall x y,
   (if x then true else y) = x || y.
 Proof using. tautob~. Qed.
 
-Lemma if_x_y_f : forall x y,
+Lemma if_then_false : forall x y,
+  (if x then false else y) = (!x) && y.
+Proof using. tautob~. Qed.
+
+Lemma if_else_false : forall x y,
   (if x then y else false) = x && y.
+Proof using. tautob~. Qed.
+
+Lemma if_else_true : forall x y,
+  (if x then y else true) = (!x) || y.
 Proof using. tautob~. Qed.
 
 End PropertiesIf.
@@ -253,9 +262,12 @@ Tactic Notation "fix_neg_neg" "*" :=
 
 Hint Rewrite
   neg_false neg_true neg_neg neg_and neg_or
-  neutral_l_and neutral_r_and absorb_l_and absorb_r_and
-  neutral_l_or neutral_r_or absorb_l_or absorb_r_or
-  if_t_x_y if_f_x_y if_x_y_y if_x_t_f if_x_f_t if_x_t_y if_x_y_f
+  and_true_l and_true_r and_false_l and_false_r
+  or_false_l or_false_r or_true_l or_true_r
+  if_true if_false if_then_else_same 
+  if_then_true_else_false if_then_false_else_true 
+  if_then_true if_else_false
+  if_then_false if_else_true
   : bool_rew.
 
 Tactic Notation "rew_bool" :=

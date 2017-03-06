@@ -8,7 +8,7 @@ Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
 Require Import LibTactics LibLogic LibReflect LibOperation
- LibProd LibOption LibNat LibInt LibWf LibStruct LibRelation.
+ LibProd LibOption LibNat LibInt LibWf LibMonoid LibRelation.
 Local Open Scope nat_scope.
 Local Open Scope comp_scope.
 Global Close Scope list_scope.
@@ -1319,7 +1319,7 @@ Lemma noduplicates_app : forall l1 l2,
   (forall x, mem x l1 -> mem x l2 -> False) ->
   noduplicates (l1 ++ l2).
 Proof using.
-  Hint Constructors Mem.
+  Hint Constructors mem.
   intros l1. induction l1; introv N1 N2 EQ; rew_list.
   auto.
   inverts N1 as N N1'. constructors.
@@ -1700,6 +1700,9 @@ Proof using.
     constructors*. introv N. false* Filter_Mem_inv N.
     auto.
 Qed.
+
+(* TODO: filter_congruence: filter prodides equal
+    results for predicate equivalent on all elements in l. *)
 
 End Filter.
 
@@ -2206,126 +2209,6 @@ Arguments take_drop_last_spec [A] {IA}.
 Arguments take_drop_last_length [A] {IA}.
 
 
-
-
-(* ---------------------------------------------------------------------- *)
-(** * Fold *)
-
-Section Fold.
-Variables (A B:Type) (m:monoid_def B) (L:list A) (f:A->B).
-
-Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
-  fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
-
-Lemma fold_nil :
-  fold m f nil = monoid_neutral m.
-Proof using. auto. Qed.
-Lemma fold_cons : forall x l,
-  fold m f (x::l) = monoid_oper m (f x) (fold m f l) .
-Proof using. auto. Qed.
-Lemma fold_app : forall l1 l2,
-  Monoid m ->
-  fold m f (l1 ++ l2) = monoid_oper m (fold m f l1) (fold m f l2).
-Proof using.
-  unfold fold. intros. rewrite fold_right_app. gen l2.
-  induction l1; intros.
-  repeat rewrite fold_right_nil. rewrite~ monoid_neutral_l.
-  repeat rewrite fold_right_cons. rewrite <- monoid_assoc. fequals.
-Qed.
-Lemma fold_last : forall x l,
-  Monoid m ->
-  fold m f (l & x) = monoid_oper m (fold m f l) (f x).
-Proof using.
-  intros. rewrite~ fold_app. rewrite fold_cons.
-  rewrite fold_nil. rewrite monoid_neutral_r. auto.
-Qed.
-End Fold.
-
-Opaque fold.
-
-(* TODO: migrate [fold_pointwise] here, after moving [Mem]. *)
-
-
-Lemma fold_congruence : forall A B (m : monoid_def B) (f g : A -> B) (xs : list A),
-  (forall x, Mem x xs -> f x = g x) ->
-  fold m f xs = fold m g xs.
-Proof using.
-  unfold fold.
-  induction xs as [| x xs ]; intros; simpl.
-  { eauto. }
-  { f_equal; eauto. }
-Qed.
-
-(* Reasoning about an arbitrary relation under a [fold]. *)
-
-Lemma fold_pointwise:
-  forall B (m : monoid_def B) (leB : B -> B -> Prop),
-  Monoid m ->
-  refl leB ->
-  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
-  forall A (L : list A),
-  forall (f f' : A -> B),
-  (forall x, Mem x L -> leB (f x) (f' x)) ->
-  leB (fold m f L) (fold m f' L).
-Proof using.
-  introv HM HR HP. induction L; introv HL.
-  do 2 rewrite fold_nil. applys HR.
-  do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHL.
-Qed.
-
-Lemma fold_equiv_step : forall A B (m:monoid_def B) (f:A->B) (L: list A) a,
-  Monoid_commutative m ->
-  noduplicates L ->
-  Mem a L ->
-  exists L',
-     fold m f L = fold m f (a::L')
-  /\ (forall x, Mem x L <-> Mem x (a::L'))
-  /\ noduplicates (a::L').
-Proof using.
-  introv Hm. induction L as [|b T]; introv DL La. inverts La.
-  tests: (a = b).
-    exists T. splits*.
-    inverts La. false. inverts DL as DLb DT. forwards~ (L'&EL'&EQ&DL'): IHT.
-     exists (b::L'). splits.
-       do 3 rewrite fold_cons. rewrite EL'.
-        rewrite fold_cons. do 2 rewrite monoid_assoc.
-        rewrite~ (monoid_comm (f b)).
-       intros x. specializes EQ x. rewrite Mem_cons_eq in EQ.
-        do 3 rewrite Mem_cons_eq. autos*.
-       inverts DL'. constructors.
-         introv N. inverts N. false. false.
-         constructors~. introv N. applys DLb. rewrite EQ. constructors~.
-Qed.
-
-Lemma fold_equiv : forall A B (m:monoid_def B) (f:A->B) (L1 L2: list A),
-  Monoid_commutative m ->
-  noduplicates L1 ->
-  noduplicates L2 ->
-  (forall x, Mem x L1 <-> Mem x L2) ->
-  fold m f L1 = fold m f L2.
-Proof using.
-  induction L1; introv HM D1 D2 EQ.
-  cuts_rewrite (L2 = nil). rewrite~ fold_nil.
-    destruct L2; auto. forwards~ M: (proj2 (EQ a)). inverts M.
-  inverts D1. asserts L2a: (Mem a L2). rewrite~ <- EQ.
-   forwards* (L2'&V2'&EQ'&D2'): fold_equiv_step f L2a.
-   rewrite V2'. do 2 rewrite fold_cons.
-  inverts D2'.
-  rewrite~ (IHL1 L2'). intros.
-  tests: (x = a).
-    iff; auto_false*.
-  asserts_rewrite (Mem x L1 = Mem x (a::L1)).
-    extens. iff~ M. inverts~ M. false.
-  asserts_rewrite (Mem x L2' = Mem x (a::L2')).
-    extens. iff~ M. inverts~ M. false.
-  rewrite EQ. rewrite* EQ'.
-Qed.
-
-
-
-
-
-
 (* ---------------------------------------------------------------------- *)
 (* ** Forall *)
 
@@ -2431,7 +2314,7 @@ Qed.
 
 (* Others *)
 
-Lemma Forall_extens : forall P l,
+Lemma Forall_iff_forall_mem : forall P l,
   Forall P l <-> (forall x, mem x l -> P x).
 Proof using.
   introv. induction l; iff I.
@@ -2448,7 +2331,7 @@ Lemma Forall_mem_inv : forall P l x,
   Forall P l ->
   mem x l ->
   P x.
-Proof using. introv F I. rewrite Forall_extens in F. apply~ F. Qed.
+Proof using. introv F I. rewrite Forall_iff_forall_mem in F. apply~ F. Qed.
 
 Lemma Forall_weaken : forall P Q l,
   Forall P l -> 
@@ -2663,47 +2546,86 @@ Inductive Forall3 A B C (P : A -> B -> C -> Prop)
 (* ---------------------------------------------------------------------- *)
 (* ** Exists *)
 
-(** [exists P L] asserts that there exists a value in the
-    list [L] that satisfied the predicate [P]. *)
+(** [exists P l] asserts that there exists a value in the
+    list [l] that satisfied the predicate [P]. *)
 
 Inductive Exists A (P:A->Prop) : list A -> Prop :=
   | Exists_here : forall l x,
-      P x -> Exists P (x::l)
+      P x -> 
+      Exists P (x::l)
   | Exists_next : forall l x,
       Exists P l ->
       Exists P (x::l).
 
-Section ExistsProp.
+Section Exists.
 Variables A : Type.
 Implicit Types l : list A.
 Implicit Types P : A -> Prop.
 
+(* Rewriting *)
+
+Lemma Exists_nil_eq : forall P,
+  Exists P nil = False.
+Proof using. intros. extens. iff M. { invert* M. } { false. } Qed.
+
+Lemma Exists_cons_eq : forall P l x,
+  Exists P (x::l) = (P x \/ Exists P l).
+Proof using. intros. extens. iff M. { inverts* M. } { constructors*. } Qed.
+
+Lemma Exists_app_eq : forall P l1 l2,
+  Exists P (l1++l2) = (Exists P l1 \/ Exists P l2).
+Proof using. intros. extens. induction l; introv H; inverts~ H. Qed.
+
+Lemma Exists_last_eq : forall P l x,
+  Exists P (l&x) = (P x \/ Exists P l).
+Proof using. intros. rewrite* Exists_app_eq. Qed.
+
+(* Constructors *)
+
+Definition Exists_cons := Exists_next.
+
+Lemma Exists_app_l : forall P l1 l2,
+  Exists P l1 ->
+  Exists P (l1++l2).
+Proof using. intros. rewrite* Exists_app_eq. Qed.
+
+Lemma Exists_app_r : forall P l1 l2,
+  Exists P l2 ->
+  Exists P (l1++l2).
+Proof using. intros. rewrite* Exists_app_eq. Qed.
+
+Lemma Exists_last : forall P l x,
+  Exists P l ->
+  P x ->
+  Exists P (l&x).
+Proof using. intros. rewrite* Exists_last_eq. Qed.
+
+(* Inversion *)
+
 Lemma Exists_nil_inv : forall P,
   Exists P nil -> 
   False.
-Proof using. introv H. invert* H. Qed.
+Proof using. introv H. rewrite* Exists_nil_eq in H. Qed.
 
 Lemma Exists_cons_inv : forall P l x,
-  Exists P (x::l) -> P x \/ Exists P l.
-Proof using. induction l; introv H; inverts~ H. Qed.
+  Exists P (x::l) -> 
+  P x \/ Exists P l.
+Proof using. introv H. rewrite* Exists_cons_eq in H. Qed.
 
-Global Instance Exists_decidable : forall P l,
-    (forall a : A, Decidable (P a)) ->
-    Decidable (Exists P l).
-  introv D. induction l.
-   applys decidable_make false. fold_bool. rew_refl. intro Abs. inverts Abs.
-   applys decidable_make (decide (P a \/ Exists P l)).
-    rewrite decide_spec. rewrite isTrue_eq_isTrue. iff I.
-     inverts I as I.
-      apply~ Exists_here.
-      apply~ Exists_next.
-     inverts I as I.
-      left~.
-      right~.
-Defined.
+Lemma Exists_app_inv : forall P l1 l2,
+  Exists P (l1++l2) ->
+  Exists P l1 \/ Exists P l2.
+Proof using. introv H. rewrite* Exists_app_eq in H. Qed.
+
+Lemma Exists_last_ivnv : forall P l x,
+  Exists P (l&x) ->
+  P x \/ Exists P l.
+Proof using. introv H. rewrite* Exists_last_eq in H. Qed.
+
+(* Interactions *)
 
 Lemma Exists_iff_exists_mem : forall P l,
-  Exists P l <-> exists (a : A), mem a l /\ P a.
+  Exists P l <-> (exists x, mem x l /\ P x).
 Proof using.
   introv. iff E; induction l; inverts E as E.
    exists a. splits~. simpl. rew_refl. left~.
@@ -2715,33 +2637,18 @@ Proof using.
     apply~ Exists_next. apply* IHl.
 Qed.
 
-Lemma Exists_exists_st : forall P l,
-  Exists P l <-> exists_st P l.
-Proof using.
-  introv. iff E.
-   induction l.
-    inverts E.
-    unfolds. rewrite fold_right_cons. rew_refl.
-     forwards [Pa|Nl]: Exists_cons_inv E; [right~|left~].
-   induction l.
-    compute in E. false*.
-    unfolds in E. rewrite fold_right_cons in E. rew_refl in E.
-     inverts E as E.
-      apply~ Exists_next.
-      apply~ Exists_here.
-Qed.
-
 Lemma Exists_weaken : forall P Q l,
-  Exists P l -> pred_le P Q ->
+  Exists P l -> 
+  pred_le P Q ->
   Exists Q l.
 Proof using.
   introv E Impl. rewrite Exists_iff_exists_mem in *.
   lets (a&I&H): (rm E). exists a. splits*.
 Qed.
 
-Lemma Exists_split : forall P l,
+Lemma Exists_inv_middle_first : forall P l,
   Exists P l ->
-  exists l1 x l2, l = l1 ++ x :: l2
+  exists l1 x l2, l = l1++x::l2
     /\ Forall (fun x => ~ P x) l1
     /\ P x.
 Proof using.
@@ -2752,8 +2659,7 @@ Proof using.
     substs. exists (x :: l1) x' l2. splits~. constructors~.
 Qed.
 
-End ExistsProp.
-
+End Exists.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2786,4 +2692,128 @@ Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
       Assoc x v l -> 
       x <> y ->
       Assoc x v ((y,w)::l).
+
+
+(* ---------------------------------------------------------------------- *)
+(** * Fold *)
+
+(** WARNING: EXPERIMENTAL SECTION *)
+
+Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
+  fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
+
+Section Fold.
+Variables (A B:Type).
+Implicit Types m : monoid_def B.
+Implicit Types l : list A.
+Implicit Types f g : A->B.
+
+Lemma fold_nil : forall m f,
+  fold m f nil = monoid_neutral m.
+Proof using. auto. Qed.
+
+Lemma fold_cons : forall m f x l,
+  fold m f (x::l) = monoid_oper m (f x) (fold m f l) .
+Proof using. auto. Qed.
+
+Lemma fold_app : forall m f l1 l2,
+  Monoid m ->
+  fold m f (l1 ++ l2) = monoid_oper m (fold m f l1) (fold m f l2).
+Proof using.
+  unfold fold. intros. rewrite fold_right_app. gen l2.
+  induction l1; intros.
+  repeat rewrite fold_right_nil. rewrite~ monoid_neutral_l.
+  repeat rewrite fold_right_cons. rewrite <- monoid_assoc. fequals.
+Qed.
+
+Lemma fold_last : forall m f x l,
+  Monoid m ->
+  fold m f (l & x) = monoid_oper m (fold m f l) (f x).
+Proof using.
+  intros. rewrite~ fold_app. rewrite fold_cons.
+  rewrite fold_nil. rewrite monoid_neutral_r. auto.
+Qed.
+
+Lemma fold_congruence : forall f g l,
+  (forall x, mem x l -> f x = g x) ->
+  fold m f l = fold m g l.
+Proof using.
+  unfold fold.
+  induction xs as [| x xs ]; intros; simpl.
+  { eauto. }
+  { f_equal; eauto. }
+Qed.
+
+(* TODO: reformulate using a definition of list permutation,
+   which is entailed by the premises 2,3 and 4. *)
+Lemma fold_equiv : forall f l1 l2,
+  Monoid_commutative m ->
+  noduplicates l1 ->
+  noduplicates l2 ->
+  (forall x, mem x l1 <-> mem x l2) ->
+  fold m f l1 = fold m f l2.
+Proof using.
+  induction L1; introv HM D1 D2 EQ.
+  cuts_rewrite (L2 = nil). rewrite~ fold_nil.
+    destruct L2; auto. forwards~ M: (proj2 (EQ a)). inverts M.
+  inverts D1. asserts L2a: (Mem a L2). rewrite~ <- EQ.
+   forwards* (L2'&V2'&EQ'&D2'): fold_equiv_step f L2a.
+   rewrite V2'. do 2 rewrite fold_cons.
+  inverts D2'.
+  rewrite~ (IHL1 L2'). intros.
+  tests: (x = a).
+    iff; auto_false*.
+  asserts_rewrite (Mem x L1 = Mem x (a::L1)).
+    extens. iff~ M. inverts~ M. false.
+  asserts_rewrite (Mem x L2' = Mem x (a::L2')).
+    extens. iff~ M. inverts~ M. false.
+  rewrite EQ. rewrite* EQ'.
+Qed.
+
+(* TODO: reformulate using a definition of list permutation, *)
+Lemma fold_equiv_step : forall f l a,
+  Monoid_commutative m ->
+  noduplicates l ->
+  Mem a l ->
+  exists l',
+     fold m f l = fold m f (a::l')
+  /\ (forall x, mem x l <-> mem x (a::l'))
+  /\ noduplicates (a::l').
+Proof using.
+  introv Hm. induction l as [|b t]; introv DL La. inverts La.
+  tests: (a = b).
+    exists T. splits*.
+    inverts La. false. inverts DL as DLb DT. forwards~ (L'&EL'&EQ&DL'): IHt.
+     exists (b::L'). splits.
+       do 3 rewrite fold_cons. rewrite EL'.
+        rewrite fold_cons. do 2 rewrite monoid_assoc.
+        rewrite~ (monoid_comm (f b)).
+       intros x. specializes EQ x. rewrite Mem_cons_eq in EQ.
+        do 3 rewrite Mem_cons_eq. autos*.
+       inverts DL'. constructors.
+         introv N. inverts N. false. false.
+         constructors~. introv N. applys DLb. rewrite EQ. constructors~.
+Qed.
+
+(* TODO: decide later whether TLC should rely on [Proper] *)
+Lemma fold_pointwise : forall (leB : B -> B -> Prop),
+  Monoid m ->
+  refl leB ->
+  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
+  forall A (L : list A),
+  forall (f f' : A -> B),
+  (forall x, Mem x L -> leB (f x) (f' x)) ->
+  leB (fold m f L) (fold m f' L).
+Proof using.
+  introv HM HR HP. induction L; introv HL.
+  do 2 rewrite fold_nil. applys HR.
+  do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHL.
+Qed.
+
+
+End Fold.
+
+Opaque fold.
+
+
 

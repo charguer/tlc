@@ -208,8 +208,7 @@ End FunctionPreimage.
 Fixpoint applyn A n (f : A -> A) x :=
   match n with
   | O => x
-  | S n' =>
-    f (applyn n' f x)
+  | S n' => f (applyn n' f x)
   end.
 
 Lemma applyn_fix : forall A n f (x : A),
@@ -241,3 +240,6 @@ Lemma applyn_ind : forall A (P : A -> Prop) (f : A -> A) x n,
   P (applyn n f x).
 Proof. introv I. induction n; introv Hx; autos*. Qed.
 
+
+(* TODO: rename applyn to iter *)
+(* TODO: migrate iteration of functionals from LibFix to here *)

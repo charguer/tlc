@@ -1,3 +1,16 @@
+
+
+
+
+(** For now on, this file is not used by TLC because we use
+    the standard Prelude of Coq instead. *)
+
+
+
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Prelude                                                                 *
@@ -7,9 +20,6 @@
 
 Set Implicit Arguments.
 Require Import LibTactics.
-
-(** For now on, this file is not used because the standard Prelude of Coq
-    is used instead. *)
 
 
 (* ********************************************************************** *)

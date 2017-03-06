@@ -1,15 +1,22 @@
+
+
+
+
+(** DISCLAIMER: file under construction *)
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* MultiSets -- PROTOTYPE                                                  *
+* MultiSets                                                               *
 **************************************************************************)
-
-(** FILE UNDER CONSTRUCTION *)
 
 Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect
   LibRelation LibList LibInt LibNat LibOperation
-  LibEpsilon LibSet LibStruct.
+  LibEpsilon LibSet LibMonoid.
 Require Export LibBag.
 
 

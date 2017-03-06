@@ -10,8 +10,9 @@ Require Import LibTactics LibReflect LibBool LibOperation LibRelation LibOrder.
 Require Export LibOrder.
 Global Close Scope positive_scope.
 
+
 (* ********************************************************************** *)
-(** * Inhabited and comparable *)
+(** * Inhabited *)
 
 Instance nat_inhab : Inhab nat.
 Proof using. intros. apply (prove_Inhab 0). Qed.
@@ -22,18 +23,6 @@ Fixpoint nat_compare (x y : nat) :=
   | S x', S y' => nat_compare x' y'
   | _, _ => false
   end.
-
-Instance nat_comparable : Comparable nat.
-Proof using.
-  applys (comparable_beq nat_compare).
-  induction x; destruct y; simpl.
-  autos*.
-  auto_false.
-  auto_false.
-  asserts_rewrite ((S x = S y) = (x = y)).
-    extens. iff; omega.
-  autos*.
-Qed.
 
 
 (* ********************************************************************** *)

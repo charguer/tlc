@@ -931,15 +931,6 @@ Implicit Arguments nle_to_sle [[A] [H] [NLe_to_SLe] x y].
 
 
 (* ********************************************************************** *)
-(* * Order modulo -- todo: move *)
-
-Record order_wrt (A:Type) (E:binary A) (R:binary A) : Prop := {
-   order_wrt_refl : refl R;
-   order_wrt_trans : trans R;
-   order_wrt_antisym : antisym_wrt E R }.
-
-
-(* ********************************************************************** *)
 (** * Boolean comparison *)
 
 Open Scope comp_scope.
@@ -957,3 +948,13 @@ Notation "x ''>' y" := (isTrue (@gt _ _ x y))
   (at level 70, no associativity) : comp_scope_reflect.
 
 
+
+(* ********************************************************************** *)
+(* * Order modulo *)
+
+(* TODO: deprecate this *)
+
+Record order_wrt (A:Type) (E:binary A) (R:binary A) : Prop := {
+   order_wrt_refl : refl R;
+   order_wrt_trans : trans R;
+   order_wrt_antisym : antisym_wrt E R }.

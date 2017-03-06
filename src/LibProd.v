@@ -7,6 +7,7 @@ Set Implicit Arguments.
 Require Import LibTactics LibLogic LibReflect.
 Generalizable Variables A B.
 
+
 (* ********************************************************************** *)
 (** * Inhabited *)
 
@@ -20,14 +21,6 @@ Proof using. intros. apply (prove_Inhab (arbitrary, arbitrary)). Qed.
 Definition prod_compare {A B : Type} `{Comparable A} `{Comparable B} (x y : A * B) :=
   let (x1, x2) := x in let (y1, y2) := y in
   decide (x1 = y1 /\ x2 = y2).
-
-Global Instance prod_comparable : forall A B : Type,
-  Comparable A -> Comparable B -> Comparable (A * B).
-Proof using.
-  introv CA CB. applys comparable_beq (@prod_compare A B _ _). intros x y.
-  destruct x; destruct y; simpl; rew_refl; iff H; inverts~ H;
-   tryfalse; auto; try congruence.
-Qed.
 
 
 (* ********************************************************************** *)
@@ -44,15 +37,24 @@ Proof using. intros. destruct~ x. Qed.
 Section Properties.
 Variables (A1 A2 A3 A4 : Type).
 Lemma eq_prod2 : forall (x1 y1:A1) (x2 y2:A2),
-  x1 = y1 -> x2 = y2 -> (x1, x2) = (y1, y2).
+  x1 = y1 -> 
+  x2 = y2 -> 
+  (x1, x2) = (y1, y2).
 Proof using. intros. subst~. Qed.
 
 Lemma eq_prod3 : forall (x1 y1:A1) (x2 y2:A2) (x3 y3:A3),
-  x1 = y1 -> x2 = y2 -> x3 = y3 -> (x1, x2, x3) = (y1, y2, y3).
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 -> 
+  (x1, x2, x3) = (y1, y2, y3).
 Proof using. intros. subst~. Qed.
 
 Lemma eq_prod4 : forall (x1 y1:A1) (x2 y2:A2) (x3 y3:A3) (x4 y4:A4),
-  x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> (x1, x2, x3, x4) = (y1, y2, y3, y4).
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 -> 
+  x4 = y4 -> 
+  (x1, x2, x3, x4) = (y1, y2, y3, y4).
 Proof using. intros. subst~. Qed.
 
 End Properties.
@@ -98,6 +100,7 @@ Notation "'proj53' P" := (proj1 (proj2 (proj2 P))) (at level 69).
 Notation "'proj54' P" := (proj1 (proj2 (proj2 (proj2 P)))) (at level 69).
 Notation "'proj55' P" := (proj2 (proj2 (proj2 (proj2 P)))) (at level 69).
 
+
 (*-----------------------------------------------------*)
 (** ** Currying *)
 
@@ -114,6 +117,7 @@ Definition curry4 f : A1 -> A2 -> A3 -> A4 -> B :=
 Definition curry5 f : A1 -> A2 -> A3 -> A4 -> A5 -> B :=
   fun x1 x2 x3 x4 x5 => f (x1,x2,x3,x4,x5).
 End Currying.
+
 
 (*-----------------------------------------------------*)
 (** ** Uncurrying *)
@@ -135,6 +139,7 @@ Definition uncurry5 f : A1*A2*A3*A4*A5 -> B :=
   fun p => match p with (x1,x2,x3,x4,x5) =>
   f x1 x2 x3 x4 x5 end.
 End Uncurrying.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Uncurrying for relations *)

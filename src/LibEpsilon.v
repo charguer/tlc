@@ -30,6 +30,7 @@ Qed.
 Definition epsilon `{Inhab A} (P : A -> Prop) : A
   := proj1_sig (epsilon_def P).
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Specification of epsilon *)
 
@@ -53,6 +54,7 @@ Lemma epsilon_eq : forall A {I:Inhab A} (P P':A->Prop),
   (forall x, P x <-> P' x) ->
   epsilon P = epsilon P'.
 Proof using. introv H. fequals. apply~ prop_ext_1. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics to work with [epsilon] *)
