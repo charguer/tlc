@@ -16,14 +16,6 @@ Proof using. intros. apply (prove_Inhab (arbitrary, arbitrary)). Qed.
 
 
 (* ********************************************************************** *)
-(** * Comparable *)
-
-Definition prod_compare {A B : Type} `{Comparable A} `{Comparable B} (x y : A * B) :=
-  let (x1, x2) := x in let (y1, y2) := y in
-  decide (x1 = y1 /\ x2 = y2).
-
-
-(* ********************************************************************** *)
 (** * Structure *)
 
 (** Decomposition as projection *)

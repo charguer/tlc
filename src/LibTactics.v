@@ -4767,8 +4767,7 @@ Ltac skip_with_existential :=
   match goal with |- ?G =>
     let H := fresh "TEMP" in evar(H:G); eexact H end.
 
-(* TO BE DEPRECATED: *)
-Variable skip_axiom : False.
+Axiom skip_axiom : False.
   (* To obtain a safe development, change to [skip_axiom : True] *)
 Ltac skip_with_axiom :=
   elimtype False; apply skip_axiom.

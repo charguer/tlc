@@ -359,6 +359,12 @@ Proof using.
   simpl; rew_refl; iff H; rewrite Z.compare_eq_iff in * |- *; auto.
 Qed.
 
+(* ********************************************************************** *)
+(** * Comparable *)
+
+Definition prod_compare {A B : Type} `{Comparable A} `{Comparable B} (x y : A * B) :=
+  let (x1, x2) := x in let (y1, y2) := y in
+  decide (x1 = y1 /\ x2 = y2).
 
 Global Instance prod_comparable : forall A B : Type,
   Comparable A -> Comparable B -> Comparable (A * B).
