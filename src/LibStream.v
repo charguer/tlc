@@ -123,6 +123,31 @@ Proof using. intros. apply~ bisimilar_mod_equiv. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
+(* ** List similarity modulo equivalence *)
+
+(** [list_equiv E l1 l2] asserts that the lists [l1] and [l2]
+    are equal when their elements are compared modulo E *)
+
+Definition list_equiv (A:Type) (E:binary A) : binary (list A) :=
+   Forall2 E.
+
+Section ListEquiv.
+Hint Constructors Forall2.
+
+Lemma list_equiv_equiv : forall A (E:binary A),
+  equiv E -> equiv (list_equiv E).
+Proof using.
+  introv Equiv. unfold list_equiv. constructor.
+  unfolds. induction x. auto. constructor; dauto.
+  unfolds. induction x; destruct y; introv H; inversions H; dauto.
+  unfolds. induction y; destruct x; destruct z; introv H1 H2;
+   inversions H1; inversions H2; dauto.
+Qed.
+
+End ListEquiv.
+
+
+(* ---------------------------------------------------------------------- *)
 (** ** Bisimilarity up to a given index *)
 
 (** Bisimilarity modulo [E] up to index [n] *)

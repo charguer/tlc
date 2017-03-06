@@ -203,3 +203,263 @@ Qed.
 
 Definition last_inv := last_inv_pos_length.
 
+(* ********************************************************************** *)
+
+Definition last_neq_nil := last_neq_nil_inv.
+Lemma cons_neq_nil : forall x l,
+  x::l <> nil.
+Proof using. auto_false. Qed.
+
+
+Definition app_cancel_nil_l := app_eq_self_inv_l
+
+Definition app_eq_prefix_inv_l := app_cancel_l. (* DEPRECATED *) 
+
+Definition length_neq_elim := length_neq_inv.
+
+
+Definition last_inv_pos_length := length_pos_inv_last
+
+Definition nil_eq_last_val_app_inv := nil_eq_middle_inv.
+
+Definition cons_eq_last_val_app_inv := cons_eq_middle_inv.
+
+Definition last_neq_nil_inv := list_neq_nil_inv_last.
+
+Definition concat_eq_nil := concat_eq_nil_mem_inv.
+
+Definition Update_here := udpate_zero.
+
+Definition Update_not_nil := Update_not_nil_r.
+
+Defintion Mem := mem.
+Defintion mem := memb.
+(* and same for all associated lemmas *)
+
+Defintion Filter := filter.
+Defintion filter := filterb.
+(* and same for all associated lemmas *)
+
+
+Definition mem_app_or := mem_app.
+
+Definition concat_mem := mem_concat_iff.
+
+Definition mem_inv := mem_cons_inv.
+
+Definition nil_mem := list_no_mem.
+
+Definition No_duplicates_inv_app := No_duplicates_app_inv.
+
+Definition No_duplicates_Nth := No_duplicates_Nth_same_inv.
+
+Definition Nth_No_duplicates := No_duplicates_Nth_same.
+
+Definition Nth_lt_length := Nth_inbound.
+
+Definition length_Nth_lt := Nth_inbound_inv.
+
+Definition Nth_cons_inv := Nth_inv_cons.
+
+Lemma Nth_inv_cons : forall n x l,
+  Nth n l x ->
+     (exists q, l = x::q /\ n = 0%nat)
+  \/ (exists y q m, l = y::q /\ Nth m q x /\ n = (m+1)%nat).
+Proof using.
+  introv H. inverts H. left*.
+  right. eauto 8 with maths.
+Qed.
+
+
+
+
+(* ********************************************************************** *)
+
+(** too specific *)
+
+(** [has pair x1 x2 l1 l2] asserts that there exists an
+    index [n] such that the n-th element of [l1] is [x1]
+    and the n-th element of [l2] is [x2] *)
+
+Definition has_pair A1 A2 (x1:A1) (x2:A2) l1 l2 :=
+  Exists2 (fun v1 v2 => v1 = x1 /\ v2 = x2) l1 l2.
+
+Lemma has_pair_here : forall A1 A2 (x1:A1) (x2:A2) l1 l2,
+  has_pair x1 x2 (x1::l1) (x2::l2).
+Proof using. intros. constructor~. Qed.
+
+Lemma has_pair_next : forall A1 A2 (x1:A1) (x2:A2) y1 y2 l1 l2,
+  has_pair x1 x2 l1 l2 ->
+  has_pair x1 x2 (y1::l1) (y2::l2).
+Proof using. introv H. apply* Exists2_next. Qed.
+
+
+(* ********************************************************************** *)
+
+
+(** [filters P L L'] asserts that [L'] is the sublist of [L]
+    made exactly of the elements of [L] that satisfy [P]. *)
+   (* DEPRECATED: use Filter instead *)
+
+Inductive Filters A (P : A -> Prop)
+  : list A -> list A -> Prop :=
+  | Filters_nil : Filters P nil nil
+  | Filters_cons_yes : forall l l' x,
+      P x -> Filters P l l' ->
+      Filters P (x::l) (x::l')
+  | Filters_cons_no : forall l l' x,
+      ~ (P x) -> Filters P l l' ->
+      Filters P (x::l) l'.
+
+
+
+(* ********************************************************************** *)
+
+(* todo: use [suffix] instead (to be defined) *)
+(* todo: use [prefix] instead *)
+
+Definition is_head A (l:list A) (x:A) :=
+  exists t, l = x::t.
+
+Definition is_tail A (l:list A) (t:list A) :=
+  exists x, l = x::t.
+
+Definition is_last A (l:list A) (x:A) :=
+  exists t, l = t&x.
+
+Definition is_init A (l:list A) (t:list A) :=
+  exists x, l = t&x.
+
+Hint Unfold is_head is_tail is_last is_init.
+
+Section IsProp.
+Variables A : Type.
+Implicit Types x : A.
+
+Lemma is_last_one : forall x,
+  is_last (x::nil) x.
+Proof using. intros. unfolds. exists~ (@nil A). Qed.
+
+
+Lemma is_init_one : forall x,
+  is_init (x::nil) nil.
+Proof using. intros. unfolds. exists~ x. Qed.
+
+End IsProp.
+
+Hint Immediate is_last_one.
+Hint Immediate is_init_one.
+
+
+
+
+(* ********************************************************************** *)
+(* * Tactics for rewriting *)
+
+Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
+ app_cons_one : rew_app. (* app_last *)
+Hint Rewrite fold_right_nil fold_right_cons fold_right_app
+ fold_right_last : rew_foldr.
+Hint Rewrite fold_left_nil fold_left_cons fold_left_app
+ fold_left_last : rew_foldl.
+Hint Rewrite length_nil length_cons length_app
+ length_last length_rev : rew_length.
+Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev : rew_rev.
+ (* +rev_cons_app *)
+Hint Rewrite concat_nil concat_app concat_cons concat_last : rew_concat.
+Hint Rewrite map_nil map_cons map_app map_last : rew_map.
+Hint Rewrite mem_nil mem_cons mem_app mem_last
+ mem_cons_eq mem_last_eq : rew_mem.
+Hint Rewrite keys_nil keys_cons keys_app keys_last : rew_keys.
+Hint Rewrite assoc_cons assoc_here : rew_assoc.
+
+(* TODO: rew_tactics other than [rew_app] and [rew_length]
+   will become deprecated; use [rew_list] instead. *)
+
+Tactic Notation "rew_app" :=
+  autorewrite with rew_app.
+Tactic Notation "rew_foldr" :=
+  autorewrite with rew_foldr rew_app.
+Tactic Notation "rew_foldl" :=
+  autorewrite with rew_foldl rew_app.
+Tactic Notation "rew_length" :=
+  autorewrite with rew_length.
+Tactic Notation "rew_rev" :=
+  autorewrite with rew_rev rew_app.
+Tactic Notation "rew_concat" :=
+  autorewrite with rew_concat rew_app.
+Tactic Notation "rew_map" :=
+  autorewrite with rew_map rew_app.
+Tactic Notation "rew_mem" :=
+  autorewrite with rew_mem rew_app.
+Tactic Notation "rew_keys" :=
+  autorewrite with rew_keys rew_app.
+Tactic Notation "rew_assoc" :=
+  autorewrite with rew_assoc rew_app.
+
+Tactic Notation "rew_app" "in" hyp(H) :=
+  autorewrite with rew_app in H.
+Tactic Notation "rew_foldr" "in" hyp(H) :=
+  autorewrite with rew_foldr rew_app in H.
+Tactic Notation "rew_foldl" "in" hyp(H) :=
+  autorewrite with rew_foldl rew_app in H.
+Tactic Notation "rew_length" "in" hyp(H) :=
+  autorewrite with rew_length in H.
+Tactic Notation "rew_rev" "in" hyp(H) :=
+  autorewrite with rew_rev rew_app in H.
+Tactic Notation "rew_concat" "in" hyp(H) :=
+  autorewrite with rew_concat rew_app in H.
+Tactic Notation "rew_map" "in" hyp(H) :=
+  autorewrite with rew_map rew_app in H.
+Tactic Notation "rew_mem" "in" hyp(H) :=
+  autorewrite with rew_mem rew_app in H.
+Tactic Notation "rew_keys" "in" hyp(H) :=
+  autorewrite with rew_keys rew_app in H.
+Tactic Notation "rew_assoc" "in" hyp(H) :=
+  autorewrite with rew_assoc rew_app in H.
+
+Tactic Notation "rew_app" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_app).
+  (* autorewrite with rew_app in *. *)
+
+  (* TODO: if those are kept, need the efficiency workaround *)
+Tactic Notation "rew_foldr" "in" "*" :=
+  autorewrite with rew_foldr rew_app in *.
+Tactic Notation "rew_foldl" "in" "*" :=
+  autorewrite with rew_foldl rew_app in *.
+Tactic Notation "rew_length" "in" "*" :=
+  autorewrite with rew_length in *.
+Tactic Notation "rew_rev" "in" "*" :=
+  autorewrite with rew_rev rew_app in *.
+Tactic Notation "rew_concat" "in" "*" :=
+  autorewrite with rew_concat rew_app in *.
+Tactic Notation "rew_map" "in" "*" :=
+  autorewrite with rew_map rew_app in *.
+Tactic Notation "rew_mem" "in" "*" :=
+  autorewrite with rew_mem rew_app in *.
+Tactic Notation "rew_keys" "in" "*" :=
+  autorewrite with rew_keys rew_app in *.
+Tactic Notation "rew_assoc" "in" "*" :=
+  autorewrite with rew_assoc rew_app in *.
+
+Tactic Notation "rew_app" "~" :=
+  rew_app; auto_tilde.
+Tactic Notation "rew_rev" "~" :=
+  rew_rev; auto_tilde.
+Tactic Notation "rew_mem" "~" :=
+  rew_mem; auto_tilde.
+Tactic Notation "rew_length" "~" :=
+  rew_length; auto_tilde.
+
+Hint Rewrite app_cons app_nil_l app_nil_r app_assoc
+ app_cons_one
+ fold_right_nil fold_right_cons fold_right_app
+ fold_right_last
+ fold_left_nil fold_left_cons fold_left_app
+ fold_left_last
+ length_nil length_cons length_app length_rev
+ length_last
+ rev_nil rev_app rev_cons rev_last rev_rev
+ concat_nil concat_app concat_cons concat_last
+  map_nil map_cons map_app map_last : rew_list.
+
