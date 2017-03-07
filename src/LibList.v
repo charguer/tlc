@@ -782,13 +782,14 @@ Proof using.
   { forwards*: IHn. math. }
 Qed.
 
+(* TODO: which name for this lemma? *)
 Lemma Nth_inbound_inv : forall n l,
   n < length l -> 
   exists x, Nth n l x.
 Proof using.
   induction n; introv N; destruct l as [|a l']; rew_list in N; try solve [math].
   { eauto. }
-  { simpls. rewrite lt_SS in N. forwards (x&Hx): IHn N. exists x. apply* Nth_next. }
+  { simpls. rewrite lt_SS in N. forwards (x&Hx): IHn N. exists x. apply* Nth_succ. }
 Qed.
 
 Lemma Nth_app_l : forall n x l1 l2,
@@ -1739,9 +1740,9 @@ Lemma noduplicates_Nth_same  : forall l,
 Proof using.
   introv NL. induction l; constructors.
   { introv I. lets (n&N): mem_Nth (rm I).
-    forwards* Ab: NL Nth_here Nth_next. inverts Ab. }
+    forwards* Ab: NL Nth_zero Nth_succ. inverts Ab. }
   { apply IHl. introv N1 N2. forwards G: NL.
-    applys Nth_next N1. applys Nth_next N2. inverts~ G. }
+    applys Nth_succ N1. applys Nth_succ N2. inverts~ G. }
 Qed.
 
 Lemma noduplicates_Nth_same_inv : forall l n1 n2 x,
@@ -1895,13 +1896,23 @@ Qed.
 
 End Combine.
 
-Lemma nth_combine : forall `{IA:Inhab A} `{IB:Inhab B} n r s,
+Lemma Nth_combine : forall A B n (r:list A) (s:list B) x y,
+  Nth n r x ->
+  Nth n s y ->
+  Nth n (combine r s) (x,y).
+Proof using. 
+  introv N1. gen s. induction N1; introv N2; inverts N2.
+  { constructors. }
+  { rewrite combine_cons. constructors~. }
+Qed.
+
+Lemma nth_combine : forall `{IA:Inhab A} `{IB:Inhab B} n (r:list A) (s:list B),
   n < length r ->
   length r = length s ->
   nth n (combine r s) = (nth n r, nth n s).
 Proof using. 
-  introv N E.
-  (* todo *)
+  introv N E. applys Nth_to_nth. applys* Nth_combine.
+  { applys* Nth_nth. } { applys* Nth_nth. math. }
 Qed.
 
 Opaque combine.
@@ -1920,59 +1931,102 @@ Fixpoint split A B (l:list(A*B)) : (list A * list B) :=
 
 Section Split.
 Variable (A B : Type).
-Implicit Types (l : list (A*B)).
+Implicit Types l : list (A*B).
+Implicit Types x : A.
+Implicit Types y : B.
+Implicit Types r : list A.
+Implicit Types s : list B.
 
 Lemma split_nil : 
   split (@nil (A*B)) = (nil, nil).
 Proof using. auto. Qed.
 
-Lemma split_cons_let : forall x1 x2 l,
-  split ((x1,x2)::l) = let '(l1,l2) := split l in (x1::l1, x2::l2).
+Lemma split_cons_let : forall x y l,
+  split ((x,y)::l) = let '(r,s) := split l in (x::r, y::s).
 Proof using. auto. Qed.
 
-Lemma split_cons : forall x1 x2 l s1 s2,
-  (s1,s2) = split l ->
-  split ((x1,x2)::l) = (x1::s1, x2::s2).
+Lemma split_cons : forall x y l r s,
+  (r,s) = split l ->
+  split ((x,y)::l) = (x::r, y::s).
 Proof using.
   introv H. rewrite split_cons_let. rewrite~ <- H.
 Qed.
 
-Lemma split_app : forall l1 l2 s11 s12 s21 s22,
-  (s11,s12) = split l1 ->
-  (s21,s22) = split l2 ->
-  split (l1++l2) = (s11++s21, s12++s22).
+Lemma split_app : forall l1 l2 r1 r2 s1 s2,
+  (r1,s1) = split l1 ->
+  (r2,s2) = split l2 ->
+  split (l1++l2) = (r1++r2, s1++s2).
 Proof using.
-  intros l1. induction l1 as [|[x1 x2] l1']; introv H1 H2.
+  intros l1. induction l1 as [|[x y] l1']; introv H1 H2.
   { rewrite split_nil in H1. inverts~ H1. }
-  { rewrite split_cons_let in H1. destruct (split l1') as [s11' s12'].
+  { rewrite split_cons_let in H1. destruct (split l1') as [r1' s1'].
     inverts H1. rew_list. rewrite split_cons_let. 
     erewrite~ (IHl1' l2). }
 Qed.
 
-Lemma split_last : forall x1 x2 l s1 s2,
-  (s1,s2) = split l ->
-  split (l&(x1,x2)) = (s1&x1, s2&x2).
+Lemma split_last : forall x y l r s,
+  (r,s) = split l ->
+  split (l&(x,y)) = (r&x, s&y).
 Proof using. introv H. erewrite split_app; fequals. Qed.
 
-Lemma split_length : forall l s1 s2,
-  (s1,s2) = split l ->
-  length s1 = length l /\ length s2 = length l.
+Lemma split_length : forall l r s,
+  (r,s) = split l ->
+  length r = length l /\ length s = length l.
 Proof using. 
-  intros l. induction l as [|[x1 x2] l']; introv E.
+  intros l. induction l as [|[x y] l']; introv E.
   { rewrite split_nil in E. inverts~ E. } 
-  { rewrite split_cons_let in E. destruct (split l') as [s1' s2'].
+  { rewrite split_cons_let in E. destruct (split l') as [r' s'].
     inverts E. rew_list. forwards~ (?&?): IHl'. }
 Qed.
 
-Lemma split_length_l : forall l s1 s2,
-  (s1,s2) = split l ->
-  length s1 = length l.
+Lemma split_length_l : forall l r s,
+  (r,s) = split l ->
+  length r = length l.
 Proof using. introv E. forwards*: split_length E. Qed.
 
-Lemma split_length_r : forall l s1 s2,
-  (s1,s2) = split l ->
-  length s2 = length l.
+Lemma split_length_r : forall l r s,
+  (r,s) = split l ->
+  length s = length l.
 Proof using. introv E. forwards*: split_length E. Qed.
+
+Lemma Nth_split : forall n l x y r s,
+  Nth n l (x,y) ->
+  (r,s) = split l ->
+  Nth n r x /\ Nth n s y.
+Proof using.
+  Hint Constructors Nth.
+  introv N E. gen_eq p: (x,y). gen r s x y. 
+  induction N as [l' [x' y']|[x' y'] n' l' [x'' y'']]; intros.
+  { inverts EQp. rewrite split_cons_let in E.
+    destruct (split l') as [r' s']. inverts* E. }
+  { inverts EQp. rewrite split_cons_let in E.
+    destruct (split l') as [r' s'].
+    forwards*: IHN. inverts* E. }
+Qed.
+
+(* TODO: discuss whether Nth_split_r and Nth_split_l are needed *)
+
+Lemma nth_split : forall `{IA:Inhab A} `{IB:Inhab B} n l (r:list A) (s:list B),
+  (r,s) = split l ->
+  n < length l ->
+  nth n l = (nth n r, nth n s).
+Proof using. 
+  introv E N. applys Nth_to_nth. lets ([x y]&M): Nth_inbound_inv N.
+  forwards (F1&F2): Nth_split M E.
+  rewrite (Nth_to_nth F1). rewrite~ (Nth_to_nth F2).
+Qed.
+
+Lemma nth_split_l : forall `{IA:Inhab A} `{IB:Inhab B} n l (r:list A) (s:list B),
+  (r,s) = split l ->
+  n < length l ->
+  nth n r = fst (nth n l).
+Proof using. introv E N. rewrites~ (>> nth_split E N). Qed.
+
+Lemma nth_split_r : forall `{IA:Inhab A} `{IB:Inhab B} n l (r:list A) (s:list B),
+  (r,s) = split l ->
+  n < length l ->
+  nth n s = snd (nth n l).
+Proof using. introv E N. rewrites~ (>> nth_split E N). Qed.
 
 End Split.
 
@@ -2875,3 +2929,4 @@ Opaque fold.
 
 
 
+ 
