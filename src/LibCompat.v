@@ -293,7 +293,7 @@ Definition filter_Mem_inv := mem_filter_inv.
 
 Definition filter_length_le := length_filter.
 
-Definition filter_eq_Mem_length := length_filter_mem_ge_one.
+Definition filter_eq_Mem_length := length_filter_eq_mem_ge_one.
 
 Definition filter_No_duplicates := No_duplicates_filter.
 
@@ -334,6 +334,8 @@ Proof using. introv F N1 N2. gen n. induction~ F; introv N1 N2; inverts N1; inve
 (* => reformulated ad Forall2_inv_Nth *)
 
 Definition Forall2_last_inv := Forall2_last_l_inv.
+
+Definition mem_remove_inv := mem_remove_same_inv.
 
 
 (* ********************************************************************** *)
@@ -380,6 +382,16 @@ Proof using.
 Qed.
 
 Implicit Arguments map_partial_inv [A B f lx ly].
+
+Lemma update_app_r : forall m l1 l2 n v,
+  n = length l1 + m ->
+  update n v (l1 ++ l2) = l1 ++ update m v l2.
+Proof.
+  intros m l1. gen m. induction l1 as [| x l1' ]; introv E; rew_list in *.
+  { fequals. math. }
+  { math_rewrite (n = S (length l1' + m)). rewrite update_cons.
+    fequals. erewrite* IHl1'. }
+Qed.
 
 
 (* ********************************************************************** *)
