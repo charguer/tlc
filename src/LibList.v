@@ -2247,6 +2247,19 @@ Proof using.
   pattern l at 2. rewrite M. rew_list. math.
 Qed.
 
+(* TODO: Nth_take_l, etc... 
+
+  Lemma Nth_take_l : forall n m l l' x, 
+    n < m ->
+    Nth n l x ->
+    Nth n (take m l) x.
+
+  Lemma Nth_take_inv : forall n m l l' x, 
+    Nth n (take m l) x ->
+    n < m /\ Nth n l x.
+
+*)
+
 End TakeAndDrop.
 
 Arguments take_app_drop_spec [A].
@@ -2305,6 +2318,9 @@ Proof using.
   subst l. rewrite length_last. math.
 Qed.
 
+(* TODO: more properties of take_drop_last *)
+(* TODO: find a better name for this function *)
+
 End TakeDropLast.
 
 Opaque take_drop_last.
@@ -2323,7 +2339,8 @@ Inductive Forall A (P:A->Prop) : list A -> Prop :=
   | Forall_nil :
       Forall P nil
   | Forall_cons : forall l x,
-      P x -> Forall P l ->
+      P x -> 
+      Forall P l ->
       Forall P (x::l).
 
 Section ForallProp.
@@ -2336,85 +2353,70 @@ Hint Constructors Forall.
 
 Lemma Forall_nil_eq : forall P,
   Forall P nil = True.
-Proof using.
-Qed.
+Proof using. auto. Qed.
 
 Lemma Forall_cons_eq : forall P l x,
   Forall P (x::l) = (P x /\ Forall P l).
 Proof using.
-  intros. induction l.
-  inverts* H.
-  rew_list in *. inverts H. forwards*: IHl.
+  intros. extens. iff M. { inverts* M. } { constructors*. }
 Qed.
 
 Lemma Forall_app_eq : forall P l1 l2,
   Forall P (l1 ++ l2) = (Forall P l1 /\ Forall P l2).
 Proof using.
-  intros. induction l1. auto.
-  rew_app in H. inverts* H.
+  intros. extens. induction l1; rew_list.
+  { autos*. }
+  { iff M (M1&M2). { inverts* M. } { inverts* M1. } }
 Qed.
 
 Lemma Forall_last_eq : forall P l x,
   Forall P (l & x) = (Forall P l /\ P x).
 Proof using.
-  introv H. induction l.
-  inverts* H.
-  rew_list in *. inverts H. forwards*: IHl.
+  intros. extens. induction l; rew_list.
+  { iff M (M1&M2). { inverts* M. } { autos*. } }
+  { iff M (M1&M2). { inverts* M. } { inverts* M1. } }
 Qed.
 
-(* Constructors --TODO: use eq lemmas above *)
+(* Constructors *)
 
 Lemma Forall_app : forall P l1 l2,
   Forall P l1 -> 
   Forall P l2 ->
   Forall P (l1 ++ l2).
-Proof using. introv H Px. induction H; rew_app; auto. Qed.
+Proof using. intros. rewrite* Forall_app_eq. Qed.
 
 Lemma Forall_last : forall P l x,
   Forall P l -> 
   P x ->
   Forall P (l & x).
-Proof using. intros. apply~ Forall_app. Qed.
+Proof using. intros. rewrite* Forall_last_eq. Qed.
 
 (* Inversion *)
 
 Lemma Forall_cons_inv : forall P l x,
   Forall P (x::l) ->
   P x /\ Forall P l.
-Proof using.
-  introv H. induction l.
-  inverts* H.
-  rew_list in *. inverts H. forwards*: IHl.
-Qed.
+Proof using. introv H. rewrite* Forall_cons_eq in H. Qed.
 
 Lemma Forall_cons_inv_head : forall P l x,
   Forall P (x::l) ->
   P x.
-Proof using.
-Qed.
+Proof using. introv H. rewrite* Forall_cons_eq in H. Qed.
 
 Lemma Forall_cons_inv_tail : forall P l x,
   Forall P (x::l) ->
   Forall P l.
-Proof using.
-Qed.
+Proof using. introv H. rewrite* Forall_cons_eq in H. Qed.
 
 Lemma Forall_app_inv : forall P l1 l2,
   Forall P (l1 ++ l2) ->
   Forall P l1 /\ Forall P l2.
-Proof using.
-  intros. induction l1. auto.
-  rew_app in H. inverts* H.
-Qed.
+Proof using. introv H. rewrite* Forall_app_eq in H. Qed.
 
 Lemma Forall_last_inv : forall P l x,
   Forall P (l & x) ->
   Forall P l /\ P x.
-Proof using.
-  introv H. induction l.
-  inverts* H.
-  rew_list in *. inverts H. forwards*: IHl.
-Qed.
+Proof using. introv H. rewrite* Forall_last_eq in H. Qed.
 
 (* Others *)
 
@@ -2422,13 +2424,12 @@ Lemma Forall_iff_forall_mem : forall P l,
   Forall P l <-> (forall x, mem x l -> P x).
 Proof using.
   introv. induction l; iff I.
-   introv IN. false.
-   constructors.
-   introv IN. rew_mem in IN. rew_refl in IN.
-    inverts IN; inverts~ I. apply~ IHl.
-   constructors.
-    apply I. rew_mem in *. auto.
-    apply~ IHl. introv IN. apply~ I. rew_mem. rew_refl*.
+  { introv IN. inverts IN. }
+  { auto. }
+  { introv IN. rew_listx in IN. inverts I. destruct IN; subst*. }
+  { constructors.
+    { apply I. rew_listx*. }
+    { apply~ IHl. introv IN. apply~ I. rew_listx*. } }
 Qed.
 
 Lemma Forall_mem_inv : forall P l x,
@@ -2436,6 +2437,15 @@ Lemma Forall_mem_inv : forall P l x,
   mem x l ->
   P x.
 Proof using. introv F I. rewrite Forall_iff_forall_mem in F. apply~ F. Qed.
+
+Lemma Forall_rev : forall P l,
+  Forall P l ->
+  Forall P (rev l).
+Proof using.
+  introv E. induction l.
+  { auto. }
+  { rew_list. rewrite Forall_app_eq. inverts* E. }
+Qed.
 
 Lemma Forall_weaken : forall P Q l,
   Forall P l -> 
