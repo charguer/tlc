@@ -78,41 +78,6 @@ Tactic Notation "rew_list" "*" "in" hyp(H) :=
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** [rew_listx] for more advanced properties 
-  -- different from [rew_list] for efficiency reasons *)
-
-(** Normalize 
-  - what [rew_list] does
-  - [fold_left] except on [++]
-  - [fold_right] except on [++]
-  - [map]
-  - [concat]
-  - [split]
-  - [combine]
-*)
-
-Tactic Notation "rew_listx" :=
-  autorewrite with rew_listx.
-Tactic Notation "rew_listx" "~" :=
-  rew_listx; auto_tilde.
-Tactic Notation "rew_listx" "*" :=
-  rew_listx; auto_star.
-Tactic Notation "rew_listx" "in" "*" :=
-  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_listx).
-  (* autorewrite with rew_list in *. *)
-Tactic Notation "rew_listx" "~" "in" "*" :=
-  rew_listx in *; auto_tilde.
-Tactic Notation "rew_listx" "*" "in" "*" :=
-  rew_listx in *; auto_star.
-Tactic Notation "rew_listx" "in" hyp(H) :=
-  autorewrite with rew_listx in H.
-Tactic Notation "rew_listx" "~" "in" hyp(H) :=
-  rew_listx in H; auto_tilde.
-Tactic Notation "rew_listx" "*" "in" hyp(H) :=
-  rew_listx in H; auto_star.
-
-
-(* ---------------------------------------------------------------------- *)
 (** ** [rew_lists] for set and map operations on lists *)
 
 (** Normalize 
@@ -141,6 +106,31 @@ Tactic Notation "rew_lists" "~" "in" hyp(H) :=
   rew_lists in H; auto_tilde.
 Tactic Notation "rew_lists" "*" "in" hyp(H) :=
   rew_lists in H; auto_star.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** [rew_listx] for all other operations on lists *)
+
+Tactic Notation "rew_listx" :=
+  autorewrite with rew_listx.
+Tactic Notation "rew_listx" "~" :=
+  rew_listx; auto_tilde.
+Tactic Notation "rew_listx" "*" :=
+  rew_listx; auto_star.
+Tactic Notation "rew_listx" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_listx).
+  (* autorewrite with rew_list in *. *)
+Tactic Notation "rew_listx" "~" "in" "*" :=
+  rew_listx in *; auto_tilde.
+Tactic Notation "rew_listx" "*" "in" "*" :=
+  rew_listx in *; auto_star.
+Tactic Notation "rew_listx" "in" hyp(H) :=
+  autorewrite with rew_listx in H.
+Tactic Notation "rew_listx" "~" "in" hyp(H) :=
+  rew_listx in H; auto_tilde.
+Tactic Notation "rew_listx" "*" "in" hyp(H) :=
+  rew_listx in H; auto_star.
+
 
 
 (* ********************************************************************** *)
@@ -1957,7 +1947,7 @@ Hint Rewrite combine_nil combine_cons : rew_listx.
 (* ---------------------------------------------------------------------- *)
 (** ** Split *)
 
-Fixpoint split (l:list(A*B)) : (list A * list B) :=
+Fixpoint split A B (l:list(A*B)) : (list A * list B) :=
   match l with
   | nil => (nil,nil)
   | (a,b)::l' => let (la,lb) := split l' in (a::la, b::lb)
@@ -1968,7 +1958,7 @@ Variable (A B : Type).
 Implicit Types (l : list (A*B)).
 
 Lemma split_nil : 
-  split nil = (nil, nil).
+  split (@nil (A*B)) = (nil, nil).
 Proof using. auto. Qed.
 
 Lemma split_cons_let : forall x1 x2 l,
@@ -2006,7 +1996,7 @@ Proof using.
   intros l. induction l as [|[x1 x2] l']; introv E.
   { rewrite split_nil in E. inverts~ E. } 
   { rewrite split_cons_let in E. destruct (split l') as [s1' s2'].
-    inverts E. rew_list. erewrite~ IHl'. }
+    inverts E. rew_list. forwards~ (?&?): IHl'. }
 Qed.
 
 Lemma split_length_l : forall l s1 s2,
@@ -2104,9 +2094,9 @@ End Take.
 (* Arguments take [A] : simpl never. *)
 Opaque take.
 
-Hint Rewrite take_zero take_succ : rew_list.
+Hint Rewrite take_zero take_succ : rew_listx.
 (* Note: [take_prefix_length] and [take_full_length] 
-   may be safely added to [rew_list]. *)
+   may be safely added to [rew_listx]. *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2184,7 +2174,7 @@ End Drop.
 Opaque drop.
 (* Arguments drop [A] : simpl never. *)
 
-Hint Rewrite drop_zero drop_succ : rew_list.
+Hint Rewrite drop_zero drop_succ : rew_listx.
 (* Note: [drop_prefix_length] and [drop_full_length] 
    may be safely added to [rew_list]. *)
 
@@ -2197,7 +2187,7 @@ Variable (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 
-Lemma take_app_drop : forall n l f r,
+Lemma take_app_drop_spec : forall n l f r,
   f = take n l -> 
   r = drop n l -> 
   n <= length l ->
@@ -2206,43 +2196,43 @@ Lemma take_app_drop : forall n l f r,
   /\ length r = length l - n.
 Proof using.
   intros n. induction n; introv F R L.
-  { subst. rew_list. splits~. math. }
-  { destruct l; rew_list in L.
-    { rew_list in L. false. math. }
+  { subst. rew_listx. splits~. math. }
+  { destruct l; rew_listx in L.
+    { rew_listx in L. false. math. }
     { forwards~ (F'&R'&L'): (>> IHn l (take n l) r). { math. }
-      subst f. rew_list. splits. { fequals. } { math. } { math. } } }
+      subst f. rew_listx. splits. { fequals. } { math. } { math. } } }
 Qed.
 
-Lemma take_prop : forall n l,
+Lemma take_spec : forall n l,
   n <= length l ->
   exists l', length (take n l) = n
           /\ l = (take n l) ++ l'.
-Proof using. introv E. forwards* (E1&E2&E3): take_app_drop. Qed.
+Proof using. introv E. forwards* (E1&E2&E3): take_app_drop_spec. Qed.
 
 Lemma length_take : forall n l,
   n <= length l ->
   length (take n l) = n.
-Proof using. introv E. forwards~ (l'&N&M): take_prop n l. Qed.
+Proof using. introv E. forwards~ (l'&N&M): take_spec n l. Qed.
 
-Lemma drop_prop : forall n l,
+Lemma drop_spec : forall n l,
   n <= length l ->
   exists l', length l' = n 
           /\ l = l' ++ (drop n l).
-Proof using. introv E. forwards* (E1&E2&E3): take_app_drop. Qed.
+Proof using. introv E. forwards* (E1&E2&E3): take_app_drop_spec. Qed.
 
 Lemma length_drop : forall n l,
   n <= length l ->
   length (drop n l) = length l - n.
 Proof using.
-  introv E. forwards~ (l'&N&M): drop_struct n l.
+  introv E. forwards~ (l'&N&M): drop_spec n l.
   pattern l at 2. rewrite M. rew_list. math.
 Qed.
 
 End TakeAndDrop.
 
-Arguments take_and_drop_struct [A].
-Arguments take_struct [A].
-Arguments drop_struct [A].
+Arguments take_app_drop_spec [A].
+Arguments take_spec [A].
+Arguments drop_spec [A].
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2251,7 +2241,7 @@ Arguments drop_struct [A].
 (** [take_drop_last l] returns a pair [(q,x)] such that
     [l = q & x] *)
 
-Fixpoint take_drop_last (l:list A) : (list A)*A :=
+Fixpoint take_drop_last `{IA:Inhab A} (l:list A) : (list A)*A :=
   match l with
   | nil => arbitrary
   | x::l' =>

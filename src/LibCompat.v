@@ -338,6 +338,9 @@ Definition Forall2_last_inv := Forall2_last_l_inv.
 Definition mem_remove_inv := mem_remove_same_inv.
 
 
+Hint Rewrite take_zero take_succ : rew_list.
+Hint Rewrite drop_zero drop_succ : rew_list
+
 (* ********************************************************************** *)
 (** too specific *)
 
