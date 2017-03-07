@@ -344,6 +344,7 @@ Hint Rewrite drop_zero drop_succ : rew_list.
 Definition Nth_here := Nth_zero.
 Definition Nth_next := Nth_succ.
 
+Definition Forall2_inv_Nth := Forall2_Nth_inv.
 
 (* ********************************************************************** *)
 (** too specific *)

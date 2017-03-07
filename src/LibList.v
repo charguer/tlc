@@ -2053,6 +2053,10 @@ Implicit Types n : nat.
 Implicit Types x : A.
 Implicit Types l : list A.
 
+Lemma take_nil : forall n,
+  take n (@nil A) = nil.
+Proof using. intros. destruct n; auto. Qed.
+
 Lemma take_zero : forall l,
   take 0 l = nil.
 Proof using. auto. Qed.
@@ -2069,6 +2073,17 @@ Lemma take_cons_pos : forall x l n,
 Proof using.
   introv H. destruct n. false; math.
   rewrite take_cons. fequals_rec. math.
+Qed.
+
+Lemma take_is_prefix : forall n l,
+  exists q, l = take n l ++ q.
+Proof using.
+  intros n l. gen n. induction l; intros.
+  { exists (@nil A). rewrite~ take_nil. }
+  { destruct n as [|n']. 
+    { rewrite take_zero. exists~ (a::l). }
+    { rewrite take_succ. forwards (q'&E): IHl n'. exists q'.
+      rew_list. congruence. } }
 Qed.
 
 Lemma take_app_l : forall n l l',
@@ -2113,7 +2128,7 @@ End Take.
 (* Arguments take [A] : simpl never. *)
 Opaque take.
 
-Hint Rewrite take_zero take_succ : rew_listx.
+Hint Rewrite take_nil take_zero take_succ : rew_listx.
 (* Note: [take_prefix_length] and [take_full_length] 
    may be safely added to [rew_listx]. *)
 
@@ -2136,6 +2151,10 @@ Implicit Types n : nat.
 Implicit Types x : A.
 Implicit Types l : list A.
 
+Lemma drop_nil : forall n,
+  drop n (@nil A) = nil.
+Proof using. intros. destruct n; auto. Qed.
+
 Lemma drop_zero : forall l,
   drop 0 l = l.
 Proof using. auto. Qed.
@@ -2152,6 +2171,17 @@ Lemma drop_cons_pos : forall x l n,
 Proof using.
   introv H. destruct n. false; math.
   rewrite drop_cons. fequals_rec. math.
+Qed.
+
+Lemma drop_is_suffix : forall n l,
+  exists q, l = q ++ drop n l.
+Proof using.
+  intros n l. gen n. induction l; intros.
+  { exists (@nil A). rewrite~ drop_nil. }
+  { destruct n as [|n']. 
+    { rewrite drop_zero. exists~ (@nil A). }
+    { rewrite drop_succ. forwards (q'&E): IHl n'. exists (a::q').
+      rew_list. congruence. } }
 Qed.
 
 Lemma drop_app_l : forall n l l',
@@ -2193,7 +2223,7 @@ End Drop.
 Opaque drop.
 (* Arguments drop [A] : simpl never. *)
 
-Hint Rewrite drop_zero drop_succ : rew_listx.
+Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
 (* Note: [drop_prefix_length] and [drop_full_length] 
    may be safely added to [rew_list]. *)
 
@@ -2438,6 +2468,12 @@ Lemma Forall_mem_inv : forall P l x,
   P x.
 Proof using. introv F I. rewrite Forall_iff_forall_mem in F. apply~ F. Qed.
 
+Lemma Forall_Nth_inv : forall P n l x,
+  Forall P l ->
+  Nth n l x ->
+  P x.
+Proof using. introv F N. applys* Forall_mem_inv F. applys* Nth_mem. Qed.
+
 Lemma Forall_rev : forall P l,
   Forall P l ->
   Forall P (rev l).
@@ -2445,6 +2481,30 @@ Proof using.
   introv E. induction l.
   { auto. }
   { rew_list. rewrite Forall_app_eq. inverts* E. }
+Qed.
+
+Lemma Forall_rev_eq : forall P l,
+  Forall P (rev l) = Forall P l.
+Proof using.
+  intros. extens. iff M.
+  { rewrite <- rev_rev. applys~ Forall_rev. }
+  { applys~ Forall_rev. }
+Qed.
+
+Lemma Forall_take : forall P n l,
+  Forall P l ->
+  Forall P (take n l).
+Proof using.
+  introv E. forwards (q&K): take_is_prefix n l. 
+  rewrite K in E. rewrite* Forall_app_eq in E.
+Qed.
+
+Lemma Forall_drop : forall P n l,
+  Forall P l ->
+  Forall P (drop n l).
+Proof using.
+  introv E. forwards (q&K): drop_is_suffix n l. 
+  rewrite K in E. rewrite* Forall_app_eq in E.
 Qed.
 
 Lemma Forall_weaken : forall P Q l,
@@ -2489,6 +2549,9 @@ Lemma Forall_to_conj_4 : forall x1 x2 x3 x4,
 Proof using. forall_to_conj_prove. Qed.
 
 End ForallToConj.
+
+Hint Rewrite Forall_nil_eq Forall_cons_eq Forall_app_eq Forall_last_eq
+  Forall_rev_eq : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2610,18 +2673,18 @@ Qed.
 
 Lemma Forall2_weaken : forall P Q r s,
   Forall2 P r s r ->
-  (rel_le P Q ) -> (* forall a b, P a b -> Q a b *)
+  (rel_le P Q) -> (* forall a b, P a b -> Q a b *)
   Forall2 Q r s.
 Proof using. introv F W. induction F; constructors~. Qed.
 
 Lemma Forall2_swap : forall P r s,
-  Forall2 (fun b a => P a b) r s ->
-  Forall2 P r s.
-Proof using. introv F. induction~ F; constructors~. Qed.
-
-Lemma Forall2_inv_swap : forall P r s,
   Forall2 P r s ->
   Forall2 (fun b a => P a b) r s.
+Proof using. introv F. induction~ F; constructors~. Qed.
+
+Lemma Forall2_swap_inv : forall P r s,
+  Forall2 (fun b a => P a b) r s ->
+  Forall2 P r s.
 Proof using. introv F. induction~ F; constructors~. Qed.
 
 Lemma Forall2_take : forall P n r s,
@@ -2634,12 +2697,17 @@ Lemma Forall2_rev : forall P r s,
   Forall2 P (rev r) (rev s).
 Proof using. intros P r. induction r; introv M; inverts M; rew_rev; auto. Qed.
 
+Lemma Forall2_map_l : forall f P l,
+  (forall x, P (f x) x) ->
+  Forall2 P (map f l) l.
+Proof using. introv I. induction l; constructors~. Qed.
+
 Lemma Forall2_map_r : forall f P l,
   (forall x, P x (f x)) ->
   Forall2 P l (map f l).
 Proof using. introv I. induction l; constructors~. Qed.
 
-Lemma Forall2_inv_Nth : forall r s n x y,
+Lemma Forall2_Nth_inv : forall r s n x y,
   Forall2 P r s ->
   Nth n r x ->
   Nth n s y ->
