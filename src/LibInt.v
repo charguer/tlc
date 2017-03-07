@@ -48,6 +48,7 @@ Open Scope Int_scope.
    makes all proofs with omega to fail
 *)
 
+(* TODO: rename to nat_to_Z, etc... *)
 Definition my_Z_of_nat := Z_of_nat.
 
 Lemma my_Z_of_nat_def : my_Z_of_nat = Z_of_nat.

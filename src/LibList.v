@@ -728,9 +728,9 @@ Hint Rewrite mem_nil_eq mem_cons_eq mem_app_eq mem_last_eq : rew_listx.
     exists and is exactly [x] *)
 
 Inductive Nth A : nat -> list A -> A -> Prop :=
-  | Nth_here : forall l x,
+  | Nth_zero : forall l x,
       Nth 0 (x::l) x
-  | Nth_next : forall y n l x,
+  | Nth_succ : forall y n l x,
       Nth n l x ->
       Nth (S n) (y::l) x.
 
@@ -740,6 +740,18 @@ Implicit Types l : list A.
 Implicit Types x : A.
 Implicit Types n : nat.
 Hint Constructors mem Nth.
+
+Lemma Nth_cons_match : forall n l x y,
+  Nth n (y::l) x =
+    match n with 
+    | O => x = y
+    | S n' => Nth (S n') (y::l) x
+    end.
+Proof using.
+  intros. extens. destruct n as [|n'].
+  { iff M. inverts~ M. subst~. }
+  { iff M. inverts~ M. subst~. }
+Qed.
 
 Lemma Nth_func: forall n l x1 x2,
   Nth n l x1 ->
@@ -775,7 +787,7 @@ Lemma Nth_inbound_inv : forall n l,
   exists x, Nth n l x.
 Proof using.
   induction n; introv N; destruct l as [|a l']; rew_list in N; try solve [math].
-  { esplit. apply Nth_here. }
+  { eauto. }
   { simpls. rewrite lt_SS in N. forwards (x&Hx): IHn N. exists x. apply* Nth_next. }
 Qed.
 
@@ -791,7 +803,7 @@ Lemma Nth_app_r : forall n m x l1 l2,
 Proof using.
   intros. subst. gen m. induction l1; introv H; rew_list.
   { applys_eq~ H 3. }
-  { applys_eq* Nth_next 3. }
+  { applys_eq* Nth_succ 3. }
 Qed.
 
 Lemma Nth_nil_inv : forall n x,
@@ -938,12 +950,23 @@ Lemma nth_to_Nth : forall l n x,
   Nth n l x.
 Proof using. intros. applys* nth_def_to_Nth. Qed.
 
+Lemma Nth_nth : forall l n,
+  n < length l ->
+  Nth n l (nth n l).
+Proof using. intros. applys* nth_to_Nth. Qed.
+
 Lemma mem_nth : forall l x,
   mem x l -> 
   exists n, nth n l = x.
 Proof using.
   intros. forwards [n P]: mem_Nth H. exists n. apply~ Nth_to_nth.
 Qed.
+
+Lemma nth_mem : forall n l x,
+  nth n l = x ->
+  n < length l ->
+  mem x l.
+Proof using. introv E N. forwards~ H: nth_to_Nth E. applys* Nth_mem H. Qed.
 
 End NthFunc.
 
@@ -1131,100 +1154,24 @@ Proof using.
   { rewrite make_succ. rewrite length_cons. math. }
 Qed.
 
+Lemma Nth_make : forall i n v,
+  i < n -> 
+  Nth i (make n v) v.
+Proof using.
+  Hint Constructors Nth.
+  introv. gen n; induction i; introv E; destruct n; try solve [ false; math ].
+  { constructors. }
+  { rewrite make_succ. applys Nth_succ. applys~ IHi. math. }
+Qed.
+
 Lemma nth_make : forall i n v,
   i < n -> 
   nth i (make n v) = v.
-Proof using.
-  introv. gen n; induction i; introv E.
-  { destruct n. math. auto. }
-  { destruct n. math. rewrite make_succ. rewrite nth_succ. rewrite~ IHi. math. }
-Qed.
+Proof using. intros. applys Nth_to_nth. applys~ Nth_make. Qed.
 
 End Make.
 
 Opaque make.
-
-
-(* ---------------------------------------------------------------------- *)
-(* ** Update as a relation *)
-
-(** [Update n x L L'] asserts [L'] is the list obtained by substituting
-    in [L] the item at index [n] with [x]. *)
-
-Definition Update A (n:nat) (x:A) l l' :=
-    length l' = length l
-  /\ (forall y m, Nth m l y -> m <> n -> Nth m l' y)
-  /\ Nth n l' x.
-
-Section UpdateRel.
-Variables A : Type.
-Implicit Types x : A.
-Implicit Types l : list A.
-Implicit Types n : nat.
-Hint Constructors Nth.
-
-Lemma Update_zero : forall x y l,
-  Update 0 x (y::l) (x::l).
-Proof using.
-  intros. splits.
-  rew_list~.
-  introv M H. inverts* M.
-  autos*.
-Qed.
-
-Lemma Update_cons : forall i x y l l',
-  Update i x l l' -> 
-  Update (S i) x (y::l) (y::l').
-Proof using.
-  introv (L&O&E). splits.
-  rew_list~.
-  introv M H. inverts* M.
-  autos*.
-Qed.
-
-Definition Update_succ := Update_cons.
-
-Lemma Update_app_l : forall i x l1 l1' l2,
-  Update i x l1 l1' -> 
-  Update i x (l1++l2) (l1'++l2).
-Proof using.
-  introv (L&O&E). splits.
-  rew_list~.
-  introv M H. destruct (Nth_app_inv _ _ M).
-    apply~ Nth_app_l.
-    unpack. apply* Nth_app_r. math.
-  apply~ Nth_app_l.
-Qed.
-
-Lemma Update_app_r : forall i j x l1 l2 l2',
-  Update j x l2 l2' -> 
-  i = (j + length l1)%nat -> 
-  Update i x (l1++l2) (l1++l2').
-Proof using.
-  introv (L&O&E) Eq. splits.
-  rew_list~.
-  introv M H. destruct (Nth_app_inv _ _ M).
-    apply~ Nth_app_l.
-    unpack. apply* Nth_app_r. apply* O. math. math.
-  apply* Nth_app_r.
-Qed.
-
-Lemma Update_length : forall i x l l',
-  Update i x l l' -> 
-  length l = length l'.
-Proof using. introv (L&O&E). auto. Qed.
-
-Lemma Update_not_nil_l : forall i x l1 l2,
-  Update i x l1 l2 -> 
-  l1 <> nil.
-Proof using. introv (L&O&E) K. subst. inverts E; auto_false. Qed.
-
-Lemma Update_not_nil_r : forall i x l1 l2,
-  Update i x l1 l2 -> 
-  l2 <> nil.
-Proof using. introv (L&O&E) K. subst. inverts E. Qed.
-
-End UpdateRel.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1350,6 +1297,8 @@ Proof using.
       { rew_listx. applys~ IHl. } } }
 Qed.
 
+(* TODO: possibly add Nth_update_eq and Nth_update_neq *)
+
 End Update.
 
 Opaque update.
@@ -1452,6 +1401,13 @@ Proof using.
   introv M. induction M; rew_listx; auto.
 Qed.
 
+Lemma nth_map : forall `{IA:Inhab A} `{IB:Inhab B} (f:A->B) (l:list A) n,
+  n < length l -> 
+  nth n (map f l) = f (nth n l).
+Proof using.
+  introv N. applys Nth_to_nth. applys Nth_map. applys~ nth_to_Nth.
+Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Concat *)
@@ -1491,8 +1447,6 @@ Lemma concat_last : forall l m,
   concat (m & l) = concat m ++ l.
 Proof using. intros. rewrite~ concat_app. rewrite~ concat_one. Qed.
 
-(* TODO: length_concat *)
-
 Lemma mem_concat_iff : forall m x,
       mem x (concat m)
   <-> exists l, mem l m /\ mem x l.
@@ -1518,6 +1472,8 @@ Proof using.
     { rew_list in E. applys~ IHM. }
     { rew_list in E. false. } }
 Qed.
+
+(* TODO: possibly add length_concat and nth_concat *)
 
 End Concat.
 
@@ -1938,6 +1894,15 @@ Proof using.
 Qed.
 
 End Combine.
+
+Lemma nth_combine : forall `{IA:Inhab A} `{IB:Inhab B} n r s,
+  n < length r ->
+  length r = length s ->
+  nth n (combine r s) = (nth n r, nth n s).
+Proof using. 
+  introv N E.
+  (* todo *)
+Qed.
 
 Opaque combine.
 

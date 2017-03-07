@@ -339,7 +339,11 @@ Definition mem_remove_inv := mem_remove_same_inv.
 
 
 Hint Rewrite take_zero take_succ : rew_list.
-Hint Rewrite drop_zero drop_succ : rew_list
+Hint Rewrite drop_zero drop_succ : rew_list.
+
+Definition Nth_here := Nth_zero.
+Definition Nth_next := Nth_succ.
+
 
 (* ********************************************************************** *)
 (** too specific *)
@@ -614,3 +618,86 @@ Definition absorb_r_or := or_true_r.
 Definition beq_impl := eqb.
 
 Definition comm_assoc_prove := comm_assoc_from_comm_and_assoc.
+
+
+
+(* ---------------------------------------------------------------------- *)
+(* ** Update as a relation *)
+
+(** [Update n x L L'] asserts [L'] is the list obtained by substituting
+    in [L] the item at index [n] with [x]. *)
+
+Definition Update A (n:nat) (x:A) l l' :=
+    length l' = length l
+  /\ (forall y m, Nth m l y -> m <> n -> Nth m l' y)
+  /\ Nth n l' x.
+
+Section UpdateRel.
+Variables A : Type.
+Implicit Types x : A.
+Implicit Types l : list A.
+Implicit Types n : nat.
+Hint Constructors Nth.
+
+Lemma Update_zero : forall x y l,
+  Update 0 x (y::l) (x::l).
+Proof using.
+  intros. splits.
+  rew_list~.
+  introv M H. inverts* M.
+  autos*.
+Qed.
+
+Lemma Update_cons : forall i x y l l',
+  Update i x l l' -> 
+  Update (S i) x (y::l) (y::l').
+Proof using.
+  introv (L&O&E). splits.
+  rew_list~.
+  introv M H. inverts* M.
+  autos*.
+Qed.
+
+Definition Update_succ := Update_cons.
+
+Lemma Update_app_l : forall i x l1 l1' l2,
+  Update i x l1 l1' -> 
+  Update i x (l1++l2) (l1'++l2).
+Proof using.
+  introv (L&O&E). splits.
+  rew_list~.
+  introv M H. destruct (Nth_app_inv _ _ M).
+    apply~ Nth_app_l.
+    unpack. apply* Nth_app_r. math.
+  apply~ Nth_app_l.
+Qed.
+
+Lemma Update_app_r : forall i j x l1 l2 l2',
+  Update j x l2 l2' -> 
+  i = (j + length l1)%nat -> 
+  Update i x (l1++l2) (l1++l2').
+Proof using.
+  introv (L&O&E) Eq. splits.
+  rew_list~.
+  introv M H. destruct (Nth_app_inv _ _ M).
+    apply~ Nth_app_l.
+    unpack. apply* Nth_app_r. apply* O. math. math.
+  apply* Nth_app_r.
+Qed.
+
+Lemma Update_length : forall i x l l',
+  Update i x l l' -> 
+  length l = length l'.
+Proof using. introv (L&O&E). auto. Qed.
+
+Lemma Update_not_nil_l : forall i x l1 l2,
+  Update i x l1 l2 -> 
+  l1 <> nil.
+Proof using. introv (L&O&E) K. subst. inverts E; auto_false. Qed.
+
+Lemma Update_not_nil_r : forall i x l1 l2,
+  Update i x l1 l2 -> 
+  l2 <> nil.
+Proof using. introv (L&O&E) K. subst. inverts E. Qed.
+
+End UpdateRel.

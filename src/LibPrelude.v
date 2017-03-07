@@ -290,6 +290,8 @@ End SigProj.
 
 (* [sigT] is equivalent to [sig] for predicates *)
 
+(* TODO: should be renamed sigT_to_sig etc..*)
+
 Coercion sig_of_sigT (A:Type) (P:A->Prop) (E:sigT P) : sig P.
 Coercion sigT_of_sig (A:Type) (P:A->Prop) (E:sig P) : sigT P.
 

@@ -246,6 +246,7 @@ Extraction Inline comparable_beq.
 (** [Comparable] can be proved by exhibiting a decidability
     result in the form of a strong sum *)
 
+(* TODO: rename dec_to_comparable *)
 Lemma comparable_of_dec : forall (A:Type),
   (forall x y : A, {x = y} + {x <> y}) ->
   Comparable A.
