@@ -18,6 +18,7 @@ Set Implicit Arguments.
     injectivity of equality on dependent pairs, predicate extensionality,
     definite description, and all the versions of the axiom of choice. *)
 
+
 (* ********************************************************************** *)
 (** * Functional extensionality *)
 

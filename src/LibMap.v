@@ -16,7 +16,7 @@ Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect LibOption
   LibRelation LibLogic LibOperation LibEpsilon LibMonoid LibSet.
-Require Export LibBag.
+Require Export LibContainer.
 
 Local Open Scope set_scope.
 
@@ -85,7 +85,7 @@ Definition read_impl A `{Inhab B} (M:map A B) (k:A) :=
   end.
 
 Definition fold_impl A B C (m:monoid_def C) (f:A->B->C) (M:map A B) :=
-  LibBag.fold m (fun p => let '(a,b) := p in f a b)
+  LibContainer.fold m (fun p => let '(a,b) := p in f a b)
     (\set{ p | exists k x, p = (k, x) /\ binds_impl M k x }).
 
 
@@ -170,7 +170,7 @@ Lemma disjoint_def : forall A B (M N:map A B),
 Proof using. auto. Qed.
 
 Lemma fold_def_binds : forall A B C (m:monoid_def C) (f:A->B->C) (M:map A B),
-  fold m f M = LibBag.fold m (fun p => let '(a,b) := p in f a b)
+  fold m f M = LibContainer.fold m (fun p => let '(a,b) := p in f a b)
     (\set{ p | exists k x, p = (k, x) /\ binds_impl M k x }).
 Proof using. auto. Qed.
 
@@ -593,7 +593,7 @@ Qed.
 
 (* TODO
 Lemma fold_def_dom : forall A `{Inhab B} C (m:monoid_def C) (f:A->B->C) (M:map A B),
-  fold m f M = LibBag.fold m (fun k => f k (M[k])) (dom M).
+  fold m f M = LibContainer.fold m (fun k => f k (M[k])) (dom M).
 Proof using. (* LATER *) Qed.
   - E = dom M
   - repr L E

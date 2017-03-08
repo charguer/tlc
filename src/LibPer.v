@@ -13,7 +13,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibBool LibLogic LibRelation LibBag LibSet.
+Require Import LibTactics LibLogic LibBool LibLogic LibRelation LibContainer LibSet.
 Module Rel := LibRelation.
 
 

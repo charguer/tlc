@@ -140,14 +140,14 @@ Variables (A:Type).
 Definition mem (x:A) (E:fset A) :=
   is_in x (proj1_sig E).
 
-Lemma finite_empty : @finite A LibBag.empty.
+Lemma finite_empty : @finite A LibContainer.empty.
 Proof using. exists (@nil A). intros x. rewrite in_empty_eq. auto_false. Qed.
 
 Definition empty : fset A :=
   build_fset finite_empty.
 
 Lemma singleton_finite : forall (x:A),
-  finite (LibBag.single x).
+  finite (LibContainer.single x).
 Proof using.
   intros. exists (x::nil). intros y.
   rewrite in_single_eq. intro_subst. constructor.

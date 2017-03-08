@@ -24,13 +24,14 @@ Generalizable Variables A B.
     every input to at least one output. *)
 
 Lemma func_choice : forall A B (R:A->B->Prop),
-  (forall x, exists y, R x y) -> (* TEMPORARY this is called [defined] in LibRelation *)
+  (forall x, exists y, R x y) -> 
   (exists f, forall x, R x (f x)).
 Proof using.
   intros. exists (fun x => proj1_sig (indefinite_description (H x))).
   intro x. apply (proj2_sig (indefinite_description (H x))).
 Qed.
-(* TEMPORARY functionality -> definedness? *)
+(* LATER: the premise is called [defined] in LibRelation *)
+(* LATER: functionality -> definedness? *)
 
 
 (* ---------------------------------------------------------------------- *)

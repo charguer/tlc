@@ -17,7 +17,7 @@ Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect
   LibRelation LibList LibInt LibNat LibOperation
   LibEpsilon LibSet LibMonoid.
-Require Export LibBag.
+Require Export LibContainer.
 
 
 (* ********************************************************************** *)

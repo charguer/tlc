@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibBag LibSet.
+Require Import LibTactics LibLogic LibContainer LibSet.
 Generalizable Variables A.
 
 

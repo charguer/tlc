@@ -9,7 +9,7 @@ Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
 Require Import LibTactics LibLogic LibReflect LibList
   LibOperation LibMonoid LibInt LibNat
   LibEpsilon LibRelation LibMin.
-Require Export LibBag.
+Require Export LibContainer.
 
 
 (* ********************************************************************** *)
@@ -973,7 +973,7 @@ Tactic Notation "rew_set" "in" "*" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Foreach *)
 
-(** TODO: derive these lemmas as typeclasses in a generic way in LibBag *)
+(** TODO: derive these lemmas as typeclasses in a generic way in LibContainer *)
 
 Section ForeachProp.
 Variables (A : Type).

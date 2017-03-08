@@ -789,8 +789,6 @@ Proof using.
   dup 5.
   (* spliting a bunch of conjunction is a pain *)
   split. skip. split. skip. split. skip. split. skip. skip.
-  (* [splits_all] is short for [repeat split] *)
-  splits_all. skip. skip. skip. skip. skip. skip.
   (* but it is sometimes too aggressive. *)
   (* [splits N] splits a conjunction in N parts *)
   splits 4. skip. skip. skip. skip.

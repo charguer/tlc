@@ -1,6 +1,6 @@
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* Lists accessed with integers (not nat) and using LibBag typeclasses     *
+* Lists accessed with integers (not nat) and using LibContainer typeclasses     *
 **************************************************************************)
 
 Set Implicit Arguments.
@@ -9,7 +9,7 @@ Require Import LibTactics LibLogic LibOperation LibReflect
   LibProd LibNat LibInt LibOption LibWf.
 Require Export LibList LibNat.
 Require Import LibInt.
-Require Export LibBag.
+Require Export LibContainer.
 
 Local Open Scope comp_scope.
 
@@ -344,7 +344,7 @@ Lemma update_app_right:
   (xs ++ ys)[ij:=v] = xs ++ ys[j:=v].
 Proof.
   intros. subst ij.
-  unfold LibBag.update, update_inst, update_impl.
+  unfold LibContainer.update, update_inst, update_impl.
   unfold update. do 2 (case_if; [ math | ]).
   eapply LibList.update_app_right with (i := abs i).
   { eauto using abs_length. }
@@ -357,7 +357,7 @@ Lemma update_app_right_here:
   (xs ++ y :: ys)[i := x] = xs & x ++ ys.
 Proof.
   intros.
-  unfold LibBag.update, update_inst, update_impl.
+  unfold LibContainer.update, update_inst, update_impl.
   unfold update. case_if; [ math | ].
   eapply LibList.update_app_right_here.
   eauto using abs_length.

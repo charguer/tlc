@@ -47,6 +47,10 @@ Set Implicit Arguments.
 
 Require Import List.
 
+
+(* ********************************************************************** *)
+(** * Fixing Stdlib *)
+
 (* Very important to remove hint trans_eq_bool from LibBool,
    otherwise eauto slows down dramatically:
   Lemma test : forall b, b = false.
@@ -3290,15 +3294,6 @@ Tactic Notation "splits" constr(N) :=
   let N := nat_from_number N in
   splits_tactic N.
 
-(** [splits_all] will recursively split any conjunction, unfolding
-    definitions when necessary. Warning: this tactic will loop
-    on goals of the form [well_founded R]. Todo: fix this *)
-
-Ltac splits_all_base := repeat split.
-
-Tactic Notation "splits_all" :=
-  splits_all_base.
-
 
 (* ---------------------------------------------------------------------- *)
 (** N-ary Conjunctions Deconstruction *)
@@ -4047,8 +4042,6 @@ Tactic Notation "splits" "~" :=
   splits; auto_tilde.
 Tactic Notation "splits" "~" constr(N) :=
   splits N; auto_tilde.
-Tactic Notation "splits_all" "~" :=
-  splits_all; auto_tilde.
 
 Tactic Notation "destructs" "~" constr(T) :=
   destructs T; auto_tilde.
@@ -4430,8 +4423,6 @@ Tactic Notation "splits" "*" :=
   splits; auto_star.
 Tactic Notation "splits" "*" constr(N) :=
   splits N; auto_star.
-Tactic Notation "splits_all" "*" :=
-  splits_all; auto_star.
 
 Tactic Notation "destructs" "*" constr(T) :=
   destructs T; auto_star.

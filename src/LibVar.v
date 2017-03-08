@@ -174,10 +174,8 @@ Ltac pick_freshes_gen L n Y :=
   (destruct (var_freshes L n) as [Y Fr]).
 
 
-
-
 (* ********************************************************************** *)
-(** ** Tactics for notin *)
+(** ** Tactics for [notin] *)
 
 Implicit Types x : var.
 
@@ -264,19 +262,26 @@ Ltac notin_solve_one :=
      notin_solve_target y (\{x})
   | |- ?x \notin ?E =>
     notin_solve_target x E
-  (* If x is an evar, tries to instantiate it.
-     Problem: it might loop !
-  | |- ?x \notin ?E =>
-     match goal with y:var |- _ =>
-       match y with
-       | x => fail 1
-       | _ =>
-         let H := fresh in cuts H: (y \notin E);
-         [ apply H | notin_solve_target y E ]
-        end
-     end
-  *)
   end.
+  (*
+    LATER: add support for these special cases
+      | |- ?x \notin ?E =>
+            progress (unfold x); notin_simpl
+      | |- (var_gen ?x) \notin _ =>
+            apply notin_var_gen; intros; notin_simpl
+  *)
+  (* Remark: if x is an evar, we could try to instantiate it.
+     But, problem: it might loop !
+    | |- ?x \notin ?E =>
+       match goal with y:var |- _ =>
+         match y with
+         | x => fail 1
+         | _ =>
+           let H := fresh in cuts H: (y \notin E);
+           [ apply H | notin_solve_target y E ]
+          end
+       end
+  *)
 
 Ltac notin_simpl :=
   match goal with
@@ -316,17 +321,9 @@ Hint Extern 1 (_ \notin _) => notin_solve.
 Hint Extern 1 (_ <> _ :> var) => notin_solve.
 Hint Extern 1 ((_ \notin _) /\ _) => splits.
 
-(*
-LATER:
-  | |- ?x \notin ?E =>
-	progress (unfold x); notin_simpl
-  | |- (var_gen ?x) \notin _ =>
-        apply notin_var_gen; intros; notin_simpl
-*)
-
 
 (* ********************************************************************** *)
-(** ** Tactics for fresh *)
+(** ** Tactics for [fresh] *)
 
 (* todo: cleanup proofs of fresh using calc_fset *)
 
@@ -472,6 +469,4 @@ Ltac fresh_solve :=
 Hint Extern 1 (fresh _ _ _) => fresh_solve.
 
 (* LATER: more automation of fresh_length properties *)
-
-
 

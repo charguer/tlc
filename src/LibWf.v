@@ -11,23 +11,27 @@ Require Import LibTactics LibLogic
 (* ********************************************************************** *)
 (** * Compatibility *)
 
+(** Definition from Stdlib, which we reuse for compatibility
+    with Coq tactics, in particular the Program feature:
+
+Section Well_founded.
+
+ Inductive Acc A (R:A->A->Prop) (x:A) : Prop :=
+   |  Acc_intro : (forall y:A, R y x -> Acc y) -> Acc x.
+
+ Definition well_founded A (R:A->A->Prop) := forall (x:A), Acc x.
+
+*)
+
+(** We introduce [wf] as a shorthand for [well_founded], both
+    for conciseness and for tactic to specifically recognize 
+    this symbol. *)
+
 Definition wf := well_founded.
-
-Hint Extern 1 (wf ?R) => unfold R : wf.
-
-(** New tactic [splits_all] that does not loop on well-founded goals *)
-(* TODO: deprecate [splits_all] *)
-
-Ltac splits_all_base ::=
-  match goal with
-  | |- wf _ => idtac
-  | |- well_founded => idtac
-  | _ => try (split; splits_all_base)
-  end.
 
 
 (* ********************************************************************** *)
-(** * Properties of well-foundedness *)
+(** * Generalities *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** Inclusion and equivalence *)
@@ -35,7 +39,9 @@ Ltac splits_all_base ::=
 (** Well-foundedness preserved by inclusion *)
 
 Lemma incl_wf : forall A (R1 R2 : binary A),
-  wf R1 -> incl R2 R1 -> wf R2.
+  wf R1 -> 
+  incl R2 R1 -> 
+  wf R2.
 Proof using.
   introv W1 Inc. intros x.
   pattern x. apply (well_founded_ind W1). clear x.
@@ -45,24 +51,72 @@ Qed.
 (** Well-foundedness modulo extensional equality *)
 
 Lemma wf_iff : forall A (R1 R2:binary A),
-  wf R1 -> (forall x y, R1 x y <-> R2 x y) -> wf R2.
+  wf R1 -> 
+  (forall x y, R1 x y <-> R2 x y) -> 
+  wf R2.
 Proof using. introv W1 Ext. apply* incl_wf. introv H. rewrite~ Ext. Qed.
 
 
+(* ---------------------------------------------------------------------- *)
+(** ** Tactics *)
 
-(************************************************************)
+(** [prove_wf] is a tactic that tries to prove a goal of the
+    form [wf R]. It is implemented using [auto]. *)
+
+Tactic Notation "prove_wf" :=
+  solve [ auto with wf ].
+
+(** [auto with wf] attempts to unfold names of relations. *)
+
+Hint Extern 1 (wf ?R) => progress (unfold R) : wf.
+
+(** [unfold_wf] and [unfolds_wf] are shorthands for unfolding
+    combinators used in definitions related to well-foundedness. *)
+
+Ltac unfold_wf_base :=
+  unfold_unproj; unfold_uncurryp; unfold_lexico.
+
+Ltac unfolds_wf_base :=
+  unfolds_unproj; unfolds_uncurryp; unfolds_lexico.
+
+Tactic Notation "unfold_wf" :=
+  unfold_wf_base.
+Tactic Notation "unfold_wf" "~" :=
+  unfold_wf; auto_tilde.
+Tactic Notation "unfold_wf" "*" :=
+  unfold_wf; auto_star.
+
+Tactic Notation "unfolds_wf" :=
+  unfolds_wf_base.
+Tactic Notation "unfolds_wf" "~" :=
+  unfolds_wf; auto_tilde.
+Tactic Notation "unfolds_wf" "*" :=
+  unfolds_wf; auto_star.
+
+
+
+(* ********************************************************************** *)
 (* * Measures *)
 
-(*-----------------------------------------------------*)
-(** ** Measures as well-founded relations *)
+(* ---------------------------------------------------------------------- *)
+(** ** Definition *)
+
+(** [measure f] is a well-founded binary relation which 
+    relates [x] to [y] when [f x < f y], at type [nat]. *)
+
+Definition measure A (f:A->nat) : binary A :=
+  fun x1 x2 => f x1 < f x2.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties *)
 
 Section Measure.
 Variables (A : Type).
+Implicit Type f : A -> nat.
 
-Definition measure (f : A -> nat) : binary A :=
-  fun x1 x2 => f x1 < f x2.
-
-Lemma measure_wf : forall f, wf (measure f).
+Lemma measure_wf : forall f, 
+  wf (measure f).
 Proof using.
   intros f a. gen_eq n: (f a). gen a. pattern n.
   apply peano_induction. clear n. introv IH Eq.
@@ -70,38 +124,19 @@ Proof using.
   rewrite <- Eq in H. apply* IH.
 Qed.
 
-(* todo: measure_order *)
-Lemma measure_trans : forall (f : A -> nat), trans (measure f).
+Lemma measure_trans : forall (f : A -> nat), 
+  trans (measure f).
 Proof using. intros. unfold measure, trans. intros. nat_math. Qed.
+
+(* TODO: Lemma measure_order *)
 
 End Measure.
 
-(* todo: should be next to measure_induction *)
-Lemma measure_2_induction : forall A B (mu : A -> B -> nat) (P : A -> B -> Prop),
-  (forall x1 x2, (forall y1 y2, mu y1 y2 < mu x1 x2 -> P y1 y2) -> P x1 x2) ->
-  (forall x1 x2, P x1 x2).
-Proof using.
-  introv H. intros x1 x2. gen_eq p: (x1,x2). gen x1 x2.
-  induction_wf IH: (measure_wf (fun p => mu (fst p) (snd p))) p.
-  introv E. destruct p. inverts E. apply H.
-  introv L. apply* IH. simpl. auto.
-Qed.
-
-
 Hint Resolve measure_wf : wf.
 
-(** The relation "less than" on natural numbers is well_founded. *)
 
-Lemma lt_wf : wf lt.
-Proof using.
-  intros x.
-  induction x using peano_induction. apply~ Acc_intro.
-Qed.
-
-Hint Resolve lt_wf : wf.
-
-
-(** Measures at arity 2 *)
+(* ---------------------------------------------------------------------- *)
+(** ** Measure on pairs *)
 
 Definition measure2 A1 A2 (f : A1 -> A2 -> nat) : binary (A1*A2) :=
   fun p1 p2 => let (x1,y1) := p1 in let (x2,y2) := p2 in f x1 y1 < f x2 y2.
@@ -115,8 +150,8 @@ Qed.
 Hint Resolve measure2_wf : wf.
 
 
-(*-----------------------------------------------------*)
-(** Extension of [induction_wf] tactic *)
+(* ---------------------------------------------------------------------- *)
+(** Extension of [induction_wf] tactic for [measure] *)
 
 Ltac induction_wf_core_then IH E X cont ::=
   let T := type of E in
@@ -124,10 +159,10 @@ Ltac induction_wf_core_then IH E X cont ::=
   let clearX tt :=
     first [ clear X | fail 3 "the variable on which the induction is done appears in the hypotheses" ] in
   match T with
-  (* Support for measures from LibWf, add this: *)
+  (* To support for [measure] from LibWf, we add the next two lines: *)
   | ?A -> nat =>
      induction_wf_core_then IH (measure_wf E) X cont
-
+  (* End of modification *)
   | ?A -> ?A -> Prop =>
      pattern X;
      first [
@@ -146,7 +181,33 @@ Ltac induction_wf_core_then IH E X cont ::=
   end.
 
 
-(*-----------------------------------------------------*)
+(* ********************************************************************** *)
+(** * Empty relation *)
+
+Lemma empty_wf : forall A, wf (@empty A).
+Proof using. intros_all. constructor. introv H. false. Qed.
+
+Hint Resolve empty_wf : wf.
+
+
+(* ********************************************************************** *)
+(* * Classic well-founded relations on [nat] *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** [lt] on [nat] *)
+
+(** The relation "less than" on natural numbers is well_founded. *)
+
+Lemma lt_wf : wf lt.
+Proof using.
+  intros x.
+  induction x using peano_induction. apply~ Acc_intro.
+Qed.
+
+Hint Resolve lt_wf : wf.
+
+
+(* ---------------------------------------------------------------------- *)
 (** ** The relation "greater than" on the set of
        natural number lower than a fixed upper bound. *)
 
@@ -162,7 +223,10 @@ Proof using.
 Qed.
 
 
-(*-----------------------------------------------------*)
+(* ********************************************************************** *)
+(* * Classic well-founded relations on [int] *)
+
+(* ---------------------------------------------------------------------- *)
 (** ** The relation "less than" on the set of
        integers greater than a fixed lower bound. *)
 
@@ -179,7 +243,7 @@ Lemma downto_intro : forall b n m,
   b <= n -> n < m -> downto b n m.
 Proof using. split~. Qed.
 
-Lemma int_downto_wf : forall n, wf (downto n).
+Lemma downto_wf : forall n, wf (downto n).
 Proof using.
   intros b n.
   induction_wf: (measure_wf (fun n => Zabs_nat (n-b))) n.
@@ -187,14 +251,12 @@ Proof using.
   unfolds. applys Zabs_nat_lt; math.
 Qed.
 
-Hint Resolve int_downto_wf : wf.
-
+Hint Resolve downto_wf : wf.
 Hint Unfold downto.
 Hint Extern 1 (downto _ _ _) => math : maths.
-  (* todo:bin  apply downto_intro; math : maths. *)
 
 
-(*-----------------------------------------------------*)
+(* ---------------------------------------------------------------------- *)
 (** ** The relation "greater than" on the set of
        integers lower than a fixed upper bound. *)
 
@@ -209,7 +271,7 @@ Lemma upto_intro : forall b n m,
   n <= b -> m < n -> upto b n m.
 Proof using. split~. Qed.
 
-Lemma int_upto_wf : forall n, wf (upto n).
+Lemma upto_wf : forall n, wf (upto n).
 Proof using.
   intros b n.
   induction_wf: (measure_wf (fun n => Zabs_nat (b-n))) n.
@@ -217,19 +279,10 @@ Proof using.
   applys Zabs_nat_lt; math.
 Qed.
 
-Hint Resolve int_upto_wf : wf.
-
+Hint Resolve upto_wf : wf.
 Hint Unfold upto.
 Hint Extern 1 (upto _ _ _) => math : maths.
 
-
-(* ********************************************************************** *)
-(** * Empty relation *)
-
-Lemma empty_wf : forall A, wf (@empty A).
-Proof using. intros_all. constructor. introv H. false. Qed.
-
-Hint Resolve empty_wf : wf.
 
 
 (* ********************************************************************** *)
@@ -238,83 +291,83 @@ Hint Resolve empty_wf : wf.
 Section UnprojWf.
 Variables (A1 A2 A3 A4 A5 : Type).
 
-Lemma unproj21_wf : forall (f : binary A1),
-  wf f ->
-  wf (unproj21 A2 f).
+Lemma unproj21_wf : forall (R : binary A1),
+  wf R ->
+  wf (unproj21 A2 R).
 Proof using.
-  intros f H [x1 x2]. gen x2.
+  intros R H [x1 x2]. gen x2.
   induction_wf IH: H x1. constructor. intros [y1 y2]. auto.
 Qed.
 
-Lemma unproj22_wf : forall (f : binary A2),
-  wf f ->
-  wf (unproj22 A1 f).
+Lemma unproj22_wf : forall (R : binary A2),
+  wf R ->
+  wf (unproj22 A1 R).
 Proof using.
-  intros f H [x1 x2]. gen x1.
+  intros R H [x1 x2]. gen x1.
   induction_wf IH: H x2. constructor. intros [y1 y2]. auto.
 Qed.
 
-Lemma unproj31_wf : forall (f : binary A1),
-  wf f ->
-  wf (unproj31 A2 A3 f).
+Lemma unproj31_wf : forall (R : binary A1),
+  wf R ->
+  wf (unproj31 A2 A3 R).
 Proof using.
-  intros f H [[x1 x2] x3]. gen x2 x3.
+  intros R H [[x1 x2] x3]. gen x2 x3.
   induction_wf IH: H x1. constructor. intros [[y1 y2] y3]. auto.
 Qed.
 
-Lemma unproj32_wf : forall (f : binary A2),
-  wf f ->
-  wf (unproj32 A1 A3 f).
+Lemma unproj32_wf : forall (R : binary A2),
+  wf R ->
+  wf (unproj32 A1 A3 R).
 Proof using.
-  intros f H [[x1 x2] x3]. gen x1 x3.
+  intros R H [[x1 x2] x3]. gen x1 x3.
   induction_wf IH: H x2. constructor. intros [[y1 y2] y3]. auto.
 Qed.
 
-Lemma unproj33_wf : forall (f : binary A3),
-  wf f ->
-  wf (unproj33 A1 A2 f).
+Lemma unproj33_wf : forall (R : binary A3),
+  wf R ->
+  wf (unproj33 A1 A2 R).
 Proof using.
-  intros f H [[x1 x2] x3]. gen x1 x2.
+  intros R H [[x1 x2] x3]. gen x1 x2.
   induction_wf IH: H x3. constructor. intros [[y1 y2] y3]. auto.
 Qed.
 
-Lemma unproj41_wf : forall (f : binary A1),
-  wf f ->
-  wf (unproj41 A2 A3 A4 f).
+Lemma unproj41_wf : forall (R : binary A1),
+  wf R ->
+  wf (unproj41 A2 A3 A4 R).
 Proof using.
-  intros f H [[[x1 x2] x3] x4]. gen x2 x3 x4.
+  intros R H [[[x1 x2] x3] x4]. gen x2 x3 x4.
   induction_wf IH: H x1. constructor. intros [[[y1 y2] y3] y4]. auto.
 Qed.
 
-Lemma unproj42_wf : forall (f : binary A2),
-  wf f ->
-  wf (unproj42 A1 A3 A4 f).
+Lemma unproj42_wf : forall (R : binary A2),
+  wf R ->
+  wf (unproj42 A1 A3 A4 R).
 Proof using.
-  intros f H [[[x1 x2] x3] x4]. gen x1 x3 x4.
+  intros R H [[[x1 x2] x3] x4]. gen x1 x3 x4.
   induction_wf IH: H x2. constructor. intros [[[y1 y2] y3] y4]. auto.
 Qed.
 
-Lemma unproj43_wf : forall (f : binary A3),
-  wf f ->
-  wf (unproj43 A1 A2 A4 f).
+Lemma unproj43_wf : forall (R : binary A3),
+  wf R ->
+  wf (unproj43 A1 A2 A4 R).
 Proof using.
-  intros f H [[[x1 x2] x3] x4]. gen x1 x2 x4.
+  intros R H [[[x1 x2] x3] x4]. gen x1 x2 x4.
   induction_wf IH: H x3. constructor. intros [[[y1 y2] y3] y4]. auto.
 Qed.
 
-Lemma unproj44_wf : forall (f : binary A4),
-  wf f ->
-  wf (unproj44 A1 A2 A3 f).
+Lemma unproj44_wf : forall (R : binary A4),
+  wf R ->
+  wf (unproj44 A1 A2 A3 R).
 Proof using.
-  intros f H [[[x1 x2] x3] x4]. gen x1 x2 x3.
+  intros R H [[[x1 x2] x3] x4]. gen x1 x2 x3.
   induction_wf IH: H x4. constructor. intros [[[y1 y2] y3] y4]. auto.
 Qed.
 
-Lemma unproj51_wf : forall (f : binary A1),
-  wf f ->
-  wf (unproj51 A2 A3 A4 A5 f).
+Lemma unproj51_wf : forall (R : binary A1),
+  wf R ->
+  wf (unproj51 A2 A3 A4 A5 R).
 Proof using.
-  intros f H [[[[x1 x2] x3] x4] x5]. gen x2 x3 x4 x5.
+  intros R H [[[[x1 x2] x3] x4] x5]. gen x2 x3 x4 x5.
   induction_wf IH: H x1. constructor. intros [[[[y1 y2] y3] y4] y5]. auto.
 Qed.
 
@@ -330,9 +383,11 @@ Hint Resolve
 (* ********************************************************************** *)
 (** * Lexicographical product *)
 
-Lemma lexico2_wf : forall {A1 A2}
+Lemma lexico2_wf : forall A1 A2
  (R1:binary A1) (R2:binary A2),
-  wf R1 -> wf R2 -> wf (lexico2 R1 R2).
+  wf R1 -> 
+  wf R2 -> 
+  wf (lexico2 R1 R2).
 Proof using.
   introv W1 W2. intros [x1 x2]. gen x2.
   induction_wf IH1: W1 x1. intros.
@@ -341,27 +396,29 @@ Proof using.
   apply~ IH1. rewrite H1. apply~ IH2.
 Qed.
 
-Lemma lexico3_wf : forall {A1 A2 A3}
+Lemma lexico3_wf : forall A1 A2 A3
  (R1:binary A1) (R2:binary A2) (R3:binary A3),
-  wf R1 -> wf R2 -> wf R3 ->
+  wf R1 -> 
+  wf R2 -> 
+  wf R3 ->
   wf (lexico3 R1 R2 R3).
 Proof using.
-  intros. apply~ @lexico2_wf. apply~ @lexico2_wf.
+  intros. apply~ lexico2_wf. apply~ lexico2_wf.
 Qed.
 
-Lemma lexico4_wf : forall {A1 A2 A3 A4}
+Lemma lexico4_wf : forall A1 A2 A3 A4
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R1 -> wf R2 -> wf R3 -> wf R4 ->
+  wf R1 -> 
+  wf R2 -> 
+  wf R3 -> 
+  wf R4 ->
   wf (lexico4 R1 R2 R3 R4).
 Proof using.
-  intros. apply~ @lexico3_wf. apply~ @lexico2_wf.
+  intros. apply~ lexico3_wf. apply~ lexico2_wf.
 Qed.
 
-Implicit Arguments lexico2_wf [[A1] [A2] R1 R2].
-Implicit Arguments lexico3_wf [[A1] [A2] [A3] R1 R2 R3].
-Implicit Arguments lexico4_wf [[A1] [A2] [A3] [A4] R1 R2 R3 R4].
+Hint Resolve lexico2_wf lexico3_wf lexico4_wf : wf.
 
-Hint Resolve @lexico2_wf @lexico3_wf @lexico4_wf : wf.
 
 
 (* ********************************************************************** *)
@@ -378,7 +435,8 @@ Qed.
 
 Lemma prod2_wf_2 : forall (A1 A2:Type)
  (R1:binary A1) (R2:binary A2),
-  wf R2 -> wf (prod2 R1 R2).
+  wf R2 -> 
+  wf (prod2 R1 R2).
 Proof using.
   introv W2. intros [x1 x2].
   gen x1. induction_wf IH: W2 x2. intros.
@@ -387,37 +445,44 @@ Qed.
 
 Lemma prod3_wf_1 : forall (A1 A2 A3:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3),
-  wf R1 -> wf (prod3 R1 R2 R3).
+  wf R1 -> 
+  wf (prod3 R1 R2 R3).
 Proof using. intros. apply prod2_wf_1. apply~ prod2_wf_1. Qed.
 
 Lemma prod3_wf_2 : forall (A1 A2 A3:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3),
-  wf R2 -> wf (prod3 R1 R2 R3).
+  wf R2 -> 
+  wf (prod3 R1 R2 R3).
 Proof using. intros. apply prod2_wf_1. apply~ prod2_wf_2. Qed.
 
 Lemma prod3_wf_3 : forall (A1 A2 A3:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3),
-  wf R3 -> wf (prod3 R1 R2 R3).
+  wf R3 -> 
+  wf (prod3 R1 R2 R3).
 Proof using. intros. apply~ prod2_wf_2. Qed.
 
 Lemma prod4_wf_1 : forall (A1 A2 A3 A4:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R1 -> wf (prod4 R1 R2 R3 R4).
+  wf R1 -> 
+  wf (prod4 R1 R2 R3 R4).
 Proof using. intros. apply prod2_wf_1. apply~ prod3_wf_1. Qed.
 
 Lemma prod4_wf_2 : forall (A1 A2 A3 A4:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R2 -> wf (prod4 R1 R2 R3 R4).
+  wf R2 -> 
+  wf (prod4 R1 R2 R3 R4).
 Proof using. intros. apply prod2_wf_1. apply~ prod3_wf_2. Qed.
 
 Lemma prod4_wf_3 : forall (A1 A2 A3 A4:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R3 -> wf (prod4 R1 R2 R3 R4).
+  wf R3 -> 
+  wf (prod4 R1 R2 R3 R4).
 Proof using. intros. apply prod2_wf_1. apply~ prod3_wf_3. Qed.
 
 Lemma prod4_wf_4 : forall (A1 A2 A3 A4:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R4 -> wf (prod4 R1 R2 R3 R4).
+  wf R4 -> 
+  wf (prod4 R1 R2 R3 R4).
 Proof using. intros. apply~ prod2_wf_2. Qed.
 
 Hint Resolve
@@ -425,7 +490,6 @@ Hint Resolve
   prod3_wf_1 prod3_wf_2 prod3_wf_3
   prod4_wf_1 prod4_wf_2 prod4_wf_3 prod4_wf_4 : wf.
 
-(* todo: swapproduct? *)
 
 (* ********************************************************************** *)
 (** * Well-foundedness of a function image *)
@@ -448,14 +512,20 @@ Hint Resolve binary_map_wf : wf.
 (** * Inverse image *)
 
 Lemma inverse_image_wf : forall (A B : Type) (R : binary B) (f : A -> B),
-  wf R -> wf (inverse_image R f).
+  wf R -> 
+  wf (inverse_image R f).
 Proof using.
   introv W. intros x. gen_eq y: (f x). gen x.
   induction_wf IH: W y. intros u E. subst y.
   constructor. intros v I. applys~ IH (f v).
 Qed.
 
+Hint Resolve inverse_image_wf : wf.
+
 (* todo: inverse image of relation ? *)
+
+
+
 
 (* begin hide *)
 
@@ -577,37 +647,5 @@ Admitted. (* TODO: adapt proof from the standard library; see above *)
 
 (* end hide *)
 
-
-(* ********************************************************************** *)
-(** * Tactics *)
-
-(** [prove_wf] is a tactic that tries and prove a goal of the
-    form [wf R]. It is implemented using [auto]. *)
-
-Tactic Notation "prove_wf" :=
-  solve [ auto with wf ].
-
-(** [unfold_wf] and [unfolds_wf] are shorthands for unfolding
-    definitions related to well-foundedness. *)
-
-Ltac unfold_wf_base :=
-  unfold_unproj; unfold_uncurryp; unfold_lexico.
-
-Ltac unfolds_wf_base :=
-  unfolds_unproj; unfolds_uncurryp; unfolds_lexico.
-
-Tactic Notation "unfold_wf" :=
-  unfold_wf_base.
-Tactic Notation "unfold_wf" "~" :=
-  unfold_wf; auto_tilde.
-Tactic Notation "unfold_wf" "*" :=
-  unfold_wf; auto_star.
-
-Tactic Notation "unfolds_wf" :=
-  unfolds_wf_base.
-Tactic Notation "unfolds_wf" "~" :=
-  unfolds_wf; auto_tilde.
-Tactic Notation "unfolds_wf" "*" :=
-  unfolds_wf; auto_star.
 
 

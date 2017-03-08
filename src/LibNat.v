@@ -144,6 +144,16 @@ Proof using.
   induction n using peano_induction. introv Eq. subst*.
 Qed.
 
+Lemma measure_2_induction : forall A B (mu : A -> B -> nat) (P : A -> B -> Prop),
+  (forall x1 x2, (forall y1 y2, mu y1 y2 < mu x1 x2 -> P y1 y2) -> P x1 x2) ->
+  (forall x1 x2, P x1 x2).
+Proof using.
+  introv H. intros x1 x2. gen_eq p: (x1,x2). gen x1 x2.
+  induction_wf IH: (measure_wf (fun p => mu (fst p) (snd p))) p.
+  introv E. destruct p. inverts E. apply H.
+  introv L. apply* IH. simpl. auto.
+Qed.
+
 
 (* ********************************************************************** *)
 (** * Simplification lemmas *)

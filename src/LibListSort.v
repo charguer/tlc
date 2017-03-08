@@ -641,55 +641,60 @@ Lemma rsorts_refl : forall le l,
   rsorts le l l.
 Proof using. intros. apply~ sorts_refl. Qed.
 
-Lemma sorts_cons : forall le l l' x,
+Lemma rsorts_cons : forall le l l' x,
   rsorts le l l' -> 
   head_le (flip le) x l' ->
   rsorts le (x::l) (x::l').
-Proof using.
-Qed.
+Proof using. intros. applys~ sorts_cons. Qed.
 
 Lemma rsorts_2 : forall le l x1 x2,
   permut l (x1::x2::nil) ->
   le x2 x1 ->
   rsorts le l (x1::x2::nil).
-Proof using.
-  intros.
-   apply~ (@rsorts_permut (x1::x2::nil)).
-   apply rsorts_refl. applys sorted_cons.
-   apply sorted_one. unfold flip. simpls~.
-Qed.
+Proof using. intros. applys~ sorts_2. Qed.
 
 Lemma rsorts_3 : forall le l x1 x2 x3,
   permut l (x1::x2::x3::nil) ->
   le x2 x1 -> 
   le x3 x2 ->
   rsorts le l (x1::x2::x3::nil).
-Proof using.
-  intros.
-   apply~ (@rsorts_permut (x1::x2::x3::nil)).
-   apply rsorts_refl. applys sorted_cons.
-   apply sorted_cons. apply sorted_one.
-   simpls~. simpls~.
-Qed.
+Proof using. intros. applys~ sorts_3. Qed.
 
 Lemma rsorts_permut : forall l1 l2 l' le,
   rsorts le l1 l' -> 
   permut l2 l1 ->
   rsorts le l2 l'.
-Proof using. intros. apply~ (@sorts_permut l1). Qed.
-
-
-(* LATER
-Lemma rsorts_app_rev : forall le l1 l2,
- heads_le le l2 l1 -> 
- sorted le l1 -> 
- rsorted le l2 ->
- rsorts le (l1 ++ l2) (rev l1 ++ l2).
-Proof using.
-  introv H S1 S2. split.
-  apply permut_app_l. apply permut_rev.
-  apply~ rsorted_app.
-Qed.
-*)
+Proof using. intros. applys* sorts_permut. Qed.
 
 End Rsorts.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Building [rsorts] and [sorts] lists as [rev l1 ++ l2]. *)
+
+Section SortsApp.
+Variables (A : Type).
+Implicit Types le : binary A.
+
+Lemma sorts_app_rev : forall le l1 l2,
+  heads_le le l1 l2 -> 
+  rsorted le l1 -> 
+  sorted le l2 ->
+  sorts le (l1 ++ l2) (rev l1 ++ l2).
+Proof using.
+  introv H S1 S2. split.
+  { apply permut_app_l. apply permut_rev. }
+  { apply~ sorted_app_rev. }
+Qed.
+
+Lemma rsorts_app_rev : forall le l1 l2,
+  heads_le le l2 l1 -> 
+  sorted le l1 -> 
+  rsorted le l2 ->
+  rsorts le (l1 ++ l2) (rev l1 ++ l2).
+Proof using.
+  introv H S1 S2. applys* sorts_app_rev. rewrite~ heads_le_flip_eq.
+Qed.
+
+End SortsApp.
+

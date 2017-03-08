@@ -485,7 +485,7 @@ Qed.
 (* TODO change hypothesis names in proofs *)
 (* TODO decide whether to use a tactic exploit functional *)
 
-(* TODO there is something by the same name in [LibBag]. *)
+(* TODO there is something by the same name in [LibContainer]. *)
 Lemma incl_refl : forall A (R:binary A), incl R R.
 Proof using. unfolds incl. auto. Qed.
 
