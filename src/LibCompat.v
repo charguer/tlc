@@ -346,6 +346,12 @@ Definition Nth_next := Nth_succ.
 
 Definition Forall2_inv_Nth := Forall2_Nth_inv.
 
+
+Definition Exists_here := Exists_head.
+Definition Exists_next := Exists_tail.
+
+Definition app_cons_one := app_cons_one_r.
+
 (* ********************************************************************** *)
 (** too specific *)
 

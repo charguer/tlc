@@ -176,6 +176,8 @@ Lemma app_cons_l : forall x l1 l2,
   (x::l1) ++ l2 = x :: (l1++l2).
 Proof using. auto. Qed.
 
+(* [app_cons_r] further below *)
+
 Lemma app_nil_l : forall l,
   nil ++ l = l.
 Proof using. auto. Qed.
@@ -196,27 +198,55 @@ Lemma app_cons_r : forall x l1 l2,
   l1 ++ (x::l2) = (l1 & x) ++ l2.
 Proof using. intros. rewrite~ app_assoc. Qed.
 
-Lemma app_cons_one : forall x l,
+Lemma app_cons_one_r : forall x l,
   (x::nil) ++ l = x::l.
+Proof using. auto. Qed.
+
+Lemma app_cons_one_l : forall x l,
+  l ++ (x::nil) = l&x. (* same thing *)
 Proof using. auto. Qed.
 
 Lemma app_last_l : forall x l1 l2,
   (l1 & x) ++ l2 = l1 ++ (x::l2).
 Proof using. intros. rewrite~ <- app_cons_r. Qed.
 
+Lemma app_last_r : forall x l1 l2,
+  l1 ++ (l2 & x) = (l1 ++ l2) & x.
+Proof using. intros. rewrite~ <- app_assoc. Qed.
+
+(* last *)
+
+Lemma last_nil : forall x,
+  nil & x = x::nil.
+Proof using. auto. Qed.
+
+(* same as [app_cons_l] *)
+Lemma last_cons : forall x y l,
+  (x::l) & y = x::(l&y).
+Proof using. auto. Qed.
+
+Lemma last_one : forall x y,
+  (x::nil) & y = x::y::nil.
+Proof using. auto. Qed.
+
+(* same as [app_last_r] *)
+Lemma last_app : forall x l1 l2,
+  (l1 ++ l2) & x = l1 ++ (l2 & x).
+Proof using. intros. rewrite~ app_last_r. Qed.
+
 End App.
 
 Opaque append.
 
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
-  app_cons_one : rew_list.
+  app_cons_one_r : rew_list.
 (* Note: [app_last_l] may be safely added to [rew_list] *)
 
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
-  app_cons_one : rew_listx.
+  app_cons_one_r : rew_listx.
 
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
-  app_cons_one : rew_lists.
+  app_cons_one_r : rew_lists.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -681,6 +711,11 @@ Proof using. introv E. inverts E. Qed.
 
 Lemma mem_cons_inv : forall l x y,
   mem x (y::l) ->
+  x = y \/ mem x l.
+Proof using. introv E. rewrite* mem_cons_eq in E. Qed.
+
+Lemma mem_cons_inv_cases : forall l x y,
+  mem x (y::l) ->
   x = y \/ (x <> y /\ mem x l).
 Proof using. introv E. rewrite* mem_cons_eq_cases in E. Qed.
 
@@ -1014,6 +1049,10 @@ Qed.
 Lemma rev_cons : forall x l,
   rev (x::l) = rev l & x.
 Proof using. intros. rewrite <- app_cons_one. rewrite~ rev_app. Qed.
+
+Lemma rev_one : forall x,
+  rev (x::nil) = x::nil.
+Proof using. intros. rewrite~ rev_cons. Qed.
 
 Lemma rev_last : forall x l,
   rev (l & x) = x::(rev l).
@@ -2391,6 +2430,12 @@ Proof using.
   intros. extens. iff M. { inverts* M. } { constructors*. }
 Qed.
 
+Lemma Forall_one_eq : forall P x,
+  Forall P (x::nil) = (P x).
+Proof using.
+  intros. extens. rewrite Forall_cons_eq. rewrite* Forall_nil_eq. 
+Qed.
+
 Lemma Forall_app_eq : forall P l1 l2,
   Forall P (l1 ++ l2) = (Forall P l1 /\ Forall P l2).
 Proof using.
@@ -2486,7 +2531,7 @@ Lemma Forall_rev : forall P l,
 Proof using.
   introv E. induction l.
   { auto. }
-  { rew_list. rewrite Forall_app_eq. inverts* E. }
+  { rew_list. rewrite Forall_last_eq. inverts* E. }
 Qed.
 
 Lemma Forall_rev_eq : forall P l,
@@ -2517,7 +2562,7 @@ Lemma Forall_weaken : forall P Q l,
   Forall P l -> 
   pred_le P Q ->
   Forall Q l.
-Proof using. induction l; introv H L; inverts* H. Qed.
+Proof using. introv. induction l; introv H L; inverts* H. Qed.
 
 Lemma Forall_filter_same : forall P l,
   Forall P (filter P l).
@@ -2594,6 +2639,10 @@ Proof using. intros. extens. iff M. { inverts* M. } { auto. } Qed.
 Lemma Forall2_cons_eq : forall P x y r s,
   Forall2 P (x::r) (y::s) = (P x y /\ Forall2 P r s).
 Proof using. intros. extens. iff M (M1&M2). { inverts* M. } { auto. } Qed.
+
+Lemma Forall2_one_eq : forall P x y,
+  Forall2 P (x::nil) (y::nil) = P x y.
+Proof using. intros. extens. rewrite Forall2_cons_eq. rewrite* Forall2_nil_eq. Qed.
 
 Lemma Forall2_app_eq : forall r1 r2 s1 s2 P,
   length r1 = length s1 ->
@@ -2770,8 +2819,11 @@ Inductive Forall3 A B C (P : A -> B -> C -> Prop)
   | Forall3_nil :
       Forall3 P nil nil nil
   | Forall3_cons : forall l1 l2 l3 x1 x2 x3,
-      P x1 x2 x3 -> Forall3 P l1 l2 l3 ->
+      P x1 x2 x3 -> 
+      Forall3 P l1 l2 l3 ->
       Forall3 P (x1::l1) (x2::l2) (x3::l3).
+
+(* LATER: lemmas about Forall3 *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2781,10 +2833,10 @@ Inductive Forall3 A B C (P : A -> B -> C -> Prop)
     list [l] that satisfied the predicate [P]. *)
 
 Inductive Exists A (P:A->Prop) : list A -> Prop :=
-  | Exists_here : forall l x,
+  | Exists_head : forall l x,
       P x -> 
       Exists P (x::l)
-  | Exists_next : forall l x,
+  | Exists_tail : forall l x,
       Exists P l ->
       Exists P (x::l).
 
@@ -2792,6 +2844,7 @@ Section Exists.
 Variables A : Type.
 Implicit Types l : list A.
 Implicit Types P : A -> Prop.
+Hint Constructors Exists.
 
 (* Rewriting *)
 
@@ -2801,19 +2854,28 @@ Proof using. intros. extens. iff M. { invert* M. } { false. } Qed.
 
 Lemma Exists_cons_eq : forall P l x,
   Exists P (x::l) = (P x \/ Exists P l).
-Proof using. intros. extens. iff M. { inverts* M. } { constructors*. } Qed.
+Proof using. intros. extens. iff M. { inverts* M. } { destruct* M. } Qed.
+
+Lemma Exists_one_eq : forall P x,
+  Exists P (x::nil) = P x.
+Proof using. intros. extens. rewrite Exists_cons_eq. rewrite* Exists_nil_eq. Qed.
 
 Lemma Exists_app_eq : forall P l1 l2,
   Exists P (l1++l2) = (Exists P l1 \/ Exists P l2).
-Proof using. intros. extens. induction l; introv H; inverts~ H. Qed.
+Proof using.
+  intros. extens. induction l1; rew_list.
+  { iff M [M|M]. { autos*. } { inverts~ M. } { autos*. } }
+  { iff M [M|M].
+    { inverts* M. }
+    { inverts M. { auto. } { applys* Exists_tail. } }
+    { applys* Exists_tail. } }
+Qed.
 
 Lemma Exists_last_eq : forall P l x,
   Exists P (l&x) = (P x \/ Exists P l).
-Proof using. intros. rewrite* Exists_app_eq. Qed.
+Proof using. intros. rewrite Exists_app_eq. rewrite Exists_cons_eq. Qed.
 
 (* Constructors *)
-
-Definition Exists_cons := Exists_next.
 
 Lemma Exists_app_l : forall P l1 l2,
   Exists P l1 ->
@@ -2843,12 +2905,17 @@ Lemma Exists_cons_inv : forall P l x,
   P x \/ Exists P l.
 Proof using. introv H. rewrite* Exists_cons_eq in H. Qed.
 
+Lemma Exists_one_inv : forall P x,
+  Exists P (x::nil) -> 
+  P x.
+Proof using. introv H. rewrite* Exists_one_eq in H. Qed.
+
 Lemma Exists_app_inv : forall P l1 l2,
   Exists P (l1++l2) ->
   Exists P l1 \/ Exists P l2.
 Proof using. introv H. rewrite* Exists_app_eq in H. Qed.
 
-Lemma Exists_last_ivnv : forall P l x,
+Lemma Exists_last_inv : forall P l x,
   Exists P (l&x) ->
   P x \/ Exists P l.
 Proof using. introv H. rewrite* Exists_last_eq in H. Qed.
@@ -2857,24 +2924,89 @@ Proof using. introv H. rewrite* Exists_last_eq in H. Qed.
 
 Lemma Exists_iff_exists_mem : forall P l,
   Exists P l <-> (exists x, mem x l /\ P x).
+Proof using. 
+  Hint Constructors mem.
+  introv. induction l as [|y l'].
+  { iff M (x&M&H). { inverts M. } { inverts M. } }
+  { iff M (x&M&H).
+    { inverts M as N.
+      { exists* y. }
+      { forwards (x&M&H): (proj1 IHl') N. exists* x. } }
+    { destruct (mem_cons_inv M) as [N|N].
+      { subst*. }
+      { applys* Exists_tail. } } }
+Qed.
+
+Lemma mem_Exists : forall P l x,
+  mem x l ->
+  P x ->
+  Exists P l.
+Proof using. introv M H. rewrite* Exists_iff_exists_mem. Qed.
+
+Lemma Nth_Exists : forall P n l x,
+  Nth n l x ->
+  P x ->
+  Exists P l.
+Proof using. introv M H. applys* mem_Exists. applys* Nth_mem. Qed.
+
+Lemma nth_Exists : forall {IA:Inhab A} P n l,
+  P (nth n l) ->
+  n < length l ->
+  Exists P l.
+Proof using. introv H N. applys* Nth_Exists n. applys~ Nth_nth. Qed.
+
+Lemma Exists_rev : forall P l,
+  Exists P l ->
+  Exists P (rev l).
 Proof using.
-  introv. iff E; induction l; inverts E as E.
-   exists a. splits~. simpl. rew_refl. left~.
-   forwards~ (a'&I&H): (rm IHl) (rm E). exists a'. splits~.
-    simpl. rew_refl. right~.
-   false*.
-   simpl in E. rew_refl in E. lets ([I|I]&H): (rm E).
-    substs. apply~ Exists_here.
-    apply~ Exists_next. apply* IHl.
+  introv E. induction l.
+  { auto. }
+  { rew_list. rewrite Exists_last_eq. inverts* E. }
+Qed.
+
+Lemma Exists_rev_eq : forall P l,
+  Exists P (rev l) = Exists P l.
+Proof using.
+  intros. extens. iff M.
+  { rewrite <- rev_rev. applys~ Exists_rev. }
+  { applys~ Exists_rev. }
 Qed.
 
 Lemma Exists_weaken : forall P Q l,
   Exists P l -> 
   pred_le P Q ->
   Exists Q l.
+Proof using. introv. induction l; introv H L; inverts* H. Qed.
+
+Lemma Exists_filter_weaken : forall P Q l,
+  Exists P l ->
+  pred_le P Q ->
+  Exists P (filter Q l).
 Proof using.
-  introv E Impl. rewrite Exists_iff_exists_mem in *.
-  lets (a&I&H): (rm E). exists a. splits*.
+  introv M N. induction M; rew_listx.
+  { forwards*: N. case_if*. }
+  { case_if~. } 
+Qed.
+
+Lemma Exists_filter_same : forall P l,
+  Exists P l ->
+  Exists P (filter P l).
+Proof using. introv M. applys* Exists_filter_weaken. applys pred_le_refl. Qed.
+
+Lemma Exists_take_inv : forall P n l,
+  Exists P (take n l) ->
+  Exists P l.
+Proof using.
+  introv E. forwards (q&K): take_is_prefix n l. 
+  rewrite K. rewrite* Exists_app_eq.
+Qed.
+
+Lemma Exists_drop_inv : forall P n l,
+  Exists P (drop n l) ->
+  Exists P l.
+Proof using.
+  introv E. forwards (q&K): drop_is_suffix n l. 
+  rewrite K. rewrite* Exists_app_eq.
 Qed.
 
 Lemma Exists_inv_middle_first : forall P l,
@@ -2889,6 +3021,12 @@ Proof using.
     exists (@nil A) x l. splits~. constructors~.
     substs. exists (x :: l1) x' l2. splits~. constructors~.
 Qed.
+
+(* LATER?
+Lemma Exists_filter_inv : forall P Q l,
+  Exists P (filter Q l) ->
+  exists x, P x /\ Q x.
+*)
 
 End Exists.
 
@@ -2909,6 +3047,8 @@ Inductive Exists2 A1 A2 (P : A1 -> A2 -> Prop)
       Exists2 P l1 l2 ->
       Exists2 P (x1::l1) (x2::l2).
 
+(* LATER: lemmas about Exists2 *)
+
 
 (* ---------------------------------------------------------------------- *)
 (* ** Assoc as a relation *)
@@ -2923,6 +3063,8 @@ Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
       Assoc x v l -> 
       x <> y ->
       Assoc x v ((y,w)::l).
+
+(* LATER: lemmas about Assoc *)
 
 
 (* ---------------------------------------------------------------------- *)
