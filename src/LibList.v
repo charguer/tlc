@@ -2474,6 +2474,12 @@ Lemma Forall_Nth_inv : forall P n l x,
   P x.
 Proof using. introv F N. applys* Forall_mem_inv F. applys* Nth_mem. Qed.
 
+Lemma Forall_nth_inv : forall {IA:Inhab A} P n l,
+  Forall P l ->
+  n < length l ->
+  P (nth n l).
+Proof using. introv F N. applys Forall_Nth_inv n F. applys~ Nth_nth. Qed.
+
 Lemma Forall_rev : forall P l,
   Forall P l ->
   Forall P (rev l).
@@ -2521,34 +2527,14 @@ Proof using.
   { rewrite filter_cons. cases_if~. }
 Qed.
 
+Lemma Forall_filter_weaken : forall P Q l,
+  pred_le P Q ->
+  Forall Q (filter P l).
+Proof using.
+  introv E. applys~ Forall_weaken P. applys Forall_filter_same.
+Qed.
+
 End ForallProp.
-
-Section ForallToConj.
-Variables (A : Type) (P : A->Prop).
-Hint Constructors Forall.
-
-Ltac forall_to_conj_prove :=
-  extens; iff H;
-  repeat (match goal with H: Forall _ _ |- _ => inversion H end);
-  repeat (first [constructor | auto_star ]).
-
-Lemma Forall_to_conj_1 : forall x1,
-  Forall P (x1::nil) = (P x1).
-Proof using. forall_to_conj_prove. Qed.
-
-Lemma Forall_to_conj_2 : forall x1 x2,
-  Forall P (x1::x2::nil) = (P x1 /\ P x2).
-Proof using. forall_to_conj_prove. Qed.
-
-Lemma Forall_to_conj_3 : forall x1 x2 x3,
-  Forall P (x1::x2::x3::nil) = (P x1 /\ P x2 /\ P x3).
-Proof using. forall_to_conj_prove. Qed.
-
-Lemma Forall_to_conj_4 : forall x1 x2 x3 x4,
-  Forall P (x1::x2::x3::x4::nil) = (P x1 /\ P x2 /\ P x3 /\ P x4).
-Proof using. forall_to_conj_prove. Qed.
-
-End ForallToConj.
 
 Hint Rewrite Forall_nil_eq Forall_cons_eq Forall_app_eq Forall_last_eq
   Forall_rev_eq : rew_listx.
@@ -2573,65 +2559,62 @@ Section Forall2.
 Variables A B : Type.
 Implicit Types x : A.
 Implicit Types y : B.
-Implicit Types s : list A.
-Implicit Types r : list B.
+Implicit Types r : list A.
+Implicit Types s : list B.
 Implicit Types P : A -> B -> Prop.
 Hint Constructors Forall2.
 
 (* Basic *)
 
-Lemma Forall2_inv_length : forall P l r,
-  Forall2 P l r -> 
-  length l = length r.
-Proof using.
-  introv H. induction H. simple~.
-  do 2 rewrite~ length_cons.
-Qed.
+Lemma Forall2_inv_length : forall P r s,
+  Forall2 P r s -> 
+  length r = length s.
+Proof using. introv H. induction H; rew_list; math. Qed.
+
+(* Constructors *)
+
+Lemma Forall2_app : forall P r1 s1 r2 s2,
+  Forall2 P r1 s1 -> 
+  Forall2 P r2 s2 ->
+  Forall2 P (r1 ++ r2) (s1 ++ s2).
+Proof using. introv H H'. induction H; rew_list~. Qed.
+
+Lemma Forall2_last : forall P r s x y,
+  Forall2 P r s -> 
+  P x y ->
+  Forall2 P (r & x) (s & y).
+Proof using. intros. apply~ Forall2_app. Qed.
 
 (* Rewriting *)
 
 Lemma Forall2_nil_eq : forall P,
   Forall2 P nil nil = True.
-Proof using.
-Qed.
+Proof using. intros. extens. iff M. { inverts* M. } { auto. } Qed.
 
-Lemma Forall2_cons_eq : forall P l x,
+Lemma Forall2_cons_eq : forall P x y r s,
   Forall2 P (x::r) (y::s) = (P x y /\ Forall2 P r s).
-Proof using.
-  intros. induction l.
-  inverts* H.
-  rew_list in *. inverts H. forwards*: IHl.
-Qed.
+Proof using. intros. extens. iff M (M1&M2). { inverts* M. } { auto. } Qed.
 
-Lemma Forall2_app_eq : forall P l1 l2,
+Lemma Forall2_app_eq : forall r1 r2 s1 s2 P,
   length r1 = length s1 ->
-  Forall P (r1 ++ r2) (s1 ++ s2) = (Forall2 P r1 s1 /\ Forall P r2 s2).
-Proof using.
-  intros. induction l1. auto.
-  rew_app in H. inverts* H.
+  Forall2 P (r1 ++ r2) (s1 ++ s2) = (Forall2 P r1 s1 /\ Forall2 P r2 s2).
+Proof using. 
+  intros r1. induction r1; introv E; 
+    destruct s1; tryfalse; rew_list in *; extens.
+  { autos*. }
+  { iff M (M1&M2). 
+    { inverts M as N1 N2. rewrite* IHr1 in N2. }
+    { inverts M1. constructors~. rewrite* IHr1. } }
 Qed.
 
 Lemma Forall2_last_eq : forall P r s x y,
   Forall2 P (r & x) (s & y) = (Forall2 P r s /\ P x y).
-Proof using.
-  intros. rewrite~ Forall_app_eq.
+Proof using.  
+  intros. extens. iff M (M1&M2).
+  { lets E: Forall2_inv_length M. rew_list in E.
+    rewrite~ Forall2_app_eq in M. destruct M as (M1&M2). inverts* M2. }
+  { applys~ Forall2_last. }
 Qed.
-
-(* Constructors -- TODO: use equalities *)
-
-Lemma Forall2_app : forall P s1 s2 r1 r2,
-  Forall2 P s1 r1 -> 
-  Forall2 P s2 r2 ->
-  Forall2 P (s1 ++ s2) (r1 ++ r2).
-Proof using. introv H H'. induction H; rew_app; auto. Qed.
-
-Lemma Forall2_last : forall P s r x y,
-  Forall2 P s r -> 
-  P x y ->
-  Forall2 P (s & x) (r & y).
-Proof using. intros. apply~ Forall2_app. Qed.
-
-Hint Resolve Forall2_last.
 
 (* Inversion *)
 
@@ -2640,16 +2623,21 @@ Lemma Forall2_cons_inv : forall P r s x y,
   P x y /\ Forall2 P r s.
 Proof using. introv E. rewrite~ Forall2_cons_eq in E. Qed.
 
-Lemma Forall2_cons_l_inv : forall P r1 s x y,
+Lemma Forall2_cons_l_inv : forall P r1 s x,
   Forall2 P (x::r1) s ->
-  exists y s1, s = y::s1 /\ P x y /\ Forall2 P r s.
-Proof using. introv E. rewrite~ Forall2_cons_eq in E. Qed.
+  exists y s1, s = y::s1 /\ P x y /\ Forall2 P r1 s1.
+Proof using. introv E. destruct s as [|y s1]; inverts E. autos*. Qed.
 
-Lemma Forall2_app_inv : forall P l1 l2,
-  length r1 = length s1 ->
+Lemma Forall2_cons_r_inv : forall P r s1 y,
+  Forall2 P r (y::s1) ->
+  exists x r1, r = x::r1 /\ P x y /\ Forall2 P r1 s1.
+Proof using. introv E. destruct r as [|x r1]; inverts E. autos*. Qed.
+
+Lemma Forall2_app_inv : forall P r1 s1 r2 s2,
   Forall2 P (r1 ++ r2) (s1 ++ s2) ->
+  length r1 = length s1 ->
   Forall2 P r1 s1 /\ Forall2 P r2 s2.
-Proof using. introv E. rewrite~ Forall_app_eq in E. Qed.
+Proof using. introv M E. rewrite~ Forall2_app_eq in M. Qed.
 
 Lemma Forall2_last_inv : forall P r s x y,
   Forall2 P (r & x) (s & y) ->
@@ -2660,60 +2648,113 @@ Lemma Forall2_last_l_inv : forall P r1 s x,
   Forall2 P (r1 & x) s ->
   exists s1 y, s = s1 & y /\ P x y /\ Forall2 P r1 s1.
 Proof using.
-  ..
-  introv H. sets_eq l': (l1&x1). gen l1 x1.
-  induction H; intros; subst.
-  false* nil_eq_last_inv.
-  destruct l0; rew_app in EQl'; inverts EQl'.
-    inverts H0. exists~ (@nil A2) x2.
-    forwards~ (r2'&x2'&?&?&?): IHForall2. subst. exists~ (x2::r2') x2'.
+  introv M. forwards (y&s1&E): list_neq_nil_inv_last s.
+  { intro_subst. inverts M. applys* nil_eq_last_inv. }
+  subst s. rewrite* Forall2_last_eq in M.
+Qed.
+
+Lemma Forall2_last_r_inv : forall P r s1 y,
+  Forall2 P r (s1 & y) ->
+  exists r1 x, r = r1 & x /\ P x y /\ Forall2 P r1 s1.
+Proof using.
+  introv M. forwards (x&r1&E): list_neq_nil_inv_last r.
+  { intro_subst. inverts M. applys* nil_eq_last_inv. }
+  subst r. rewrite* Forall2_last_eq in M.
 Qed.
 
 (* Interactions *)
 
-Lemma Forall2_weaken : forall P Q r s,
-  Forall2 P r s r ->
-  (rel_le P Q) -> (* forall a b, P a b -> Q a b *)
-  Forall2 Q r s.
-Proof using. introv F W. induction F; constructors~. Qed.
-
 Lemma Forall2_swap : forall P r s,
   Forall2 P r s ->
-  Forall2 (fun b a => P a b) r s.
-Proof using. introv F. induction~ F; constructors~. Qed.
+  Forall2 (fun b a => P a b) s r.
+Proof using. introv F. induction~ F. Qed.
 
 Lemma Forall2_swap_inv : forall P r s,
-  Forall2 (fun b a => P a b) r s ->
+  Forall2 (fun b a => P a b) s r ->
   Forall2 P r s.
-Proof using. introv F. induction~ F; constructors~. Qed.
+Proof using. introv F. induction~ F. Qed.
 
-Lemma Forall2_take : forall P n r s,
+Lemma Forall2_swap_eq : forall P r s,
+  Forall2 P r s = Forall2 (fun b a => P a b) s r.
+Proof using.
+  intros. extens. iff M.
+  { applys* Forall2_swap. }
+  { applys* Forall2_swap_inv. } 
+Qed.
+
+Lemma Forall2_weaken : forall P Q r s,
   Forall2 P r s ->
-  Forall2 P (take n r) (take n s).
-Proof using. intros P n. induction n; introv H; inverts H; simple~. Qed.
+  rel_le P Q -> (* forall a b, P a b -> Q a b *)
+  Forall2 Q r s.
+Proof using.
+  introv F W. unfolds rel_le, pred_le. induction F; constructors~.
+Qed.
 
 Lemma Forall2_rev : forall P r s,
   Forall2 P r s ->
   Forall2 P (rev r) (rev s).
-Proof using. intros P r. induction r; introv M; inverts M; rew_rev; auto. Qed.
+Proof using.
+  Hint Resolve Forall2_last.
+  intros P r. induction r; introv M; inverts M; rew_listx~.
+Qed.
+
+Lemma Forall2_rev_eq : forall P r s,
+  Forall2 P r s = Forall2 P (rev r) (rev s).
+Proof using.
+  intros. extens. iff M.
+  { applys~ Forall2_rev. }  
+  { rewrite <- (rev_rev r). rewrite <- (rev_rev s). applys~ Forall2_rev. }
+Qed.
+
+Lemma Forall2_take : forall P n r s,
+  Forall2 P r s ->
+  Forall2 P (take n r) (take n s).
+Proof using. intros P n. induction n; introv H; inverts H; rew_listx~. Qed.
+
+Lemma Forall2_drop : forall P n r s,
+  Forall2 P r s ->
+  Forall2 P (drop n r) (drop n s).
+Proof using. intros P n. induction n; introv H; inverts H; rew_listx~. Qed.
 
 Lemma Forall2_map_l : forall f P l,
-  (forall x, P (f x) x) ->
+  (forall y, P (f y) y) ->
   Forall2 P (map f l) l.
-Proof using. introv I. induction l; constructors~. Qed.
+Proof using. introv I. induction l; rew_listx~. Qed.
 
 Lemma Forall2_map_r : forall f P l,
   (forall x, P x (f x)) ->
   Forall2 P l (map f l).
-Proof using. introv I. induction l; constructors~. Qed.
+Proof using. introv I. induction l; rew_listx~. Qed.
 
-Lemma Forall2_Nth_inv : forall r s n x y,
+Lemma Forall2_Nth_inv : forall P r s n x y,
   Forall2 P r s ->
   Nth n r x ->
   Nth n s y ->
   P x y.
 Proof using. 
-  introv F N1 N2. gen n. induction~ F; introv N1 N2; inverts N1; inverts* N2. 
+  introv F N1 N2. gen n. 
+  induction~ F; introv N1 N2; inverts N1; inverts* N2. 
+Qed.
+
+Lemma Forall2_nth_inv : forall {IA:Inhab A} {IB:Inhab B} P r s n,
+  Forall2 P r s ->
+  n < length r ->
+  P (nth n r) (nth n s).
+Proof using. 
+  introv F N. forwards: Forall2_inv_length F. 
+  applys Forall2_Nth_inv n F; applys Nth_nth; math.
+Qed.
+
+Lemma Forall2_from_forall_nth : forall {IA:Inhab A} {IB:Inhab B} P r s,
+  (forall n, n < length r -> P (nth n r) (nth n s)) ->
+  length r = length s ->
+  Forall2 P r s.
+Proof using.
+  introv H E. gen s. induction r; intros; destruct s; tryfalse.
+  { auto. }
+  { rew_list in E. constructors.
+    { applys H 0. rew_list. math. }
+    { applys~ IHr. introv N. applys H (S n). rew_list. math. } }
 Qed.
 
 End Forall2.

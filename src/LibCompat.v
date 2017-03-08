@@ -425,6 +425,38 @@ Proof using. introv H. apply* Exists2_next. Qed.
 Hint Resolve has_pair_here has_pair_next.
 
 
+
+(* ********************************************************************** *)
+(* simulate using rew_listx. *)
+
+Section ForallToConj.
+Variables (A : Type) (P : A->Prop).
+Hint Constructors Forall.
+
+Ltac forall_to_conj_prove :=
+  extens; iff H;
+  repeat (match goal with H: Forall _ _ |- _ => inversion H end);
+  repeat (first [constructor | auto_star ]).
+
+Lemma Forall_to_conj_1 : forall x1,
+  Forall P (x1::nil) = (P x1).
+Proof using. forall_to_conj_prove. Qed.
+
+Lemma Forall_to_conj_2 : forall x1 x2,
+  Forall P (x1::x2::nil) = (P x1 /\ P x2).
+Proof using. forall_to_conj_prove. Qed.
+
+Lemma Forall_to_conj_3 : forall x1 x2 x3,
+  Forall P (x1::x2::x3::nil) = (P x1 /\ P x2 /\ P x3).
+Proof using. forall_to_conj_prove. Qed.
+
+Lemma Forall_to_conj_4 : forall x1 x2 x3 x4,
+  Forall P (x1::x2::x3::x4::nil) = (P x1 /\ P x2 /\ P x3 /\ P x4).
+Proof using. forall_to_conj_prove. Qed.
+
+End ForallToConj.
+
+
 (* ********************************************************************** *)
 
 
