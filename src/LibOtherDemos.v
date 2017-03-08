@@ -8,6 +8,23 @@ Require Import LibTactics.
 
 Require LibLogic LibList LibRelation LibWf LibList LibLN.
 
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Demo of LibLogic tactics *)
+
+
+Lemma absurds_demo : forall (P Q : Prop),  
+  P /\ (~ P) /\ (Q \/ ~ P).
+Proof using.
+  intros. splits. 
+  { absurds ;=> H. admit. }
+  { absurds ;=> H. admit. }
+  { absurds ;=> (H1&H2). admit. }
+Abort.
+
+
+
 (* ********************************************************************** *)
 (** * How to do recursion/induction on terms with list of subterms *)
 
