@@ -17,6 +17,13 @@ Global Close Scope list_scope.
 (* ********************************************************************** *)
 (** Fixing implicit arguments *)
 
+(* From Prelude:
+
+Inductive list (A : Type) : Type :=
+  | nil : list A
+  | cons : A -> list A -> list A.
+*)
+
 Implicit Arguments nil [[A]].
 Implicit Arguments cons [[A]].
 
@@ -145,7 +152,7 @@ Fixpoint fold_right A B (f : A -> B -> B) (acc : B) l :=
   | x::L' => f x (fold_right f acc L')
   end.
 
-Definition append A (l1 l2 : list A) :=
+Definition app A (l1 l2 : list A) :=
   fold_right (fun x (acc:list A) => x::acc) l2 l1.
 
 (* Properties appear further *)
@@ -156,7 +163,7 @@ Definition append A (l1 l2 : list A) :=
 
 (** [l1 ++ l2] concatenates two lists *)
 
-Infix "++" := append (right associativity, at level 60) : liblist_scope.
+Infix "++" := app (right associativity, at level 60) : liblist_scope.
 
 (** [l & x] extends the list [l] with the value [x] at the right end *)
 
@@ -236,7 +243,7 @@ Proof using. intros. rewrite~ app_last_r. Qed.
 
 End App.
 
-Opaque append.
+Opaque app.
 
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one_r : rew_list.
@@ -1048,7 +1055,7 @@ Qed.
 
 Lemma rev_cons : forall x l,
   rev (x::l) = rev l & x.
-Proof using. intros. rewrite <- app_cons_one. rewrite~ rev_app. Qed.
+Proof using. intros. rewrite <- app_cons_one_r. rewrite~ rev_app. Qed.
 
 Lemma rev_one : forall x,
   rev (x::nil) = x::nil.
@@ -1453,7 +1460,7 @@ Qed.
 (** ** Concat *)
 
 Definition concat A (m:list (list A)) : list A :=
-  fold_right (@append A) (@nil A) m.
+  fold_right (@app A) (@nil A) m.
 
 Section Concat.
 Variable A : Type.
@@ -1850,7 +1857,8 @@ Proof using.
       { constructors. applys~ mem_remove_same_inv. applys~ noduplicates_remove. }
       { intros x. lets (M1&M2): M x. iff N.
         { inverts N as R. auto. lets: mem_remove_inv R. constructors*. }
-        { lets [E|(H1&H2)]: mem_cons_inv N. { subst*. } constructors. applys* mem_remove. } } } }
+        { lets [E|(H1&H2)]: mem_cons_inv_cases N. { subst*. }
+          constructors. applys* mem_remove. } } } }
   splits~. applys~ noduplicates_length_le. introv Hx. rewrite~ <- R2.
 Qed.
 
@@ -2873,7 +2881,10 @@ Qed.
 
 Lemma Exists_last_eq : forall P l x,
   Exists P (l&x) = (P x \/ Exists P l).
-Proof using. intros. rewrite Exists_app_eq. rewrite Exists_cons_eq. Qed.
+Proof using.
+  intros. extens. rewrite Exists_app_eq. rewrite Exists_cons_eq.
+  rewrite* Exists_nil_eq.
+Qed.
 
 (* Constructors *)
 
@@ -3086,8 +3097,15 @@ Lemma fold_nil : forall m f,
 Proof using. auto. Qed.
 
 Lemma fold_cons : forall m f x l,
-  fold m f (x::l) = monoid_oper m (f x) (fold m f l) .
+  fold m f (x::l) = monoid_oper m (f x) (fold m f l).
 Proof using. auto. Qed.
+
+Lemma fold_one : forall m f x,
+  Monoid m ->
+  fold m f (x::nil) = f x.
+Proof using.
+  intros. rewrite fold_cons, fold_nil. rewrite~ monoid_neutral_r.
+Qed.
 
 Lemma fold_app : forall m f l1 l2,
   Monoid m ->
@@ -3107,84 +3125,85 @@ Proof using.
   rewrite fold_nil. rewrite monoid_neutral_r. auto.
 Qed.
 
-Lemma fold_congruence : forall f g l,
+Lemma fold_congruence : forall m f g l,
   (forall x, mem x l -> f x = g x) ->
   fold m f l = fold m g l.
 Proof using.
-  unfold fold.
-  induction xs as [| x xs ]; intros; simpl.
+  Hint Constructors mem.
+  intros. unfold fold.
+  induction l as [| x l' ]; intros; simpl.
   { eauto. }
-  { f_equal; eauto. }
-Qed.
-
-(* TODO: reformulate using a definition of list permutation,
-   which is entailed by the premises 2,3 and 4. *)
-Lemma fold_equiv : forall f l1 l2,
-  Monoid_commutative m ->
-  noduplicates l1 ->
-  noduplicates l2 ->
-  (forall x, mem x l1 <-> mem x l2) ->
-  fold m f l1 = fold m f l2.
-Proof using.
-  induction L1; introv HM D1 D2 EQ.
-  cuts_rewrite (L2 = nil). rewrite~ fold_nil.
-    destruct L2; auto. forwards~ M: (proj2 (EQ a)). inverts M.
-  inverts D1. asserts L2a: (Mem a L2). rewrite~ <- EQ.
-   forwards* (L2'&V2'&EQ'&D2'): fold_equiv_step f L2a.
-   rewrite V2'. do 2 rewrite fold_cons.
-  inverts D2'.
-  rewrite~ (IHL1 L2'). intros.
-  tests: (x = a).
-    iff; auto_false*.
-  asserts_rewrite (Mem x L1 = Mem x (a::L1)).
-    extens. iff~ M. inverts~ M. false.
-  asserts_rewrite (Mem x L2' = Mem x (a::L2')).
-    extens. iff~ M. inverts~ M. false.
-  rewrite EQ. rewrite* EQ'.
+  { rew_listx. fequals. applys~ H. eauto. }
 Qed.
 
 (* TODO: reformulate using a definition of list permutation, *)
-Lemma fold_equiv_step : forall f l a,
+Lemma fold_equiv_step : forall m f l a,
   Monoid_commutative m ->
   noduplicates l ->
-  Mem a l ->
+  mem a l ->
   exists l',
      fold m f l = fold m f (a::l')
   /\ (forall x, mem x l <-> mem x (a::l'))
   /\ noduplicates (a::l').
-Proof using.
+Proof using. (* TODO: cleanup *)
   introv Hm. induction l as [|b t]; introv DL La. inverts La.
   tests: (a = b).
-    exists T. splits*.
+    exists t. splits*.
     inverts La. false. inverts DL as DLb DT. forwards~ (L'&EL'&EQ&DL'): IHt.
      exists (b::L'). splits.
        do 3 rewrite fold_cons. rewrite EL'.
         rewrite fold_cons. do 2 rewrite monoid_assoc.
         rewrite~ (monoid_comm (f b)).
-       intros x. specializes EQ x. rewrite Mem_cons_eq in EQ.
-        do 3 rewrite Mem_cons_eq. autos*.
+       intros x. specializes EQ x. rewrite mem_cons_eq in EQ.
+        do 3 rewrite mem_cons_eq. autos*.
        inverts DL'. constructors.
          introv N. inverts N. false. false.
          constructors~. introv N. applys DLb. rewrite EQ. constructors~.
 Qed.
 
+(* TODO: reformulate using a definition of list permutation,
+   which is entailed by the premises 2,3 and 4. *)
+Lemma fold_equiv : forall m f l1 l2,
+  Monoid_commutative m ->
+  noduplicates l1 ->
+  noduplicates l2 ->
+  (forall x, mem x l1 <-> mem x l2) ->
+  fold m f l1 = fold m f l2.
+Proof using. (* TODO: cleanup *)
+  intros m f l1. induction l1; introv HM D1 D2 EQ.
+  cuts_rewrite (l2 = nil). rewrite~ fold_nil.
+    destruct l2; auto. forwards~ M: (proj2 (EQ a)). inverts M.
+  inverts D1. asserts L2a: (mem a l2). rewrite~ <- EQ.
+   forwards* (l2'&V2'&EQ'&D2'): fold_equiv_step f L2a.
+   rewrite V2'. do 2 rewrite fold_cons.
+  inverts D2'.
+  rewrite~ (IHl1 l2'). intros.
+  tests: (x = a).
+    iff; auto_false*.
+  asserts_rewrite (mem x l1 = mem x (a::l1)).
+    extens. iff~ M. inverts~ M. false.
+  asserts_rewrite (mem x l2' = mem x (a::l2')).
+    extens. iff~ M. inverts~ M. false.
+  rewrite EQ. rewrite* EQ'.
+Qed.
+
+End Fold.
+
 (* TODO: decide later whether TLC should rely on [Proper] *)
-Lemma fold_pointwise : forall (leB : B -> B -> Prop),
+Lemma fold_pointwise : forall B m (leB : B -> B -> Prop),
   Monoid m ->
   refl leB ->
   Proper (leB ++> leB ++> leB) (monoid_oper m) ->
-  forall A (L : list A),
+  forall A (l : list A),
   forall (f f' : A -> B),
-  (forall x, Mem x L -> leB (f x) (f' x)) ->
-  leB (fold m f L) (fold m f' L).
-Proof using.
-  introv HM HR HP. induction L; introv HL.
+  (forall x, mem x l -> leB (f x) (f' x)) ->
+  leB (fold m f l) (fold m f' l).
+Proof using. (* TODO: cleanup *)
+  Hint Constructors mem.
+  introv HM HR HP. induction l; introv HL.
   do 2 rewrite fold_nil. applys HR.
-  do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHL.
+  do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHl.
 Qed.
-
-
-End Fold.
 
 Opaque fold.
 

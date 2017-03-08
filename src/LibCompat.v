@@ -1,8 +1,10 @@
 
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* Compatibility with Coq stdlib                                           *
+* Backward Compatibility Hints                                            *
 **************************************************************************)
+
+(*
 
 Set Implicit Arguments.
 Generalizable Variables A B.
@@ -351,6 +353,8 @@ Definition Exists_here := Exists_head.
 Definition Exists_next := Exists_tail.
 
 Definition app_cons_one := app_cons_one_r.
+
+Definition append := app.
 
 (* ********************************************************************** *)
 (** too specific *)
@@ -740,3 +744,5 @@ Lemma Update_not_nil_r : forall i x l1 l2,
 Proof using. introv (L&O&E) K. subst. inverts E. Qed.
 
 End UpdateRel.
+
+*)

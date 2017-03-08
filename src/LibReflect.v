@@ -245,7 +245,7 @@ Tactic Notation "rew_reflect" "*" "in" hyp(H) :=
 Tactic Notation "rew_reflect" "*" "in" "*" :=
   rew_reflect in *; auto_star.
 
-(** [rew_unreflect] distributes [istrue]. *)
+(** [rew_unreflect] distributes [isTrue]. *)
 
 Hint Rewrite isTrue_True isTrue_False isTrue_istrue
  isTrue_not isTrue_and isTrue_or : rew_unreflect.
@@ -667,7 +667,7 @@ Tactic Notation "logics" "*" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics extended for reflection *)
 
-(* Extension of [extens] *)
+(* Extension of [extens] -- DEPRECATED *)
 
 Ltac extens_base :=
   first [ extens_core | intros; extens_core ]; logics.
