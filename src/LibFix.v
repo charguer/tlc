@@ -287,6 +287,11 @@ Definition generally_consistent_partial_fixed_point
 Definition optimal_fixed_point A B (E:binary B) (F:(A->B)->(A->B)) (f:A-->B) :=
   max_element (extends E) (generally_consistent_partial_fixed_point E F) f.
 
+(** Definition of uniqueness up to equivalence. *)
+
+Definition at_most_one_upto (A : Type) (E : A -> A -> Prop) (P : A -> Prop) :=
+  forall x y, P x -> P y -> E x y.
+
 (** The optimal fixed point, if it exists, is unique (up to equiv). *)
 
 Lemma optimal_fixed_point_unique : forall A B (E:binary B) (F:(A->B)->(A->B)),
@@ -961,6 +966,12 @@ Proof using.
   introv Cont. unfolds. intros. split~.
   apply~ Cont. intros. forwards*: H0.
 Qed.
+
+(** A predicate is compatible with an equivalence relation [E]
+    iff it is either true or false on each equivalence class. *)
+
+Definition pred_compatible A (E:A->A->Prop) (Q:A->Prop) :=
+  forall x y, Q x -> E y x -> Q y.
 
 Lemma rec_contractive_as_contractive :
   forall A B (E:binary B) (P:A->Prop)

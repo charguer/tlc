@@ -492,7 +492,7 @@ Proof using. intros_all. subst~. Qed.
 Lemma prop_neq_False_forw :
   (P <> False) -> P.
 Proof using.
-  intros_all. apply not_not_elim.
+  intros_all. apply not_not_inv.
   intros_all. apply H. extens*.
 Qed.
 
@@ -502,23 +502,23 @@ Proof using. introv M K. rewrite~ <- K. Qed.
 
 Lemma not_istrue_isTrue_forw :
   ~ istrue (isTrue P) -> ~ P.
-Proof using. apply contrapose_intro. rewrite~ istrue_isTrue. Qed.
+Proof using. apply contrapose. rewrite~ istrue_isTrue. Qed.
 
 Lemma not_istrue_not_isTrue_forw :
   ~ istrue (! isTrue P) -> P.
 Proof using.
-  rewrite <- (@not_not P). apply contrapose_intro.
+  rewrite <- (@not_not P). apply contrapose.
   rewrite~ istrue_neg_isTrue.
 Qed. (* todo: missing lemma from lib logic about ~A->B *)
 
 Lemma not_istrue_isTrue_back :
   ~ P -> ~ istrue (isTrue P).
-Proof using. apply contrapose_intro. rewrite~ istrue_isTrue. Qed.
+Proof using. apply contrapose. rewrite~ istrue_isTrue. Qed.
 
 Lemma not_istrue_not_isTrue_back :
   P -> ~ istrue (! isTrue P).
 Proof using.
-  rewrite <- (@not_not P). apply contrapose_intro.
+  rewrite <- (@not_not P). apply contrapose.
   rewrite~ istrue_neg_isTrue.
 Qed.
 
@@ -534,7 +534,7 @@ Ltac fold_prop :=
   | H: (?P = False) |- _ => applys_to H prop_eq_False_forw
   | H: (True = ?P) |- _ => symmetry in H; applys_to H prop_eq_True_forw
   | H: (False = ?P) |- _ => symmetry in H; applys_to H prop_eq_False_forw
-  | H: ~ (~ ?P) |- _ => applys_to H not_not_elim
+  | H: ~ (~ ?P) |- _ => applys_to H not_not_inv
   | |- istrue (isTrue ?P) => apply istrue_isTrue_back
   | |- istrue (! isTrue ?P) => apply istrue_not_isTrue_back
   | |- ~ istrue (isTrue ?P) => apply not_istrue_isTrue_back
@@ -543,7 +543,7 @@ Ltac fold_prop :=
   | |- (?P = False) => apply prop_eq_False_back
   | |- (True = ?P) => symmetry; apply prop_eq_True_back
   | |- (False = ?P) => symmetry; apply prop_eq_False_back
-  | |- ~ (~ ?P) => apply not_not_intro
+  | |- ~ (~ ?P) => apply not_not
   end.
 
   (* todo: improve case_if so that there is no need for that *)
@@ -610,35 +610,11 @@ Lemma isTrue_eq_false : forall P,
   (isTrue P = false) = ~ P.
 Proof using. isTrue_prove. Qed.
 
-Lemma not_not_eq : forall P,
-  (~ ~ P) = P.
-Proof using. intros. rew_logic*. Qed.
-
 Lemma isTrue_eq_isTrue : forall P1 P2,
   (isTrue P1 = isTrue P2) = (P1 <-> P2).
 Proof using.
   intros. extens. iff; repeat rewrite isTrue_def in *;
   repeat case_if; auto_false*.
-Qed.
-
-Lemma prop_eq_True : forall P,
-  (P = True) = P.
-Proof using. intros. rew_logic*. Qed.
-
-Lemma prop_eq_False : forall P,
-  (P = False) = ~ P.
-Proof using. intro. rew_logic*. Qed.
-
-Lemma prop_neq_True : forall P,
-  (P <> True) = ~ P.
-Proof using. intros. rew_logic*. Qed.
-
-Lemma prop_neq_False : forall P,
-  (P <> False) = P.
-Proof using.
-  intro. rew_logic*. iff.
-  apply not_not_elim. intros E. apply H. autos*.
-  intros E. rewrite* <- E.
 Qed.
 
 End Logics.
@@ -675,11 +651,6 @@ Ltac extens_base :=
 (* Extension of [case_if] *)
 
 Ltac case_if_post ::= logics; tryfalse.
-
-(* Extension of [absurds] *)
-
-Ltac absurds_post H :=
-  rew_logic in H.
 
 
 

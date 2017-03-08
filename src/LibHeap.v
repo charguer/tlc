@@ -231,7 +231,7 @@ Qed.
 Lemma not_indom_equiv_read_option : forall h k,
   (~ indom h k) = (read_option h k = None).
 Proof using.
-  introv. apply* not_cancel. rew_logic. rewrite indom_equiv_binds.
+  introv. apply* not_inj. rew_logic. rewrite indom_equiv_binds.
   splits ; intro N.
    lets (v & B): rm N.
     rewrite binds_equiv_read_option in B. rewrite* B. discriminate.

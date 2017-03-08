@@ -21,7 +21,9 @@ Generalizable Variables A B P.
 Class Inhab (A:Type) : Prop :=
   { inhabited : (exists (x:A), True) }.
 
-(** Extension of the definition of [=>>] *)
+
+(** Extension to LibTactics' fast introduction tactic [=>>] 
+    to handle specifically the case of the Inhabited typeclass. *)
 
 Ltac intro_nondeps_aux_special_intro G ::=
   match G with
@@ -38,14 +40,18 @@ Ltac intro_nondeps_aux_special_intro G ::=
 Definition arbitrary `{Inhab A} : A :=
   proj1_sig (@indefinite_description A _ inhabited).
 
+(** Extraction of [arbitrary] constants as a runtime error. *)
+
 Extract Constant arbitrary => "(raise Not_found)".
 
+
 (* ---------------------------------------------------------------------- *)
-(** ** Inhabited types *)
+(** ** Lemmas about inhabited types *)
 
 (** Proving a type to be inhabited *)
 
-Lemma prove_Inhab : forall (A:Type), A -> Inhab A.
+Lemma prove_Inhab : forall (A:Type), 
+  A -> Inhab A.
 Proof using. intros A x. constructor. exists x. auto. Qed.
 
 (** Arrows are inhabited if their codomain is inhabited. *)
@@ -81,6 +87,7 @@ Proof using.
   rewrite (proof_irrelevance H2 H1) in HB. congruence.
 Qed.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Strong excluded middle *)
 
@@ -108,6 +115,7 @@ Lemma classicT_right : forall (P : Prop) (H:~P),
    classicT P = right _ H.
 Proof using. intros. destruct (classicT P). false~. fequals. Qed.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** If-then-else on propositions *)
 
@@ -121,24 +129,30 @@ Notation "'If' P 'then' v1 'else' v2" :=
 (** Lemmas to simplify If-then-else statement *)
 
 Lemma If_l : forall (A:Type) (P:Prop) (x y : A),
-  P -> (If P then x else y) = x.
+  P -> 
+  (If P then x else y) = x.
 Proof using. intros. case_if*. Qed.
 
 Lemma If_r : forall (A:Type) (P:Prop) (x y : A),
-  ~ P -> (If P then x else y) = y.
+  ~ P -> 
+  (If P then x else y) = y.
 Proof using. intros. case_if*. Qed.
 
 (** A lemma to prove an equality between two If-then-else *)
 
 Lemma If_eq : forall (A : Type) (P P' : Prop) (x x' y y' : A),
-  (P <-> P') -> (P -> x = x') -> (~P -> y = y') ->
+  (P <-> P') ->
+  (P -> x = x') -> 
+  (~P -> y = y') ->
   (If P then x else y) = (If P' then x' else y').
 Proof using. intros. do 2 case_if; autos*. Qed.
 
 (** A simpler version of the above lemma *)
 
 Lemma If_eq_simple : forall (A:Type) (P P':Prop) (x x' y y' : A),
-  (P <-> P') -> (x = x') -> (y = y') ->
+  (P <-> P') -> 
+  (x = x') -> 
+  (y = y') ->
   (If P then x else y) = (If P' then x' else y').
 Proof using. intros. subst. asserts_rewrite (P = P'). apply~ prop_ext. auto. Qed.
 
@@ -177,8 +191,12 @@ Proof using.
   exists arbitrary. auto_false.
 Qed.
 
-(** The tactic [tautotest] helps performing case analysis on
-    the propositions that are given to it as parameters. *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Tactic for proving tautologies by bruteforce case-analysis *)
+
+(** The tactic [tautotest P1 .. PN] helps performing case analysis on
+    the propositions/booleans that are given to it as parameters. *)
 
 Ltac tautotest_case P :=
   match type of P with
@@ -186,34 +204,28 @@ Ltac tautotest_case P :=
   | bool => destruct P
   end.
 
+Ltac tautotest_pre :=
+  try match goal with |- _ = _ :> Prop => applys prop_ext end.
+
 Ltac tautotest_post :=
   subst; try solve [ intuition auto_false ].
 
+Ltac tautotest_core args :=
+  tautotest_pre;
+  let rec aux Ps :=
+    match Ps with
+    | nil => idtac
+    | (boxer ?P)::?Ps' => tautotest_case P; aux Ps'
+    end in
+  aux args;
+  tautotest_post.
+
 Tactic Notation "tautotest" constr(P1) :=
-  tautotest_case P1; tautotest_post.
+  tautotest_core (>> P1).
 Tactic Notation "tautotest" constr(P1) constr(P2) :=
-  tautotest_case P1; tautotest_case P2; tautotest_post.
+  tautotest_core (>> P1 P2).
 Tactic Notation "tautotest" constr(P1) constr(P2) constr(P3) :=
-  tautotest_case P1; tautotest_case P2; tautotest_case P3; tautotest_post.
-
-
-(* ********************************************************************** *)
-(** * Additional logic connectives *)
-
-(* ---------------------------------------------------------------------- *)
-(** ** Definition of Xor on propositions *)
-
-(* TODO: should be defined simply as P <> Q *)
-
-Definition Xor (P Q : Prop) :=
-  (P /\ ~ Q) \/ (~ P /\ Q).
-
-Hint Unfold Xor.
-
-Notation "P '\+/' Q" := (Xor P Q)
-  (at level 76, right associativity) : Logic_scope.
-
-Open Scope Logic_scope.
+  tautotest_core (>> P1 P2 P3).
 
 
 (* ********************************************************************** *)
@@ -222,52 +234,92 @@ Open Scope Logic_scope.
 Section CombinatorsProp.
 Implicit Types P Q : Prop.
 
-(* TODO: simplify the proofs using tautotest or rew_classic *)
+(* ---------------------------------------------------------------------- *)
+(** ** Propositional extensionality stated using itself *)
+
+Lemma prop_eq_to_iff : forall P Q,
+  (P = Q) = (P <-> Q).
+Proof using. intros. extens. iff. subst*. apply~ prop_ext. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Properties of true and false propositions *)
+(** ** Propositions equal to [True] or [False] *)
 
 (** Recall that the lemma [prop_ext] asserts that two equivalent
     propositions are equal, i.e. [(P <-> Q) -> (P = Q)]. *)
 
-(** Provable propositions are equal to [True], and contradictory
-    propositions are equal to [False] *)
+(** Propositions equal to [True] *)
 
-Lemma is_True : forall P, P -> P = True.
-Proof using. intros. extens*. Qed.
+Lemma prop_eq_True_eq : forall P,
+  (P = True) = P.
+Proof using. intros. tautotest P. Qed.
 
-Lemma is_False : forall P, ~ P -> P = False.
-Proof using. intros. extens*. Qed.
+Lemma prop_eq_True : forall P, 
+  P -> 
+  P = True.
+Proof using. intros. rewrite~ prop_eq_True_eq. Qed.
 
-Lemma is_True_inv : forall P, P = True -> P.
-Proof using. introv H. rewrite~ H. Qed.
+Lemma prop_eq_True_inv : forall P, 
+  P = True ->
+  P.
+Proof using. introv H. rewrite~ prop_eq_True_eq in H. Qed.
 
-Lemma is_False_inv : forall P, P = False -> ~P.
-Proof using. introv H. rewrite~ H. Qed.
+(** Propositions equal to [False] *)
+
+Lemma prop_eq_False_eq : forall P,
+  (P = false) = ~ P.
+Proof using. intros. tautotest P. Qed.
+
+Lemma prop_eq_False : forall P, 
+  ~ P -> 
+  P = False.
+Proof using. intros. rewrite~ prop_eq_False_eq. Qed.
+
+Lemma prop_eq_False_inv : forall P,
+  P = False -> 
+  ~ P.
+Proof using. introv H. rewrite~ prop_eq_False_eq in H. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Disequal propositions *)
+
+(** Propositions not [True] or not [False] *)
+
+Lemma prop_neq_True_eq : forall P,
+  (P <> True) = ~ P.
+Proof using. intros. tautotest P. Qed.
+
+Lemma prop_neq_False_eq : forall P,
+  (P <> False) = P.
+Proof using. intros. tautotest P. Qed.
+
+(** Proving two propositions not equal *)
+
+Lemma prop_neq_l : forall P Q,
+  (P <-> ~ Q) -> 
+  P <> Q.
+Proof using. intros. tautotest P Q. Qed.
+
+Lemma prop_neq_r : forall P Q,
+  (~ P <-> Q) -> 
+  P <> Q.
+Proof using. intros. tautotest P Q. Qed.
+
+Lemma prop_neq_inv_l : forall P Q,
+  P <> Q -> 
+  (P <-> ~ Q).
+Proof using. intros. tautotest P Q. Qed.
+
+Lemma prop_neq_inv_r : forall P Q,
+  P <> Q -> 
+  (~ P <-> Q).
+Proof using. intros. tautotest P Q. Qed.
 
 (** True is not False *)
 
 Lemma True_neq_False : True <> False.
 Proof using. intros K. rewrite~ <- K. Qed.
-
-(** Proving two propositions not equal *)
-
-Lemma prop_neq_l : forall P Q,
-  (P <-> ~ Q) -> P <> Q.
-Proof using. intros. tautotest P Q. Qed.
-
-Lemma prop_neq_r : forall P Q,
-  (~ P <-> Q) -> P <> Q.
-Proof using. intros. tautotest P Q. Qed.
-
-Lemma prop_neq_l_inv : forall P Q,
-  P <> Q -> (P <-> ~ Q).
-Proof using. intros. tautotest P Q. Qed.
-
-Lemma prop_neq_r_inv : forall P Q,
-  P <> Q -> (~ P <-> Q).
-Proof using. intros. tautotest P Q. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -275,29 +327,44 @@ Proof using. intros. tautotest P Q. Qed.
 
 (** Double negation *)
 
-Lemma not_not_elim : forall P,
-  ~ ~ P -> P.
+Lemma not_not_eq : forall P,
+  (~ ~ P) = P.
 Proof using. intros. tautotest P. Qed.
 
-Lemma not_not_intro : forall P,
-  P -> ~ ~ P.
-Proof using. auto. Qed.
+Lemma not_not_inv : forall P,
+  ~ ~ P -> 
+  P.
+Proof using. intros. rewrite~ <- not_not_eq. Qed.
+
+Lemma not_not : forall P,
+  P -> 
+  ~ ~ P.
+Proof using. intros. rewrite~ not_not_eq. Qed.
 
 (** Contrapose *)
 
-Lemma contrapose_elim : forall P Q,
-  (~ Q -> ~ P) -> (P -> Q).
+Lemma contrapose_eq : forall P Q,
+  (~ P -> ~ Q) = (Q -> P).
 Proof using. intros. tautotest P Q. Qed.
 
-Lemma contrapose_intro : forall P Q,
-  (Q -> P) -> (~ P -> ~ Q).
+Lemma contrapose_inv : forall P Q,
+  (~ Q -> ~ P) -> 
+  (P -> Q).
+Proof using. intros. rewrite~ <- contrapose_eq. Qed.
+
+Lemma contrapose : forall P Q,
+  (Q -> P) -> 
+  (~ P -> ~ Q).
+Proof using. intros. rewrite~ contrapose_eq. Qed.
+
+(** Negation is injective *)
+
+Lemma not_inj : forall P Q,
+  (~P) = (~Q) -> 
+  (P = Q).
 Proof using. intros. tautotest P Q. Qed.
+Proof using. introv H. extens. iff; apply not_not_inv. rewrite~ <- H. rewrite~ H. Qed.
 
-(** Negation cancel *)
-
-Lemma not_cancel : forall P Q,
-  ((~P) = (~Q)) -> (P = Q).
-Proof using. introv H. extens. iff; apply not_not_elim. rewrite~ <- H. rewrite~ H. Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Peirce rule and similar *)
@@ -311,26 +378,30 @@ Proof using. intros. tautotest P. Qed.
 (** Proving a disjunction, assuming the negation of the other branch *)
 
 Lemma classic_left : forall P Q,
-  (~ Q -> P) -> P \/ Q.
+  (~ Q -> P) -> 
+  P \/ Q.
 Proof using. intros. tautotest P Q. Qed.
 
 Lemma classic_right : forall P Q,
-  (~ P -> Q) -> P \/ Q.
+  (~ P -> Q) ->
+  P \/ Q.
 Proof using. intros. tautotest P Q. Qed.
 
 (** Same, but in forward style *)
 
-Lemma case_classic_l : forall P Q,
-  P \/ Q -> (P \/ (~ P /\ Q)).
+Lemma or_inv_classic_l : forall P Q,
+  P \/ Q -> 
+  (P \/ (~ P /\ Q)).
 Proof using. intros. tautotest P Q. Qed.
 
-Lemma case_classic_r : forall P Q,
-  P \/ Q -> (Q \/ (P /\ ~ Q)).
+Lemma or_inv_classic_r : forall P Q,
+  P \/ Q ->
+  (Q \/ (P /\ ~ Q)).
 Proof using. intros. tautotest P Q. Qed.
 
 End CombinatorsProp.
 
-Hint Resolve is_True is_False True_neq_False.
+Hint Resolve prop_eq_True prop_eq_False True_neq_False.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -341,87 +412,92 @@ Implicit Types P Q R : Prop.
 
 (** Introduction *)
 
-Lemma iff_intro : forall P Q : Prop,
-  (P -> Q) -> (Q -> P) -> (P <-> Q).
+Lemma iff_eq : forall P Q : Prop,
+  (P <-> Q) = ((P -> Q) /\ (Q -> P)).
 Proof using. intros. tautotest P Q. Qed.
 
-(** Reflexivity *)
+Lemma iff_intro : forall P Q : Prop,
+  (P -> Q) -> 
+  (Q -> P) -> 
+  (P <-> Q).
+Proof using. intros. rewrite* iff_eq. Qed.
+
+(** Reflexivity: [refl iff] *)
 
 Lemma iff_refl : forall P,
   P <-> P.
 Proof using. intros. tautotest P. Qed.
 
-(** Symmetry *)
+(** Symmetry: [sym iff] *)
 
 Lemma iff_sym : forall P Q,
-  (P <-> Q) -> (Q <-> P).
+  (P <-> Q) -> 
+  (Q <-> P).
 Proof using. intros. tautotest P Q. Qed.
 
-(** Transitivity *)
+(** Transitivity: [trans iff] *)
 
 Lemma iff_trans : forall P Q R,
-  (P <-> Q) -> (Q <-> R) -> (P <-> R).
+  (P <-> Q) -> 
+  (Q <-> R) -> 
+  (P <-> R).
 Proof using. intros. tautotest P Q R. Qed.
 
 (** First projection *)
 
-Lemma iff_1 : forall P Q,
-  (P <-> Q) -> P -> Q.
+Lemma iff_l : forall P Q,
+  (P <-> Q) -> 
+  P -> 
+  Q.
 Proof using. intros. tautotest P Q. Qed.
 
 (** Second projection *)
 
-Lemma iff_2 : forall P Q,
-  (P <-> Q) -> Q -> P.
+Lemma iff_r : forall P Q,
+  (P <-> Q) -> 
+  Q -> 
+  P.
 Proof using. intros. tautotest P Q. Qed.
 
 (** Contrapose of the first projection *)
 
-Lemma iff_neg_1 : forall P Q,
-  (P <-> Q) -> ~ P -> ~ Q.
+Lemma iff_not_l : forall P Q,
+  (P <-> Q) -> 
+  ~ P -> 
+  ~ Q.
 Proof using. intros. tautotest P Q. Qed.
 
 (** Contrapose of the second projection *)
 
-Lemma iff_neg_2 : forall P Q,
-  (P <-> Q) -> ~ Q -> ~ P.
+Lemma iff_not_r : forall P Q,
+  (P <-> Q) -> 
+  ~ Q -> 
+  ~ P.
 Proof using. intros. tautotest P Q. Qed.
 
 (** Negation can change side of an equivalence *)
 
-Lemma iff_not_swap : forall P Q,
+Lemma iff_not_swap_eq : forall P Q,
   ((~ P) <-> Q) = (P <-> (~ Q)).
-Proof using. intros. extens. tautotest P Q. Qed.
+Proof using. intros. tautotest P Q. Qed.
 
 (** Negation can be cancelled on both sides *)
 
-Lemma iff_not_cancel : forall P Q,
+Lemma iff_not_inj_eq : forall P Q,
   ((~ P) <-> (~Q)) = (P <-> Q).
-Proof using. intros. extens. tautotest P Q. Qed.
+Proof using. intros. tautotest P Q. Qed.
 
 End EquivalenceProp.
+
 
 (* ********************************************************************** *)
 (** * Simplification of logical expressions by rewriting *)
 
-Section Simpl.
-Implicit Types P Q : Prop.
-
-(* ---------------------------------------------------------------------- *)
-(** ** Simplification of equality *)
-
-Lemma prop_eq_True : forall P, (P = True) = P.
-Proof using. intros. apply* prop_ext. iff H. rewrite~ H. auto. Qed.
-
-Lemma prop_eq_False : forall P, (P = False) = (~ P).
-Proof using. intros. apply* prop_ext. iff H. rewrite~ H. auto. Qed.
-
-Lemma prop_eq_to_iff : forall P Q, (P = Q) = (P <-> Q).
-Proof using. intros. extens. iff. subst*. apply~ prop_ext. Qed.
-
-
 (* ---------------------------------------------------------------------- *)
 (** ** Simplification of conjunction and disjunction *)
+
+Section SimplConjDisj.
+Implicit Types P Q : Prop.
 
 Lemma and_True_l : forall P, (True /\ P) = P.
 Proof using. intros. apply* prop_ext. Qed.
@@ -447,9 +523,13 @@ Proof using. intros. apply* prop_ext. Qed.
 Lemma or_False_r : forall P, (P \/ False) = P.
 Proof using. intros. apply* prop_ext. Qed.
 
+End SimplConjDisj.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Distribution of negation *)
+
+Section SimplNot.
+Implicit Types P Q : Prop.
 
 Lemma not_True : (~ True) = False.
 Proof using. intros. apply* prop_ext. Qed.
@@ -475,23 +555,25 @@ Proof using. intros. apply prop_ext. tautotest P Q. Qed.
 Lemma not_and_nots : forall P Q, (~ (~ P /\ ~ Q)) = (P \/ Q).
 Proof using. intros. apply prop_ext. tautotest P Q. Qed.
 
-End Simpl.
+End SimplNot.
 
-Section ClassicQuantifiers.
+Section SimplNotQuantifiers.
 Variables (A : Type).
 Implicit Types P : A -> Prop.
 
-(** Three auxiliary facts *)
+(** Three auxiliary facts (private lemmas) *)
 
-Lemma exists_from_not : forall P,
-  ~ (forall x, ~ P x) -> (exists x, P x).
-Proof using. intros. apply* not_not_elim. Qed.
+Lemma exists_from_not_forall : forall P,
+  ~ (forall x, ~ P x) -> 
+  (exists x, P x).
+Proof using. intros. apply* not_not_inv. Qed.
 
-Lemma forall_from_not : forall P,
-  ~ (exists x, ~ P x) -> (forall x, P x).
-Proof using. intros. apply* not_not_elim. Qed.
+Lemma forall_from_not_exists : forall P,
+  ~ (exists x, ~ P x) -> 
+  (forall x, P x).
+Proof using. intros. apply* not_not_inv. Qed.
 
-Lemma not_not_pred_1 : forall A (P:A->Prop),
+Lemma not_not_pred_eq : forall A (P:A->Prop),
   P = (fun x => ~ ~ (P x)).
 Proof using. intros. extens. intros. rewrite* not_not. Qed.
 
@@ -501,33 +583,36 @@ Lemma not_forall : forall P,
   (~ (forall x, P x)) = (exists x, ~ P x).
 Proof using.
   extens. iff.
-  apply exists_from_not. rewrite~ (not_not_pred_1 P) in H.
+  apply exists_from_not_forall. rewrite~ (not_not_pred_eq P) in H.
   intros M. destruct H as [x Cx]. eauto.
 Qed.
 
 Lemma not_exists : forall P,
   (~ (exists x, P x)) = (forall x, ~ P x).
 Proof using.
-  intros. apply not_cancel. rewrite not_forall.
-  rewrite not_not. set (P':=P) at 1. rewrite~ (not_not_pred_1 P').
+  intros. apply not_inj. rewrite not_forall.
+  rewrite not_not. set (P':=P) at 1. rewrite~ (not_not_pred_eq P').
 Qed.
 
 Lemma not_forall_not : forall P,
   (~ (forall x, ~ P x)) = (exists x, P x).
 Proof using.
   intros. rewrite not_forall.
-   set (P':=P) at 2. rewrite~ (not_not_pred_1 P').
+   set (P':=P) at 2. rewrite~ (not_not_pred_eq P').
 Qed.
 
 Lemma not_exists_not : forall P,
   (~ (exists x, ~ P x)) = (forall x, P x).
 Proof using.
   intros. rewrite not_exists.
-   set (P':=P) at 2. rewrite~ (not_not_pred_1 P').
+   set (P':=P) at 2. rewrite~ (not_not_pred_eq P').
 Qed.
 
-End ClassicQuantifiers.
+End SimplNotQuantifiers.
 
+
+(* ********************************************************************** *)
+(** * Tactics *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactic for simplifying expressions *)
@@ -539,7 +624,7 @@ End ClassicQuantifiers.
   (* Note: not_impl needs to have higher priority than not_forall *)
 Hint Rewrite not_not not_and not_or not_impl not_True not_False
   not_forall_not not_exists_not not_forall not_exists not_impl
-  prop_eq_True prop_eq_False prop_eq_to_iff
+  prop_eq_True_eq prop_eq_False_eq prop_eq_to_iff
   and_True_l and_True_r and_False_l and_False_r
   or_True_l or_True_r or_False_l or_False_r not_False not_True
   : rew_logic.
@@ -566,32 +651,9 @@ Tactic Notation "rew_logic" "*" "in" hyp(H) :=
 Tactic Notation "rew_logic" "*" "in" "*" :=
   rew_logic in *; auto_star.
 
-(** The tactic [rew_logic'] is similar except that it only
-    tries to apply the most frequently useful rules, in order
-    to run faster. *)
 
-Hint Rewrite not_not not_and not_or not_True not_False : rew_logic'.
-
-Tactic Notation "rew_logic'" :=
-  autorewrite with rew_logic'.
-Tactic Notation "rew_logic'" "in" hyp(H) :=
-  autorewrite with rew_logic' in H.
-Tactic Notation "rew_logic'" "in" "*" :=
-  autorewrite with rew_logic' in *.
-
-Tactic Notation "rew_logic'" "~" :=
-  rew_logic'; auto_tilde.
-Tactic Notation "rew_logic'" "~" "in" hyp(H) :=
-  rew_logic' in H; auto_tilde.
-Tactic Notation "rew_logic'" "~" "in" "*" :=
-  rew_logic' in *; auto_tilde.
-
-Tactic Notation "rew_logic'" "*" :=
-  rew_logic'; auto_star.
-Tactic Notation "rew_logic'" "*" "in" hyp(H) :=
-  rew_logic' in H; auto_star.
-Tactic Notation "rew_logic'" "*" "in" "*" :=
-  rew_logic' in *; auto_star.
+(* ---------------------------------------------------------------------- *)
+(** ** Tactic [tests: P] for classical disjunction on [P]. *)
 
 (** The tactic [tests: P] can be used to tests whether the proposition [P]
     is true or not. If [P] is an equality, it is substituted. Use the
@@ -664,32 +726,34 @@ Tactic Notation "tests_basic" ":" constr(E) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Tactic [absurds] *)
 
-(** [absurds as H], or simply [absurd] adds the negation of the goal
-    as hypothesis. *)
+(** [absurds] applies to a goal [G] and replaces it with [(~ G) -> False].
+    The expression [~ G] is simplified using [rew_logic].
 
-Ltac absurds_post H :=
-  rew_logic in H.
+    [absurds ;=> H] introduces [H] as the negation of the goal, and 
+    leaves [False] is the goal.
 
-Ltac absurds_core H :=
-  let N := fresh "TEMP" in apply not_not_elim;
-  intros N; absurds_post N; generalize N; intros H.
+    [absurds_nosimpl] is similar, but it does not perform simplifications. *)
 
-Tactic Notation "absurds" "as" simple_intropattern(H) :=
-  absurds_core H.
-Tactic Notation "absurds" :=
-  let H := fresh "H" in absurds as H.
+Lemma absurds_lemma : forall (G:Prop),
+  ((~ G) -> False) -> 
+  G.
+Proof using. intros. applys~ not_not_inv. Qed.
 
-(** [absurds_nosimpl as H], or simply [absurd_nosimpl] is like
-    [absurd] but does not perform any simplification of the negation. *)
+Ltac absurds_nosimpl_core tt :=
+  applys absurds_lemma.
 
-Ltac absurds_nosimpl_core H :=
-  apply not_not_elim; intros H.
-
-Tactic Notation "absurds_nosimpl" "as" simple_intropattern(H) :=
-  absurds_nosimpl_core H.
 Tactic Notation "absurds_nosimpl" :=
-  let H := fresh "H" in absurds_nosimpl as H.
+  absurds_nosimpl_core tt.
 
+Ltac absurds_post tt :=
+  rew_logic.
+
+Ltac absurds_core tt :=
+  applys absurds_lemma; 
+  absurds_post tt.
+
+Tactic Notation "absurds" :=
+   absurds_core tt.
 
 
 (* ********************************************************************** *)
@@ -699,10 +763,10 @@ Tactic Notation "absurds_nosimpl" :=
 (** ** Definition of predicate combinators *)
 
 Definition pred_true {A : Type} :=
-  fun _:A => True.
+  fun (_:A) => True.
 
 Definition pred_false {A : Type} :=
-  fun _:A => False.
+  fun (_:A) => False.
 
 Definition pred_not (A : Type) (P : A -> Prop) :=
   fun x => ~ (P x).
@@ -722,7 +786,7 @@ Hint Unfold pred_true pred_false.
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of combinators *)
 
-(* Todo: reformulate using [pred_all] and [pred_and] *)
+(* LATER: reformulate using [pred_all] and [pred_and] (?) *)
 
 Lemma pred_conj_forall_distrib : forall A (P Q: A->Prop),
   ((forall x, P x) /\ (forall x, Q x)) = (forall x, P x /\ Q x).
@@ -735,29 +799,19 @@ Proof using. intros. apply prop_ext. iff H. autos*. split; intros x; apply* (H x
 Definition pred_le (A : Type) (P Q : A -> Prop) :=
   forall x, P x -> Q x.
 
-(* TODO: can it be reformulated using [refl] and still serve as hint? *)
-Lemma pred_le_refl : forall A (P : A -> Prop),
-  pred_le P P.
+Lemma pred_le_refl : forall A,
+  refl (@pred_le A).
 Proof using. unfolds~ pred_le. Qed.
 
-(* TODO: reformulate the two lemmas using [trans] *)
-Lemma pred_le_trans : forall A (Q P R : A -> Prop),
-  pred_le P Q -> pred_le Q R -> pred_le P R.
+Lemma pred_le_trans : forall A,
+  trasn (@pred_le A)
 Proof using. unfolds~ pred_le. Qed.
 
-Lemma pred_le_antisym : forall A (P Q : A -> Prop), (* antisym (@pred_le A). *)
-  pred_le P Q -> pred_le Q P -> P = Q.
+Lemma pred_le_antisym : forall A,
+  antisym (@pred_le A).
 Proof using. intros_all. applys* prop_ext_1. Qed.
 
-
-(* ---------------------------------------------------------------------- *)
-(** ** Compatibility of a predicate with an equivalence relation *)
-
-(** A predicate is compatible with an equivalence relation [E]
-    iff it is either true or false on each equivalence class. *)
-
-Definition pred_compatible A (E:A->A->Prop) (Q:A->Prop) :=
-  forall x y, Q x -> E y x -> Q y.
+(* LATER: Lemma pred_le_order *)
 
 
 
@@ -765,26 +819,23 @@ Definition pred_compatible A (E:A->A->Prop) (Q:A->Prop) :=
 (** * Existentials *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** A shorthand for [ex_intro] with more implicit arguments *)
-
-Definition ex_intro' A (x:A) (P:A->Prop) (H:P x) :=
-  @ex_intro A P x H.
-
-Implicit Arguments ex_intro' [A [P] [H]].
-
-(* ---------------------------------------------------------------------- *)
 (** * Properties of unique existentials *)
 
-(** Alternative definition of uniqueness (copied from LibPrelude) *)
-(* TODO: add comments *)
+(** [unique_st P x] asserts that [x] is the unique element for which
+    [P x] holds. *)
 
 Definition unique_st (A : Type) (P : A -> Prop) (x : A) :=
   P x /\ forall y, P y -> y = x.
 
 Hint Unfold unique_st.
 
+(** [ex_unique P] asserts that there exists a unique element for which
+    [P x] holds. *)
+
 Definition ex_unique (A : Type) (P : A -> Prop) :=
   ex (unique_st P).
+
+(** [exists! x, P] is the notation for [ex_unique P]. *)
 
 Notation "'exists' ! x , P" := (ex_unique (fun x => P))
   (at level 200, x ident, right associativity,
@@ -794,49 +845,67 @@ Notation "'exists' ! x : A , P" :=
   (at level 200, x ident, right associativity,
     format "'[' 'exists' !  '/  ' x  :  A ,  '/  ' P ']'") : type_scope.
 
+(** [at_most_one P] asserts that there exists at most one element for 
+    which [P x] holds. In other words, [P] has 0 or 1 inhabitant. *)
+
 Definition at_most_one (A : Type) (P : A -> Prop) :=
   forall x y, P x -> P y -> x = y.
 
 Section UniqueProp.
-Variables (A : Type) (P : A -> Prop).
+Variables (A : Type).
+Implicit Types  (P : A -> Prop).
 
-Lemma ex_unique_to_ex : ex_unique P -> ex P.
+(** [exists! x, P] entails [exists x, P] *)
+
+Lemma ex_unique_to_ex : forall P,
+  ex_unique P -> 
+  ex P.
 Proof using. introv [x [H U]]. eauto. Qed.
 
+(** [exists! x, P] entails [at_most_one P] *)
+
 Lemma ex_unique_to_at_most_one :
-  ex_unique P -> at_most_one P.
+  ex_unique P -> 
+  at_most_one P.
 Proof using.
   introv [a [H U]] Px Py. apply (eq_trans a).
   auto. rewrite~ <- (U y).
 Qed.
 
+(** [exists x, P] and [at_most_one P] entail [exists! x, P] *)
+
 Lemma ex_unique_from_ex_at_most_one :
-  ex P -> at_most_one P -> ex_unique P.
+  ex P -> 
+  at_most_one P -> 
+  ex_unique P.
 Proof using. introv [x Px] H. exists x. split~. Qed.
 
 End UniqueProp.
-
-Definition at_most_one_upto (A : Type) (E : A -> A -> Prop) (P : A -> Prop) :=
-  forall x y, P x -> P y -> E x y.
 
 
 
 (* ********************************************************************** *)
 (** * Conjunctions *)
 
-
 (* ---------------------------------------------------------------------- *)
 (** ** Changing the order of branches *)
 
-Lemma conj_swap: forall (P Q: Prop), P -> Q -> Q /\ P.
+Lemma conj_swap: forall (P Q: Prop), 
+  P ->
+  Q -> 
+  Q /\ P.
 Proof using. autos*. Qed.
 
 Lemma conj_dup_r : forall P Q : Prop,
-  Q -> (Q -> P) -> P /\ Q.
+  Q -> 
+  (Q -> P) -> 
+  P /\ Q.
 Proof using. autos*. Qed.
 
 Lemma conj_dup_l : forall P Q : Prop,
-  P -> (P -> Q) -> P /\ Q.
+  P -> 
+  (P -> Q) -> 
+  P /\ Q.
 Proof using. autos*. Qed.
 
 
@@ -844,23 +913,37 @@ Proof using. autos*. Qed.
 (** ** Parallel strengthening of a conjunction *)
 
 Lemma conj_strengthen_2 : forall (Q1 Q2 P1 P2 : Prop),
-  (Q1 -> P1) -> (Q2 -> P2) ->
-  (Q1 /\ Q2) -> (P1 /\ P2).
+  (Q1 -> P1) -> 
+  (Q2 -> P2) ->
+  (Q1 /\ Q2) -> 
+  (P1 /\ P2).
 Proof using. autos*. Qed.
 
 Lemma conj_strengthen_3 : forall (Q1 Q2 Q3 P1 P2 P3 : Prop),
-  (Q1 -> P1) -> (Q2 -> P2) -> (Q3 -> P3) ->
-  (Q1 /\ Q2 /\ Q3) -> (P1 /\ P2 /\ P3).
+  (Q1 -> P1) -> 
+  (Q2 -> P2) -> 
+  (Q3 -> P3) ->
+  (Q1 /\ Q2 /\ Q3) -> 
+  (P1 /\ P2 /\ P3).
 Proof using. autos*. Qed.
 
 Lemma conj_strengthen_4 : forall (Q1 Q2 Q3 Q4 P1 P2 P3 P4 : Prop),
-  (Q1 -> P1) -> (Q2 -> P2) -> (Q3 -> P3) -> (Q4 -> P4) ->
-  (Q1 /\ Q2 /\ Q3 /\ Q4) -> (P1 /\ P2 /\ P3 /\ P4).
+  (Q1 -> P1) -> 
+  (Q2 -> P2) -> 
+  (Q3 -> P3) -> 
+  (Q4 -> P4) ->
+  (Q1 /\ Q2 /\ Q3 /\ Q4) ->
+  (P1 /\ P2 /\ P3 /\ P4).
 Proof using. autos*. Qed.
 
 Lemma conj_strengthen_5 : forall (Q1 Q2 Q3 Q4 Q5 P1 P2 P3 P4 P5 : Prop),
-  (Q1 -> P1) -> (Q2 -> P2) -> (Q3 -> P3) -> (Q4 -> P4) -> (Q5 -> P5) ->
-  (Q1 /\ Q2 /\ Q3 /\ Q4 /\ Q5) -> (P1 /\ P2 /\ P3 /\ P4 /\ P5).
+  (Q1 -> P1) -> 
+  (Q2 -> P2) -> 
+  (Q3 -> P3) -> 
+  (Q4 -> P4) -> 
+  (Q5 -> P5) ->
+  (Q1 /\ Q2 /\ Q3 /\ Q4 /\ Q5) -> 
+  (P1 /\ P2 /\ P3 /\ P4 /\ P5).
 Proof using. autos*. Qed.
 
 
@@ -880,98 +963,97 @@ Variables (A9 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5
 Variables (A10 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4) (x6 : A6 x5) (x7 : A7 x6) (x8 : A8 x7) (x9 : A9 x8), Type).
 Variables (A11 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4) (x6 : A6 x5) (x7 : A7 x6) (x8 : A8 x7) (x9 : A9 x8) (x10 : A10 x9), Type).
 
+Ltac prove_proj_lemma := 
+  intros;
+  match goal with H: context [_ /\ _] |- _ => 
+    split; intros; apply H end.
+
 Lemma proj_lemma_1 : forall (P Q : forall (x1:A1), Prop),
   (forall x1, P x1 /\ Q x1) ->
   (forall x1, P x1) /\
   (forall x1, Q x1).
-Proof using. introv H. split; intros; forwards*: H. Qed.
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_2 : forall (P Q : forall (x1:A1) (x2:A2 x1), Prop),
   (forall x1 x2, P x1 x2 /\ Q x1 x2) ->
   (forall x1 x2, P x1 x2) /\
   (forall x1 x2, Q x1 x2).
-Proof using. introv H. split; intros; forwards*: H. Qed.
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_3 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), Prop),
   (forall x1 x2 x3, P x1 x2 x3 /\ Q x1 x2 x3) ->
   (forall x1 x2 x3, P x1 x2 x3) /\
   (forall x1 x2 x3, Q x1 x2 x3).
-Proof using. introv H. split; intros; forwards*: H. Qed.
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_4 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3), Prop),
   (forall x1 x2 x3 x4, P x1 x2 x3 x4 /\ Q x1 x2 x3 x4) ->
   (forall x1 x2 x3 x4, P x1 x2 x3 x4) /\
   (forall x1 x2 x3 x4, Q x1 x2 x3 x4).
-Proof using. introv H. split; intros; forwards*: H. Qed.
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_5 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4), Prop),
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5 /\ Q x1 x2 x3 x4 x5) ->
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5) /\
   (forall x1 x2 x3 x4 x5, Q x1 x2 x3 x4 x5).
-Proof using. introv H. split; intros; forwards*: H. Qed.
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_6 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5), Prop),
   (forall x1 x2 x3 x4 x5 x6, P x1 x2 x3 x4 x5 x6 /\ Q x1 x2 x3 x4 x5 x6) ->
   (forall x1 x2 x3 x4 x5 x6, P x1 x2 x3 x4 x5 x6) /\
   (forall x1 x2 x3 x4 x5 x6, Q x1 x2 x3 x4 x5 x6).
-Proof using. introv H. split; intros; forwards*: H. Qed.
-
-(* Commented out for efficiency of compilation
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_7 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7, P x1 x2 x3 x4 x5 x6 x7 /\ Q x1 x2 x3 x4 x5 x6 x7) ->
   (forall x1 x2 x3 x4 x5 x6 x7, P x1 x2 x3 x4 x5 x6 x7) /\
   (forall x1 x2 x3 x4 x5 x6 x7, Q x1 x2 x3 x4 x5 x6 x7).
-Proof using. introv H. split; intros; forwards*: H. Qed.
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_8 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6) (x8:A8 x7), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7 x8, P x1 x2 x3 x4 x5 x6 x7 x8 /\ Q x1 x2 x3 x4 x5 x6 x7 x8) ->
   (forall x1 x2 x3 x4 x5 x6 x7 x8, P x1 x2 x3 x4 x5 x6 x7 x8) /\
   (forall x1 x2 x3 x4 x5 x6 x7 x8, Q x1 x2 x3 x4 x5 x6 x7 x8).
-Proof using. introv H. split; intros; forwards*: H. Qed.
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_9 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6) (x8:A8 x7) (x9:A9 x8), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9, P x1 x2 x3 x4 x5 x6 x7 x8 x9 /\ Q x1 x2 x3 x4 x5 x6 x7 x8 x9) ->
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9, P x1 x2 x3 x4 x5 x6 x7 x8 x9) /\
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9, Q x1 x2 x3 x4 x5 x6 x7 x8 x9).
-Proof using. introv H. split; intros; forwards*: H. Qed.
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_10 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6) (x8:A8 x7) (x9:A9 x8) (x10:A10 x9), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10, P x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 /\ Q x1 x2 x3 x4 x5 x6 x7 x8 x9 x10) ->
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10, P x1 x2 x3 x4 x5 x6 x7 x8 x9 x10) /\
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10, Q x1 x2 x3 x4 x5 x6 x7 x8 x9 x10).
-Proof using. introv H. split; intros; forwards*: H. Qed.
+Proof using. prove_proj_lemma. Qed.
 
 Lemma proj_lemma_11 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6) (x8:A8 x7) (x9:A9 x8) (x10:A10 x9) (x11:A11 x10), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11, P x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 /\ Q x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11) ->
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11, P x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11) /\
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11, Q x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11).
-Proof using. introv H. split; intros; forwards*: H. Qed.
-
-*)
+Proof using. prove_proj_lemma. Qed.
 
 End ProjLemma.
 
-Implicit Arguments proj_lemma_1 [A1 P Q].
-Implicit Arguments proj_lemma_2 [A1 A2 P Q].
-Implicit Arguments proj_lemma_3 [A1 A2 A3 P Q].
-Implicit Arguments proj_lemma_4 [A1 A2 A3 A4 P Q].
-Implicit Arguments proj_lemma_5 [A1 A2 A3 A4 A5 P Q].
-Implicit Arguments proj_lemma_6 [A1 A2 A3 A4 A5 A6 P Q].
-(* Commented out for efficiency of compilation
-Implicit Arguments proj_lemma_7 [A1 A2 A3 A4 A5 A6 A7 P Q].
-Implicit Arguments proj_lemma_8 [A1 A2 A3 A4 A5 A6 A7 A8 P Q].
-Implicit Arguments proj_lemma_9 [A1 A2 A3 A4 A5 A6 A7 A8 A9 P Q].
-Implicit Arguments proj_lemma_10 [A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 P Q].
-Implicit Arguments proj_lemma_11 [A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 P Q].
-*)
+Arguments proj_lemma_1 [A1] [P] [Q].
+Arguments proj_lemma_2 [A1] [A2] [P] [Q].
+Arguments proj_lemma_3 [A1] [A2] [A3] [P] [Q].
+Arguments proj_lemma_4 [A1] [A2] [A3] [A4] [P] [Q].
+Arguments proj_lemma_5 [A1] [A2] [A3] [A4] [A5] [P] [Q].
+Arguments proj_lemma_6 [A1] [A2] [A3] [A4] [A5] [A6] [P] [Q].
+Arguments proj_lemma_7 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [P] [Q].
+Arguments proj_lemma_8 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [P] [Q].
+Arguments proj_lemma_9 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [A9] [P] [Q].
+Arguments proj_lemma_10 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [A9] [A10] [P] [Q].
+Arguments proj_lemma_11 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [A9] [A10] [A11] [P] [Q].
 
 

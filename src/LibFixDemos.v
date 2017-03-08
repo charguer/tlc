@@ -1091,7 +1091,7 @@ Proof using.
       rewrite~ If_l. applys* (@trans_elim text) s'.
       rewrite~ If_l. applys* (@large_strict_trans text) s'.
       rewrite~ If_l. applys* (@strict_large_trans text) s'.
-      rewrite If_r; [|rew_logic';auto]. applys~ (@large_trans text) s'.
+      rewrite If_r; [|rew_logic;auto]. applys~ (@large_trans text) s'.
   fequals.
     apply E. unfold select_sub. simpl. rewrite~ If_r.
   inverts N. applys~ IH. auto 7. intros s' S'. case_asserts~.

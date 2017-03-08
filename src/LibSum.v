@@ -10,8 +10,8 @@ Generalizable Variables A B.
 (* ********************************************************************** *)
 (** * Fixing implicit types *)
 
-Implicit Arguments inl [[A] [B]].
-Implicit Arguments inr [[A] [B]].
+Arguments inl {A} {B}.
+Arguments inr {A} {B}.
 
 
 (* ********************************************************************** *)
@@ -19,6 +19,7 @@ Implicit Arguments inr [[A] [B]].
 
 Instance sum_inhab_left : forall `{Inhab A} B, Inhab (A + B).
 Proof using. intros. apply (prove_Inhab (inl arbitrary)). Qed.
+
 Instance sum_inhab_right : forall `{Inhab B} A, Inhab (A + B).
 Proof using. intros. apply (prove_Inhab (inr arbitrary)). Qed.
 
@@ -29,21 +30,22 @@ Proof using. typeclass. Qed.
 (* ********************************************************************** *)
 (** * Operations *)
 
-Section IsIn.
-Variables (A B : Type).
-Implicit Type x : A + B.
-
-Definition is_inl x :=
+Definition is_inl (A B : Type) (x : A + B) : bool :=
   match x with
   | inl _ => true
   | inr _ => false
   end.
 
-Definition is_inr x :=
+Definition is_inr (A B : Type) (x : A + B) : bool :=
   match x with
   | inl _ => false
   | inr _ => true
   end.
+
+
+Section IsIn.
+Variables (A B : Type).
+Implicit Type x : A + B.
 
 Lemma is_inl_neg_is_inr : forall x,
   is_inl x = ! (is_inr x).
@@ -63,7 +65,7 @@ End IsIn.
 (** ** Stripping of the branch tag *)
 
 Section Get.
-Variables (A1 A2 : Type) (DA1:Inhab A1) (DA2:Inhab A2).
+Context `{IA1:Inhab A1} `{IA2:Inhab A2}.
 Implicit Types x : A1+A2.
 
 Definition get21 x :=
@@ -80,16 +82,12 @@ Definition get22 x :=
 
 End Get.
 
-Implicit Arguments get21 [[A1] [A2] [DA1]].
-Implicit Arguments get22 [[A1] [A2] [DA2]].
-
 
 (*-----------------------------------------------------*)
 (** ** Lifting functions over sum types *)
 
 Section Fget.
-Variables (A1 A2 B1 B2 : Type)
-  (DB1:Inhab B1) (DB2:Inhab B2).
+Context {A1:Type} {A2:Type} `{IB1:Inhab B1} `{IB2:Inhab B2}.
 Implicit Types f : A1+A2->B1+B2.
 
 Definition func_get21 f :=
@@ -98,7 +96,4 @@ Definition func_get22 f :=
   fun x => get22 (f (inr x)).
 
 End Fget.
-
-Implicit Arguments func_get21 [[A1] [A2] [B1] [B2] [DB1]].
-Implicit Arguments func_get22 [[A1] [A2] [B1] [B2] [DB2]].
 

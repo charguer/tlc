@@ -283,7 +283,7 @@ Proof using.
     specializes H M. induction L'.
       inverts H.
       rewrite filter_cons. inverts H.
-        rewrite (is_True M). rewrite~ isTrue_True.
+        rewrite (prop_eq_True M). rewrite~ isTrue_True.
         case_if; fold_bool; fold_prop; auto.
     clear H. induction L'.
       rewrite filter_nil in M. inverts M.

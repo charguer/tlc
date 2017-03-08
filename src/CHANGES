@@ -844,3 +844,120 @@ Definition int_downto_wf := downto_wf.
 Definition int_upto_wf := upto_wf.
 
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Definition of Xor on propositions *)
+
+(* TODO: should be defined simply as P <> Q *)
+
+Definition Xor (P Q : Prop) :=
+  (P /\ ~ Q) \/ (~ P /\ Q).
+
+Hint Unfold Xor.
+
+Notation "P '\+/' Q" := (Xor P Q)
+  (at level 76, right associativity) : Logic_scope.
+
+Open Scope Logic_scope.
+
+
+(* ---------------------------------------------------------------------- *)
+
+Definition is_True := prop_eq_True.
+Definition is_False := prop_eq_False.
+Definition is_True_inv := prop_eq_True_inv.
+Definition is_False_inv := prop_eq_False_inv.
+Definition prop_neq_l_inv := prop_neq_inv_l.
+Definition prop_neq_r_inv := prop_neq_inv_r.
+
+Definition not_not_elim := not_not_inv.
+Definition not_not_intro := not_not.
+Definition not_cancel := not_inj.
+
+Definition contrapose_elim := contrapose_inv.
+Definition contrapose_intro := contrapose.
+
+Definition case_classic_l := or_inv_classic_l.
+Definition case_classic_r := or_inv_classic_r.
+
+Definition iff_1 := iff_l.
+Definition iff_2 := iff_r.
+
+Definition iff_neg_1 := iff_not_l.
+Definition iff_neg_2 := iff_not_r.
+
+Definition iff_not_swap := iff_not_swap_eq.
+Definition iff_not_inj := iff_not_inj_eq.
+
+
+(* ---------------------------------------------------------------------- *)
+
+(** The tactic [rew_logic'] is similar except that it only
+    tries to apply the most frequently useful rules, in order
+    to run faster. *)
+
+Hint Rewrite not_not not_and not_or not_True not_False : rew_logic'.
+
+Tactic Notation "rew_logic'" :=
+  autorewrite with rew_logic'.
+Tactic Notation "rew_logic'" "in" hyp(H) :=
+  autorewrite with rew_logic' in H.
+Tactic Notation "rew_logic'" "in" "*" :=
+  autorewrite with rew_logic' in *.
+
+Tactic Notation "rew_logic'" "~" :=
+  rew_logic'; auto_tilde.
+Tactic Notation "rew_logic'" "~" "in" hyp(H) :=
+  rew_logic' in H; auto_tilde.
+Tactic Notation "rew_logic'" "~" "in" "*" :=
+  rew_logic' in *; auto_tilde.
+
+Tactic Notation "rew_logic'" "*" :=
+  rew_logic'; auto_star.
+Tactic Notation "rew_logic'" "*" "in" hyp(H) :=
+  rew_logic' in H; auto_star.
+Tactic Notation "rew_logic'" "*" "in" "*" :=
+  rew_logic' in *; auto_star.
+
+(* ---------------------------------------------------------------------- *)
+
+Ltac absurds_post H :=
+  rew_logic in H.
+
+Ltac absurds_core H :=
+  let N := fresh "TEMP" in apply not_not_inv;
+  intros N; absurds_post N; generalize N; intros H.
+
+Tactic Notation "absurds" "as" simple_intropattern(H) :=
+  absurds_core H.
+Tactic Notation "absurds" :=
+  let H := fresh "H" in absurds as H.
+
+(** [absurds_nosimpl as H], or simply [absurd_nosimpl] is like
+    [absurd] but does not perform any simplification of the negation. *)
+
+Ltac absurds_nosimpl_core H :=
+  apply not_not_inv; intros H.
+
+Tactic Notation "absurds_nosimpl" "as" simple_intropattern(H) :=
+  absurds_nosimpl_core H.
+Tactic Notation "absurds_nosimpl" :=
+  let H := fresh "H" in absurds_nosimpl as H.
+
+(* ---------------------------------------------------------------------- *)
+
+Lemma pred_le_refl : forall A (P : A -> Prop),
+  pred_le P P.
+Proof using. unfolds~ pred_le. Qed.
+(* LATER: could be reformulated as [refl pred_le], but this
+   might prevent use by [auto]. (?) *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** A shorthand for [ex_intro] with more implicit arguments *)
+
+Definition ex_intro' A (x:A) (P:A->Prop) (H:P x) :=
+  @ex_intro A P x H.
+
+Arguments ex_intro' [A] {P} {H}.
+
+
