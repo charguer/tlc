@@ -746,3 +746,59 @@ Proof using. introv (L&O&E) K. subst. inverts E. Qed.
 End UpdateRel.
 
 *)
+
+
+(* ---------------------------------------------------------------------- *)
+
+Definition head_of_le := head_le. 
+
+Definition head_le := heads_le. 
+(* and same for lemmas *)
+
+(* ---------------------------------------------------------------------- *)
+
+Definition foreach_weaken := foreach_pred_le.
+
+Definition Forall_weaken := Forall_pred_le.
+
+(* ---------------------------------------------------------------------- *)
+
+Definition sorted_sub := sorted_cons_inv_sorted.
+Definition sorted_inv := sorted_cons_inv.
+Definition sorted_cons_head_of := sorted_cons_inv_head_le.
+
+
+Definition sorted_cons_head := sorted_cons.
+Definition head_le_Forall_le := Forall_le_head_le.
+Definition sorted_Forall_le := Forall_le_from_sorted_head_le.
+Definition  := .
+Definition  := .
+Definition  := .
+Definition  := .
+Definition  := .
+
+Lemma sorted_flip_flip : forall l,
+  sorted le l ->
+  sorted (flip (flip le)) l.
+Proof using.
+  introv H. rewrite flip_flip. induction H.
+   constructor. constructor. apply~ sorted_cons.
+Qed.
+
+
+
+
+(* ********************************************************************** *)
+(** * List sorted in reverse order *)
+
+(* ********************************************************************** *)
+(** If [x::l2] is sorted and the head of [l1] is smaller than [x],
+   then [x] is smaller than the head of [l2] . *)
+
+Lemma heads_le_from_sorted : forall x l1 l2,
+  sorted le (x::l2) ->
+  heads_le le l1 (x::l2) ->
+  heads_le le (x::l1) l2.
+Proof using.
+  intros. destruct l2; simpl. auto. inverts~ H.
+Qed.

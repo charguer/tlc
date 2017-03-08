@@ -85,37 +85,6 @@ Tactic Notation "rew_list" "*" "in" hyp(H) :=
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** [rew_lists] for set and map operations on lists *)
-
-(** Normalize 
-  - [++]
-  - [mem] 
-  - [keys]
-  - [assoc]
-*)
-
-Tactic Notation "rew_lists" :=
-  autorewrite with rew_lists.
-Tactic Notation "rew_lists" "~" :=
-  rew_lists; auto_tilde.
-Tactic Notation "rew_lists" "*" :=
-  rew_lists; auto_star.
-Tactic Notation "rew_lists" "in" "*" :=
-  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_lists).
-  (* autorewrite with rew_lists in *. *)
-Tactic Notation "rew_lists" "~" "in" "*" :=
-  rew_lists in *; auto_tilde.
-Tactic Notation "rew_lists" "*" "in" "*" :=
-  rew_lists in *; auto_star.
-Tactic Notation "rew_lists" "in" hyp(H) :=
-  autorewrite with rew_lists in H.
-Tactic Notation "rew_lists" "~" "in" hyp(H) :=
-  rew_lists in H; auto_tilde.
-Tactic Notation "rew_lists" "*" "in" hyp(H) :=
-  rew_lists in H; auto_star.
-
-
-(* ---------------------------------------------------------------------- *)
 (** ** [rew_listx] for all other operations on lists *)
 
 Tactic Notation "rew_listx" :=
@@ -144,7 +113,7 @@ Tactic Notation "rew_listx" "*" "in" hyp(H) :=
 (** * Properties of operations *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Core operations *)
+(** ** Definitions of Fold-right and App *)
 
 Fixpoint fold_right A B (f : A -> B -> B) (acc : B) l :=
   match l with
@@ -156,10 +125,6 @@ Definition app A (l1 l2 : list A) :=
   fold_right (fun x (acc:list A) => x::acc) l2 l1.
 
 (* Properties appear further *)
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Notation *)
 
 (** [l1 ++ l2] concatenates two lists *)
 
@@ -210,7 +175,7 @@ Lemma app_cons_one_r : forall x l,
 Proof using. auto. Qed.
 
 Lemma app_cons_one_l : forall x l,
-  l ++ (x::nil) = l&x. (* same thing *)
+  l ++ (x::nil) = l&x. (* equal up to notation *)
 Proof using. auto. Qed.
 
 Lemma app_last_l : forall x l1 l2,
@@ -511,10 +476,11 @@ Proof using.
   { destruct l2; rew_list in *.
     { rewrite <- app_cons_l in E. rewrites~ (>> app_eq_self_inv_r (eq_sym E)). }
     { inverts E. fequals. applys* IHl1. } }
+Qed.
   (* Alternative proof using [rev]:
      introv E. lets H: (f_equal (@rev A) E). rew_list in H.
      lets N: app_cancel_l H. applys~ rev_inj. *)
-Qed.
+
 
 (**------- Last -------- *)
 
@@ -569,6 +535,16 @@ Proof using.
   intros. destruct l1; rew_list in H; inverts H. { left~. } { right*. }
 Qed.
 
+Lemma last_eq_middle_inv : forall x y l1 l2 l,
+  l & x = l1 & y ++ l2 ->
+  (l = l1 /\ x = y /\ l2 = nil) \/ (exists l2', l2 = l2'&x).
+Proof using.
+  introv E. destruct (last_case l2) as [|(z&t&K)].
+  { subst. rew_list in *. lets (?&?): last_eq_last_inv E. left*. }
+  { subst. repeat rewrite <- app_assoc in E. lets (?&?): last_eq_last_inv E.
+    subst. right*. }
+Qed.
+
 End AppInversion.
 
 Implicit Arguments last_eq_nil_inv [A a l].
@@ -582,7 +558,8 @@ Implicit Arguments cons_eq_middle_inv [A x y l1 l2 l].
 (* ---------------------------------------------------------------------- *)
 (* ** Mem *)
 
-(** [mem x l] asserts that [x] belongs to [l] *)
+(** [mem x l] asserts that [x] belongs to [l].
+    Remark: it could be also defined as [Exists (=x) l]. *)
 
 Inductive mem A (x:A) : list A -> Prop :=
   | mem_here : forall l,
@@ -2566,7 +2543,7 @@ Proof using.
   rewrite K in E. rewrite* Forall_app_eq in E.
 Qed.
 
-Lemma Forall_weaken : forall P Q l,
+Lemma Forall_pred_le : forall P Q l,
   Forall P l -> 
   pred_le P Q ->
   Forall Q l.
@@ -2580,11 +2557,11 @@ Proof using.
   { rewrite filter_cons. cases_if~. }
 Qed.
 
-Lemma Forall_filter_weaken : forall P Q l,
+Lemma Forall_filter_pred_le : forall P Q l,
   pred_le P Q ->
   Forall Q (filter P l).
 Proof using.
-  introv E. applys~ Forall_weaken P. applys Forall_filter_same.
+  introv E. applys~ Forall_pred_le P. applys Forall_filter_same.
 Qed.
 
 End ForallProp.
@@ -2739,9 +2716,9 @@ Proof using.
   { applys* Forall2_swap_inv. } 
 Qed.
 
-Lemma Forall2_weaken : forall P Q r s,
+Lemma Forall2_rel_le : forall P Q r s,
   Forall2 P r s ->
-  rel_le P Q -> (* forall a b, P a b -> Q a b *)
+  rel_le P Q -> 
   Forall2 Q r s.
 Proof using.
   introv F W. unfolds rel_le, pred_le. induction F; constructors~.
@@ -2954,6 +2931,12 @@ Lemma mem_Exists : forall P l x,
   Exists P l.
 Proof using. introv M H. rewrite* Exists_iff_exists_mem. Qed.
 
+Lemma mem_Exists_eq : forall P l x,
+  mem x l = Exists (= x) l.
+Proof using.
+  intros. extens. rewrite* Exists_iff_exists_mem. iff M (y&?&?); subst*.
+Qed.
+
 Lemma Nth_Exists : forall P n l x,
   Nth n l x ->
   P x ->
@@ -2983,13 +2966,13 @@ Proof using.
   { applys~ Exists_rev. }
 Qed.
 
-Lemma Exists_weaken : forall P Q l,
+Lemma Exists_pred_le : forall P Q l,
   Exists P l -> 
   pred_le P Q ->
   Exists Q l.
 Proof using. introv. induction l; introv H L; inverts* H. Qed.
 
-Lemma Exists_filter_weaken : forall P Q l,
+Lemma Exists_filter_pred_le : forall P Q l,
   Exists P l ->
   pred_le P Q ->
   Exists P (filter Q l).
@@ -3002,7 +2985,7 @@ Qed.
 Lemma Exists_filter_same : forall P l,
   Exists P l ->
   Exists P (filter P l).
-Proof using. introv M. applys* Exists_filter_weaken. applys pred_le_refl. Qed.
+Proof using. introv M. applys* Exists_filter_pred_le. applys pred_le_refl. Qed.
 
 Lemma Exists_take_inv : forall P n l,
   Exists P (take n l) ->

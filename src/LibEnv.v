@@ -996,7 +996,8 @@ Qed.
   very common operation we provide a lemma for it. *)
 
 Lemma binds_weaken : forall x a E F G,
-  binds x a (E & G) -> ok (E & F & G) ->
+  binds x a (E & G) -> 
+  ok (E & F & G) ->
   binds x a (E & F & G).
 Proof using.
   introv H O. lets [?|[? ?]]: binds_concat_inv H.

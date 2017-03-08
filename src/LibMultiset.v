@@ -218,7 +218,9 @@ Proof using.
 Qed.
 
 Lemma foreach_weaken : forall P Q E,
-  foreach P E -> pred_le P Q -> foreach Q E.
+  foreach P E -> 
+  pred_le P Q -> 
+  foreach Q E.
 Proof using. introv H L K. apply~ L. Qed.
 
 End ForeachProp.

@@ -14,6 +14,37 @@ Global Close Scope list_scope.
 
 
 
+(* ---------------------------------------------------------------------- *)
+(** ** [rew_lists] for set and map operations on lists *)
+
+(** Normalize 
+  - [++]
+  - [mem] 
+  - [keys]
+  - [assoc]
+*)
+
+Tactic Notation "rew_lists" :=
+  autorewrite with rew_lists.
+Tactic Notation "rew_lists" "~" :=
+  rew_lists; auto_tilde.
+Tactic Notation "rew_lists" "*" :=
+  rew_lists; auto_star.
+Tactic Notation "rew_lists" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_lists).
+  (* autorewrite with rew_lists in *. *)
+Tactic Notation "rew_lists" "~" "in" "*" :=
+  rew_lists in *; auto_tilde.
+Tactic Notation "rew_lists" "*" "in" "*" :=
+  rew_lists in *; auto_star.
+Tactic Notation "rew_lists" "in" hyp(H) :=
+  autorewrite with rew_lists in H.
+Tactic Notation "rew_lists" "~" "in" hyp(H) :=
+  rew_lists in H; auto_tilde.
+Tactic Notation "rew_lists" "*" "in" hyp(H) :=
+  rew_lists in H; auto_star.
+
+
 (* ********************************************************************** *)
 (** * Comparable *)
 
