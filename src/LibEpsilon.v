@@ -164,7 +164,7 @@ Lemma choose_spec:
 Proof using IB.
   intros.
   (* Since [a] is not a root, it has a parent [b]. *)
-  forwards [ b ? ]: exists_from_not. eauto.
+  forwards [ b ? ]: exists_from_not_forall. eauto.
   (* By definition of [choose], there follows that [choose a] is
      well-defined, hence there is an edge from [a] to [choose a]. *)
   unfold choose. eapply epsilon_spec. eauto.

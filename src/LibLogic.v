@@ -913,36 +913,36 @@ Proof using. autos*. Qed.
 (** ** Parallel strengthening of a conjunction *)
 
 Lemma conj_strengthen_2 : forall (Q1 Q2 P1 P2 : Prop),
+  (Q1 /\ Q2) -> 
   (Q1 -> P1) -> 
   (Q2 -> P2) ->
-  (Q1 /\ Q2) -> 
   (P1 /\ P2).
 Proof using. autos*. Qed.
 
 Lemma conj_strengthen_3 : forall (Q1 Q2 Q3 P1 P2 P3 : Prop),
+  (Q1 /\ Q2 /\ Q3) -> 
   (Q1 -> P1) -> 
   (Q2 -> P2) -> 
   (Q3 -> P3) ->
-  (Q1 /\ Q2 /\ Q3) -> 
   (P1 /\ P2 /\ P3).
 Proof using. autos*. Qed.
 
 Lemma conj_strengthen_4 : forall (Q1 Q2 Q3 Q4 P1 P2 P3 P4 : Prop),
+  (Q1 /\ Q2 /\ Q3 /\ Q4) ->
   (Q1 -> P1) -> 
   (Q2 -> P2) -> 
   (Q3 -> P3) -> 
   (Q4 -> P4) ->
-  (Q1 /\ Q2 /\ Q3 /\ Q4) ->
   (P1 /\ P2 /\ P3 /\ P4).
 Proof using. autos*. Qed.
 
 Lemma conj_strengthen_5 : forall (Q1 Q2 Q3 Q4 Q5 P1 P2 P3 P4 P5 : Prop),
+  (Q1 /\ Q2 /\ Q3 /\ Q4 /\ Q5) -> 
   (Q1 -> P1) -> 
   (Q2 -> P2) -> 
   (Q3 -> P3) -> 
   (Q4 -> P4) -> 
   (Q5 -> P5) ->
-  (Q1 /\ Q2 /\ Q3 /\ Q4 /\ Q5) -> 
   (P1 /\ P2 /\ P3 /\ P4 /\ P5).
 Proof using. autos*. Qed.
 
