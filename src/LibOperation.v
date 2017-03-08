@@ -161,7 +161,7 @@ Definition morphism (A B : Type) (h : A -> B) (f : oper2 A) (g : oper2 B) :=
 (** Auto-morphism *)
 
 Definition automorphism A := @morphism A A.
-Implicit Arguments automorphism [A].
+Arguments automorphism [A].
 
 
 (* ---------------------------------------------------------------------- *)

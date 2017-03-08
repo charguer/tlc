@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic.
+Require Import LibTactics LibLogic LibRelation.
 Generalizable Variables A B.
 
 
@@ -14,7 +14,10 @@ Generalizable Variables A B.
 (* ---------------------------------------------------------------------- *)
 (** ** Construction of epsilon *)
 
-(* TODO: inline the lemma? *)
+(** [epsilon P] where [P] is a predicate over an inhabited type [A],
+    returns a value [x] of type [A] that satisfies [P], if there exists 
+    one such value, else it returns an arbitrary value of type [A]. *)
+
 Lemma Inhab_witness : forall `{Inhab A}, { x : A | True }.
 Proof using. intros. destruct H as [H]. apply~ indefinite_description. Qed.
 
@@ -138,27 +141,23 @@ Tactic Notation "spec_epsilon" "*" "in" hyp(H) "as" ident(X) :=
 (* ********************************************************************** *)
 (** * Conversion from relations to functions *)
 
+(* Given a relation [R] of type [A->B->Prop], [choose R] returns a 
+   function [f] of type [A->B] that satisfies the relation [R], i.e.
+   such that [R x (f x)] forall [x] that has an image by [R]. *)
+
+Definition choose A `{IB:Inhab B} (R:A->B->Prop) : A -> B := 
+  fun (a:A) => epsilon (fun b => R a b).
+
 Section Choose.
-
-(* Let [R] be an arbitrary binary relation at type [A -> B -> Prop]. *)
-
-Variable A B : Type.
-Variable R : A -> B -> Prop.
-Context `{IB:Inhab B}.
-
-(* We turn it into a function, which ostensibly is a total function of type
-   [A -> B], but in reality is well-defined only in the domain of [R]. *)
-
-Definition choose (a : A) : B :=
-  epsilon (fun b => R a b).
+Context (A B : Type) `{IB:Inhab B}.
+Implicit Types R : A -> B -> Prop.
 
 (* TODO choose_spec and choose_unique could be reformulated using
    incl_fr and incl_rf *)
 
 (* Every [a] in the domain of [R] is related by [R] with [choose a]. *)
 
-Lemma choose_spec:
-  forall a,
+Lemma choose_spec : forall R a,
   ~ (forall b, ~ R a b) ->
   R a (choose a).
 Proof using IB.
@@ -174,27 +173,25 @@ Qed.
    The existence of an edge from [a] to [b] implies that [b] is
    [choose a]. *)
 
-Variable functional_R:
-  forall a b1 b2, R a b1 -> R a b2 -> b1 = b2.
-  (* TODO: use a definition of functional, and inline in the lemma below *)
-
-Lemma choose_unique:
-  forall a b,
+Lemma choose_unique : forall R a b,
+  (* functional R *)
+  (forall a b1 b2, R a b1 -> R a b2 -> b1 = b2) ->
   R a b ->
   choose a = b.
-Proof using IB functional_R.
+Proof using IB.
   intros.
   (* [R a b] implies that [a] is in the domain of [R].
      Hence there is an edge from [a] to [choose a]. *)
-  forwards: choose_spec. rewrite not_forall_not. eauto.
+  forwards: choose_spec. rewrite not_forall_not_eq. eauto.
   (* The result follows from the hypothesis that [R] is functional. *)
   eauto.
 Qed.
 
 End Choose.
 
-(* In the special case where [B] is [A], the inhabitation witness
-   can be constructed out of [a]. *)
+(* Remark: in the special case where [R] has type [A->A->Prop],
+   one may get away without providing a proof of [Inhab A]. *)
 
 Definition choose_ A (R : A -> A -> Prop) (a : A) : A :=
   @choose A A R (prove_Inhab a) a.
+

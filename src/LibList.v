@@ -444,21 +444,34 @@ Lemma app_not_empty_r : forall l1 l2,
   l1 ++ l2 <> nil.
 Proof using. introv NE K. apply NE. forwards*: app_eq_nil_inv K. Qed.
 
-Lemma app_eq_self_inv_r : forall l1 l2,
-  l2 = l1 ++ l2 -> 
+Lemma app_l_eq_self_inv : forall l1 l2,
+  l1 ++ l2 = l1 -> 
+  l2 = nil.
+Proof using.
+  introv E. apply length_zero_inv.
+  lets: (func_eq_1 (@length A) E). rew_list in H. math.
+Qed.
+
+(* symmetric of previous lemma *)
+Lemma self_eq_app_l_inv : forall l1 l2,
+  l1 = l1 ++ l2 -> 
+  l2 = nil.
+Proof using. intros. applys* app_l_eq_self_inv. Qed.
+
+Lemma app_r_eq_self_inv : forall l1 l2,
+  l1 ++ l2 = l2 -> 
   l1 = nil.
 Proof using.
   introv E. apply length_zero_inv.
   lets: (func_eq_1 (@length A) E). rew_list in H. math.
 Qed.
 
-Lemma app_eq_self_inv_l : forall l1 l2,
-  l1 = l1 ++ l2 -> 
-  l2 = nil.
-Proof using.
-  introv E. apply length_zero_inv.
-  lets: (func_eq_1 (@length A) E). rew_list in H. math.
-Qed.
+(* symmetric of previous lemma *)
+Lemma self_eq_app_r_inv : forall l1 l2,
+  l2 = l1 ++ l2 -> 
+  l1 = nil.
+Proof using. intros. applys* app_r_eq_self_inv. Qed.
+
 
 Lemma app_cancel_l : forall l1 l2 l3,
   l1 ++ l2 = l1 ++ l3 -> 

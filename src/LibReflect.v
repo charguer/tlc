@@ -113,20 +113,27 @@ Notation "x ''=' y" := (isTrue (@eq _ x y))
   (at level 70, y at next level, no associativity) : comp_scope.
 Notation "x ''<>' y" := (isTrue (~ (@eq _ x y)))
   (at level 69, y at next level, no associativity) : comp_scope.
+Open Scope comp_scope.
 
 Global Opaque isTrue.
-Open Scope comp_scope.
+
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Extensionality for boolean equality *)
 
-Lemma bool_ext : forall b1 b2 : bool,
+Lemma bool_ext : forall (b1 b2 : bool),
   (b1 <-> b2) -> b1 = b2.
 Proof using.
   destruct b1; destruct b2; intros; auto_false.
   destruct H. false H; auto.
   destruct H. false H0; auto.
+Qed.
+
+Lemma bool_ext_eq : forall (b1 b2 : bool),
+  (b1 = b2) = (b1 <-> b2).
+Proof using.
+  intros. extens. iff M. { subst*. } { applys* bool_ext. }
 Qed.
 
 Instance bool_extensional : Extensional bool.
@@ -153,15 +160,15 @@ Proof using. extens. rewrite* istrue_isTrue_iff. Qed.
 
 Lemma istrue_neg : forall b,
   istrue (!b) = ~ (istrue b).
-Proof using. extens. tautob*. Qed.
+Proof using. extens. tautob. Qed.
 
 Lemma istrue_and : forall b1 b2,
   istrue (b1 && b2) = (istrue b1 /\ istrue b2).
-Proof using. extens. tautob*. Qed.
+Proof using. extens. tautob. Qed.
 
 Lemma istrue_or : forall b1 b2,
   istrue (b1 || b2) = (istrue b1 \/ istrue b2).
-Proof using. extens. tautob*. Qed.
+Proof using. extens. tautob. Qed.
 
 End DistribIstrue.
 
@@ -211,6 +218,26 @@ Proof using. intros. rewrite istrue_neg. rewrite~ istrue_isTrue. Qed.
 Lemma isTrue_not_istrue : forall b,
   isTrue (~ istrue b) = !b.
 Proof using. intros. rewrite isTrue_not. rewrite~ isTrue_istrue. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Lemmas for testing booleans *)
+
+Lemma bool_cases : forall (b : bool),
+  b \/ !b.
+Proof using. tautob. Qed.
+
+Lemma bool_cases_eq : forall (b : bool),
+  b = true \/ b = false.
+Proof using. tautob. Qed.
+
+Lemma xor_cases : forall (b1 b2 : bool),
+  xor b1 b2 -> 
+     (b1 = true /\ b2 = false)
+  \/ (b1 = false /\ b2 = true).
+Proof using. tautob; auto_false*. Qed.
+
+Arguments xor_cases [b1] [b2].
 
 
 (* ---------------------------------------------------------------------- *)
@@ -354,236 +381,7 @@ Qed.
 
 
 (* ********************************************************************** *)
-(** * Tactics for reflection *)
-
-(* ---------------------------------------------------------------------- *)
-(** ** DEPRECATED  --- Tactic [fold_bool] *)
-
-(** Tactic [fold_bool] simplifies goal and hypotheses of the form
-    [b = true] and [b = false], as well as their symmetric *)
-
-Section FoldingBool.
-Variables (b : bool).
-
-Lemma bool_eq_true :
-  b -> b = true.
-Proof using. auto. Qed.
-
-Lemma eq_true_l :
-  true = b -> b.
-Proof using. tautob~. Qed.
-
-Lemma eq_true_r :
-  b = true -> b.
-Proof using. tautob~. Qed.
-
-Lemma eq_false_l :
-  false = b -> !b.
-Proof using. tautob~. Qed.
-
-Lemma eq_false_r :
-  b = false -> !b.
-Proof using. tautob~. Qed.
-
-Lemma eq_true_l_back :
-  b -> true = b.
-Proof using. tautob~. Qed.
-
-Lemma eq_true_r_back :
-  b -> b = true.
-Proof using. tautob~. Qed.
-
-Lemma eq_false_l_back :
-  !b -> false = b.
-Proof using. tautob~. Qed.
-
-Lemma eq_false_r_back :
-  !b -> b = false.
-Proof using. tautob~. Qed.
-
-Lemma eq_false_r_back_not :
-  (~b) -> b = false.
-Proof using. destruct b; auto_false. Qed. (*todo:tautob~.*)
-
-Lemma neg_neg_back :
-  b -> !!b.
-Proof using. tautob~. Qed.
-
-Lemma neg_neg_forward :
-  !!b -> b.
-Proof using. tautob~. Qed.
-
-Lemma eq_bool_prove : forall b' : bool,
-  (b -> b') -> (b' -> b) -> b = b'.
-Proof using. lets: false_to_False. tautob~; tryfalse~. Qed.
-  (* todo: simplify *)
-
-Lemma eq_bool_iff : forall b' : bool,
-  b = b' -> (b <-> b').
-Proof using. tautob*. Qed.
-
-End FoldingBool.
-
-Ltac fold_bool :=
-  repeat match goal with
-  | H: true = ?b |- _ => applys_to H eq_true_l
-  | H: ?b = true |- _ => applys_to H eq_true_r
-  | H: false = ?b |- _ => applys_to H eq_false_l
-  | H: ?b = false |- _ => applys_to H eq_false_r
-  | H: istrue (!! ?b) |- _ => applys_to H neg_neg_forward
-  | |- true = ?b => apply eq_true_l_back
-  | |- ?b = true => apply eq_true_r_back
-  | |- false = ?b => apply eq_false_l_back
-  | |- ?b = false => apply eq_false_r_back
-  | |- istrue (!! ?b) => apply neg_neg_back
-  end.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** DEPRECATED --- Tactic [fold_prop] *)
-
-(** Tactic [fold_prop] simplifies goal and hypotheses of the form
-    [istrue b] or [~ istrue b], or [P = True] or [P = False]
-    as well as their symmetric *)
-
-Section FoldingProp.
-Variables (P : Prop) (b : bool).
-
-Lemma istrue_isTrue_back :
-  P -> istrue (isTrue P).
-Proof using. rewrite~ istrue_isTrue. Qed.
-
-Lemma istrue_isTrue_forw :
-  istrue (isTrue P) -> P.
-Proof using. rewrite~ istrue_isTrue. Qed.
-
-Lemma istrue_not_isTrue_back :
-  ~ P -> istrue (! isTrue P).
-Proof using. rewrite~ istrue_neg_isTrue. Qed.
-
-Lemma istrue_not_isTrue_forw :
-  istrue (! isTrue P) -> ~ P.
-Proof using. rewrite~ istrue_neg_isTrue. Qed.
-
-Lemma prop_eq_True_forw :
-  (P = True) -> P.
-Proof using. intros. subst~. Qed.
-
-Lemma prop_eq_True_back :
-  P -> (P = True).
-Proof using. intros. extens*. Qed.
-
-Lemma prop_eq_False_forw :
-  (P = False) -> ~ P.
-Proof using. intro. subst*. Qed.
-
-Lemma prop_eq_False_back :
-  ~ P -> (P = False).
-Proof using. intros. extens*. Qed.
-
-Lemma prop_neq_True_forw :
-  (P <> True) -> ~ P.
-Proof using. intros_all. apply H. extens*. Qed.
-
-Lemma prop_neq_True_back :
-  ~ P -> (P <> True).
-Proof using. intros_all. subst~. Qed.
-
-Lemma prop_neq_False_forw :
-  (P <> False) -> P.
-Proof using.
-  intros_all. apply not_not_inv.
-  intros_all. apply H. extens*.
-Qed.
-
-Lemma prop_neq_False_back :
-  P -> (P <> False).
-Proof using. introv M K. rewrite~ <- K. Qed.
-
-Lemma not_istrue_isTrue_forw :
-  ~ istrue (isTrue P) -> ~ P.
-Proof using. apply contrapose. rewrite~ istrue_isTrue. Qed.
-
-Lemma not_istrue_not_isTrue_forw :
-  ~ istrue (! isTrue P) -> P.
-Proof using.
-  rewrite <- (@not_not P). apply contrapose.
-  rewrite~ istrue_neg_isTrue.
-Qed. (* todo: missing lemma from lib logic about ~A->B *)
-
-Lemma not_istrue_isTrue_back :
-  ~ P -> ~ istrue (isTrue P).
-Proof using. apply contrapose. rewrite~ istrue_isTrue. Qed.
-
-Lemma not_istrue_not_isTrue_back :
-  P -> ~ istrue (! isTrue P).
-Proof using.
-  rewrite <- (@not_not P). apply contrapose.
-  rewrite~ istrue_neg_isTrue.
-Qed.
-
-End FoldingProp.
-
-Ltac fold_prop :=
-  repeat match goal with
-  | H: istrue (isTrue ?P) |- _ => applys_to H istrue_isTrue_forw
-  | H: istrue (! isTrue ?P) |- _ => applys_to H istrue_not_isTrue_forw
-  | H: ~ istrue (isTrue ?P) |- _ => applys_to H not_istrue_isTrue_forw
-  | H: ~ istrue (! isTrue ?P) |- _ => applys_to H not_istrue_not_isTrue_forw
-  | H: (?P = True) |- _ => applys_to H prop_eq_True_forw
-  | H: (?P = False) |- _ => applys_to H prop_eq_False_forw
-  | H: (True = ?P) |- _ => symmetry in H; applys_to H prop_eq_True_forw
-  | H: (False = ?P) |- _ => symmetry in H; applys_to H prop_eq_False_forw
-  | H: ~ (~ ?P) |- _ => applys_to H not_not_inv
-  | |- istrue (isTrue ?P) => apply istrue_isTrue_back
-  | |- istrue (! isTrue ?P) => apply istrue_not_isTrue_back
-  | |- ~ istrue (isTrue ?P) => apply not_istrue_isTrue_back
-  | |- ~ istrue (! isTrue ?P) => apply not_istrue_not_isTrue_back
-  | |- (?P = True) => apply prop_eq_True_back
-  | |- (?P = False) => apply prop_eq_False_back
-  | |- (True = ?P) => symmetry; apply prop_eq_True_back
-  | |- (False = ?P) => symmetry; apply prop_eq_False_back
-  | |- ~ (~ ?P) => apply not_not
-  end.
-
-  (* todo: improve case_if so that there is no need for that *)
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Tactics for case analysis on booleans *)
-
-(** Extends the tactic [test_dispatch] from LibLogic.v, so as to
-    be able to call the tactic [tests] directly on boolean expressions *)
-
-Ltac tests_bool_base E H1 H2 :=
-  tests_prop_base (istrue E) H1 H2.
-
-Ltac tests_dispatch E H1 H2 ::=
-  match type of E with
-  | bool => tests_bool_base E H1 H2
-  | Prop => tests_prop_base E H1 H2
-  | {_}+{_} => tests_ssum_base E H1 H2
-  end.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Lemmas for testing booleans *)
-
-Lemma bool_cases : forall (b : bool),
-  b \/ !b.
-Proof using. tautob*. Qed.
-
-Lemma bool_cases_eq : forall (b : bool),
-  b = true \/ b = false.
-Proof using. tautob*. Qed.
-
-Lemma xor_cases : forall (b1 b2 : bool),
-  xor b1 b2 -> (b1 = true /\ b2 = false)
-            \/ (b1 = false /\ b2 = true).
-Proof using. tautob; auto_false*. Qed.
-
-Implicit Arguments xor_cases [b1 b2].
-
+(** * Tactics *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactic [logics] for normalizing bool/Prop coercions *)
@@ -643,14 +441,23 @@ Tactic Notation "logics" "*" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics extended for reflection *)
 
-(* Extension of [extens] -- DEPRECATED *)
-
-Ltac extens_base :=
-  first [ extens_core | intros; extens_core ]; logics.
-
-(* Extension of [case_if] *)
+(** Extension of the tactic [case_if] to automatically performs
+    simplification using [logics]. *)
 
 Ltac case_if_post ::= logics; tryfalse.
+
+(** Extension of the tactic [test_dispatch] from LibLogic.v, so as to
+    be able to call the tactic [tests] directly on boolean expressions *)
+
+Ltac tests_bool_base E H1 H2 :=
+  tests_prop_base (istrue E) H1 H2.
+
+Ltac tests_dispatch E H1 H2 ::=
+  match type of E with
+  | bool => tests_bool_base E H1 H2
+  | Prop => tests_prop_base E H1 H2
+  | {_}+{_} => tests_ssum_base E H1 H2
+  end.
 
 
 

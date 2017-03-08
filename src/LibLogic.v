@@ -252,7 +252,6 @@ Tactic Notation "tautop" constr(P1) constr(P2) constr(P3) :=
 (* ********************************************************************** *)
 (** * Properties of logical combinators *)
 
-
 (* ---------------------------------------------------------------------- *)
 (** ** Simplification of conjunction and disjunction *)
 

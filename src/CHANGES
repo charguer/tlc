@@ -356,6 +356,10 @@ Definition app_cons_one := app_cons_one_r.
 
 Definition append := app.
 
+
+Definition app_eq_self_inv_r := self_eq_app_r_inv.
+Definition app_eq_self_inv_l := self_eq_app_l_inv.
+
 (* ********************************************************************** *)
 (** too specific *)
 
@@ -961,3 +965,226 @@ Definition ex_intro' A (x:A) (P:A->Prop) (H:P x) :=
 Arguments ex_intro' [A] {P} {H}.
 
 
+
+(* ---------------------------------------------------------------------- *)
+
+Definition comm_or := or_comm.
+Definition comm_and := and_comm.
+Definition assoc_or := or_assoc.
+Definition assoc_and := and_assoc.
+
+Lemma distribute_and : forall x y z,
+  (x ||| y) &&& z = x &&& z ||| y &&& z.
+Proof. tautob. Qed.
+
+Lemma distribute_or : forall x y z,
+  x &&& y ||| z = (x ||| z) &&& (y ||| z).
+Proof. tautob. Qed.
+
+
+
+(* ---------------------------------------------------------------------- *)
+(* ---------------------------------------------------------------------- *)
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** DEPRECATED  --- Tactic [fold_bool] *)
+
+(** Tactic [fold_bool] simplifies goal and hypotheses of the form
+    [b = true] and [b = false], as well as their symmetric *)
+
+Section FoldingBool.
+Variables (b : bool).
+
+Lemma bool_eq_true :
+  b -> b = true.
+Proof using. auto. Qed.
+
+Lemma eq_true_l :
+  true = b -> b.
+Proof using. tautob. Qed.
+
+Lemma eq_true_r :
+  b = true -> b.
+Proof using. tautob. Qed.
+
+Lemma eq_false_l :
+  false = b -> !b.
+Proof using. tautob. Qed.
+
+Lemma eq_false_r :
+  b = false -> !b.
+Proof using. tautob. Qed.
+
+Lemma eq_true_l_back :
+  b -> true = b.
+Proof using. tautob. Qed.
+
+Lemma eq_true_r_back :
+  b -> b = true.
+Proof using. tautob. Qed.
+
+Lemma eq_false_l_back :
+  !b -> false = b.
+Proof using. tautob. Qed.
+
+Lemma eq_false_r_back :
+  !b -> b = false.
+Proof using. tautob. Qed.
+
+Lemma eq_false_r_back_not :
+  (~b) -> b = false.
+Proof using. destruct b; auto_false. Qed. (*todo:tautob.*)
+
+Lemma neg_neg_back :
+  b -> !!b.
+Proof using. tautob. Qed.
+
+Lemma neg_neg_forward :
+  !!b -> b.
+Proof using. tautob. Qed.
+
+Lemma eq_bool_prove : forall b' : bool,
+  (b -> b') -> (b' -> b) -> b = b'.
+Proof using. lets: false_to_False. tautob; tryfalse~. Qed.
+  (* todo: simplify *)
+
+Lemma eq_bool_iff : forall b' : bool,
+  b = b' -> (b <-> b').
+Proof using. tautob. Qed.
+
+End FoldingBool.
+
+Ltac fold_bool :=
+  repeat match goal with
+  | H: true = ?b |- _ => applys_to H eq_true_l
+  | H: ?b = true |- _ => applys_to H eq_true_r
+  | H: false = ?b |- _ => applys_to H eq_false_l
+  | H: ?b = false |- _ => applys_to H eq_false_r
+  | H: istrue (!! ?b) |- _ => applys_to H neg_neg_forward
+  | |- true = ?b => apply eq_true_l_back
+  | |- ?b = true => apply eq_true_r_back
+  | |- false = ?b => apply eq_false_l_back
+  | |- ?b = false => apply eq_false_r_back
+  | |- istrue (!! ?b) => apply neg_neg_back
+  end.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** DEPRECATED --- Tactic [fold_prop] *)
+
+(** Tactic [fold_prop] simplifies goal and hypotheses of the form
+    [istrue b] or [~ istrue b], or [P = True] or [P = False]
+    as well as their symmetric *)
+
+Section FoldingProp.
+Variables (P : Prop) (b : bool).
+
+Lemma istrue_isTrue_back :
+  P -> istrue (isTrue P).
+Proof using. rewrite~ istrue_isTrue. Qed.
+
+Lemma istrue_isTrue_forw :
+  istrue (isTrue P) -> P.
+Proof using. rewrite~ istrue_isTrue. Qed.
+
+Lemma istrue_not_isTrue_back :
+  ~ P -> istrue (! isTrue P).
+Proof using. rewrite~ istrue_neg_isTrue. Qed.
+
+Lemma istrue_not_isTrue_forw :
+  istrue (! isTrue P) -> ~ P.
+Proof using. rewrite~ istrue_neg_isTrue. Qed.
+
+Lemma prop_eq_True_forw :
+  (P = True) -> P.
+Proof using. intros. subst~. Qed.
+
+Lemma prop_eq_True_back :
+  P -> (P = True).
+Proof using. intros. extens*. Qed.
+
+Lemma prop_eq_False_forw :
+  (P = False) -> ~ P.
+Proof using. intro. subst*. Qed.
+
+Lemma prop_eq_False_back :
+  ~ P -> (P = False).
+Proof using. intros. extens*. Qed.
+
+Lemma prop_neq_True_forw :
+  (P <> True) -> ~ P.
+Proof using. intros_all. apply H. extens*. Qed.
+
+Lemma prop_neq_True_back :
+  ~ P -> (P <> True).
+Proof using. intros_all. subst~. Qed.
+
+Lemma prop_neq_False_forw :
+  (P <> False) -> P.
+Proof using.
+  intros_all. apply not_not_inv.
+  intros_all. apply H. extens*.
+Qed.
+
+Lemma prop_neq_False_back :
+  P -> (P <> False).
+Proof using. introv M K. rewrite~ <- K. Qed.
+
+Lemma not_istrue_isTrue_forw :
+  ~ istrue (isTrue P) -> ~ P.
+Proof using. apply contrapose. rewrite~ istrue_isTrue. Qed.
+
+Lemma not_istrue_not_isTrue_forw :
+  ~ istrue (! isTrue P) -> P.
+Proof using.
+  rewrite <- (@not_not_eq P). apply contrapose.
+  rewrite~ istrue_neg_isTrue.
+Qed. (* todo: missing lemma from lib logic about ~A->B *)
+
+Lemma not_istrue_isTrue_back :
+  ~ P -> ~ istrue (isTrue P).
+Proof using. apply contrapose. rewrite~ istrue_isTrue. Qed.
+
+Lemma not_istrue_not_isTrue_back :
+  P -> ~ istrue (! isTrue P).
+Proof using.
+  rewrite <- (@not_not_eq P). apply contrapose.
+  rewrite~ istrue_neg_isTrue.
+Qed.
+
+End FoldingProp.
+
+Ltac fold_prop :=
+  repeat match goal with
+  | H: istrue (isTrue ?P) |- _ => applys_to H istrue_isTrue_forw
+  | H: istrue (! isTrue ?P) |- _ => applys_to H istrue_not_isTrue_forw
+  | H: ~ istrue (isTrue ?P) |- _ => applys_to H not_istrue_isTrue_forw
+  | H: ~ istrue (! isTrue ?P) |- _ => applys_to H not_istrue_not_isTrue_forw
+  | H: (?P = True) |- _ => applys_to H prop_eq_True_forw
+  | H: (?P = False) |- _ => applys_to H prop_eq_False_forw
+  | H: (True = ?P) |- _ => symmetry in H; applys_to H prop_eq_True_forw
+  | H: (False = ?P) |- _ => symmetry in H; applys_to H prop_eq_False_forw
+  | H: ~ (~ ?P) |- _ => applys_to H not_not_inv
+  | |- istrue (isTrue ?P) => apply istrue_isTrue_back
+  | |- istrue (! isTrue ?P) => apply istrue_not_isTrue_back
+  | |- ~ istrue (isTrue ?P) => apply not_istrue_isTrue_back
+  | |- ~ istrue (! isTrue ?P) => apply not_istrue_not_isTrue_back
+  | |- (?P = True) => apply prop_eq_True_back
+  | |- (?P = False) => apply prop_eq_False_back
+  | |- (True = ?P) => symmetry; apply prop_eq_True_back
+  | |- (False = ?P) => symmetry; apply prop_eq_False_back
+  | |- ~ (~ ?P) => apply not_not
+  end.
+
+  (* todo: improve case_if so that there is no need for that *)
+
+
+
+
+
+
+(* Extension of [extens] -- DEPRECATED *)
+
+Ltac extens_base :=
+  first [ extens_core | intros; extens_core ]; logics.

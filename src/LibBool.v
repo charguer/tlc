@@ -6,6 +6,7 @@
 Set Implicit Arguments.
 Require Import LibTactics LibLogic LibOperation.
 
+
 (* ********************************************************************** *)
 (** * Properties of the boolean type *)
 
@@ -15,19 +16,26 @@ Require Import LibTactics LibLogic LibOperation.
 Instance bool_inhab : Inhab bool.
 Proof using. constructor. apply (prove_Inhab true). Qed.
 
-(** For [Extensional bool], see file LibReflect:
-    this result is not in [LibBool] because it depends on definition
-    from [LibReflect], which itself depends on [LibBool]. *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Extensionality *)
+
+(** See [LibReflect] for extensionality of booleans. *)
 
 
 (* ********************************************************************** *)
 (** * Boolean Operations *)
 
-(* TODO: is it possible to reuse the definition from the library?
-   It might be possible, but it requires to fix several proofs *)
-
 Section Definitions.
 Implicit Types x y z : bool.
+
+(** Negation *)
+
+Definition neg x :=
+  match x with
+  | true => false
+  | false => true
+  end.
 
 (** ** Comparison *)
 
@@ -62,18 +70,10 @@ Definition impl x y :=
   | _, _ => true
   end.
 
-(** Negation *)
-
-Definition neg x :=
-  match x with
-  | true => false
-  | false => true
-  end.
-
-(** Exclusive or*)
+(** Exclusive or *)
 
 Definition xor x y :=
-  x <> y.
+  neg (eqb x y).
 
 End Definitions.
 
@@ -93,15 +93,17 @@ Infix "&&" := and
 Infix "||" := or
   (at level 50, left associativity) : Bool_scope.
 
+Bind Scope Bool_scope with bool. 
+Open Scope Bool_scope.
+
+(* TODO: for parsing [and], the notation [&&] does not work:
+   it loads the definition from Stdlib instead of ours.
+   So, we need to introduce another symbol. (Bug reported.) *)
+
 Infix "&&&" := and
   (at level 40, left associativity, only parsing) : Bool_scope.
 Infix "|||" := or
   (at level 50, left associativity, only parsing) : Bool_scope.
-  (* todo: understand why there is a bug on the && *)
-
-Bind Scope Bool_scope with bool.
-Open Scope Bool_scope.
-
 
 
 (* ********************************************************************** *)
@@ -109,70 +111,124 @@ Open Scope Bool_scope.
       analysis on all variables of type bool. *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** A first simple tactic named [tautob]. *)
+(** ** Tactic [tautob] *)
+
+(** [tautob] introduces all variables that it can, performs a
+    case analysis on all the boolean variables, then splits 
+    all subgoals and attempts resolution using intuition *)
+
+Ltac tautob_post tt :=
+  simpls; try split; intros; try discriminate; 
+  try solve [ intuition auto_false ].
+
+Ltac tautob_core tt :=
+  let rec aux tt :=
+    (try intros_all); match goal with
+    | b : bool |- _ => destruct b; clear b; aux tt
+    | _ => tautob_post tt
+    end in
+  aux tt.
 
 Tactic Notation "tautob" :=
-  let rec go _ :=
-    (try intros_all); match goal with
-    | b : bool |- _ => destruct b; clear b; go tt
-    | _ => simpls; try split; intros; try discriminate
-    end in go tt.
-
-Tactic Notation "tautob" "~" :=
-   tautob; auto_tilde.
-Tactic Notation "tautob" "*" :=
-   tautob; auto_star.
+  tautob_core tt.
 
 
 (* ********************************************************************** *)
-(** * Properties of booleans *)
+(** * Properties of boolean operators *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Properties of [and], [or] and [neg] *)
+(** ** Properties of [eqb] *)
 
-(* todo: rename those lemmas according to convention (e.g. and_neutral_l) *)
+Lemma eqb_same : forall x, eqb x x = true.
+Proof using. tautob. Qed.
 
-Lemma or_same : idempotent2 or.
-Proof using. tautob~. Qed.
+Lemma eqb_true_l : neutral_l eqb true.
+(* forall x, eqb true x = x. *)
+Proof using. tautob. Qed.
+
+Lemma eqb_true_r : neutral_r eqb true.
+Proof using. tautob. Qed.
+
+Lemma eqb_false_l : forall x, 
+  eqb false x = neg x.
+Proof using. tautob. Qed.
+
+Lemma eqb_false_r : forall x, 
+  eqb x false = neg x.
+Proof using. tautob. Qed.
+
+Lemma eqb_comm : comm eqb.
+Proof using. tautob. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of [and] *)
 
 Lemma and_same : idempotent2 and.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma and_true_l : neutral_l and true.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma and_true_r : neutral_r and true.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma and_false_l : absorb_l and false.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma and_false_r : absorb_r and false.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
+
+Lemma and_comm : comm and.
+Proof using. tautob. Qed.
+
+Lemma and_assoc : assoc and.
+Proof using. tautob. Qed.
+
+Lemma and_or_l : distrib_r and or.
+(* forall x y z, (x ||| y) &&& z = x &&& z ||| y &&& z. *)
+Proof. tautob. Qed.
+
+Lemma and_or_r : distrib_l and or.
+(* forall x y z, x &&& (y ||| z) = x &&& y ||| x &&& z. *)
+Proof. tautob. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of [or] *)
+
+Lemma or_same : idempotent2 or.
+Proof using. tautob. Qed.
 
 Lemma or_false_l : neutral_l or false.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma or_false_r : neutral_r or false.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma or_true_l : absorb_l or true.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma or_true_r : absorb_r or true.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
-Lemma comm_or : comm or.
-Proof using. tautob~. Qed.
+Lemma or_comm : comm or.
+Proof using. tautob. Qed.
 
-Lemma comm_and : comm and.
-Proof using. tautob~. Qed.
+Lemma or_assoc : assoc or.
+Proof using. tautob. Qed.
 
-Lemma assoc_and : assoc and.
-Proof using. tautob*. Qed.
+Lemma or_and_l : distrib_r or and.
+(* forall x y z, (x &&& y) ||| z = (x ||| z) &&& (y ||| z). *)
+Proof. tautob. Qed.
 
-Lemma assoc_or : assoc or.
-Proof using. tautob*. Qed.
+Lemma or_and_r : distrib_l or and.
+(* forall x y z, x ||| (y &&& z) = (x ||| y) &&& (x ||| z). *)
+Proof. tautob. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of [neg] *)
 
 Lemma neg_false : ! false = true.
 Proof using. auto. Qed.
@@ -180,29 +236,28 @@ Proof using. auto. Qed.
 Lemma neg_true : ! true = false.
 Proof using. auto. Qed.
 
-Lemma neg_and : @automorphism bool neg and or.
-Proof using. tautob~. Qed.
+(* LATER: fix coq display of goals below *)
 
-Lemma neg_or : @automorphism bool neg or and.
-Proof using. tautob~. Qed.
+Lemma neg_and : automorphism neg and or.
+(* forall x y, ! (x && y) = (! x) || (! y) *)
+Proof using. tautob. Qed.
+
+Lemma neg_or : automorphism neg or and. 
+(* forall x y, ! (x || y) = (! x) && (! y) *)
+Proof using. tautob. Qed.
 
 Lemma neg_neg : involutive neg.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
-Lemma distribute_and : forall x y z,
-  (x ||| y) &&& z = x &&& z ||| y &&& z.
-Proof. tautob~. Qed.
 
-Lemma distribute_or : forall x y z,
-  x &&& y ||| z = (x ||| z) &&& (y ||| z).
-Proof. tautob~. Qed.
+(* ---------------------------------------------------------------------- *)
+(* LATER: lemmas about [impl] and [xor] *)
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of [if then else] *)
 
 Section PropertiesIf.
-
 Implicit Types x y z : bool.
 
 Lemma if_true : forall x y,
@@ -215,52 +270,70 @@ Proof using. auto. Qed.
 
 Lemma if_then_else_same : forall x y,
   (if x then y else y) = y.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma if_then_true_else_false : forall x,
   (if x then true else false) = x.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma if_then_false_else_true : forall x,
   (if x then false else true) = !x.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma if_then_true : forall x y,
   (if x then true else y) = x || y.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma if_then_false : forall x y,
   (if x then false else y) = (!x) && y.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma if_else_false : forall x y,
   (if x then y else false) = x && y.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 Lemma if_else_true : forall x y,
   (if x then y else true) = (!x) || y.
-Proof using. tautob~. Qed.
+Proof using. tautob. Qed.
 
 End PropertiesIf.
 
 
 (* ********************************************************************** *)
+(** * Opacity *)
+
+Opaque neg eqb and or impl xor.
+
+
+(* ********************************************************************** *)
 (** * Tactics *)
 
-(** [fix_neg_neg] is a tactic that simplifies all double negations. *)
+(* ---------------------------------------------------------------------- *)
+(** ** Tactic [rew_neg_neg] *)
+
+(** [rew_neg_neg] is a tactic that simplifies all double negations
+    of booleans, i.e. replaces [!!b] with [b]. 
+    It applies everywhere in the goal. *)
 
 Hint Rewrite neg_neg : rew_neg_neg.
-Tactic Notation "fix_neg_neg" :=
-  autorewrite with rew_neg_neg in *.
-Tactic Notation "fix_neg_neg" "~" :=
-  fix_neg_neg; auto_tilde.
-Tactic Notation "fix_neg_neg" "*" :=
-  fix_neg_neg; auto_star.
+
+Tactic Notation "rew_neg_neg" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_neg_neg).
+  (* autorewrite with rew_neg_neg in *. *)
+Tactic Notation "rew_neg_neg" "~" :=
+  rew_neg_neg; auto_tilde.
+Tactic Notation "rew_neg_neg" "*" :=
+  rew_neg_neg; auto_star.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Tactic [rew_bool] *)
 
 (** [rew_bool] simplifies boolean expressions, using rewriting
     lemmas in the database [rew_bool] defined below. *)
 
 Hint Rewrite
+  eqb_same eqb_true_l eqb_true_r eqb_false_l eqb_false_r 
   neg_false neg_true neg_neg neg_and neg_or
   and_true_l and_true_r and_false_l and_false_r
   or_false_l or_false_r or_true_l or_true_r
@@ -268,27 +341,28 @@ Hint Rewrite
   if_then_true_else_false if_then_false_else_true 
   if_then_true if_else_false
   if_then_false if_else_true
-  : bool_rew.
+  : rew_bool.
 
 Tactic Notation "rew_bool" :=
-  autorewrite with bool_rew.
-Tactic Notation "rew_bool" "in" hyp(H) :=
-  autorewrite with bool_rew in H.
-Tactic Notation "rew_bool" "in" "*":=
-  autorewrite with bool_rew in *.
+  autorewrite with rew_bool.
 Tactic Notation "rew_bool" "~" :=
   rew_bool; auto_tilde.
 Tactic Notation "rew_bool" "*" :=
   rew_bool; auto_star.
-Tactic Notation "rew_bool" "~" "in" "*":=
+Tactic Notation "rew_bool" "in" hyp(H) :=
+  autorewrite with rew_bool in H.
+Tactic Notation "rew_bool" "~" "in" hyp(H) :=
+  rew_bool in H; auto_tilde.
+Tactic Notation "rew_bool" "*" "in" hyp(H) :=
+  rew_bool in H; auto_star.
+
+Tactic Notation "rew_bool" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_bool).
+  (* autorewrite with rew_bool in *. *)
+Tactic Notation "rew_bool" "~" "in" "*" :=
   rew_bool in *; auto_tilde.
-Tactic Notation "rew_bool" "*" "in" "*":=
+Tactic Notation "rew_bool" "*" "in" "*" :=
   rew_bool in *; auto_star.
 
-
-(** Making definitions opaque ensures that the [simpl] tactic does
-    not break symmetry in proofs. *)
-
-Opaque and or neg.
 
 
