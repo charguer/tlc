@@ -1191,3 +1191,113 @@ Ltac extens_base :=
 
 
 Definition eq_trans' := eq_trans_rl.
+
+
+
+Defintion prop_ext_nd_1 := prop_ext_nondep_1.
+Definition func_ext_dep_1 := func_ext_1.
+Definition func_ext_1 := func_ext_nondep_1.
+
+Definition func_eq_1 := args_eq_1.
+Definition func_same_1 := func_eq_1.
+
+(* ---------------------------------------------------------------------- *)
+(** ** Equal functions on equal arguments provide equal results *)
+
+(* Remark: is this really needed? maybe applying successively 
+   two lemmas [func_eq] and [func_same] is sufficient. *)
+
+Section FuncEqual.
+Variables (A1 A2 A3 A4 A5 B : Type).
+
+Lemma func_equal_1 : forall (f g:A1->B) x1 y1,
+  f = g ->
+  x1 = y1 ->
+  f x1 = g y1.
+Proof using. intros. subst~. Qed.
+
+Lemma func_equal_2 : forall (f g:A1->A2->B) x1 y1 x2 y2,
+  f = g -> 
+  x1 = y1 -> 
+  x2 = y2 ->
+  f x1 x2 = f y1 y2.
+Proof using. intros. subst~. Qed.
+
+Lemma func_equal_3 : forall (f g:A1->A2->A3->B) x1 y1 x2 y2 x3 y3,
+  f = g -> 
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 ->
+  f x1 x2 x3 = f y1 y2 y3.
+Proof using. intros. subst~. Qed.
+
+Lemma func_equal_4 : forall (f g:A1->A2->A3->A4->B) x1 y1 x2 y2 x3 y3 x4 y4,
+  f = g -> 
+  x1 = y1 ->
+  x2 = y2 ->
+  x3 = y3 ->
+  x4 = y4 ->
+  f x1 x2 x3 x4 = f y1 y2 y3 y4.
+Proof using. intros. subst~. Qed.
+
+Lemma func_equal_5 : forall (f g:A1->A2->A3->A4->A5->B) x1 y1 x2 y2 x3 y3 x4 y4 x5 y5,
+  f = g ->
+  x1 = y1 ->
+  x2 = y2 ->
+  x3 = y3 ->
+  x4 = y4 ->
+  x5 = y5 ->
+  f x1 x2 x3 x4 x5 = f y1 y2 y3 y4 y5.
+Proof using. intros. subst~. Qed.
+
+End FuncEqual.
+
+
+
+
+---------
+
+
+  Record retract (A B : Prop) : Prop :=
+    { retract_f1 : A -> B;
+      retract_f2 : B -> A;
+      retract_comp : forall x, retract_f1 (retract_f2 x) = x }.
+
+  Lemma prop_retract_to_self_impl_when_true : forall A,
+    A ->
+    retract A (A -> A).
+  Proof using.
+    intros A a. rewrite <- (prop_eq_self_impl_when_true a).
+    apply~ (@Build_retract A A (fun x => x) (fun x => x)).
+  Qed.
+
+  Record has_fixpoint (A:Prop) : Prop := has_fixpoint_make
+    { has_fixpoint_F : (A -> A) -> A;
+      has_fixpoint_fix : forall f, has_fixpoint_F f = f (has_fixpoint_F f) }.
+
+  Lemma prop_has_fixpoint_when_true : forall A,
+    A -> 
+    has_fixpoint A.
+  Proof using.
+    intros A a. destruct (prop_retract_to_self_impl_when_true a) as [g1 g2 Fix].
+    set (Y := fun f => (fun x => f (g1 x x)) (g2 (fun x => f (g1 x x)))).
+    applys (has_fixpoint_make Y). (* TODO: why [applys has_fixpoint_make Y] fails *)
+    { intros f. unfold Y at 1. rewrite~ Fix. }
+  Qed.
+
+
+
+  Lemma prop_has_fixpoint_when_true : forall A,
+    A -> 
+    has_fixpoint A.
+  Proof using.
+    intros A a. set (A' := A).
+    set (g1 := id : A' -> A). set (g2 := id : A -> A').
+    asserts~ Fix: (forall x, g1 (g2 x) = x).
+    clearbody g1 g2. gen g1 g2.
+    rewrite (prop_eq_self_impl_when_true a).
+    subst A'. intros.
+    set (Y := fun f => (fun x => f (g1 x x)) (g2 (fun x => f (g1 x x)))).
+    applys (has_fixpoint_make Y). (* TODO: why [applys has_fixpoint_make Y] fails *)
+    { intros f. unfold Y at 1. rewrite~ Fix. }
+    
