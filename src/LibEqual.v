@@ -250,7 +250,7 @@ End FuncEq.
 (** These results are exploited by tactic [fequals] (see LibTactics);
     however the lemmas remain useful for forward-reasoning. *)
 
-Section FuncSame.
+Section FuncEq.
 Variables (A1 A2 A3 A4 A5 B:Type).
 Variables (x1:A1) (x2:A2) (x3:A3) (x4:A4) (x5:A5).
 
@@ -279,7 +279,7 @@ Lemma func_eq_5 : forall f g,
   f x1 x2 x3 x4 x5 = g x1 x2 x3 x4 x5 :> B.
 Proof using. intros. subst~. Qed.
 
-End FuncSame.
+End FuncEq.
 
 
 (* ********************************************************************** *)

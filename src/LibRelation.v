@@ -29,8 +29,8 @@ Lemma binary_extensional : forall A (R1 R2:binary A),
   (forall x y, R1 x y <-> R2 x y) -> R1 = R2.
 Proof using. intros_all. apply~ prop_ext_2. Qed.
 
-Instance binary_extensional_inst : forall A, Extensional (binary A).
-Proof using. intros. apply (Build_Extensional _ (@binary_extensional A)). Defined.
+Instance binary_extensionality_inst : forall A, Extensional (binary A).
+Proof using. intros. apply (extensionality_make (@binary_extensional A)). Defined.
 
 
 (* ---------------------------------------------------------------------- *)

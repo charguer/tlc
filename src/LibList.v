@@ -449,7 +449,7 @@ Lemma app_l_eq_self_inv : forall l1 l2,
   l2 = nil.
 Proof using.
   introv E. apply length_zero_inv.
-  lets: (func_eq_1 (@length A) E). rew_list in H. math.
+  lets: (args_eq_1 (@length A) E). rew_list in H. math.
 Qed.
 
 (* symmetric of previous lemma *)
@@ -463,7 +463,7 @@ Lemma app_r_eq_self_inv : forall l1 l2,
   l1 = nil.
 Proof using.
   introv E. apply length_zero_inv.
-  lets: (func_eq_1 (@length A) E). rew_list in H. math.
+  lets: (args_eq_1 (@length A) E). rew_list in H. math.
 Qed.
 
 (* symmetric of previous lemma *)

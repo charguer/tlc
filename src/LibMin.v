@@ -1,6 +1,6 @@
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* Minimum w.r.t. an order relation                                        *
+* Minimum/Maximum w.r.t. an order relation                                *
 **************************************************************************)
 
 Set Implicit Arguments.

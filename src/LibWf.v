@@ -49,6 +49,7 @@ Proof using.
 Qed.
 
 (** Well-foundedness modulo extensional equality *)
+(* Remark: this can be simulated using [applys args_eq_1. extens] *)
 
 Lemma wf_iff : forall A (R1 R2:binary A),
   wf R1 -> 
