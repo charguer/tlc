@@ -10,6 +10,56 @@ Require LibLogic LibList LibRelation LibWf LibList LibLN.
 
 
 
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Demo of extens tactics *)
+
+Lemma test : forall A1 (P Q :  A1->Prop),
+  (forall x1, P x1 <-> Q x1) -> 
+  P = Q.
+Proof using. 
+
+  intros. applys extensionality. hnf.
+Abort.
+  
+Lemma prop_ext_2' : forall A1 (A2: A1->Type) (P Q : forall (x1:A1) (x2:A2 x1), Prop),
+  (forall x1 x2, P x1 x2 <-> Q x1 x2) -> 
+  P = Q.
+  intros. applys extensionality. hnf.
+Abort.
+
+
+Lemma test : forall A1 (P Q : forall (x1:A1), Prop),
+  (forall x1, P x1 <-> Q x1) -> 
+  P = Q.
+Proof using. 
+
+  intros. applys extensionality. hnf.
+  
+
+Section FuncExtDepTest.
+Variables (A1 : Type).
+Variables (A2 : forall (x1 : A1), Type).
+Variables (A3 : forall (x1 : A1) (x2 : A2 x1), Type).
+Variables (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type).
+Lemma test_func_ext_3 : forall (f g : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), A4 x3),
+  (forall x1 x2 x3, f x1 x2 x3 = g x1 x2 x3) -> 
+  f = g.
+Proof using. intros. applys extensionality. hnf. Qed.
+End FuncExtDepTest.
+
+
+
+Lemma prop_ext_1_test : forall (P Q : Prop),
+  (P <-> Q) -> 
+  P = Q.
+Proof using. intros. applys extensionality. simpl extensionality_hyp. Abort.
+ extens*. 
+
+
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** Demo of LibLogic tactics *)
 

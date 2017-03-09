@@ -1285,19 +1285,39 @@ End FuncEqual.
     { intros f. unfold Y at 1. rewrite~ Fix. }
   Qed.
 
+---------------------------------------------------------
 
+(** [extens] is a tactic that can be applied to exploit extensionality
+    on any goal of the form [x = y] when [x] and [y] are functions, or
+    predicates, or have a type [A] satisfying [Extensional A].
+    Note: the tactic [extens] automatically calls [intros] if needed. *)
 
-  Lemma prop_has_fixpoint_when_true : forall A,
-    A -> 
-    has_fixpoint A.
-  Proof using.
-    intros A a. set (A' := A).
-    set (g1 := id : A' -> A). set (g2 := id : A -> A').
-    asserts~ Fix: (forall x, g1 (g2 x) = x).
-    clearbody g1 g2. gen g1 g2.
-    rewrite (prop_eq_self_impl_when_true a).
-    subst A'. intros.
-    set (Y := fun f => (fun x => f (g1 x x)) (g2 (fun x => f (g1 x x)))).
-    applys (has_fixpoint_make Y). (* TODO: why [applys has_fixpoint_make Y] fails *)
-    { intros f. unfold Y at 1. rewrite~ Fix. }
-    
+Ltac extens_core :=
+  hnf;
+  match goal with
+  | |- _ = _ :> ?T =>
+  match T with
+  | Prop => apply prop_ext
+  | forall _, Prop => apply prop_ext_1
+  | forall _ _, Prop => apply prop_ext_2
+  | forall _ _ _, Prop => apply prop_ext_3
+  | forall _ _ _ _, Prop => apply prop_ext_4
+  | forall _ _ _ _ _, Prop => apply prop_ext_5
+  | forall _ _ _ _ _ _, Prop => apply prop_ext_6
+  | forall _,_ =>
+     first [ apply func_ext_4
+           | apply func_ext_3
+           | apply func_ext_2
+           | apply func_ext_1 ]
+  | _ => apply extensional; try unfold extensional_hyp; simpl
+  end end.
+
+Ltac extens_base :=
+  first [ extens_core | intros; extens_core ].
+
+Tactic Notation "extens" :=
+  extens_base.
+Tactic Notation "extens" "~" :=
+  extens; auto_tilde.
+Tactic Notation "extens" "*" :=
+  extens; auto_star.
