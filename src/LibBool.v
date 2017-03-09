@@ -65,10 +65,7 @@ Definition or x y :=
 (** Implication *)
 
 Definition impl x y :=
-  match x, y with
-  | false, true => false
-  | _, _ => true
-  end.
+  or x (neg y).
 
 (** Exclusive or *)
 
@@ -79,31 +76,22 @@ End Definitions.
 
 (** Notations *)
 
-Notation "! x" := (neg x)
-  (at level 35, right associativity) : Bool_scope.
-Infix "&&" := and
-  (at level 40, left associativity) : Bool_scope.
-Infix "||" := or
-  (at level 50, left associativity) : Bool_scope.
-
-Notation "! x" := (neg x)
-  (at level 35, right associativity) : Bool_scope.
-Infix "&&" := and
-  (at level 40, left associativity) : Bool_scope.
-Infix "||" := or
-  (at level 50, left associativity) : Bool_scope.
-
 Bind Scope Bool_scope with bool. 
 Open Scope Bool_scope.
 
-(* TODO: for parsing [and], the notation [&&] does not work:
-   it loads the definition from Stdlib instead of ours.
-   So, we need to introduce another symbol. (Bug reported.) *)
+Notation "! x" := (neg x)
+  (at level 35, right associativity) : Bool_scope.
+Infix "&&" := and
+  (at level 40, left associativity) : Bool_scope.
+Infix "||" := or
+  (at level 50, left associativity) : Bool_scope.
 
-Infix "&&&" := and
-  (at level 40, left associativity, only parsing) : Bool_scope.
-Infix "|||" := or
-  (at level 50, left associativity, only parsing) : Bool_scope.
+Notation "! x" := (neg x)
+  (at level 35, right associativity) : Bool_scope.
+Infix "&&" := and
+  (at level 40, left associativity) : Bool_scope.
+Infix "||" := or
+  (at level 50, left associativity) : Bool_scope.
 
 
 (* ********************************************************************** *)
@@ -251,10 +239,6 @@ Proof using. tautob. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
-(* LATER: lemmas about [impl] and [xor] *)
-
-
-(* ---------------------------------------------------------------------- *)
 (** ** Properties of [if then else] *)
 
 Section PropertiesIf.
@@ -299,10 +283,16 @@ Proof using. tautob. Qed.
 End PropertiesIf.
 
 
-(* ********************************************************************** *)
-(** * Opacity *)
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of [impl] and [xor] *)
 
-Opaque neg eqb and or impl xor.
+(** We do not provide lemmas for [impl] and [xor]
+   because these functions can be easily expressed 
+   in terms of the other operators. *)
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Opacity *)
 
 
 (* ********************************************************************** *)
@@ -355,7 +345,6 @@ Tactic Notation "rew_bool" "~" "in" hyp(H) :=
   rew_bool in H; auto_tilde.
 Tactic Notation "rew_bool" "*" "in" hyp(H) :=
   rew_bool in H; auto_star.
-
 Tactic Notation "rew_bool" "in" "*" :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_bool).
   (* autorewrite with rew_bool in *. *)

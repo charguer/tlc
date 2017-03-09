@@ -1188,3 +1188,6 @@ Ltac fold_prop :=
 
 Ltac extens_base :=
   first [ extens_core | intros; extens_core ]; logics.
+
+
+Definition eq_trans' := eq_trans_rl.

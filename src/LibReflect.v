@@ -37,17 +37,6 @@ Proof using. rewrite istrue_def. extens*. Qed.
 Lemma istrue_false_eq : istrue false = False.
 Proof using. rewrite istrue_def. extens. iff; auto_false. Qed.
 
-(** Update of the unfolding tactics to go through the coercion
-    [istrue] (see LibTactics). *)
-
-Ltac apply_to_head_of E cont ::=
-  let go E := let P := get_head E in cont P in
-  match E with
-  | istrue ?A => go A
-  | istrue (neg ?A) => go A
-  | ?A = ?B => first [ go A | go B ]
-  | ?A => go A
-  end.
 
 Global Opaque istrue.
 
@@ -459,7 +448,15 @@ Ltac tests_dispatch E H1 H2 ::=
   | {_}+{_} => tests_ssum_base E H1 H2
   end.
 
+(** Extension of the tactic [apply_to_head_of] (see LibTactics). *)
 
-
+Ltac apply_to_head_of E cont ::=
+  let go E := let P := get_head E in cont P in
+  match E with
+  | istrue ?A => go A
+  | istrue (neg ?A) => go A
+  | ?A = ?B => first [ go A | go B ]
+  | ?A => go A
+  end.
 
 

@@ -9,6 +9,24 @@ Generalizable Variables A.
 
 
 (* ********************************************************************** *)
+(** * Definition of Leibnitz' equality *)
+
+(* The Prelude defines equality [eq], written [x = y] or 
+   [x = y :> A] 
+
+  Inductive eq (A : Type) (x : A) : A -> Prop :=
+    | eq_refl : eq x x.
+
+  Notation "x = y :> A" := (@eq A x y) : type_scope.
+  Notation "x = y" := (eq x y) : type_scope.
+  Notation "x <> y :> A" := (~ @eq A x y) : type_scope.
+  Notation "x <> y" := (~ eq x y) : type_scope.
+*)
+
+Arguments eq {A}.
+
+
+(* ********************************************************************** *)
 (** * Partial application of Leibnitz' equality *)
 
 (** [= x] is a unary predicate which holds of values equal to [x].
@@ -64,6 +82,7 @@ Proof using. repeat (intros; apply func_ext_dep). auto. Qed.
 
 End FuncExtDep.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Non-dependent functional extensionality *)
 
@@ -82,6 +101,7 @@ Proof using. intros. apply~ func_ext_dep_3. Qed.
 Lemma func_ext_4 : forall A1 A2 A3 A4 B (f g : A1 -> A2 -> A3 -> A4 -> B),
   (forall x1 x2 x3 x4, f x1 x2 x3 x4 = g x1 x2 x3 x4) -> f = g.
 Proof using. intros. apply~ func_ext_dep_4. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Eta-conversion *)
@@ -113,7 +133,6 @@ Hint Rewrite func_eta_1 func_eta_2 func_eta_3 func_eta_4 : rew_eta.
 (* ********************************************************************** *)
 (** * Predicate extensionality *)
 
-
 (* ---------------------------------------------------------------------- *)
 (** ** Dependend predicates *)
 
@@ -138,17 +157,17 @@ Lemma prop_ext_3 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), Prop),
 Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
 
 Lemma prop_ext_4 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
- (x4:A4 x3), Prop),
+  (x4:A4 x3), Prop),
   (forall x1 x2 x3 x4, P x1 x2 x3 x4 <-> Q x1 x2 x3 x4) -> P = Q.
 Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
 
 Lemma prop_ext_5 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
- (x4:A4 x3) (x5:A5 x4), Prop),
+  (x4:A4 x3) (x5:A5 x4), Prop),
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5 <-> Q x1 x2 x3 x4 x5) -> P = Q.
 Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
 
 Lemma prop_ext_6 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
- (x4:A4 x3) (x5:A5 x4) (x6:A6 x5), Prop),
+  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5), Prop),
   (forall x1 x2 x3 x4 x5 x6, P x1 x2 x3 x4 x5 x6 <-> Q x1 x2 x3 x4 x5 x6) -> P = Q.
 Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
 
@@ -156,7 +175,7 @@ End PropExt.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Non-dependend predicates *)
+(** ** Non-dependend predicate extensionality *)
 
 Lemma prop_ext_nd_1 : forall A1 (P Q : A1 -> Prop),
   (forall x1, P x1 <-> Q x1) -> P = Q.
@@ -180,16 +199,18 @@ Proof using. intros. apply~ prop_ext_4. Qed.
 (** * Proof Irrelevance *)
 
 (** The proof irrelevance lemma states that two proofs of a same
-    proposition are always equal. *)
+    proposition are always equal.
+      [forall (P : Prop) (p q : P), p = q]
+   This result is a consequence of propositional extensionality.
+*)
 
 (* ---------------------------------------------------------------------- *)
 (** ** Proof of the proof-irrelevance result *)
 
-(** Proof irrelevance is a consequence of propositional extensionality. *)
-
-(* TODO: simplify and beautify the proof *)
-
 Module PIfromExt.
+
+  (* TODO: simplify and beautify the proof *)
+
   Local Notation inhabited A := A (only parsing).
 
   Lemma prop_ext_to_eq_arrow :
@@ -204,8 +225,8 @@ Module PIfromExt.
   Lemma prop_ext_retract_A_A_imp_A :
     forall (A:Prop), inhabited A -> retract A (A -> A).
   Proof using.
-  intros A a. rewrite (prop_ext_to_eq_arrow a).
-  apply~ (@Build_retract A A (fun x => x) (fun x => x)).
+    intros A a. rewrite (prop_ext_to_eq_arrow a).
+    apply~ (@Build_retract A A (fun x => x) (fun x => x)).
   Qed.
 
   Record has_fixpoint (A:Prop) : Prop :=
@@ -215,9 +236,9 @@ Module PIfromExt.
   Lemma ext_prop_fixpoint :
     forall (A:Prop), inhabited A -> has_fixpoint A.
   Proof using.
-  intros A a. destruct (prop_ext_retract_A_A_imp_A a) as [g1 g2 Fix].
-  set (Y := fun f => (fun x => f (g1 x x)) (g2 (fun x => f (g1 x x)))).
-  exists Y. intros f. unfold Y at 1. rewrite~ Fix.
+    intros A a. destruct (prop_ext_retract_A_A_imp_A a) as [g1 g2 Fix].
+    set (Y := fun f => (fun x => f (g1 x x)) (g2 (fun x => f (g1 x x)))).
+    exists Y. intros f. unfold Y at 1. rewrite~ Fix.
   Qed.
 
  Inductive boolP : Prop :=
@@ -246,21 +267,20 @@ Module PIfromExt.
   Lemma proof_irrelevance :
     forall (P : Prop) (p q : P), p = q.
   Proof using.
-  intros A a1 a2.
-  set (f := fun b:boolP => match b with trueP => a1 | _ => a2 end).
-  (* set (f := fun b:boolP => boolP_ind a1 a2 b). *)
-  rewrite (boolP_elim_redl a1 a2).
-  change (f trueP = a2) in |- *.
-  rewrite (boolP_elim_redr a1 a2).
-  change (f trueP = f falseP) in |- *.
-  rewrite (aux).
-    reflexivity.
+    intros A a1 a2.
+    set (f := fun b:boolP => match b with trueP => a1 | _ => a2 end).
+    (* set (f := fun b:boolP => boolP_ind a1 a2 b). *)
+    rewrite (boolP_elim_redl a1 a2).
+    change (f trueP = a2) in |- *.
+    rewrite (boolP_elim_redr a1 a2).
+    change (f trueP = f falseP) in |- *.
+    rewrite (aux).
+      reflexivity.
   Qed.
 
 End PIfromExt.
 
-Lemma proof_irrelevance :
-  forall (P : Prop) (p q : P), p = q.
+Lemma proof_irrelevance : forall (P : Prop) (p q : P), p = q.
 Proof using. exact PIfromExt.proof_irrelevance. Qed.
 
 
@@ -270,28 +290,30 @@ Proof using. exact PIfromExt.proof_irrelevance. Qed.
 (** Uniqueness of identity proofs *)
 
 Lemma identity_proofs_unique :
-  forall (A : Type) (x y : A) (p q : x = y), p = q.
+  forall (A : Type) (x y : A) (p q : x = y), 
+  p = q.
 Proof using. intros. apply proof_irrelevance. Qed.
 
-(** Uniqueness of reflexive identity proofs *)
+(** Uniqueness of reflexive identity proofs (special case) *)
 
-Lemma refl_identity_proofs_unique :
+Lemma reflexive_identity_proofs_unique :
   forall (A : Type) (x : A) (p : x = x),
   p = refl_equal x.
-Proof using. intros. apply proof_irrelevance. Qed.
+Proof using. intros. applys identity_proofs_unique. Qed.
 
 (** Invariance by substitution of reflexive equality proofs *)
 
 Lemma eq_rect_eq :
   forall (A : Type) (p : A) (Q : A -> Type) (x : Q p) (h : p = p),
   eq_rect p Q x p h = x.
-Proof using. intros. rewrite~ (refl_identity_proofs_unique h). Qed.
+Proof using. intros. rewrite~ (reflexive_identity_proofs_unique h). Qed.
 
 (** Streicher's axiom K *)
 
-Lemma streicher_K : forall (A : Type) (x : A) (P : x = x -> Prop),
+Lemma streicher_K : 
+  forall (A : Type) (x : A) (P : x = x -> Prop),
   P (refl_equal x) -> forall (p : x = x), P p.
-Proof using. intros. rewrite~ (refl_identity_proofs_unique p). Qed.
+Proof using. intros. rewrite~ (reflexive_identity_proofs_unique p). Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -348,7 +370,8 @@ Scheme eq_indd := Induction for eq Sort Prop.
 
 Lemma exist_eq :
   forall (A : Type) (P : A->Prop) (x y : A) (p : P x) (q : P y),
-    x = y -> exist P x p = exist P y q.
+  x = y -> 
+  exist P x p = exist P y q.
 Proof using.
   intros. rewrite (proof_irrelevance q (eq_rect x P p y H)).
   elim H using eq_indd. reflexivity.
@@ -356,7 +379,8 @@ Qed.
 
 Lemma existT_eq :
   forall (U:Type) (P:U->Prop) (x y:U) (p:P x) (q:P y),
-    x = y -> existT P x p = existT P y q.
+  x = y -> 
+  existT P x p = existT P y q.
 Proof using.
   intros. rewrite (proof_irrelevance q (eq_rect x P p y H)).
   elim H using eq_indd. reflexivity.
@@ -445,17 +469,20 @@ Local Hint Immediate JMeq_sym.
 (** Relation between [JMeq] and [eq_dep] *)
 
 Lemma JMeq_to_eq_dep : forall (A B : Type) (x : A) (y : B),
-  JMeq x y -> @eq_dep Type (fun T => T) A x B y.
+  JMeq x y -> 
+  @eq_dep Type (fun T => T) A x B y.
 Proof using. introv E. destruct E. constructor. Qed.
 
 Lemma eq_dep_to_JMeq : forall (A B : Type) (x : A) (y : B),
-  @eq_dep Type (fun T => T) A x B y -> JMeq x y.
+  @eq_dep Type (fun T => T) A x B y -> 
+  JMeq x y.
 Proof using. introv E. destruct~ E. Qed.
 
 (** Injectivity of [JMeq] *)
 
 Lemma JMeq_eq : forall (A : Type) (x y : A),
-  JMeq x y -> x = y.
+  JMeq x y -> 
+  x = y.
 Proof using.
   introv E. apply (@eq_dep_eq Type (fun T => T)).
   apply~ JMeq_to_eq_dep.
@@ -467,8 +494,6 @@ Qed.
 
 (** This section contains a reformulation of the lemmas provided by
     the standard library concerning equality. *)
-
-Arguments eq {A}.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Equality as an equivalence relation *)
@@ -482,25 +507,45 @@ Implicit Types x y z : A.
 (** Symmetry *)
 
 Lemma eq_sym : forall x y,
-  x = y -> y = x.
+  x = y -> 
+  y = x.
 Proof using. introv H. destruct~ H. Qed.
 
 (** Transitivity *)
 
-Lemma eq_trans : forall y x z,
-  x = y -> y = z -> x = z.
+Lemma eq_trans_ll : forall y x z,
+  x = y -> 
+  y = z -> 
+  x = z.
 Proof using. introv H1 H2. destruct~ H2. Qed.
 
-Lemma eq_trans' : forall y x z,
-  y = x -> y = z -> x = z.
+Definition eq_trans := eq_trans_ll.
+
+Lemma eq_trans_lr : forall y x z,
+  x = y -> 
+  z = y -> 
+  x = z.
+Proof using. introv H1 H2. destruct~ H2. Qed.
+
+Lemma eq_trans_rl : forall y x z,
+  y = x -> 
+  y = z -> 
+  x = z.
+Proof using. introv H1 H2. destruct~ H2. Qed.
+
+Lemma eq_trans_rr : forall y x z,
+  y = x -> 
+  z = y -> 
+  x = z.
 Proof using. introv H1 H2. destruct~ H2. Qed.
 
 End EqualityProp.
 
+Arguments eq_trans_ll [A].
+Arguments eq_trans_lr [A].
+Arguments eq_trans_rl [A].
+Arguments eq_trans_rr [A].
 Arguments eq_trans [A].
-Arguments eq_trans' [A].
-
-(* TODO: two other versions of eq_trans *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -508,12 +553,13 @@ Arguments eq_trans' [A].
 
 Section DisequalityProp.
 Variable A : Type.
-Implicit Types x y z : A.
+Implicit Types x y : A.
 
 (** Symmetry *)
 
 Lemma neq_sym : forall x y,
-  x <> y -> y <> x.
+  x <> y -> 
+  y <> x.
 Proof using. introv H K. destruct~ K. Qed.
 
 End DisequalityProp.
@@ -522,7 +568,7 @@ End DisequalityProp.
 (* ---------------------------------------------------------------------- *)
 (** ** Symmetrized induction principles *)
 
-(* TODO: is this really needed ?*)
+(* Remark: it is not clear if these results are any useful in practice. *)
 
 Section EqInductionSym.
 Variables (A : Type) (x : A).
@@ -558,22 +604,32 @@ Lemma func_eq_1 : forall (f:A1->B) x1 y1,
 Proof using. intros. subst~. Qed.
 
 Lemma func_eq_2 : forall (f:A1->A2->B) x1 y1 x2 y2,
-  x1 = y1 -> x2 = y2 ->
+  x1 = y1 -> 
+  x2 = y2 ->
   f x1 x2 = f y1 y2.
 Proof using. intros. subst~. Qed.
 
 Lemma func_eq_3 : forall (f:A1->A2->A3->B) x1 y1 x2 y2 x3 y3,
-  x1 = y1 -> x2 = y2 -> x3 = y3 ->
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 ->
   f x1 x2 x3 = f y1 y2 y3.
 Proof using. intros. subst~. Qed.
 
 Lemma func_eq_4 : forall (f:A1->A2->A3->A4->B) x1 y1 x2 y2 x3 y3 x4 y4,
-  x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 ->
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 -> 
+  x4 = y4 ->
   f x1 x2 x3 x4 = f y1 y2 y3 y4.
 Proof using. intros. subst~. Qed.
 
 Lemma func_eq_5 : forall (f:A1->A2->A3->A4->A5->B) x1 y1 x2 y2 x3 y3 x4 y4 x5 y5,
-  x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> x5 = y5 ->
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 -> 
+  x4 = y4 -> 
+  x5 = y5 ->
   f x1 x2 x3 x4 x5 = f y1 y2 y3 y4 y5.
 Proof using. intros. subst~. Qed.
 
@@ -590,30 +646,38 @@ Variables (A1 A2 A3 A4 A5 B:Type).
 Variables (x1:A1) (x2:A2) (x3:A3) (x4:A4) (x5:A5).
 
 Lemma func_same_1 : forall f g,
-  f = g -> f x1 = g x1 :> B.
+  f = g ->
+  f x1 = g x1 :> B.
 Proof using. intros. subst~. Qed.
 
 Lemma func_same_2 : forall f g,
-  f = g -> f x1 x2 = g x1 x2 :> B.
+  f = g -> 
+  f x1 x2 = g x1 x2 :> B.
 Proof using. intros. subst~. Qed.
 
 Lemma func_same_3 : forall f g,
-  f = g -> f x1 x2 x3 = g x1 x2 x3 :> B.
+  f = g -> 
+  f x1 x2 x3 = g x1 x2 x3 :> B.
 Proof using. intros. subst~. Qed.
 
 Lemma func_same_4 : forall f g,
-  f = g -> f x1 x2 x3 x4 = g x1 x2 x3 x4 :> B.
+  f = g -> 
+  f x1 x2 x3 x4 = g x1 x2 x3 x4 :> B.
 Proof using. intros. subst~. Qed.
 
 Lemma func_same_5 : forall f g,
-  f = g -> f x1 x2 x3 x4 x5 = g x1 x2 x3 x4 x5 :> B.
+  f = g -> 
+  f x1 x2 x3 x4 x5 = g x1 x2 x3 x4 x5 :> B.
 Proof using. intros. subst~. Qed.
 
 End FuncSame.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Generalization *)
+(** ** Equal functions on equal arguments provide equal results *)
+
+(* Remark: is this really needed? maybe applying successively 
+   two lemmas [func_eq] and [func_same] is sufficient. *)
 
 Section FuncEqual.
 Variables (A1 A2 A3 A4 A5 B : Type).
@@ -625,22 +689,36 @@ Lemma func_equal_1 : forall (f g:A1->B) x1 y1,
 Proof using. intros. subst~. Qed.
 
 Lemma func_equal_2 : forall (f g:A1->A2->B) x1 y1 x2 y2,
-  f = g -> x1 = y1 -> x2 = y2 ->
+  f = g -> 
+  x1 = y1 -> 
+  x2 = y2 ->
   f x1 x2 = f y1 y2.
 Proof using. intros. subst~. Qed.
 
 Lemma func_equal_3 : forall (f g:A1->A2->A3->B) x1 y1 x2 y2 x3 y3,
-  f = g -> x1 = y1 -> x2 = y2 -> x3 = y3 ->
+  f = g -> 
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 ->
   f x1 x2 x3 = f y1 y2 y3.
 Proof using. intros. subst~. Qed.
 
 Lemma func_equal_4 : forall (f g:A1->A2->A3->A4->B) x1 y1 x2 y2 x3 y3 x4 y4,
-  f = g -> x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 ->
+  f = g -> 
+  x1 = y1 ->
+  x2 = y2 ->
+  x3 = y3 ->
+  x4 = y4 ->
   f x1 x2 x3 x4 = f y1 y2 y3 y4.
 Proof using. intros. subst~. Qed.
 
 Lemma func_equal_5 : forall (f g:A1->A2->A3->A4->A5->B) x1 y1 x2 y2 x3 y3 x4 y4 x5 y5,
-  f = g -> x1 = y1 -> x2 = y2 -> x3 = y3 -> x4 = y4 -> x5 = y5 ->
+  f = g ->
+  x1 = y1 ->
+  x2 = y2 ->
+  x3 = y3 ->
+  x4 = y4 ->
+  x5 = y5 ->
   f x1 x2 x3 x4 x5 = f y1 y2 y3 y4 y5.
 Proof using. intros. subst~. Qed.
 
@@ -658,8 +736,14 @@ End FuncEqual.
 
 Class Extensional (A:Type) := {
   extensional_hyp : A -> A -> Prop;
-  extensional : forall x y : A, extensional_hyp x y -> x = y }.
+  extensional : forall (x y : A), extensional_hyp x y -> x = y }.
 
+(* TODO: test
+
+Class Extensional' (A:Type) := {
+  extensional' : Prop }.
+
+*)
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactic to exploit extensionality *)
