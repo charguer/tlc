@@ -280,16 +280,16 @@ Proof using.
   intros [U [L' H]]. exists (filter (fun x => isTrue (is_in x U)) L').
   apply fset_extens_eq. intros x. rewrite from_list_spec.
   unfold mem at 1. simpl. extens. iff M.
-    specializes H M. induction L'.
-      inverts H.
-      rewrite filter_cons. inverts H.
-        rewrite (prop_eq_True M). rewrite~ isTrue_True.
-        case_if; fold_bool; fold_prop; auto.
-    clear H. induction L'.
-      rewrite filter_nil in M. inverts M.
-      rewrite filter_cons in M. cases_if; fold_bool; fold_prop.
-        inverts~ M.
-        apply~ IHL'.
+  { specializes H M. induction L'.
+    { inverts H. }
+    { rewrite filter_cons. inverts H.
+      { rewrite (prop_eq_True M). rewrite~ isTrue_True. } 
+      { case_if; fold_bool; fold_prop; auto. } } }
+  { clear H. induction L'.
+    { rewrite filter_nil in M. inverts M. }
+    { rewrite filter_cons in M. cases_if; fold_bool; fold_prop.
+      { inverts~ M. }
+      { apply~ IHL'. } } } 
 Qed.
 
 End Properties.
@@ -308,8 +308,9 @@ Implicit Types E : fset A.
 
 (** Properties of [in] *)
 
-Lemma in_empty_elim : forall x,
-  x \in \{} -> False.
+Lemma in_empty_inv : forall x,
+  x \in \{} -> 
+  False.
 Proof using. introv H. rewrite~ in_empty in H. Qed.
 
 Lemma in_singleton_self : forall x,
@@ -388,8 +389,8 @@ Lemma inter_empty_l : forall E,
 Proof using.
   intros. apply fset_extens;
    intros x; rewrite_all in_inter.
-    intros. false* in_empty_elim.
-    intros. false* in_empty_elim.
+    intros. false* in_empty_inv.
+    intros. false* in_empty_inv.
 Qed.
 
 Lemma inter_empty_r : forall E,
@@ -423,7 +424,7 @@ Proof using. unfold disjoint. intros. rewrite~ inter_comm. Qed.
 Lemma disjoint_in_notin : forall E F x,
   disjoint E F -> x \in E -> x \notin F.
 Proof using.
-  unfold disjoint. introv H InE InF. applys in_empty_elim x.
+  unfold disjoint. introv H InE InF. applys in_empty_inv x.
   rewrite <- H. rewrite in_inter. auto.
 Qed.
 

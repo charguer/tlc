@@ -829,7 +829,7 @@ Proof using. intros. unfolds min. case_if~. false*. Qed.
 Lemma min_right : forall x y,
   y <= x -> min x y = y.
 Proof using. intros. unfolds min. case_if~. apply~ le_antisym. Qed.
-Lemma min_trans_elim : forall a b x y : int,
+Lemma min_trans_inv : forall a b x y : int,
   min a b <= x -> y < a -> y < b -> y < x.
 Proof using. intros. unfolds min. case_if; math. Qed.
 

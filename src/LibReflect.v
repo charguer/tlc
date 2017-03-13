@@ -350,8 +350,10 @@ Tactic Notation "rew_isTrue" "*" "in" "*" :=
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics useful for program verification, when reasoning about 
-       the result of if-statements over boolean expressions;
-       used as post-treatment for tactic [case_if]. *)
+       the result of if-statements over boolean expressions, i.e. 
+       an expression of the form [b = ..] or [.. = b], which produces
+       hypotheses of the form [true = ..] and [false = ..] or symmetric.
+       It is used as post-treatment for tactic [case_if]. *)
 
 Hint Rewrite
   true_eq_isTrue isTrue_eq_true
@@ -362,16 +364,27 @@ Hint Rewrite
   istrue_neg istrue_and istrue_or
   : rew_logics.
 
-Ltac rew_case_if_post tt :=
+Tactic Notation "rew_bool_eq" :=
+  autorewrite with rew_bool_to_prop.
+Tactic Notation "rew_bool_eq" :=
+  rew_bool_eq in H; auto_tilde.
+Tactic Notation "rew_bool_eq" :=
+  rew_bool_eq in H; auto_star.
+
+Tactic Notation "rew_bool_eq" "in" hyp(H) :=
+  autorewrite with rew_bool_to_prop in H.
+Tactic Notation "rew_bool_eq" "~" "in" hyp(H) :=
+  rew_bool_eq in H; auto_tilde.
+Tactic Notation "rew_bool_eq" "*" "in" hyp(H) :=
+  rew_bool_eq in H; auto_star.
+
+Tactic Notation "rew_bool_eq" "in" "*" :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_bool_to_prop).
   (* autorewrite with rew_bool_to_prop in *. *)
-
-Tactic Notation "rew_case_if" :=
-  rew_case_if_post tt.
-Tactic Notation "rew_case_if" "~" :=
-  rew_case_if; auto_tilde.
-Tactic Notation "rew_case_if" "*" :=
-  rew_case_if; auto_star.
+Tactic Notation "rew_bool_eq" "~" "in" "*" :=
+  rew_bool_eq; auto_tilde.
+Tactic Notation "rew_bool_eq" "*" "in" "*" :=
+  rew_bool_eq; auto_star.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -380,7 +393,8 @@ Tactic Notation "rew_case_if" "*" :=
 (** Extension of the tactic [case_if] to automatically performs
     simplification using [logics]. *)
 
-Ltac case_if_post ::= rew_case_if_post; tryfalse.
+Ltac case_if_post H ::= 
+  rew_bool_eq in H; tryfalse.
 
 (** Extension of the tactic [test_dispatch] from LibLogic.v, so as to
     be able to call the tactic [tests] directly on boolean expressions *)

@@ -41,7 +41,7 @@ Lemma epsilon_spec_exists : forall `{Inhab A} (P : A->Prop),
   (exists x, P x) -> P (epsilon P).
 Proof using. intros. apply~ (proj2_sig (epsilon_def P)). Qed.
 
-Lemma epsilon_elim_exists : forall `{Inhab A} (P Q : A->Prop),
+Lemma epsilon_inv_exists : forall `{Inhab A} (P Q : A->Prop),
   (exists x, P x) -> (forall x, P x -> Q x) -> Q (epsilon P).
 Proof using. introv E M. apply M. apply~ epsilon_spec_exists. Qed.
 
@@ -49,7 +49,7 @@ Lemma epsilon_spec : forall `{Inhab A} (P : A->Prop) x,
   P x -> P (epsilon P).
 Proof using. intros. apply* (epsilon_spec_exists). Qed.
 
-Lemma epsilon_elim : forall `{Inhab A} (P Q : A->Prop) x,
+Lemma epsilon_inv : forall `{Inhab A} (P Q : A->Prop) x,
   P x -> (forall x, P x -> Q x) -> Q (epsilon P).
 Proof using. introv Px W. apply W. apply* epsilon_spec_exists. Qed.
 

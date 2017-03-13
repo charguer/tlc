@@ -181,7 +181,7 @@ Variables (A : Type) (x : A).
 
 Definition eq_ind_r : forall (P:A -> Prop),
   P x -> forall y, y = x -> P y.
-Proof using. introv Px H. elim (sym_eq H). auto. Qed.
+Proof using. introv Px H. ... elim (sym_eq H). auto. Qed.
 
 Definition eq_rec_r : forall (P:A -> Set),
   P x -> forall y, y = x -> P y.
@@ -706,7 +706,7 @@ Lemma exist_eq :
   exist P x p = exist P y q.
 Proof using.
   intros. rewrite (proof_irrelevance q (eq_rect x P p y H)).
-  elim H using eq_indd. reflexivity.
+ .. elim H using eq_indd. reflexivity.
 Qed.
 
 Lemma existT_eq :
@@ -715,7 +715,7 @@ Lemma existT_eq :
   existT P x p = existT P y q.
 Proof using.
   intros. rewrite (proof_irrelevance q (eq_rect x P p y H)).
-  elim H using eq_indd. reflexivity.
+  .. elim H using eq_indd. reflexivity.
 Qed.
 
 

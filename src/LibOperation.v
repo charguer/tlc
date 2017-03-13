@@ -6,21 +6,14 @@
 Set Implicit Arguments.
 Require Import LibTactics.
 
-(* ********************************************************************** *)
-(** * Types of unary and binary operators and relations *)
-
-Definition oper1 (A : Type) := A -> A.
-Definition oper2 (A : Type) := A -> A -> A.
-Definition predb (A:Type) := A -> bool.
 
 (* ********************************************************************** *)
-(** * Definition of the properties of operators *)
+(** * Definitions *)
 
 Section Definitions.
-
 Variable (A : Type).
-Implicit Types f g : oper2 A.
-Implicit Types i : oper1 A.
+Implicit Types f g : A -> A -> A.
+Implicit Types i : A -> A.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -94,15 +87,6 @@ Definition absorb_r f a := forall x,
 Definition idempotent i := forall x,
   i (i x) = i x.
 
-Lemma use_idempotent : forall i x y,
-  idempotent i ->
-  y = i x ->
-  i y = y.
-  (* Expanded statement, for easier use by [eauto]. *)
-Proof using.
-  intros. subst. eauto.
-Qed.
-
 (** Idempotence *)
 
 Definition involutive i := forall x,
@@ -155,7 +139,7 @@ End Definitions.
 
 (** Morphism *)
 
-Definition morphism (A B : Type) (h : A -> B) (f : oper2 A) (g : oper2 B) :=
+Definition morphism (A B : Type) (h : A->B) (f : A->A->A) (g : B->B->B) :=
   forall x y, h (f x y) = g (h x) (h y).
 
 (** Auto-morphism *)
@@ -172,13 +156,19 @@ Definition injective A B (f : A -> B) :=
 
 
 (* ********************************************************************** *)
-(** * Derived properties *)
+(** * Lemmas *)
 
 Section OpProperties.
 
 Variable (A : Type).
-Implicit Types f g : oper2 A.
-Implicit Types h : oper1 A.
+Implicit Types f g : A -> A -> A.
+Implicit Types h : A -> A.
+
+Lemma idempotent_inv : forall x y,
+  idempotent h ->
+  y = h x ->
+  h y = y.
+Proof using. intros. subst*. Qed.
 
 (** For commutative operators, right-properties can be derived from
     corresponding left-properties *)

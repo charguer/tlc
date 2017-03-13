@@ -2854,12 +2854,14 @@ Tactic Notation "cases" constr(E) "as" ident(H) :=
 Tactic Notation "cases" constr(E) :=
   let H := fresh "Eq" in cases E as H.
 
-(** [case_if_post] is to be defined later as a tactic to clean
-    up goals. By defaults, it looks for obvious contradictions.
+(** [case_if_post H] is to be defined later as a tactic to clean
+    up hypothesis [H] and the goal.
+    By defaults, it looks for obvious contradictions.
     Currently, this tactic is extended in LibReflect to clean up
     boolean propositions. *)
 
-Ltac case_if_post := tryfalse.
+Ltac case_if_post H := 
+  tryfalse.
 
 (** [case_if] looks for a pattern of the form [if ?B then ?E1 else ?E2]
     in the goal, and perform a case analysis on [B] by calling
@@ -2879,7 +2881,7 @@ Ltac case_if_on_tactic_core E Eq :=
   end.
 
 Ltac case_if_on_tactic E Eq :=
-  case_if_on_tactic_core E Eq; case_if_post.
+  case_if_on_tactic_core E Eq; case_if_post Eq.
 
 Tactic Notation "case_if_on" constr(E) "as" simple_intropattern(Eq) :=
   case_if_on_tactic E Eq.
@@ -2914,7 +2916,7 @@ Ltac cases_if_on_tactic_core E Eq :=
   end.
 
 Ltac cases_if_on_tactic E Eq :=
-  cases_if_on_tactic_core E Eq; tryfalse; case_if_post.
+  cases_if_on_tactic_core E Eq; tryfalse; case_if_post Eq.
 
 Tactic Notation "cases_if_on" constr(E) "as" simple_intropattern(Eq) :=
   cases_if_on_tactic E Eq.
@@ -2975,7 +2977,7 @@ Tactic Notation "destruct_if" "in" hyp(H) :=
   let Eq := fresh "C" in destruct_if in H as Eq Eq.
 
 
-(** ---BROKEN since v8.5beta2.
+(** ---BROKEN since v8.5beta2. TODO: cleanup.
 
     [destruct_head_match] performs a case analysis on the argument
     of the head pattern matching when the goal has the form
@@ -3031,7 +3033,7 @@ Ltac cases_if_on' E Eq :=
   | _ => let X := fresh "TEMP" in
          sets_eq X Eq: E;
          destruct X
-  end; case_if_post.
+  end; case_if_post Eq.
 
 Tactic Notation "cases_if'" "as" simple_intropattern(Eq) :=
   match goal with

@@ -192,7 +192,7 @@ Lemma pconst_spec : forall A {IA:Inhab A} (x:A),
 Proof using.
   intros.
   apply bisimilar_mod_take. induction i. simple~.
-  apply* sym_elim. apply* trans_sym_2.
+  apply* sym_inv. apply* trans_sym_2.
    apply bisimilar_mod_to_upto. apply pconst_fix.
    simpl. constructor~.
 Qed.
@@ -972,7 +972,7 @@ Lemma text_sub_app : forall s s1 s2,
 Proof using.
   intros. subst. induction s1; rew_list. auto.
   inverts IHs1.
-    left. applys~ (@trans_elim text) (s1++s2).
+    left. applys~ (@trans_inv text) (s1++s2).
     rewrite <- H. left. apply text_sub_once.
 Qed.
 
@@ -1088,7 +1088,7 @@ Proof using.
   inverts N. applys~ IH. intros s' S'. applys~ IH.
     intros s'' S''. apply E. hnf in S',S''|-*. simpl.
     tests: (productive r1); tests: (productive r2).
-      rewrite~ If_l. applys* (@trans_elim text) s'.
+      rewrite~ If_l. applys* (@trans_inv text) s'.
       rewrite~ If_l. applys* (@large_strict_trans text) s'.
       rewrite~ If_l. applys* (@strict_large_trans text) s'.
       rewrite If_r; [|rew_logic;auto]. applys~ (@large_trans text) s'.
@@ -1097,7 +1097,7 @@ Proof using.
   inverts N. applys~ IH. auto 7. intros s' S'. case_asserts~.
    applys~ IH. hnf in S'. rewrite~ If_l in S'.
    intros s'' S''. apply E. hnf in S'' |- *. simpls. case_if; tryfalse.
-   inverts S''. left. applys* trans_elim. auto.
+   inverts S''. left. applys* trans_inv. auto.
 Qed.
 
 

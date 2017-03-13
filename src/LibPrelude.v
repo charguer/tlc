@@ -77,8 +77,11 @@ Notation "x * y" := (prod x y) : type_scope.
 Notation "x * y" := (prod x y) : type_scope. (* FIXME:  What is the difference between this line and the previous one? -- Martin. *)
 Notation "( x , y , .. , z )" := (pair .. (pair x y) .. z) : core_scope.
 
-Definition fst A B (p:A*B) := let '(x,_) := p in x.
-Definition snd A B (p:A*B) := let '(_,y) := p in y.
+Definition fst A B (p:A*B) : A := 
+  match p with (x,y) => x end.
+
+Definition snd A B (p:A*B) : B := 
+  match p with (x,y) => y end.
 
 
 (* ********************************************************************** *)

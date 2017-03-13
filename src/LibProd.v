@@ -58,10 +58,21 @@ Hint Immediate eq_prod2 eq_prod3 eq_prod4.
 (* ********************************************************************** *)
 (** * Operations *)
 
-(** [fst] and [snd] are defined in the standard library *)
+(* ---------------------------------------------------------------------- *)
+(** ** Definition of projections *)
 
-Implicit Arguments fst [[A] [B]].
-Implicit Arguments snd [[A] [B]].
+(** [fst] and [snd] are defined in the Prelude 
+
+  Definition fst A B (p:A*B) : A := 
+    match p with (x,y) => x end.
+
+  Definition snd A B (p:A*B) : B := 
+    match p with (x,y) => y end.
+
+*)
+
+Arguments fst [A] [B].
+Arguments snd [A] [B].
 
 
 (* ---------------------------------------------------------------------- *)
@@ -203,19 +214,35 @@ Definition unproj44 f : A1*A2*A3*A4 -> A1*A2*A3*A4 -> B :=
 Definition unproj51 f : A1*A2*A3*A4*A5 -> A1*A2*A3*A4*A5 -> B :=
   fun p1 p2 => match p1,p2 with (x1,x2,x3,x4,x5),(y1,y2,y3,y4,y5) =>
   f x1 y1 end.
-  (* TODO: complete *)
+Definition unproj52 f : A1*A2*A3*A4*A5 -> A1*A2*A3*A4*A5 -> B :=
+  fun p1 p2 => match p1,p2 with (x1,x2,x3,x4,x5),(y1,y2,y3,y4,y5) =>
+  f x2 y2 end.
+Definition unproj53 f : A1*A2*A3*A4*A5 -> A1*A2*A3*A4*A5 -> B :=
+  fun p1 p2 => match p1,p2 with (x1,x2,x3,x4,x5),(y1,y2,y3,y4,y5) =>
+  f x3 y3 end.
+Definition unproj54 f : A1*A2*A3*A4*A5 -> A1*A2*A3*A4*A5 -> B :=
+  fun p1 p2 => match p1,p2 with (x1,x2,x3,x4,x5),(y1,y2,y3,y4,y5) =>
+  f x4 y4 end.
+Definition unproj55 f : A1*A2*A3*A4*A5 -> A1*A2*A3*A4*A5 -> B :=
+  fun p1 p2 => match p1,p2 with (x1,x2,x3,x4,x5),(y1,y2,y3,y4,y5) =>
+  f x5 y5 end.
+
 End Unproj.
 
-Implicit Arguments unproj21 [ A1 B ].
-Implicit Arguments unproj22 [ A2 B ].
-Implicit Arguments unproj31 [ A1 B ].
-Implicit Arguments unproj32 [ A2 B ].
-Implicit Arguments unproj33 [ A3 B ].
-Implicit Arguments unproj41 [ A1 B ].
-Implicit Arguments unproj42 [ A2 B ].
-Implicit Arguments unproj43 [ A3 B ].
-Implicit Arguments unproj44 [ A4 B ].
-Implicit Arguments unproj51 [ A1 B ].
+Arguments unproj21 [A1] A2 [B].
+Arguments unproj22 A1 [A2] [B].
+Arguments unproj31 [A1] A2 A3 [B].
+Arguments unproj32 A1 [A2] A3 [B].
+Arguments unproj33 A1 A2 [A3] [B].
+Arguments unproj41 [A1] A2 A3 A4 [B].
+Arguments unproj42 A1 [A2] A3 A4 [B].
+Arguments unproj43 A1 A2 [A3] A4 [B].
+Arguments unproj44 A1 A2 A3 [A4] [B].
+Arguments unproj51 [A1] A2 A3 A4 A5 [B].
+Arguments unproj52 A1 [A2] A3 A4 A5 [B].
+Arguments unproj53 A1 A2 [A3] A4 A5 [B].
+Arguments unproj54 A1 A2 A3 [A4] A5 [B].
+Arguments unproj55 A1 A2 A3 A4 [A5] [B].
 
 (** Unfolding *)
 

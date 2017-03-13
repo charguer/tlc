@@ -14,7 +14,12 @@ Require Export LibOperation.
 (* ********************************************************************** *)
 (** * Generalities on binary relations *)
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Type of binary relations *)
+
 Definition binary (A : Type) := A -> A -> Prop.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
@@ -22,144 +27,106 @@ Definition binary (A : Type) := A -> A -> Prop.
 Instance binary_inhab : forall A, Inhab (binary A).
 Proof using. intros. apply (prove_Inhab (fun _ _ => True)). Qed.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Extensionality *)
 
-Lemma binary_extensional : forall A (R1 R2:binary A),
-  (forall x y, R1 x y <-> R2 x y) -> R1 = R2.
+Lemma binary_extensionality : forall A (R1 R2:binary A),
+  (forall x y, R1 x y <-> R2 x y) -> 
+  R1 = R2.
 Proof using. intros_all. apply~ prop_ext_2. Qed.
 
-Instance binary_extensionality_inst : forall A, Extensional (binary A).
+Instance binary_extensionality_inst : forall A, Extensionality (binary A).
 Proof using. intros. apply (extensionality_make (@binary_extensional A)). Defined.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties *)
 
-Section Properties.
-Variables (A:Type).
-Implicit Types x y z : A.
-Implicit Types R : binary A.
+(** Reflexivity *)
 
-(** Reflexivity, irreflexivity, transitivity, symmetry, totality, definedness, functionality *)
-
-Definition refl R :=
+Definition refl A (R:binary A) :=
   forall x, R x x.
-Definition irrefl R :=
-  forall x, ~ (R x x).
-Definition trans R :=
-  forall y x z, R x y -> R y z -> R x z.
-Definition sym R :=
-  forall x y, R x y -> R y x.
-Definition asym R :=
-  forall x y, R x y -> ~ R y x.
-Definition total R :=
-  forall x y, R x y \/ R y x.
-Definition defined R :=
-  forall x, exists y, R x y.
-  (* I would have liked to call this [total R], but this already
-     means something else... *)
-Definition functional R :=
-  forall x y z, R x y -> R x z -> y = z.
 
-(** Antisymmetry with respect to an equivalence relation,
-    antisymmetry with respect to Leibnitz equality,
-     i.e. [forall x y, R x y -> R y x -> x = y] *)
+(** Irreflexivity *)
+
+Definition irrefl A (R:binary A) :=
+  forall x, ~ (R x x).
+
+(** Transitivity *) 
+
+Definition trans A (R:binary A) :=
+  forall y x z, R x y -> R y z -> R x z.
+
+(** Symmetry *)
+
+Definition sym A (R:binary A) :=
+  forall x y, R x y -> R y x.
+
+(** Asymmetry *)
+
+Definition asym A (R:binary A) :=
+  forall x y, R x y -> ~ R y x.
+
+(** Antisymmetry *)
+
+Definition antisym A (R:binary A) :=
+  forall x y, R x y -> R y x -> x = y.
+  (* same as: [antisym_wrt (@eq A)] *)
+
+(** Antisymmetry with respect to an equivalence relation *)
 
 Definition antisym_wrt (E:binary A) R :=
   forall x y, R x y -> R y x -> E x y.
-Definition antisym :=
-  antisym_wrt (@eq A).
 
-(** Inclusion between relations *)
+(** Totality *)
 
-Definition incl R1 R2 :=
-  forall x y, R1 x y -> R2 x y.
+Definition total A (R:binary A) :=
+  forall x y, R x y \/ R y x.
 
-Definition rel_le A B (P Q : A->B->Prop) :=
-  forall a, pred_le (P a) (Q a).
-(* TODO [incl] should be just [rel_le] *)
+(** Definedness *)
 
-Lemma rel_le_refl : forall A B (P:A->B->Prop),
-  rel_le P P.
-Proof. intros_all~. Qed.
+Definition defined A B (R:A->B->Prop) :=
+  forall x, exists y, R x y.
 
-(** Equality between relations *)
+(** Functionality *)
 
-(* TODO move further down in the file *)
-(* TODO already called binary_extensional above? *)
-Lemma rel_eq_intro : forall R1 R2,
-  (forall x y, R1 x y <-> R2 x y) -> R1 = R2.
-Proof using. intros. extens*. Qed.
+Definition functional A B (R:A->B->Prop) :=
+  forall x y z, R x y -> R x z -> y = z.
 
-Lemma rel_eq_elim : forall R1 R2,
-  R1 = R2 -> (forall x y, R1 x y <-> R2 x y).
-Proof using. intros. subst*. Qed.
-
-End Properties.
-
-
-(** Inclusion between a function and a relation. *)
-(* TODO: maybe use longer name? *)
-
-Definition incl_fr A B (f : A -> B) (R : A -> B -> Prop) :=
-  forall x, R x (f x).
-Definition incl_rf A B (R : A -> B -> Prop) (f : A -> B) :=
-  forall x y, R x y -> y = f x.
-
-(* Turning a function into a relation. *)
-
-Definition rel_func A B (f : A -> B) :=
-  fun (x : A) (y : B) => y = f x.
-
-Lemma rel_func_equiv : forall A B (f : A -> B) (R : A -> B -> Prop),
-  rel_le (rel_func f) R <-> incl_fr f R.
-Proof.
-  intros f R.
-  unfold rel_func, incl_fr. iff H; intros x; specializes H x.
-    applys* H.
-    intros y Hy. subst~.
-Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Constructions *)
 
-Section Constructions.
-Variable (A : Type).
-Implicit Types R : binary A.
-Implicit Types x y z : A.
-
 (** The empty relation *)
 
-Definition empty : binary A :=
+Definition rel_empty A : binary A :=
   fun x y => False.
 
 (** Swap (i.e. symmetric, converse, or transpose) of a relation *)
 
-Definition flip R : binary A :=
+Definition flip A (R:binary A) : binary A :=
   fun x y => R y x.
 
 (** Complement of a relation *)
 
-Definition compl R : binary A :=
+Definition compl A (R:binary A) : binary A :=
   fun x y => ~ R y x.
 
 (** Union of two relations *)
 
-Definition union R1 R2 : binary A :=
+Definition rel_union A (R1 R2:binary A) : binary A :=
   fun x y => R1 x y \/ R2 x y.
 
 (** Strict order associated with an order, wrt Leibnitz' equality *)
 
-Definition strict R : binary A :=
+Definition strict A (R:binary A) : binary A :=
   fun x y => R x y /\ x <> y.
 
 (** Large order associated with an order, wrt Leibnitz' equality *)
 
-Definition large R : binary A :=
+Definition large A (R:binary A) : binary A :=
   fun x y => R x y \/ x = y.
-
-End Constructions.
 
 (** Inverse image *)
 
@@ -171,7 +138,9 @@ Definition inverse_image (A B:Type) (R:binary B) (f:A->B) : binary A :=
 Definition sequence (A B C:Type) (R1:A->B->Prop) (R2:B->C->Prop) : A->C->Prop :=
   fun x z => exists y, R1 x y /\ R2 y z.
 
-(** Pointwise product *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Pointwise product *)
 
 Definition prod2 (A1 A2:Type)
  (R1:binary A1) (R2:binary A2) : binary (A1*A2) :=
@@ -186,33 +155,33 @@ Definition prod3 (A1 A2 A3:Type)
 Definition prod4 (A1 A2 A3 A4:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4)
  : binary (A1*A2*A3*A4) :=
-  prod2 (prod3 R1 R2 R3) R4.
+  prod2 (prod3 R1 R2 R3) R4
 
 Tactic Notation "unfold_prod" :=
   unfold prod4, prod3, prod2.
-
 Tactic Notation "unfolds_prod" :=
   unfold prod4, prod3, prod2 in *.
 
-(** Lexicographical order *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Lexicographical order *)
 
 Definition lexico2 {A1 A2} (R1:binary A1) (R2:binary A2)
-  : binary (A1*A2) :=
+   : binary (A1*A2) :=
   fun p1 p2 : A1*A2 => let (x1,x2) := p1 in let (y1,y2) := p2 in
   (R1 x1 y1) \/ (x1 = y1) /\ (R2 x2 y2).
 
 Definition lexico3 {A1 A2 A3}
- (R1:binary A1) (R2:binary A2) (R3:binary A3) : binary (A1*A2*A3) :=
+   (R1:binary A1) (R2:binary A2) (R3:binary A3) : binary (A1*A2*A3) :=
   lexico2 (lexico2 R1 R2) R3.
 
 Definition lexico4 {A1 A2 A3 A4}
- (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4)
- : binary (A1*A2*A3*A4) :=
+   (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4)
+   : binary (A1*A2*A3*A4) :=
   lexico2 (lexico3 R1 R2 R3) R4.
 
 Tactic Notation "unfold_lexico" :=
   unfold lexico4, lexico3, lexico2.
-
 Tactic Notation "unfolds_lexico" :=
   unfold lexico4, lexico3, lexico2 in *.
 
@@ -225,67 +194,165 @@ Variable (A : Type).
 Implicit Types R : binary A.
 Implicit Types x y z : A.
 
-Lemma refl_elim : forall x y R,
-  refl R -> x = y -> R x y.
+(** Reflexivity *)
+
+Lemma refl_inv : forall x y R,
+  refl R -> 
+  x = y ->
+  R x y.
 Proof using. intros_all. subst~. Qed.
 
-Lemma sym_elim : forall x y R,
-  sym R -> R x y -> R y x.
+(** Symmetry *)
+
+Lemma sym_inv : forall x y R,
+  sym R -> 
+  R x y -> 
+  R y x.
 Proof using. introv Sy R1. apply* Sy. Qed.
 
-Lemma antisym_elim : forall x y R,
-  antisym R -> R x y -> R y x -> x <> y -> False.
-Proof using. intros_all*. Qed.
-
-Lemma irrefl_neq : forall R,
-  irrefl R ->
-  forall x y, R x y -> x <> y.
-Proof using. introv H P E. subst. apply* H. Qed.
-
-Lemma irrefl_elim : forall R,
-  irrefl R ->
-  forall x, R x x -> False.
-Proof using. introv H P. apply* H. Qed.
-
-Lemma sym_to_eq : forall R,
+Lemma sym_inv_eq : forall R,
   sym R ->
-  forall x y, R x y = R y x.
+  (forall x y, R x y = R y x).
 Proof using. introv H. intros. apply prop_ext. split; apply H. Qed.
 
-Lemma sym_flip : forall R,
-  sym R -> flip R = R.
-Proof using. intros. unfold flip. apply* prop_ext_2. Qed.
+Lemma sym_to_eq : forall x y R,
+  sym R ->
+  R x y = R y x.
+Proof using. introv H. intros. apply prop_ext. split; apply H. Qed.
 
-Lemma trans_strict : forall R,
-  trans R -> antisym R -> trans (strict R).
+(** Antisymmetry *)
+
+Lemma antisym_inv : forall x y R,
+  antisym R -> 
+  R x y -> 
+  R y x -> 
+  x <> y -> 
+  False.
+Proof using. intros_all*. Qed.
+
+(** Irreflexivity *)
+
+Lemma irrefl_inv : forall x R,
+  irrefl R ->
+  R x x -> 
+  False.
+Proof using. introv H P. apply* H. Qed.
+
+Lemma irrefl_inv_neq : forall R,
+  irrefl R ->
+  (forall x y, R x y -> x <> y).
+Proof using. introv H P E. subst. apply* H. Qed.
+
+Lemma irrefl_neq : forall x y R,
+  irrefl R ->
+  R x y -> 
+  x <> y.
+Proof using. intros. applys* irrefl_inv_neq. Qed.
+
+(** Transitivity *)
+
+Lemma trans_inv : forall y x z R,
+  trans R -> 
+  R x y -> 
+  R y z -> 
+  R x z.
+Proof using. introv Tr R1 R2. apply* Tr. Qed.
+
+Lemma trans_inv_swap : forall y x z R,
+  trans R -> 
+  R y z -> 
+  R x y -> 
+  R x z.
+Proof using. introv Tr R1 R2. apply* Tr. Qed.
+
+(** Transitivity + Symmetry *)
+
+Definition trans_sym_ll := trans_inv.
+
+Lemma trans_sym_lr : forall y x z R,
+  trans R -> 
+  sym R -> 
+  R x y -> 
+  R z y -> 
+  R x z.
+Proof using. introv Tr R1 R2. apply* Tr. Qed.
+
+Lemma trans_sym_rr : forall y x z R,
+  trans R -> 
+  sym R -> 
+  R y x -> 
+  R z y -> 
+  R x z.
+Proof using. introv Tr R1 R2. apply* Tr. Qed.
+
+Lemma trans_sym_rl : forall y x z R,
+  trans R -> 
+  sym R -> 
+  R y x -> 
+  R y z -> 
+  R x z.
+Proof using. introv Tr R1 R2. apply* Tr. Qed.
+
+(** Strict *)
+
+Lemma trans_strict_from_antisym : forall R,
+  trans R -> 
+  antisym R -> 
+  trans (strict R).
 Proof using.
   introv T S. unfold strict. introv [H1 H2] [H3 H4]. split.
     apply* T.
     intros K. subst. apply H2. apply~ S.
 Qed.
 
+Lemma large_strict_trans : forall y x z R,
+  trans R -> 
+  large R x y -> 
+  R y z -> 
+  R x z.
+Proof using. introv T [E|H] H'; subst*. Qed.
+
+Lemma strict_large_trans : forall y x z R,
+  trans R -> 
+  R x y -> 
+  large R y z -> 
+  R x z.
+Proof using. introv T H [E|H']; subst*. Qed.
+
+(** Flip *)
+
+Lemma flip_sym : forall R,
+  sym R -> 
+  flip R = R.
+Proof using. intros. unfold flip. apply* prop_ext_2. Qed.
+
 Lemma flip_flip : forall R,
   flip (flip R) = R.
 Proof using. intros. apply* prop_ext_2. Qed.
 
 Lemma flip_refl : forall R,
-  refl R -> refl (flip R).
+  refl R -> 
+  refl (flip R).
 Proof using. intros_all. unfolds flip. auto. Qed.
 
 Lemma flip_trans : forall R,
-  trans R -> trans (flip R).
+  trans R -> 
+  trans (flip R).
 Proof using. intros_all. unfolds flip. eauto. Qed.
 
 Lemma flip_antisym : forall R,
-  antisym R -> antisym (flip R).
+  antisym R -> 
+  antisym (flip R).
 Proof using. intros_all. unfolds flip. auto. Qed.
 
 Lemma flip_asym : forall R,
-  asym R -> asym (flip R).
+  asym R -> 
+  asym (flip R).
 Proof using. intros_all. unfolds flip. apply* H. Qed.
 
 Lemma flip_total : forall R,
-  total R -> total (flip R).
+  total R -> 
+  total (flip R).
 Proof using. intros_all. unfolds flip. auto. Qed.
 
 Lemma flip_strict : forall R,
@@ -301,20 +368,24 @@ Lemma large_refl : forall R,
 Proof using. unfold large. intros_all~. Qed.
 
 Lemma large_trans : forall R,
-  trans R -> trans (large R).
+  trans R -> 
+  trans (large R).
 Proof using. unfold large. introv Tr [H1|E1] [H2|E2]; subst*. Qed.
 
 Lemma large_antisym : forall R,
-  antisym R -> antisym (large R).
+  antisym R -> 
+  antisym (large R).
 Proof using. introv T. introv H1 H2. (* todo: bug introv *)
   unfolds large. destruct H1; destruct H2; auto. Qed.
 
 Lemma large_total : forall R,
-  total R -> total (large R).
+  total R -> 
+  total (large R).
 Proof using. unfold large. intros_all~. destruct* (H x y). Qed.
 
 Lemma strict_large : forall R,
-  irrefl R -> strict (large R) = R.
+  irrefl R -> 
+  strict (large R) = R.
 Proof using.
   intros. unfold large, strict. apply prop_ext_2.
   intros_all. split; intros K.
@@ -323,7 +394,8 @@ Proof using.
 Qed.
 
 Lemma large_strict : forall R,
-  refl R -> large (strict R) = R.
+  refl R -> 
+  large (strict R) = R.
 Proof using.
   intros. unfold large, strict. apply prop_ext_2.
   intros_all. split; intros K.
@@ -332,14 +404,18 @@ Proof using.
   (* todo: cases *)
 Qed.
 
-Lemma double_incl : forall R1 R2,
-  incl R1 R2 -> incl R2 R1 -> R1 = R2.
-Proof using. unfolds incl. intros. apply* prop_ext_2. Qed.
+Lemma double_rel_le : forall R1 R2,
+  rel_le R1 R2 -> 
+  rel_le R2 R1 -> 
+  R1 = R2.
+Proof using. unfolds rel_le. intros. apply* prop_ext_2. Qed.
 
-Lemma rel_incl_trans : forall R1 R2 R3,
-  incl R1 R2 -> incl R2 R3 -> incl R1 R3.
+Lemma rel_rel_le_trans : forall R1 R2 R3,
+  rel_le R1 R2 -> 
+  rel_le R2 R3 -> 
+  rel_le R1 R3.
 Proof using.
-  unfold incl. eauto.
+  unfold rel_le. eauto.
 Qed.
 
 Lemma flip_injective : injective (@flip A).
@@ -358,44 +434,18 @@ Lemma eq_by_flip_r : forall R1 R2,
   R1 = flip R2.
 Proof using. intros. apply flip_injective. rewrite~ flip_flip. Qed.
 
-(* TODO: do we really need this extensional version? *)
-
 Lemma flip_flip_applied : forall R x y,
   (flip (flip R)) x y = R x y.
 Proof using. auto. Qed.
 
 End ConstructionsProp.
 
-Lemma trans_elim : forall A (y x z : A) R,
-  trans R -> R x y -> R y z -> R x z.
-Proof using. introv Tr R1 R2. apply* Tr. Qed.
+Implicit Arguments trans_inv [A] [x] [z] [R].
+Implicit Arguments trans_inv_swap [A] [x] [z] [R].
+Implicit Arguments trans_sym_rr [A] [x] [z] [R].
+Implicit Arguments trans_sym_lr [A] [x] [z] [R].
+Implicit Arguments trans_sym_rl [A] [x] [z] [R].
 
-Lemma trans_sym : forall A (y x z : A) R,
-  trans R -> sym R -> R z y -> R y x -> R x z.
-Proof using. introv Tr Sy R1 R2. apply* Tr. Qed.
-
-Lemma trans_sym_1 : forall A (y x z : A) R,
-  trans R -> sym R -> R y x -> R y z -> R x z.
-Proof using. introv Tr Sy R1 R2. apply* Tr. Qed.
-
-Lemma trans_sym_2 : forall A (y x z : A) R,
-  trans R -> sym R -> R x y -> R z y -> R x z.
-Proof using. introv Tr Sy R1 R2. apply* Tr. Qed.
-
-Implicit Arguments trans_elim [A x z R].
-Implicit Arguments trans_sym [A x z R].
-Implicit Arguments trans_sym_1 [A x z R].
-Implicit Arguments trans_sym_2 [A x z R].
-
-(** Other forms of transitivity *)
-
-Lemma large_strict_trans : forall A y x z (R:binary A),
-  trans R -> large R x y -> R y z -> R x z.
-Proof using. introv T [E|H] H'; subst*. Qed.
-
-Lemma strict_large_trans : forall A y x z (R:binary A),
-  trans R -> R x y -> large R y z -> R x z.
-Proof using. introv T H [E|H']; subst*. Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties about [functional] *)
@@ -405,9 +455,9 @@ Proof using. introv T H [E|H']; subst*. Qed.
 
 Lemma functional_characterization : forall A (R : binary A),
   functional R <->
-  incl (sequence (flip R) R) eq.
+  rel_le (sequence (flip R) R) eq.
 Proof using.
-  unfold functional, incl, sequence, flip.
+  unfold functional, rel_le, sequence, flip.
   split.
     introv ? [ ? [ ? ? ]]. eauto.
     eauto.
@@ -458,11 +508,11 @@ Proof using.
 Qed.
 
 Lemma union_covariant : forall A (R1 R2 S1 S2 : binary A),
-  incl R1 S1 ->
-  incl R2 S2 ->
-  incl (union R1 R2) (union S1 S2).
+  rel_le R1 S1 ->
+  rel_le R2 S2 ->
+  rel_le (union R1 R2) (union S1 S2).
 Proof using.
-  unfold incl, union. intuition eauto.
+  unfold rel_le, union. intuition eauto.
 Qed.
 
 Lemma union_refl_left : forall A (R S : binary A),
@@ -486,14 +536,14 @@ Qed.
 (* TODO decide whether to use a tactic exploit functional *)
 
 (* TODO there is something by the same name in [LibContainer]. *)
-Lemma incl_refl : forall A (R:binary A), incl R R.
-Proof using. unfolds incl. auto. Qed.
+Lemma rel_le_refl : forall A (R:binary A), rel_le R R.
+Proof using. unfolds rel_le. auto. Qed.
 
-Hint Resolve incl_refl.
+Hint Resolve rel_le_refl.
 
-Lemma lexico2_incl : forall A1 A2
+Lemma lexico2_rel_le : forall A1 A2
  (R1 R1':binary A1) (R2 R2':binary A2),
-  incl R1 R1' -> incl R2 R2' -> incl (lexico2 R1 R2) (lexico2 R1' R2').
+  rel_le R1 R1' -> rel_le R2 R2' -> rel_le (lexico2 R1 R2) (lexico2 R1' R2').
 Proof using.
   introv I1 I2. intros [x1 x2] [y1 y2] [H1|[H1 H2]].
   left~. subst. right~.
@@ -503,16 +553,16 @@ Qed.
    then [R] equals [S]. In that case, [R] and [S] represent the graph
    of a total function. *)
 
-Lemma defined_incl_functional:
+Lemma defined_rel_le_functional:
   forall (A : Type) (R S : binary A),
   defined R ->
   functional S ->
-  incl R S ->
+  rel_le R S ->
   R = S.
 Proof using.
-  introv hdef hfun hincl. eapply binary_extensional. intros v w. split; intros H; eauto.
+  introv hdef hfun hrel_le. eapply binary_extensional. intros v w. split; intros H; eauto.
   forwards [ w' M1 ]: hdef v.
-  forwards M2: hincl. eauto.
+  forwards M2: hrel_le. eauto.
   forwards: hfun H M2. subst*.
 Qed.
 
@@ -545,48 +595,58 @@ Section LexicoApp.
 Variables (A1 A2 A3 A4:Type).
 Variables (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4).
 
-Lemma lexico2_app_1 : forall x1 x2 y1 y2,
+Lemma lexico2_1 : forall x1 x2 y1 y2,
   R1 x1 y1 ->
   lexico2 R1 R2 (x1,x2) (y1,y2).
 Proof using. intros. left~. Qed.
 
-Lemma lexico2_app_2 : forall x1 x2 y1 y2,
-  x1 = y1 -> R2 x2 y2 ->
+Lemma lexico2_2 : forall x1 x2 y1 y2,
+  x1 = y1 -> 
+  R2 x2 y2 ->
   lexico2 R1 R2 (x1,x2) (y1,y2).
 Proof using. intros. right~. Qed.
 
-Lemma lexico3_app_1 : forall x1 x2 x3 y1 y2 y3,
+Lemma lexico3_1 : forall x1 x2 x3 y1 y2 y3,
   R1 x1 y1 ->
   lexico3 R1 R2 R3 (x1,x2,x3) (y1,y2,y3).
 Proof using. intros. left. left~. Qed.
 
-Lemma lexico3_app_2 : forall x1 x2 x3 y1 y2 y3,
-  x1 = y1 -> R2 x2 y2 ->
+Lemma lexico3_2 : forall x1 x2 x3 y1 y2 y3,
+  x1 = y1 -> 
+  R2 x2 y2 ->
   lexico3 R1 R2 R3 (x1,x2,x3) (y1,y2,y3).
 Proof using. intro. left. right~. Qed.
 
-Lemma lexico3_app_3 : forall x1 x2 x3 y1 y2 y3,
-  x1 = y1 -> x2 = y2 -> R3 x3 y3 ->
+Lemma lexico3_3 : forall x1 x2 x3 y1 y2 y3,
+  x1 = y1 -> 
+  x2 = y2 -> 
+  R3 x3 y3 ->
   lexico3 R1 R2 R3 (x1,x2,x3) (y1,y2,y3).
 Proof using. intros. right~. Qed.
 
-Lemma lexico4_app_1 : forall x1 x2 x3 x4 y1 y2 y3 y4,
+Lemma lexico4_1 : forall x1 x2 x3 x4 y1 y2 y3 y4,
   R1 x1 y1 ->
   lexico4 R1 R2 R3 R4 (x1,x2,x3,x4) (y1,y2,y3,y4).
 Proof using. intros. left. left. left~. Qed.
 
-Lemma lexico4_app_2 : forall x1 x2 x3 x4 y1 y2 y3 y4,
-  x1 = y1 -> R2 x2 y2 ->
+Lemma lexico4_2 : forall x1 x2 x3 x4 y1 y2 y3 y4,
+  x1 = y1 -> 
+  R2 x2 y2 ->
   lexico4 R1 R2 R3 R4 (x1,x2,x3,x4) (y1,y2,y3,y4).
 Proof using. intros. left. left. right~. Qed.
 
-Lemma lexico4_app_3 : forall x1 x2 x3 x4 y1 y2 y3 y4,
-  x1 = y1 -> x2 = y2 -> R3 x3 y3 ->
+Lemma lexico4_3 : forall x1 x2 x3 x4 y1 y2 y3 y4,
+  x1 = y1 -> 
+  x2 = y2 -> 
+  R3 x3 y3 ->
   lexico4 R1 R2 R3 R4 (x1,x2,x3,x4) (y1,y2,y3,y4).
 Proof using. intros. left. right~. Qed.
 
-Lemma lexico4_app_4 : forall x1 x2 x3 x4 y1 y2 y3 y4,
-  x1 = y1 -> x2 = y2 -> x3 = y3 -> R4 x4 y4 ->
+Lemma lexico4_4 : forall x1 x2 x3 x4 y1 y2 y3 y4,
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 -> 
+  R4 x4 y4 ->
   lexico4 R1 R2 R3 R4 (x1,x2,x3,x4) (y1,y2,y3,y4).
 Proof using. intros. right~. Qed.
 
@@ -846,18 +906,18 @@ Proof.
    exists y. splits~. apply~ tclosure_rtclosure.
 Qed.
 
-Lemma incl_tclosure_self : forall A (R:binary A),
-   incl R (tclosure R).
-Proof using. unfolds incl. intros. apply~ tclosure_once. Qed.
-Hint Resolve incl_tclosure_self.
+Lemma rel_le_tclosure_self : forall A (R:binary A),
+   rel_le R (tclosure R).
+Proof using. unfolds rel_le. intros. apply~ tclosure_once. Qed.
+Hint Resolve rel_le_tclosure_self.
 
 (* TODO: sort and complete the following *)
 
 Hint Resolve stclosure_step stclosure_sym stclosure_trans.
 
 Lemma stclosure_le : forall A (R1 R2 : binary A),
-  incl R1 R2 -> incl (stclosure R1) (stclosure R2).
-Proof using. unfolds incl. introv Le H. induction* H. Qed.
+  rel_le R1 R2 -> rel_le (stclosure R1) (stclosure R2).
+Proof using. unfolds rel_le. introv Le H. induction* H. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -930,39 +990,39 @@ Proof using.
 Qed.
 
 Lemma rstclosure_covariant : forall A (R S : binary A),
-  incl R S ->
-  incl (rstclosure R) (rstclosure S).
+  rel_le R S ->
+  rel_le (rstclosure R) (rstclosure S).
 Proof using.
-  unfold incl. induction 2; eauto with rstclosure.
+  unfold rel_le. induction 2; eauto with rstclosure.
 Qed.
 
 Lemma rstclosure_inflationary: forall A (R : binary A),
-  incl R (rstclosure R).
+  rel_le R (rstclosure R).
 Proof using.
-  unfold incl. eauto with rstclosure.
+  unfold rel_le. eauto with rstclosure.
 Qed.
 
-Lemma prove_rstclosure_incl : forall A (R S : binary A),
-  incl R (rstclosure S) ->
-  incl (rstclosure R) (rstclosure S).
+Lemma prove_rstclosure_rel_le : forall A (R S : binary A),
+  rel_le R (rstclosure S) ->
+  rel_le (rstclosure R) (rstclosure S).
 Proof using.
-  unfold incl. induction 2; eauto with rstclosure.
+  unfold rel_le. induction 2; eauto with rstclosure.
 Qed.
 
 Lemma rtclosure_union : forall A (R S : binary A),
-  incl (union (rtclosure R) (rtclosure S))
+  rel_le (union (rtclosure R) (rtclosure S))
        (rtclosure (union R S)).
 Proof using.
-  unfold incl, union. intros ? ? ? x y H.
+  unfold rel_le, union. intros ? ? ? x y H.
   destruct H; gen x y;
   induction 1; eauto with rtclosure.
 Qed.
 
 Lemma rstclosure_union : forall A (R S : binary A),
-  incl (union (rstclosure R) (rstclosure S))
+  rel_le (union (rstclosure R) (rstclosure S))
        (rstclosure (union R S)).
 Proof using.
-  unfold incl, union. intros ? ? ? x y H.
+  unfold rel_le, union. intros ? ? ? x y H.
   destruct H; gen x y;
   induction 1; eauto with rstclosure.
 Qed.
@@ -975,34 +1035,34 @@ Proof using.
 Qed.
 
 Lemma sclosure_is_a_closure_operator : forall A (R1 R2 : binary A),
-  incl R1 (sclosure R2) ->
-  incl (sclosure R1) (sclosure R2).
+  rel_le R1 (sclosure R2) ->
+  rel_le (sclosure R1) (sclosure R2).
 Proof using.
-  unfold sclosure, incl. introv h. introv H.
+  unfold sclosure, rel_le. introv h. introv H.
   destruct H.
   { eauto. }
   { forwards M: h. eauto. destruct M; tauto. }
 Qed.
 
 Lemma sclosure_covariant : forall A (R1 R2 : binary A),
-  incl R1 R2 ->
-  incl (sclosure R1) (sclosure R2).
+  rel_le R1 R2 ->
+  rel_le (sclosure R1) (sclosure R2).
 Proof using.
-  unfold sclosure, incl. introv M H. destruct H; eauto.
+  unfold sclosure, rel_le. introv M H. destruct H; eauto.
 Qed.
 
 Lemma rtclosure_covariant : forall A (R1 R2 : binary A),
-  incl R1 R2 ->
-  incl (rtclosure R1) (rtclosure R2).
+  rel_le R1 R2 ->
+  rel_le (rtclosure R1) (rtclosure R2).
 Proof using.
-  unfold incl. induction 2; eauto with rtclosure.
+  unfold rel_le. induction 2; eauto with rtclosure.
 Qed.
 
 Lemma tclosure_covariant : forall A (R1 R2 : binary A),
-  incl R1 R2 ->
-  incl (tclosure R1) (tclosure R2).
+  rel_le R1 R2 ->
+  rel_le (tclosure R1) (tclosure R2).
 Proof using.
-  unfold incl. inversion 2; subst. econstructor.
+  unfold rel_le. inversion 2; subst. econstructor.
   eauto.
   eapply rtclosure_covariant; eauto.
 Qed.
@@ -1033,15 +1093,15 @@ Proof using.
   eauto.
 Qed.
 
-Lemma sclosure_incl_stclosure : forall A (R : binary A),
-  incl (sclosure R) (stclosure R).
+Lemma sclosure_rel_le_stclosure : forall A (R : binary A),
+  rel_le (sclosure R) (stclosure R).
 Proof using.
-  unfold incl. inversion 1; eauto with stclosure.
+  unfold rel_le. inversion 1; eauto with stclosure.
 Qed.
 
-Lemma tclosure_incl_stclosure : forall A (R1 R2 : binary A),
-  incl R1 (stclosure R2) ->
-  incl (tclosure R1) (stclosure R2).
+Lemma tclosure_rel_le_stclosure : forall A (R1 R2 : binary A),
+  rel_le R1 (stclosure R2) ->
+  rel_le (tclosure R1) (stclosure R2).
 Proof using.
   introv H M. induction M using tclosure_ind_trans.
   applys* H.
@@ -1058,7 +1118,67 @@ Proof using.
     { eapply tclosure_trans; eauto. }
   }
   { intros.
-    eapply tclosure_incl_stclosure; [ | eassumption ].
-    eapply sclosure_incl_stclosure. }
+    eapply tclosure_rel_le_stclosure; [ | eassumption ].
+    eapply sclosure_rel_le_stclosure. }
 Qed.
 
+
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Comparison between relations *)
+
+(** Inclusion between relations *)
+
+Definition rel_le A B (R1 R2:A->B->Prop) :=
+  forall x y, R1 x y -> R2 x y.
+
+  (* Same as: [forall a, pred_le (R1 a) (Q a).] *)
+
+(** Properties *)
+
+
+
+Lemma rel_le_refl : forall A B (P:A->B->Prop),
+  rel_le P P.
+Proof. intros_all~. Qed.
+
+(** Equality between relations *)
+
+(* TODO move further down in the file *)
+(* TODO already called binary_extensional above? *)
+Lemma rel_eq_intro : forall R1 R2,
+  (forall x y, R1 x y <-> R2 x y) -> R1 = R2.
+Proof using. intros. extens*. Qed.
+
+Lemma rel_eq_inv : forall R1 R2,
+  R1 = R2 -> (forall x y, R1 x y <-> R2 x y).
+Proof using. intros. subst*. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Comparison between a relation and a function *)
+
+(** Inclusion between a function and a relation. *)
+(* TODO: maybe use longer name? *)
+
+Definition incl_fr A B (f : A -> B) (R : A -> B -> Prop) :=
+  forall x, R x (f x).
+Definition incl_rf A B (R : A -> B -> Prop) (f : A -> B) :=
+  forall x y, R x y -> y = f x.
+
+(* Turning a function into a relation. *)
+
+Definition rel_func A B (f : A -> B) :=
+  fun (x : A) (y : B) => y = f x.
+
+Lemma rel_func_equiv : forall A B (f : A -> B) (R : A -> B -> Prop),
+  rel_le (rel_func f) R <-> incl_fr f R.
+Proof.
+  intros f R.
+  unfold rel_func, incl_fr. iff H; intros x; specializes H x.
+    applys* H.
+    intros y Hy. subst~.
+Qed.
+
+End Comparison.

@@ -15,7 +15,7 @@ Generalizable Variables A B.
 (** * Structures *)
 
 Record monoid_def (A:Type) : Type := monoid_ {
-   monoid_oper : oper2 A;
+   monoid_oper : A -> A -> A;
    monoid_neutral : A }.
 
 Class Monoid (A:Type) (m:monoid_def A) : Prop := {

@@ -62,7 +62,7 @@ Lemma var_gen_list_spec : forall n l,
   n \in from_list l -> n < var_gen_list l.
 Proof using.
   unfold var_gen_list. induction l; introv I.
-  rewrite from_list_nil in I. false (in_empty_elim I).
+  rewrite from_list_nil in I. false (in_empty_inv I).
   rewrite from_list_cons in I. rew_list.
    rewrite in_union in I. destruct I as [H|H].
      rewrite in_singleton in H. subst. nat_math.

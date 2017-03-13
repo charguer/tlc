@@ -276,8 +276,8 @@ Lemma strict_order_strict : forall (A:Type) (R:binary A),
 Proof using.
   introv [Re As Tr]. unfold strict. constructor; intros_all; simpls.
   destruct* H.
-  applys* antisym_elim x y.
-  split. applys* As. intros E. subst. applys* antisym_elim y z.
+  applys* antisym_inv x y.
+  split. applys* As. intros E. subst. applys* antisym_inv y z.
 Qed.
 
 Lemma order_from_strict : forall (A:Type) (R:binary A),
@@ -286,7 +286,7 @@ Proof using.
   introv [Re As Tr]. unfold large. constructor; simpl.
   intros_all~.
   introv [H1|E1] [H2|E2]; subst; auto.
-    left. apply* trans_elim.
+    left. apply* trans_inv.
   introv [H1|E1] [H2|E2]; try subst; auto.
     false. apply* As.
 Qed.

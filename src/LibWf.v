@@ -75,7 +75,8 @@ Hint Extern 1 (wf ?R) => progress (unfold R) : wf.
     combinators used in definitions related to well-foundedness. *)
 
 Ltac unfold_wf_base :=
-  unfold_unproj; unfold_uncurryp; unfold_lexico.
+  unfold_unproj; unfold_uncurryp; 
+  unfold lexico4, lexico3, lexico2.
 
 Ltac unfolds_wf_base :=
   unfolds_unproj; unfolds_uncurryp; unfolds_lexico.

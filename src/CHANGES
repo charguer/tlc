@@ -1377,3 +1377,28 @@ Tactic Notation "rew_refl" "*" "in" "*" :=
   rew_refl in *; auto_star.
 
 
+(* ---------------------------------------------------------------------- *)
+(** ** Relations *)
+
+Definition incl := rel_le.
+
+Definition sym_flip := flip_sym.
+
+Definition trans_sym_2 := trans_elim_lr.
+Definition trans_sym_1 := trans_elim_rl.
+
+Definition use_idempotent := idempotent_inv.
+
+(* ---------------------------------------------------------------------- *)
+
+EVERYWHERE foo_elim => foo_inv
+
+(* ---------------------------------------------------------------------- *)
+
+AND SIMILAR
+	lexico2_app_1 => lexico2_1 
+
+Definition irrefl_neq := irrefl_inv_neq.
+Definition sym_to_eq := sym_inv_eq.
+
+Definition trans_strict := trans_strict_from_antisym.
