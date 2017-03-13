@@ -61,7 +61,7 @@ Definition sumbool_decidable : forall (P:Prop),
 Proof using.
   introv H. applys decidable_make
     (match H with left _ => true | right _ => false end).
-  rewrite isTrue_def. destruct H; case_if; tryfalse; auto.
+  rewrite isTrue_to_if. destruct H; case_if; tryfalse; auto.
 Defined.
 
 Definition decidable_sumbool : forall P : Prop,
@@ -159,11 +159,11 @@ Proof using. intros. rewrite~ istrue_decide. Qed.
 
 Lemma decide_def : forall `{Decidable P},
   (decide P) = (If P then true else false).
-Proof using. intros. rewrite decide_spec. rewrite isTrue_def. case_if*. Qed.
+Proof using. intros. rewrite decide_spec. rewrite isTrue_to_if. case_if*. Qed.
 
 Lemma decide_cases : forall `{Decidable P},
   (P /\ decide P = true) \/ (~ P /\ decide P = false).
-Proof using. intros. rewrite decide_spec. rewrite isTrue_def. case_if*. Qed.
+Proof using. intros. rewrite decide_spec. rewrite isTrue_to_if. case_if*. Qed.
 
 (** Dedicability instances *)
 
@@ -237,7 +237,7 @@ Lemma comparable_beq : forall A (f:A->A->bool),
 Proof using.
   introv H. constructors. intros.
   applys decidable_make (f x y).
-  rewrite isTrue_def. extens.
+  rewrite isTrue_to_if. extens.
   rewrite H. case_if; auto_false*.
 Qed.
 
@@ -253,7 +253,7 @@ Lemma comparable_of_dec : forall (A:Type),
 Proof using.
   introv H. constructors. intros.
   applys decidable_make (if H x y then true else false).
-  rewrite isTrue_def. destruct (H x y); case_if*.
+  rewrite isTrue_to_if. destruct (H x y); case_if*.
 Qed.
 
 (** Comparison for booleans *)
@@ -271,7 +271,7 @@ Proof using.
   intros. applys decidable_make (decide (decide P = decide Q)).
   extens. rew_refl.
   iff E.
-    do 2 rewrite isTrue_def in E.
+    do 2 rewrite isTrue_to_if in E.
      extens. case_if; case_if; auto_false*.
     subst*.
 Qed.
@@ -404,3 +404,61 @@ Qed.
 
 
 
+
+
+(* ********************************************************************** *)
+(** * Comparison as boolean values *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of boolean comparison *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Notation for comparison in [bool] are [x '= y] and [x '<> y] *)
+
+Notation "x ''=' y :> A" := (isTrue (@eq A x y))
+  (at level 70, y at next level, only parsing) : comp_scope.
+Notation "x ''<>' y :> A" := (isTrue (~ (@eq A x y)))
+  (at level 69, y at next level, only parsing) : comp_scope.
+Notation "x ''=' y" := (isTrue (@eq _ x y))
+  (at level 70, y at next level, no associativity) : comp_scope.
+Notation "x ''<>' y" := (isTrue (~ (@eq _ x y)))
+  (at level 69, y at next level, no associativity) : comp_scope.
+Open Scope comp_scope.
+
+
+
+Lemma eqb_eq : forall A (x y:A),
+  x = y -> 
+  (x '= y) = true.
+Proof using. intros. subst. apply~ isTrue_true. Qed.
+
+Lemma eqb_self : forall A (x:A),
+  (x '= x) = true.
+Proof using. intros. apply~ eqb_eq. Qed.
+
+Lemma eqb_neq : forall A (x y:A),
+  x <> y -> 
+  (x '= y) = false.
+Proof using. intros. subst. apply~ isTrue_false. Qed.
+
+Lemma neqb_eq : forall A (x y:A),
+  x = y -> 
+  (x '<> y) = false.
+Proof using. intros. subst. rewrite~ isTrue_false. Qed.
+
+Lemma neqb_neq : forall A (x y:A),
+  x <> y ->
+  (x '<> y) = true.
+Proof using. intros. subst. rewrite~ isTrue_true. Qed.
+
+Lemma neqb_self : forall A (x:A),
+  (x '<> x) = false.
+Proof using. intros. apply~ neqb_eq. Qed.
+
+Lemma eqb_sym : forall A (x y : A),
+  (x '= y) = (y '= x).
+Proof.
+  introv. tests D: (x = y).
+   rewrite~ eqb_self.
+   do 2 rewrite~ eqb_neq.
+Qed.

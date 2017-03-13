@@ -1,4 +1,3 @@
-
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Backward Compatibility Hints                                            *
@@ -1321,3 +1320,60 @@ Tactic Notation "extens" "~" :=
   extens; auto_tilde.
 Tactic Notation "extens" "*" :=
   extens; auto_star.
+
+
+
+--------------------------------------------------------
+
+Definition func_ext := func_ext_dep.
+
+rew_reflect => rew_istrue
+rew_unreflect => rew_isTrue
+
+rew_refl => rew_istrue (or sometimes rew_isTrue)
+
+
+logic => rew_case_if
+
+Definition istrue_not_false := not_istrue_false.
+
+Definition istrue_def := istrue_to_eq_true.
+
+Definition bool_cases_eq := bool_eq_true_or_eq_false
+
+Definition isTrue_if := isTrue_If.
+
+(* ---------------------------------------------------------------------- *)
+(** ** Tactics [rew_refl]  *)
+
+(** [rew_refl] distributes [istrue] and [isTrue]
+    and replaces [decide] with [isTrue]. *)
+
+Hint Rewrite isTrue_True isTrue_False isTrue_istrue
+ isTrue_not isTrue_and isTrue_or isTrue_if
+ istrue_true_eq istrue_false_eq istrue_isTrue_eq
+ istrue_neg istrue_and istrue_or : rew_refl.
+
+Tactic Notation "rew_refl" :=
+  autorewrite with rew_refl.
+Tactic Notation "rew_refl" "in" hyp(H) :=
+  autorewrite with rew_refl in H.
+Tactic Notation "rew_refl" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_refl).
+  (* autorewrite with rew_refl in *. *)
+
+Tactic Notation "rew_refl" "~" :=
+  rew_refl; auto_tilde.
+Tactic Notation "rew_refl" "~" "in" hyp(H) :=
+  rew_refl in H; auto_tilde.
+Tactic Notation "rew_refl" "~" "in" "*" :=
+  rew_refl in *; auto_tilde.
+
+Tactic Notation "rew_refl" "*" :=
+  rew_refl; auto_star.
+Tactic Notation "rew_refl" "*" "in" hyp(H) :=
+  rew_refl in H; auto_star.
+Tactic Notation "rew_refl" "*" "in" "*" :=
+  rew_refl in *; auto_star.
+
+

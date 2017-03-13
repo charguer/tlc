@@ -203,7 +203,7 @@ End EqInductionSym.
 (* ---------------------------------------------------------------------- *)
 (** ** A same function applied to equal arguments yield equal result *)
 
-Section FuncEq.
+Section ArgsEq.
 Variables (A1 A2 A3 A4 A5 B : Type).
 
 Lemma args_eq_1 : forall (f:A1->B) x1 y1,
@@ -241,7 +241,7 @@ Lemma args_eq_5 : forall (f:A1->A2->A3->A4->A5->B) x1 y1 x2 y2 x3 y3 x4 y4 x5 y5
   f x1 x2 x3 x4 x5 = f y1 y2 y3 y4 y5.
 Proof using. intros. subst~. Qed.
 
-End FuncEq.
+End ArgsEq.
 
 
 (* ---------------------------------------------------------------------- *)
