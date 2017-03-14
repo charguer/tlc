@@ -39,6 +39,8 @@ Hint Constructors permut_one.
 
 (** Permutation is an equivalence *)
 
+(* TODO: use [refl] [sym] [trans] predicates *)
+
 Lemma permut_refl : forall l,
   permut l l.
 Proof using. intros. apply rtclosure_refl. Qed.

@@ -127,8 +127,8 @@ Proof using.
   unfold union_inst, union_impl, union, empty_impl,
    empty_inst, empty, empty_impl, multiset. introv N.
   split; extens~.
-  intros x. lets: func_same_1 x N. math.
-  intros x. lets: func_same_1 x N. math.
+  intros x. lets: fun_eq_1 x N. math.
+  intros x. lets: fun_eq_1 x N. math.
 Qed.
 
 Global Instance union_empty_l_eq_inst : Union_empty_l (T:=multiset A).

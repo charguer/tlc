@@ -90,9 +90,9 @@ Section Fget.
 Context {A1:Type} {A2:Type} `{IB1:Inhab B1} `{IB2:Inhab B2}.
 Implicit Types f : A1+A2->B1+B2.
 
-Definition func_get21 f :=
+Definition fun_get21 f :=
   fun x => get21 (f (inl x)).
-Definition func_get22 f :=
+Definition fun_get22 f :=
   fun x => get22 (f (inr x)).
 
 End Fget.

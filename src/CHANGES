@@ -1194,8 +1194,8 @@ Definition eq_trans' := eq_trans_rl.
 
 
 Defintion prop_ext_nd_1 := prop_ext_nondep_1.
-Definition func_ext_dep_1 := func_ext_1.
-Definition func_ext_1 := func_ext_nondep_1.
+Definition func_ext_dep_1 := fun_ext_1.
+Definition fun_ext_1 := func_ext_nondep_1.
 
 Definition func_eq_1 := args_eq_1.
 Definition func_same_1 := func_eq_1.
@@ -1304,10 +1304,10 @@ Ltac extens_core :=
   | forall _ _ _ _ _, Prop => apply prop_ext_5
   | forall _ _ _ _ _ _, Prop => apply prop_ext_6
   | forall _,_ =>
-     first [ apply func_ext_4
-           | apply func_ext_3
-           | apply func_ext_2
-           | apply func_ext_1 ]
+     first [ apply fun_ext_4
+           | apply fun_ext_3
+           | apply fun_ext_2
+           | apply fun_ext_1 ]
   | _ => apply extensional; try unfold extensional_hyp; simpl
   end end.
 
@@ -1402,3 +1402,58 @@ Definition irrefl_neq := irrefl_inv_neq.
 Definition sym_to_eq := sym_inv_eq.
 
 Definition trans_strict := trans_strict_from_antisym.
+
+
+
+Definition inverse_image := preimage.
+Definition sequence := rel_seq.
+
+Definition flip := inverse.
+
+
+Definition large_strict_trans := large_trans_l.
+Definition strict_large_trans := large_trans_r.
+
+
+Definition eq_by_inverse_l := inverse_eq_l.
+Definition eq_by_inverse_r := inverse_eq_r.
+
+Definition eq_equiv := equiv_eq
+
+
+Definition tclosure_rtclosure := rtclosure_from_tclosure.
+Definition tclosure_right := tclosure_inv_r.
+
+Definition functional_empty := functional_rel_empty.
+
+Definition union_refl_left := refl_rel_union_l.
+
+Definition prove_rel_union_left := rel_union_l.
+
+Lemma inverse_inverse_applied : forall R x y,
+  (inverse (inverse R)) x y = R x y.
+Proof using. auto. Qed.
+
+Definition functional_characterization := functional_iff_seq_inverse_incl_eq.
+
+Definition double_incl := antisym_rel_incl.
+
+Hint Resolve rel_le_tclosure_self.
+Hint Resolve stclosure_step stclosure_sym stclosure_trans.
+
+Definition defined_rel_incl_functional := eq_from_incl_defined_functional.
+
+Definition incl_fr := incl_fun_rel.
+Definition incl_rf := incl_rel_fun.
+
+Definition binds_func := binds_functional.
+
+Definition Nth_func := Nth_functional.
+
+EVERYWHERE: func => fun.
+
+Definition .. := rel_in_fun_from_fun_in_rel_functional
+
+Definition prop_ext_1 := pred_ext_1.
+Definition prop_ext_2 := pred_ext_2.
+etc..

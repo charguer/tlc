@@ -48,23 +48,23 @@ Definition compose {A B C} (g : B -> C) (f : A -> B) :=
   fun x => g (f x).
 
 Notation "f1 \o f2" := (compose f1 f2)
-  (at level 49, right associativity) : func_scope.
+  (at level 49, right associativity) : fun_scope.
 
 Section Combinators.
-Open Scope func_scope.
+Open Scope fun_scope.
 Variables (A B C D : Type).
 
 Lemma compose_id_l : forall (f:A->B),
   id \o f = f.
-Proof using. intros. apply~ func_ext_1. Qed.
+Proof using. intros. apply~ fun_ext_1. Qed.
 
 Lemma compose_id_r : forall (f:A->B),
   f \o id = f.
-Proof using. intros. apply~ func_ext_1. Qed.
+Proof using. intros. apply~ fun_ext_1. Qed.
 
 Lemma compose_assoc : forall (f:C->D) (g:B->C) (h:A->B),
   (f \o g) \o h = f \o (g \o h).
-Proof using. intros. apply~ func_ext_1. Qed.
+Proof using. intros. apply~ fun_ext_1. Qed.
 
 Lemma compose_eq_l : forall (f:B->C) (g1 g2:A->B),
   g1 = g2 -> f \o g1 = f \o g2.

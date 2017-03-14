@@ -10,7 +10,7 @@ Require Import LibTactics LibLogic LibReflect LibFunc LibEpsilon LibList
 Require Import Div2.
 Open Scope nat_scope.
 Open Scope comp_scope.
-Open Scope func_scope.
+Open Scope fun_scope.
 
 (** Setting up of automation *)
 
@@ -102,7 +102,7 @@ Definition stream_family A := stream_mod_family (@eq A).
 Lemma stream_mod_similarity : forall A (E:binary A),
   bisimilar_mod E = similar (stream_mod_family E).
 Proof using.
-  intros. apply prop_ext_2. intros s1 s2.
+  extens. intros s1 s2.
   unfold similar. simpl. split.
   intros. apply~ bisimilar_mod_to_upto.
   intros. apply~ bisimilar_mod_take.
@@ -739,7 +739,7 @@ Hint Constructors itree_similar.
 
 Lemma itree_similar_eq : itree_similar = similar itree_family.
 Proof using.
-  apply prop_ext_2. intros t1 t2. iff H.
+  extens. intros t1 t2. iff H.
   intros i. hnf. gen t1 t2. induction i; simpl; introv H.
    auto. inversions~ H.
   hnf in H. gen t1 t2. cofix IH.
@@ -1048,9 +1048,9 @@ Proof using.
   intros f1 f2 [[r s] k] H. unfolds. destruct r; auto.
   fequal; auto 7.
   rewrite H; [|auto 7]. fequals_rec.
-   apply func_ext_1. intros s'. apply~ H.
+   apply fun_ext_1. intros s'. apply~ H.
   fequal. rewrite H; [|auto 7]. fequals_rec.
-   apply func_ext_1. intros s'. case_asserts; auto 7.
+   apply fun_ext_1. intros s'. case_asserts; auto 7.
 Qed.
 
 
@@ -1115,9 +1115,9 @@ Qed.
     other total function that behave like [parse'] on the domain. *)
 
 Lemma parse'_fix_Parse :
-  fixed_point (pfunc_equal parse_dom) Parse parse'.
+  fixed_point (pfun_equal parse_dom) Parse parse'.
 Proof using.
-  intros f Hf [[r s] k] N. asserts E: (pfunc_equal parse_dom f parse').
+  intros f Hf [[r s] k] N. asserts E: (pfun_equal parse_dom f parse').
     unfolds. apply~ equiv_sym. clear Hf.
   rewrite~ E. rewrite parse'_fix.
   unfold Parse, Parse'. destruct r; auto; simpl in N.

@@ -50,27 +50,27 @@ Definition unique_upto_st A (E:binary A) (P : A -> Prop) (x : A) :=
 (** Two functions defined on a same domain [P] are equivalent
     iff they are extensionally equivalent on their domain. *)
 
-Definition pfunc_equiv A B (E:B->B->Prop) (P:A->Prop) (f f':A->B) :=
+Definition pfun_equiv A B (E:B->B->Prop) (P:A->Prop) (f f':A->B) :=
   forall x, P x -> E (f x) (f' x).
 
-Hint Unfold pfunc_equiv.
+Hint Unfold pfun_equiv.
 
 (** Same, but specialized to Leibnitz' equality *)
 
-Definition pfunc_equal A B (P:A->Prop) (f f':A->B) :=
-  pfunc_equiv (@eq B) P f f'.
+Definition pfun_equal A B (P:A->Prop) (f f':A->B) :=
+  pfun_equiv (@eq B) P f f'.
 
-Hint Unfold pfunc_equal.
+Hint Unfold pfun_equal.
 
-(** [pfunc_equiv] is an equivalence relation. *)
+(** [pfun_equiv] is an equivalence relation. *)
 
-Lemma pfunc_equiv_equiv : forall A B (E:binary B) (P:A->Prop),
-  equiv E -> equiv (@pfunc_equiv A B E P).
+Lemma pfun_equiv_equiv : forall A B (E:binary B) (P:A->Prop),
+  equiv E -> equiv (@pfun_equiv A B E P).
 Proof using.
-  introv [RE SE TE]. unfold pfunc_equiv. constructor; intros_all*.
+  introv [RE SE TE]. unfold pfun_equiv. constructor; intros_all*.
 Qed.
 
-Hint Resolve pfunc_equiv_equiv.
+Hint Resolve pfun_equiv_equiv.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -101,7 +101,7 @@ Proof using. intros. apply (prove_Inhab (Build_partial arbitrary (fun _ => True)
     equivalent modulo [E] on their domain. *)
 
 Definition partial_equiv A B (E:binary B) (f f': A-->B) :=
-  (dom f) = (dom f') /\ pfunc_equiv E (dom f) f f'.
+  (dom f) = (dom f') /\ pfun_equiv E (dom f) f f'.
 
 (** [partial_equiv] is an equivalence relation. *)
 
@@ -120,7 +120,7 @@ Qed.
     equivalent results on the domain [D]. *)
 
 Definition extends A B (E:binary B) (f f': A-->B) :=
-  pred_le (dom f) (dom f') /\ pfunc_equiv E (dom f) f f'.
+  pred_le (dom f) (dom f') /\ pfun_equiv E (dom f) f f'.
 
 (** [extends] is an order relation on the set of partial
     fixed points (antisymmetry is modulo equiv). *)
@@ -131,8 +131,9 @@ Lemma extends_order : forall A B (E:binary B),
 Proof using.
   unfold extends. constructor.
    intros_all. dauto.
-   introv [D1 H1] [D2 H2]. unfolds pfunc_equiv. dauto.
+   introv [D1 H1] [D2 H2]. unfolds pfun_equiv. dauto.
    introv [D1 H1] [D2 H2]. split. apply* prop_ext_1. dauto.
+     (* TODO: use extens *)
 Qed.
 
 (** Two partial functions [f] and [f'] are consistent if
@@ -140,7 +141,7 @@ Qed.
     their domains. *)
 
 Definition consistent A B (E:binary B) (f f': A-->B) :=
-  pfunc_equiv E (pred_and (dom f) (dom f')) f f'.
+  pfun_equiv E (pred_and (dom f) (dom f')) f f'.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -194,8 +195,8 @@ Definition partial_fixed_point'
 
 Definition partial_fixed_point
   A B (E:binary B) (F:(A->B)->(A->B)) (f:A-->B) :=
-  forall (f':A-->B), pfunc_equiv E (dom f) f f' ->
-                     pfunc_equiv E (dom f) f' (F f').
+  forall (f':A-->B), pfun_equiv E (dom f) f f' ->
+                     pfun_equiv E (dom f) f' (F f').
 
 (** Let us prove formally the equiv between the two definitions.
     (Note: it is also possible to state the lemma in a way that does
@@ -217,7 +218,7 @@ Qed.
 
 Lemma partial_fixed_point_inv : forall A B (P:A->Prop) F (f:A->B) (E:binary B),
   partial_fixed_point E F (Build_partial f P) ->
-  fixed_point (pfunc_equiv E P) F f.
+  fixed_point (pfun_equiv E P) F f.
 Proof using. introv Fixf. intros f' Hff'. apply~ (Fixf (Build_partial f' P)). Qed.
 
 
@@ -1045,8 +1046,8 @@ Proof using.
   introv Limu Qiui Ki Pi. applys Comp. apply~ Qiui.
    apply~ equiv_sym. apply~ Limu.
   apply~ rec_contractive_as_contractive.
-  asserts Equ: (pfunc_equiv E P = similar M).
-    apply func_ext_2. intros f1 f2. unfold M, similar, pfunc_equiv.
+  asserts Equ: (pfun_equiv E P = similar M).
+    apply fun_ext_2. intros f1 f2. unfold M, similar, pfun_equiv.
     apply prop_ext. simpl. split~.
   exists (Build_partial f P). destruct Fixf as [Fixf _]. split~.
   unfolds in Fixf. intros [f' P']. simpls. rewrite~ Equ.
@@ -1061,7 +1062,7 @@ Lemma rec_fixed_point_generally_consistent : forall A B {IB:Inhab B}
   (forall x, pred_compatible E (S x)) ->
   wf R -> 
   rec_contractive E P F R S ->
-  fixed_point (pfunc_equiv E P) F f ->
+  fixed_point (pfun_equiv E P) F f ->
   (forall x, P x -> S x (f x)) ->
   generally_consistent_partial_fixed_point E F (Build_partial f P).
 Proof using.
@@ -1093,7 +1094,7 @@ Definition rec_contractive' A B (E:binary B) (P:A->Prop)
 Lemma rec_fixed_point_generally_consistent' : forall A B {IB:Inhab B}
  (F:(A->B)->(A->B)) (R:binary A) (P:A->Prop) (E:binary B) f,
   equiv E -> wf R -> rec_contractive' E P F R f ->
-  fixed_point (pfunc_equiv E P) F f ->
+  fixed_point (pfun_equiv E P) F f ->
   generally_consistent_partial_fixed_point E F (Build_partial f P).
 Proof using.
   introv IB Equiv Wf Cont Fixf. split.
@@ -1177,7 +1178,7 @@ Lemma corec_rec_similar : forall I A B
   similar (corec_rec_family M P R) =
   (fun f1 f2 => forall x, P x -> similar M (f1 x) (f2 x)).
 Proof using.
-  intros. apply prop_ext_2. intros f1 f2.
+  extens. intros f1 f2.
   unfold similar. simpl. iff H.
   intros. apply~ (H (i,x)).
   intros [i x]. intros. apply~ H.
@@ -1286,11 +1287,11 @@ Lemma mixed_fixed_point_generally_consistent :
   E = similar M ->
   mixed_continuous M S -> 
   mixed_contractive M P F R S ->
-  fixed_point (pfunc_equiv E P) F f ->
+  fixed_point (pfun_equiv E P) F f ->
   (forall i x, P x -> S i x (f x)) ->
   generally_consistent_partial_fixed_point E F (Build_partial f P).
 Proof using.
-  Hint Resolve pfunc_equiv_equiv similar_equiv.
+  Hint Resolve pfun_equiv_equiv similar_equiv.
   introv IB Cofe WfR SimE. introv Conti Contr Fixf Inva.
   subst E. split. unfolds. simpl. intros [f' P'] N. simple~.
   intros [f' P'] Fixf'.
@@ -1455,7 +1456,7 @@ Lemma prod_similar : forall I A1 A2 (F1:family I A1) (F2:family I A2),
   prod2 (similar F1) (similar F2) = similar (prod_family F1 F2).
 Proof using.
   intros. unfold prod_family, prod_family_sim, similar. simpl.
-  apply func_ext_2. intros [x1 x2] [y1 y2]. simpls.
+  apply fun_ext_2. intros [x1 x2] [y1 y2]. simpls.
   apply pred_conj_forall_distrib.
 Qed.
 
@@ -1737,7 +1738,7 @@ Lemma FixFunMod_inv :
   f = FixFunMod E F ->
   equiv E ->
   generally_consistent_partial_fixed_point E F (Build_partial f' P) ->
-  pfunc_equiv E P f' f.
+  pfun_equiv E P f' f.
 Proof using.
   introv Deff Equiv Gcf'.
   unfolds FixFunMod, Fix. spec_epsilon as g [Fixg Bestg].
@@ -1854,7 +1855,7 @@ Lemma FixFun_fix_partial' : forall A (R:binary A) (P:A->Prop)
   f = FixFun F -> 
   wf R -> 
   rec_contractive' eq P F R f' ->
-  fixed_point (pfunc_equal P) F f' ->
+  fixed_point (pfun_equal P) F f' ->
   (forall x, P x -> f x = F f x).
 Proof using.
   introv Df W Cont Fixf'. applys Fixf' (Build_partial f P). simpl.

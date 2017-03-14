@@ -68,7 +68,7 @@ Arguments extensionality_make [A] [extensionality_hyp].
 
 (** Instance for propositional extensionality *)
 
-Global Instance prop_extensionatity : Extensionality Prop.
+Global Instance extensionatity_prop : Extensionality Prop.
 Proof using. intros. apply (extensionality_make prop_ext). Defined.
 
 
@@ -181,15 +181,15 @@ Variables (A : Type) (x : A).
 
 Definition eq_ind_r : forall (P:A -> Prop),
   P x -> forall y, y = x -> P y.
-Proof using. introv Px H. ... elim (sym_eq H). auto. Qed.
+Proof using. intros. subst*. Qed.
 
 Definition eq_rec_r : forall (P:A -> Set),
   P x -> forall y, y = x -> P y.
-Proof using. introv Px H. elim (sym_eq H). auto. Qed.
+Proof using. intros. subst*. Qed.
 
 Definition eq_rect_r : forall (P:A -> Type),
   P x -> forall y, y = x -> P y.
-Proof using. introv Px H. elim (sym_eq H). auto. Qed.
+Proof using. intros. subst*. Qed.
 
 End EqInductionSym.
 
@@ -254,27 +254,27 @@ Section FuncEq.
 Variables (A1 A2 A3 A4 A5 B:Type).
 Variables (x1:A1) (x2:A2) (x3:A3) (x4:A4) (x5:A5).
 
-Lemma func_eq_1 : forall f g,
+Lemma fun_eq_1 : forall f g,
   f = g ->
   f x1 = g x1 :> B.
 Proof using. intros. subst~. Qed.
 
-Lemma func_eq_2 : forall f g,
+Lemma fun_eq_2 : forall f g,
   f = g -> 
   f x1 x2 = g x1 x2 :> B.
 Proof using. intros. subst~. Qed.
 
-Lemma func_eq_3 : forall f g,
+Lemma fun_eq_3 : forall f g,
   f = g -> 
   f x1 x2 x3 = g x1 x2 x3 :> B.
 Proof using. intros. subst~. Qed.
 
-Lemma func_eq_4 : forall f g,
+Lemma fun_eq_4 : forall f g,
   f = g -> 
   f x1 x2 x3 x4 = g x1 x2 x3 x4 :> B.
 Proof using. intros. subst~. Qed.
 
-Lemma func_eq_5 : forall f g,
+Lemma fun_eq_5 : forall f g,
   f = g -> 
   f x1 x2 x3 x4 x5 = g x1 x2 x3 x4 x5 :> B.
 Proof using. intros. subst~. Qed.
@@ -296,53 +296,53 @@ Variables (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type).
 Variables (A5 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3), Type).
 Variables (A6 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4), Type).
 
-Lemma func_ext_1 : forall (f g : forall (x1:A1), A2 x1),
+Lemma fun_ext_1 : forall (f g : forall (x1:A1), A2 x1),
   (forall x1, f x1 = g x1) -> 
   f = g.
-Proof using. repeat (intros; apply func_ext_dep). auto. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). auto. Qed.
 
-Lemma func_ext_2 : forall (f g : forall (x1:A1) (x2:A2 x1), A3 x2),
+Lemma fun_ext_2 : forall (f g : forall (x1:A1) (x2:A2 x1), A3 x2),
   (forall x1 x2, f x1 x2 = g x1 x2) -> 
   f = g.
-Proof using. repeat (intros; apply func_ext_dep). auto. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). auto. Qed.
 
-Lemma func_ext_3 : forall (f g : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), A4 x3),
+Lemma fun_ext_3 : forall (f g : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), A4 x3),
   (forall x1 x2 x3, f x1 x2 x3 = g x1 x2 x3) -> 
   f = g.
-Proof using. repeat (intros; apply func_ext_dep). auto. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). auto. Qed.
 
-Lemma func_ext_4 : forall (f g: forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma fun_ext_4 : forall (f g: forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3), A5 x4),
   (forall x1 x2 x3 x4, f x1 x2 x3 x4 = g x1 x2 x3 x4) -> 
   f = g.
-Proof using. repeat (intros; apply func_ext_dep). auto. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). auto. Qed.
 
-Lemma func_ext_5 : forall (f g: forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma fun_ext_5 : forall (f g: forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3) (x5:A5 x4), A6 x5),
   (forall x1 x2 x3 x4 x5, f x1 x2 x3 x4 x5 = g x1 x2 x3 x4 x5) -> 
   f = g.
-Proof using. repeat (intros; apply func_ext_dep). auto. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). auto. Qed.
 
-Global Instance func_extensionality_1 : 
+Global Instance fun_extensionality_1 : 
   Extensionality (forall (x1:A1), A2 x1).
-Proof using. intros. apply (extensionality_make func_ext_1). Defined.
+Proof using. intros. apply (extensionality_make fun_ext_1). Defined.
 
-Global Instance func_extensionality_2 : 
+Global Instance fun_extensionality_2 : 
   Extensionality (forall (x1:A1) (x2:A2 x1), A3 x2).
-Proof using. intros. apply (extensionality_make func_ext_2). Defined.
+Proof using. intros. apply (extensionality_make fun_ext_2). Defined.
 
-Global Instance func_extensionality_3 : 
+Global Instance fun_extensionality_3 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2), A4 x3).
-Proof using. intros. apply (extensionality_make func_ext_3). Defined.
+Proof using. intros. apply (extensionality_make fun_ext_3). Defined.
 
-Global Instance func_extensionality_4 : 
+Global Instance fun_extensionality_4 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2) (x4:A4 x3), A5 x4).
-Proof using. intros. apply (extensionality_make func_ext_4). Defined.
+Proof using. intros. apply (extensionality_make fun_ext_4). Defined.
 
-Global Instance func_extensionality_5 : 
+Global Instance fun_extensionality_5 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3) (x5:A5 x4), A6 x5).
-Proof using. intros. apply (extensionality_make func_ext_5). Defined.
+Proof using. intros. apply (extensionality_make fun_ext_5). Defined.
 
 End FuncExtDep.
 
@@ -353,60 +353,60 @@ End FuncExtDep.
 (* Remark: are these lemmas really useful, given that they are subsumed
    by their more general versions above? Probably could do without. *)
 
-Lemma func_ext_nondep_1 : forall A1 B (f g : A1 -> B),
+Lemma fun_ext_nondep_1 : forall A1 B (f g : A1 -> B),
   (forall x1, f x1 = g x1) -> 
   f = g.
-Proof using. intros. apply~ func_ext_1. Qed.
+Proof using. intros. apply~ fun_ext_1. Qed.
 
-Lemma func_ext_nondep_2 : forall A1 A2 B (f g : A1 -> A2 -> B),
+Lemma fun_ext_nondep_2 : forall A1 A2 B (f g : A1 -> A2 -> B),
   (forall x1 x2, f x1 x2 = g x1 x2) -> 
   f = g.
-Proof using. intros. apply~ func_ext_2. Qed.
+Proof using. intros. apply~ fun_ext_2. Qed.
 
-Lemma func_ext_nondep_3 : forall A1 A2 A3 B (f g : A1 -> A2 -> A3 -> B),
+Lemma fun_ext_nondep_3 : forall A1 A2 A3 B (f g : A1 -> A2 -> A3 -> B),
   (forall x1 x2 x3, f x1 x2 x3 = g x1 x2 x3) -> 
   f = g.
-Proof using. intros. apply~ func_ext_3. Qed.
+Proof using. intros. apply~ fun_ext_3. Qed.
 
-Lemma func_ext_nondep_4 : forall A1 A2 A3 A4 B (f g : A1 -> A2 -> A3 -> A4 -> B),
+Lemma fun_ext_nondep_4 : forall A1 A2 A3 A4 B (f g : A1 -> A2 -> A3 -> A4 -> B),
   (forall x1 x2 x3 x4, f x1 x2 x3 x4 = g x1 x2 x3 x4) -> 
   f = g.
-Proof using. intros. apply~ func_ext_4. Qed.
+Proof using. intros. apply~ fun_ext_4. Qed.
 
-Lemma func_ext_nondep_5 : forall A1 A2 A3 A4 A5 B (f g : A1 -> A2 -> A3 -> A4 -> A5 -> B),
+Lemma fun_ext_nondep_5 : forall A1 A2 A3 A4 A5 B (f g : A1 -> A2 -> A3 -> A4 -> A5 -> B),
   (forall x1 x2 x3 x4 x5, f x1 x2 x3 x4 x5 = g x1 x2 x3 x4 x5) -> 
   f = g.
-Proof using. intros. apply~ func_ext_5. Qed.
+Proof using. intros. apply~ fun_ext_5. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Eta-conversion *)
 
-Lemma func_eta_dep_1 : forall (A:Type) (B:A->Type) (f : forall x, B x),
+Lemma fun_eta_dep_1 : forall (A:Type) (B:A->Type) (f : forall x, B x),
   (fun x1 => f x1) = f.
-Proof using. intros. apply~ func_ext_1. Qed.
+Proof using. intros. apply~ fun_ext_1. Qed.
 
-Lemma func_eta_1 : forall A1 B (f : A1 -> B),
+Lemma fun_eta_1 : forall A1 B (f : A1 -> B),
   (fun x1 => f x1) = f.
-Proof using. intros. apply~ func_ext_1. Qed.
+Proof using. intros. apply~ fun_ext_1. Qed.
 
-Lemma func_eta_2 : forall A1 A2 B (f : A1 -> A2 -> B),
+Lemma fun_eta_2 : forall A1 A2 B (f : A1 -> A2 -> B),
   (fun x1 x2 => f x1 x2) = f.
-Proof using. intros. apply~ func_ext_2. Qed.
+Proof using. intros. apply~ fun_ext_2. Qed.
 
-Lemma func_eta_3 : forall A1 A2 A3 B (f : A1 -> A2 -> A3 -> B),
+Lemma fun_eta_3 : forall A1 A2 A3 B (f : A1 -> A2 -> A3 -> B),
   (fun x1 x2 x3 => f x1 x2 x3) = f.
-Proof using. intros. apply~ func_ext_3. Qed.
+Proof using. intros. apply~ fun_ext_3. Qed.
 
-Lemma func_eta_4 : forall A1 A2 A3 A4 B (f : A1 -> A2 -> A3 -> A4 -> B),
+Lemma fun_eta_4 : forall A1 A2 A3 A4 B (f : A1 -> A2 -> A3 -> A4 -> B),
   (fun x1 x2 x3 x4 => f x1 x2 x3 x4) = f.
-Proof using. intros. apply~ func_ext_4. Qed.
+Proof using. intros. apply~ fun_ext_4. Qed.
 
-Lemma func_eta_5 : forall A1 A2 A3 A4 A5 B (f : A1 -> A2 -> A3 -> A4 -> A5 -> B),
+Lemma fun_eta_5 : forall A1 A2 A3 A4 A5 B (f : A1 -> A2 -> A3 -> A4 -> A5 -> B),
   (fun x1 x2 x3 x4 x5 => f x1 x2 x3 x4 x5) = f.
-Proof using. intros. apply~ func_ext_4. Qed.
+Proof using. intros. apply~ fun_ext_4. Qed.
 
-Hint Rewrite func_eta_1 func_eta_2 func_eta_3 func_eta_4 func_eta_5 : rew_eta.
+Hint Rewrite fun_eta_1 fun_eta_2 fun_eta_3 fun_eta_4 fun_eta_5 : rew_eta.
 
 
 
@@ -424,64 +424,64 @@ Variables (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type).
 Variables (A5 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3), Type).
 Variables (A6 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4), Type).
 
-Lemma prop_ext_1 : forall (P Q : forall (x1:A1), Prop),
+Lemma pred_ext_1 : forall (P Q : forall (x1:A1), Prop),
   (forall x1, P x1 <-> Q x1) -> 
   P = Q.
-Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). intros. apply~ prop_ext. Qed.
 
-Lemma prop_ext_2 : forall (P Q : forall (x1:A1) (x2:A2 x1), Prop),
+Lemma pred_ext_2 : forall (P Q : forall (x1:A1) (x2:A2 x1), Prop),
   (forall x1 x2, P x1 x2 <-> Q x1 x2) -> 
   P = Q.
-Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). intros. apply~ prop_ext. Qed.
 
-Lemma prop_ext_3 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), Prop),
+Lemma pred_ext_3 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), Prop),
   (forall x1 x2 x3, P x1 x2 x3 <-> Q x1 x2 x3) -> 
   P = Q.
-Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). intros. apply~ prop_ext. Qed.
 
-Lemma prop_ext_4 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma pred_ext_4 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3), Prop),
   (forall x1 x2 x3 x4, P x1 x2 x3 x4 <-> Q x1 x2 x3 x4) -> 
   P = Q.
-Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). intros. apply~ prop_ext. Qed.
 
-Lemma prop_ext_5 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma pred_ext_5 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3) (x5:A5 x4), Prop),
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5 <-> Q x1 x2 x3 x4 x5) -> 
   P = Q.
-Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). intros. apply~ prop_ext. Qed.
 
-Lemma prop_ext_6 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma pred_ext_6 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3) (x5:A5 x4) (x6:A6 x5), Prop),
   (forall x1 x2 x3 x4 x5 x6, P x1 x2 x3 x4 x5 x6 <-> Q x1 x2 x3 x4 x5 x6) -> 
   P = Q.
-Proof using. repeat (intros; apply func_ext_dep). intros. apply~ prop_ext. Qed.
+Proof using. repeat (intros; apply fun_ext_dep). intros. apply~ prop_ext. Qed.
 
 Global Instance prop_extensionality_1 : 
   Extensionality (forall (x1:A1), Prop).
-Proof using. intros. apply (extensionality_make prop_ext_1). Defined.
+Proof using. intros. apply (extensionality_make pred_ext_1). Defined.
 
 Global Instance prop_extensionality_2 : 
   Extensionality (forall (x1:A1) (x2:A2 x1), Prop).
-Proof using. intros. apply (extensionality_make prop_ext_2). Defined.
+Proof using. intros. apply (extensionality_make pred_ext_2). Defined.
 
 Global Instance prop_extensionality_3 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2), Prop).
-Proof using. intros. apply (extensionality_make prop_ext_3). Defined.
+Proof using. intros. apply (extensionality_make pred_ext_3). Defined.
 
 Global Instance prop_extensionality_4 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2) (x4:A4 x3), Prop).
-Proof using. intros. apply (extensionality_make prop_ext_4). Defined.
+Proof using. intros. apply (extensionality_make pred_ext_4). Defined.
 
 Global Instance prop_extensionality_5 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3) (x5:A5 x4), Prop).
-Proof using. intros. apply (extensionality_make prop_ext_5). Defined.
+Proof using. intros. apply (extensionality_make pred_ext_5). Defined.
 
 Global Instance prop_extensionality_6 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3) (x5:A5 x4) (x6:A6 x5), Prop).
-Proof using. intros. apply (extensionality_make prop_ext_6). Defined.
+Proof using. intros. apply (extensionality_make pred_ext_6). Defined.
 
 End PropExt.
 
@@ -492,41 +492,41 @@ End PropExt.
 (* Remark: are these lemmas really useful, given that they are subsumed
    by their more general versions above? Probably could do without. *)
 
-Lemma prop_ext_nondep_1 : 
+Lemma pred_ext_nondep_1 : 
   forall A1 (P Q : A1 -> Prop),
   (forall x1, P x1 <-> Q x1) -> 
   P = Q.
-Proof using. intros. apply~ prop_ext_1. Qed.
+Proof using. intros. apply~ pred_ext_1. Qed.
 
-Lemma prop_ext_nondep_2 : 
+Lemma pred_ext_nondep_2 : 
   forall A1 A2 (P Q : A1 -> A2 -> Prop),
   (forall x1 x2, P x1 x2 <-> Q x1 x2) -> 
   P = Q.
-Proof using. intros. apply~ prop_ext_2. Qed.
+Proof using. intros. apply~ pred_ext_2. Qed.
 
-Lemma prop_ext_nondep_3 : 
+Lemma pred_ext_nondep_3 : 
   forall A1 A2 A3 (P Q : A1 -> A2 -> A3 -> Prop),
   (forall x1 x2 x3, P x1 x2 x3 <-> Q x1 x2 x3) -> 
   P = Q.
-Proof using. intros. apply~ prop_ext_3. Qed.
+Proof using. intros. apply~ pred_ext_3. Qed.
 
-Lemma prop_ext_nondep_4 : 
+Lemma pred_ext_nondep_4 : 
   forall A1 A2 A3 A4 (P Q : A1 -> A2 -> A3 -> A4 -> Prop),
   (forall x1 x2 x3 x4, P x1 x2 x3 x4 <-> Q x1 x2 x3 x4) -> 
   P = Q.
-Proof using. intros. apply~ prop_ext_4. Qed.
+Proof using. intros. apply~ pred_ext_4. Qed.
 
-Lemma prop_ext_nondep_5 : 
+Lemma pred_ext_nondep_5 : 
   forall A1 A2 A3 A4 A5 (P Q : A1 -> A2 -> A3 -> A4 -> A5 -> Prop),
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5 <-> Q x1 x2 x3 x4 x5) -> 
   P = Q.
-Proof using. intros. apply~ prop_ext_5. Qed.
+Proof using. intros. apply~ pred_ext_5. Qed.
 
-Lemma prop_ext_nondep_6 : 
+Lemma pred_ext_nondep_6 : 
   forall A1 A2 A3 A4 A5 A6 (P Q : A1 -> A2 -> A3 -> A4 -> A5 -> A6 -> Prop),
   (forall x1 x2 x3 x4 x5 x6, P x1 x2 x3 x4 x5 x6 <-> Q x1 x2 x3 x4 x5 x6)  -> 
   P = Q.
-Proof using. intros. apply~ prop_ext_6. Qed.
+Proof using. intros. apply~ pred_ext_6. Qed.
 
 
 
@@ -705,8 +705,7 @@ Lemma exist_eq :
   x = y -> 
   exist P x p = exist P y q.
 Proof using.
-  intros. rewrite (proof_irrelevance q (eq_rect x P p y H)).
- .. elim H using eq_indd. reflexivity.
+  intros. rewrite (proof_irrelevance q (eq_rect x P p y H)). subst*.
 Qed.
 
 Lemma existT_eq :
@@ -714,8 +713,7 @@ Lemma existT_eq :
   x = y -> 
   existT P x p = existT P y q.
 Proof using.
-  intros. rewrite (proof_irrelevance q (eq_rect x P p y H)).
-  .. elim H using eq_indd. reflexivity.
+  intros. rewrite (proof_irrelevance q (eq_rect x P p y H)). subst*.
 Qed.
 
 

@@ -161,10 +161,10 @@ Definition injective A B (f : A -> B) :=
 Section OpProperties.
 
 Variable (A : Type).
-Implicit Types f g : A -> A -> A.
 Implicit Types h : A -> A.
+Implicit Types f g : A -> A -> A.
 
-Lemma idempotent_inv : forall x y,
+Lemma idempotent_inv : forall h x y,
   idempotent h ->
   y = h x ->
   h y = y.

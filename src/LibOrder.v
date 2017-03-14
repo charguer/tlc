@@ -437,13 +437,13 @@ Instance gt_from_le : forall `{Le A}, Gt A.
   constructor. apply (flip lt). Defined.
 
 Lemma ge_is_flip_le : forall `{Le A}, ge = flip le.
-Proof using. intros. apply* prop_ext_2. Qed.
+Proof using. extens... intros. apply* pred_ext_2. Qed.
 Lemma lt_is_strict_le : forall `{Le A}, lt = strict le.
-Proof using. intros. apply* prop_ext_2. Qed.
+Proof using. extens..intros. apply* pred_ext_2. Qed.
 Lemma gt_is_flip_lt : forall `{Le A}, gt = flip lt.
-Proof using. intros. apply* prop_ext_2. Qed.
+Proof using. extens..intros. apply* pred_ext_2. Qed.
 Lemma gt_is_flip_strict_le : forall `{Le A}, gt = flip (strict le).
-Proof using. intros. rewrite gt_is_flip_lt. rewrite~ lt_is_strict_le. Qed.
+Proof using. extens..intros. rewrite gt_is_flip_lt. rewrite~ lt_is_strict_le. Qed.
 
 Global Opaque ge_from_le lt_from_le gt_from_le.
 Hint Rewrite @gt_is_flip_strict_le @ge_is_flip_le @lt_is_strict_le : rew_to_le_def.

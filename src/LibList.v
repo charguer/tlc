@@ -785,7 +785,7 @@ Proof using.
   { iff M. inverts~ M. subst~. }
 Qed.
 
-Lemma Nth_func: forall n l x1 x2,
+Lemma Nth_functional : forall n l x1 x2,
   Nth n l x1 ->
   Nth n l x2 -> 
   x1 = x2.

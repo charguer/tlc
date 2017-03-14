@@ -82,7 +82,7 @@ Proof using.
   destruct (proj2_sig i1) as [HA|]; [|auto].
   destruct (proj2_sig i2) as [HB|]; [|auto].
   right. intros HP. asserts EB: (B1 = B2).
-    apply prop_ext_1. intros b. split; intros _; right; auto.
+    apply pred_ext_1. intros b. split; intros _; right; auto.
   subst i1 i2. destruct EB.
   rewrite (proof_irrelevance H2 H1) in HB. congruence.
 Qed.
@@ -846,7 +846,7 @@ Definition pred_le (A : Type) (P Q : A -> Prop) :=
 
   Lemma pred_le_antisym : forall A,
     antisym (@pred_le A).
-  Proof using. intros_all. applys* prop_ext_1. Qed.
+  Proof using. intros_all. applys* pred_ext_1. Qed.
 *)
 
 Lemma pred_le_refl : forall A (P : A -> Prop),
@@ -863,7 +863,7 @@ Lemma pred_le_antisym : forall A (P Q : A -> Prop),
   pred_le P Q ->
   pred_le Q P -> 
   P = Q.
-Proof using. intros_all. applys* prop_ext_1. Qed.
+Proof using. extens*. Qed. 
 
 
 

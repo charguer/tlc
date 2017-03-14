@@ -218,6 +218,7 @@ Lemma set_ext_eq : forall (E F : set A),
   (E = F) = (forall (x:A), x \in E <-> x \in F).
 Proof using.
   intros. apply prop_ext. iff H. subst*. apply* prop_ext_1.
+  (* TODO: use extens *)
 Qed.
 
 Lemma set_ext : forall (E F : set A),
@@ -257,8 +258,9 @@ Global Instance disjoint_eq_inst : Disjoint_eq (T:=set A).
 Proof using.
   constructor. intros. rewrite disjoint_def.
   set_unf. applys prop_ext. iff M.
-    intros x. rewrite* <- (@func_same_1 _ _ x _ _ M).
+    intros x. rewrite* <- (@fun_eq_1 _ _ x _ _ M).
     applys* prop_ext_1.
+      (* TODO: use extens *)
 Qed.
 
 Lemma set_isolate : forall A (E : set A) x,
@@ -268,6 +270,7 @@ Proof using.
   introv H. set_unf. apply prop_ext_1. intros y. iff M.
     simpls. tests*: (y = x).
     destruct M. subst*. autos*.
+      (* TODO: use extens *)
 Qed.
 
 Lemma set_add_remove : forall A (E : set A) x,
@@ -277,6 +280,7 @@ Proof using.
   introv Hx. set_unf. apply prop_ext_1. iff.
   { split. eauto. intro. subst*. }
   { tauto. }
+    (* TODO: use extens *)
 Qed.
 
 (* ---------------------------------------------------------------------- *)

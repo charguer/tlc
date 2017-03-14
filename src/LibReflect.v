@@ -366,10 +366,10 @@ Hint Rewrite
 
 Tactic Notation "rew_bool_eq" :=
   autorewrite with rew_bool_to_prop.
-Tactic Notation "rew_bool_eq" :=
-  rew_bool_eq in H; auto_tilde.
-Tactic Notation "rew_bool_eq" :=
-  rew_bool_eq in H; auto_star.
+Tactic Notation "rew_bool_eq" "~" :=
+  rew_bool_eq; auto_tilde.
+Tactic Notation "rew_bool_eq" "*" :=
+  rew_bool_eq; auto_star.
 
 Tactic Notation "rew_bool_eq" "in" hyp(H) :=
   autorewrite with rew_bool_to_prop in H.

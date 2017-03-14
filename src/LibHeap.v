@@ -308,7 +308,7 @@ Proof using. introv H. rewrite* @indom_equiv_binds. Qed.
 
 (** binds-func *)
 
-Lemma binds_func : forall h k v v',
+Lemma binds_functional : forall h k v v',
   binds h k v -> binds h k v' -> v = v'.
 Proof using HK HV.
   introv B1 B2. forwards: binds_indom B1. forwards: binds_indom B2.

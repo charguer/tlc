@@ -43,7 +43,7 @@ Variables (A1 : Type).
 Variables (A2 : forall (x1 : A1), Type).
 Variables (A3 : forall (x1 : A1) (x2 : A2 x1), Type).
 Variables (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type).
-Lemma test_func_ext_3 : forall (f g : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), A4 x3),
+Lemma test_fun_ext_3 : forall (f g : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), A4 x3),
   (forall x1 x2 x3, f x1 x2 x3 = g x1 x2 x3) -> 
   f = g.
 Proof using. intros. applys extensionality. hnf. Qed.

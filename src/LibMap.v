@@ -184,7 +184,7 @@ Lemma update_def_if : forall A B (M:map A B) k x,
 Proof using.
   intros. rewrite update_def_union.
   simpl. unfold single_bind_impl, union_impl.
-  apply func_ext_1. intros k'. case_if~.
+  apply fun_ext_1. intros k'. case_if~.
 Qed.
 
 End Reformulation.
@@ -262,14 +262,14 @@ Lemma no_binds_empty : forall (A B : Type) (M : map A B),
   (forall x k, ~ binds M x k) -> M = \{}.
 Proof using.
   intros A B M. simpl. unfold empty_impl, binds_impl.
-  intros H. apply func_ext_1. intros x. cases (M x); auto_false*.
+  intros H. apply fun_ext_1. intros x. cases (M x); auto_false*.
 Qed.
 
 Lemma dom_empty_inv : forall A B (M : map A B),
   dom M = \{} -> M = \{}.
 Proof using.
   introv H. simpls. unfold dom_impl, empty_impl in *.
-  apply func_ext_1. (* todo: "extens" should work *) intros k.
+  apply fun_ext_1. (* todo: "extens" should work *) intros k.
   absurds as G.
   lets R: @is_empty_inv k H. typeclass. false R. rewrite~ in_set_st_eq.
 Qed. (* todo: simplify proof *)
@@ -355,7 +355,7 @@ Proof using. intros. rewrite update_read_if. case_if~. Qed.
 Lemma update_update_eq : forall A i `{Inhab B} v v' (M:map A B),
   M[i:=v][i:=v'] = M[i:=v'].
 Proof using.
-  intros. applys func_ext_1.
+  intros. applys fun_ext_1.
   intros k. do 3 rewrite update_def_if. case_if~.
 Qed.
 
@@ -535,7 +535,7 @@ Implicit Arguments index_remove_one_in [A B].
 Lemma update_remove_one_eq : forall A `{Inhab B} (m:map A B) (i:A) (v:B),
   (m[i:=v] \- \{i}) = (m \- \{i}).
 Proof using.
-  intros. applys func_ext_1.
+  intros. applys fun_ext_1.
   intros k. rewrite update_def_if.
   simpl. unfold remove_impl. do 2 case_if~.
 Qed.
@@ -551,7 +551,7 @@ Lemma remove_one_update_neq : forall A B (M:map A B) i j v,
   i <> j ->
   (M\--i)[j:=v] = (M[j:=v] \--i).
 Proof using.
-  introv N. applys func_ext_1.
+  introv N. applys fun_ext_1.
   intros k. do 2 rewrite update_def_if.
   simpl. unfold remove_impl. do 2 case_if~.
 Qed.
@@ -564,7 +564,7 @@ Lemma restrict_single : forall A (x:A) `{Inhab B} (M:map A B),
   x \indom M ->
   M \| \{x} = (x \:= (M[x])).
 Proof using.
-  introv N. applys func_ext_1.
+  introv N. applys fun_ext_1.
   intros k. simpls. unfolds dom_impl, restrict_impl, single_bind_impl, read_impl.
   set_norm. do 2 case_if~. destruct (M x); auto_false.
 Qed.
@@ -576,7 +576,7 @@ Qed.
 Lemma split_restrict_remove : forall A (E:set A) B (M:map A B),
   M = (M \- E) \u (M \| E).
 Proof using.
-  intros. applys func_ext_1.
+  intros. applys fun_ext_1.
   intros k. simpls. unfolds remove_impl, restrict_impl, union_impl.
   case_if~. destruct~ (M k).
 Qed.

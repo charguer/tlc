@@ -900,8 +900,10 @@ Qed.
 
 (** Basic forms *)
 
-Lemma binds_func : forall x v1 v2 E,
-  binds x v1 E -> binds x v2 E -> v1 = v2.
+Lemma binds_functional : forall x v1 v2 E,
+  binds x v1 E -> 
+  binds x v2 E -> 
+  v1 = v2.
 Proof using.
   introv H1 H2. unfolds binds.
   induction E as [|E' x' v'] using env_ind.

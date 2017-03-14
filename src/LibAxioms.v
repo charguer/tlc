@@ -24,7 +24,7 @@ Set Implicit Arguments.
 
 (** Two functions that yield equal results on equal arguments are equal. *)
 
-Axiom func_ext_dep : forall (A:Type) (B:A->Type) (f g : forall x, B x),
+Axiom fun_ext_dep : forall (A:Type) (B:A->Type) (f g : forall x, B x),
   (forall x, f x = g x) -> f = g.
 
 
