@@ -2152,8 +2152,7 @@ Proof using. unfold strict, irrefl. intros. rew_logic*. Qed.
 Lemma antisym_strict : forall R,
   antisym R -> 
   antisym (strict R).
-Proof using. introv T. introv H1 H2... (* todo: bug introv *)
-  unfolds strict. destruct H1; destruct H2; auto. Qed.
+Proof using. unfolds* antisym, strict. Qed.
 
 Lemma trans_strict : forall R,
   trans R -> 
