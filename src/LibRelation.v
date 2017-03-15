@@ -1620,7 +1620,7 @@ Qed.
 Lemma stclosure_of_sym_trans : forall R,
   sym R ->
   trans R ->
-  rtclosure R = R.
+  stclosure R = R.
 Proof using.
   unfolds sym, trans. introv H1 H2. extens. iff M.
   { induction M; subst*. }
@@ -1822,7 +1822,7 @@ Proof using. intros. applys* rsclosure_from_rclosure. Qed.
 Lemma rsclosure_from_sclosure : forall R x y,
   sclosure R x y -> 
   rsclosure R x y.
-Proof using. intros. destruct* H. Qed.
+Proof using. intros. induction* H. Qed.
 
 Lemma incl_sclosure_rsclosure : forall R,
   rel_incl (sclosure R) (rsclosure R).
@@ -2008,31 +2008,61 @@ End IterClosures.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Equivalent closures *)
+(** ** Other lemmas -- TODO *)
 
 Section EquivClosures.
 Variable (A : Type).
 Implicit Types R : binary A.
+Hint Constructors rclosure sclosure tclosure rsclosure stclosure.
+
+Lemma rsclosure_eq_union_rclosure_sclosure : forall R,
+  rsclosure R = union (rclosure R) (sclosure R).
+Proof using.
+  extens. intros x y. unfold union. iff M.
+  { induction* M. destruct* IHM as [H|H]. destruct* H. }
+  { destruct* M as [H|H]. destruct* H. applys* rsclosure_from_sclosure. }
+Qed.
+
+Lemma rtclosure_eq_union_rclosure_tclosure : forall R,
+  rtclosure R = union (rclosure R) (tclosure R).
+Proof using.
+  extens. intros x y. unfold union. iff M.
+  { induction* M. destruct IHM1 as [H1|H1]; destruct IHM2 as [H2|H2].
+     { destruct H1; destruct* H2. }
+     { destruct* H1. }
+     { destruct* H2. }
+     { autos*. } }
+  { destruct* M.
+    { applys* rtclosure_from_rclosure. }
+    { applys* rtclosure_from_tclosure. } }
+Qed.
+
+Lemma rtclosure_inv_rclosure_or_tclosure : forall R x y,
+  rtclosure R x y -> 
+  x = y \/ tclosure R x y.
+Proof using.
+  introv M. rewrite rtclosure_eq_union_rclosure_tclosure in M.
+  destruct M as [M|M]. { destruct* M. } { auto. }
+Qed.
 
 Lemma stclosure_eq_rstclosure_from_refl : forall R,
   refl R ->
   stclosure R = rstclosure R.
 Proof using.
-  intros. eapply binary_extensional. intros x y.
-  split; eauto using stclosure_rstclosure.
-  gen x y. induction 1; eauto with stclosure.
+  introv H. extens. intros x y. iff M.
+  { applys* rstclosure_from_stclosure. }
+  { induction* M. }
 Qed.
 
+(* LATER: many lemmas like the above? *) 
+
+(* TODO: rename this lemma *)
 Lemma rel_incl_tclosure_stclosure : forall R1 R2,
   rel_incl R1 (stclosure R2) ->
   rel_incl (tclosure R1) (stclosure R2).
-Proof using.
-  introv H M. induction M using tclosure_ind_trans.
-  applys* H.
-  applys* stclosure_trans.
-Qed.
+Proof using. introv H M. induction* M. Qed.
 
-(* LATER: may lemmas like the two above *) 
+(* LATER: many lemmas like the above? *)
 
 End EquivClosures.
 
@@ -2043,31 +2073,43 @@ End EquivClosures.
 Section MixedClosures.
 Variable (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rstclosure.
+Hint Constructors tclosure.
 
 Lemma tclosure_from_rtclosure_l : forall R x y z,
   rtclosure R x y -> 
   R y z -> 
   tclosure R x z.
-Proof using. intros. induction* H. Qed.
+Proof using.
+  introv H M. destruct (rtclosure_inv_rclosure_or_tclosure H). 
+  { subst*. }
+  { applys* tclosure_r. }
+Qed.
 
 Lemma tclosure_from_rtclosure_r : forall R x y z,
   R x y -> 
   rtclosure R y z -> 
   tclosure R x z.
-Proof using. intros. gen x. induction* H0. Qed.
+Proof using.
+  introv M H. destruct (rtclosure_inv_rclosure_or_tclosure H). 
+  { subst*. }
+  { applys* tclosure_l. }
+Qed.
 
 Lemma tclosure_from_rtclosure_tclosure : forall R y x z,
   rtclosure R x y -> 
   tclosure R y z -> 
   tclosure R x z.
-Proof using. intros. gen z. induction* H. Qed.
+Proof using.
+  introv H M. destruct (rtclosure_inv_rclosure_or_tclosure H); subst*. 
+Qed.
 
 Lemma tclosure_from_tclosure_rtclosure : forall R y x z,
   tclosure R x y -> 
   rtclosure R y z -> 
   tclosure R x z.
-Proof using. intros. induction* H. Qed.
+Proof using.
+  introv M H. destruct (rtclosure_inv_rclosure_or_tclosure H); subst*. 
+Qed.
 
 End MixedClosures.
 
@@ -2083,24 +2125,11 @@ Definition strict A (R:binary A) : binary A :=
 Section Strict.
 Variable (A : Type).
 Implicit Types R : binary A.
+Hint Unfold strict.
 
 Lemma inverse_strict : forall R,
   inverse (strict R) = strict (inverse R).
 Proof using. intros. unfold inverse, strict. extens*. Qed.
-
-Lemma strict_l : forall y x z R,
-  trans R -> 
-  R x y -> 
-  strict R y z -> 
-  strict R x z.
-Proof using. introv T H (E&H'); subst*. Qed.
-
-Lemma strict_r : forall y x z R,
-  trans R -> 
-  strict R x y -> 
-  R y z -> 
-  strict R x z.
-Proof using. introv T (E&H) H'; subst*. Qed.
 
 Lemma trans_strict_l : forall y x z R,
   trans R -> 
@@ -2118,7 +2147,7 @@ Proof using. introv T H (E&H'); subst*. Qed.
 
 Lemma irrefl_strict : forall R,
   irrefl (strict R).
-Proof using. unfold strict. intros_all~. Qed.
+Proof using. unfold strict, irrefl. intros. rew_logic*. Qed.
 
 Lemma antisym_strict : forall R,
   antisym R -> 
@@ -2140,8 +2169,8 @@ Lemma strict_rclosure : forall R,
   irrefl R -> 
   strict (rclosure R) = R.
 Proof using.
-  unfold rclosure, strict. extens. intros x y. iff K.
-  { autos*. }
+  unfold strict. extens. intros x y. iff (K1&K2) K.
+  { destruct* K1. }
   { split. { left*. } { apply* irrefl_neq. } }
 Qed.
 
@@ -2149,7 +2178,8 @@ Lemma rclosure_strict : forall R,
   refl R -> 
   rclosure (strict R) = R.
 Proof using.
-  unfold rclosure, strict. extens. intros x y. iff K.
+  Hint Constructors rclosure. 
+  unfold strict. extens. intros x y. iff K.
   { destruct K; subst*. }
   { tests: (x = y); subst*. }
 Qed.
@@ -2166,7 +2196,7 @@ End Strict.
 (** [fun_in_rel f R] asserts that input-output pairs of [f] are 
     included in the relation [R]. *)
 
-Definition fun_in_rel A B (f:A->B) (R:A->B->Prop), :=
+Definition fun_in_rel A B (f:A->B) (R:A->B->Prop) :=
   forall x, R x (f x).
 
 (** [rel_in_fun R f] asserts that input-output pairs of [R] 
@@ -2181,10 +2211,9 @@ Definition rel_in_fun A B  (R:A->B->Prop) (f:A->B) :=
 Lemma rel_incl_rel_fun_iff_fun_in_rel : forall A B (f:A->B) (R:A->B->Prop),
   rel_incl (rel_fun f) R <-> fun_in_rel f R.
 Proof.
-  intros f R.
-  unfold rel_fun, fun_in_rel. iff H; intros x; specializes H x.
-    applys* H.
-    intros y Hy. subst~.
+  intros f R. unfold rel_fun, fun_in_rel. iff H; intros x; specializes H x.
+  { applys* H. }
+  { intros y Hy. subst~. }
 Qed.
 
 (* If the relation [R] is functional and if [f] is included in [R],
