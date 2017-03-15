@@ -863,6 +863,11 @@ Lemma rclosure_eq : forall R x y,
   rclosure R x y = (R x y \/ x = y).
 Proof using. extens. iff M; destruct M; subst*. Qed.
 
+Lemma rclosure_inv : forall R x y,  
+  rclosure R x y ->
+  R x y \/ x = y.
+Proof using. introv M; rewrite* rclosure_eq in M. Qed.
+
 (** Properties *)
 
 Lemma refl_rclosure : forall R,
@@ -975,212 +980,116 @@ Proof using. unfolds rel_incl. introv H M. destruct* M. Qed.
 End Rclosure.
 
 
-
-(* ---------------------------------------------------------------------- *)
-(** ** Reflexive closure  *)
-
-Definition rclosure A (R:binary A) : binary A :=
-  fun x y => R x y \/ x = y.
-
-Hint Unfold rclosure : rclosure.
-
-Section Rclosure.
-Variable (A : Type).
-Implicit Types R : binary A.
-Hint Unfold rclosure.
-
-(** Properties *)
-
-Lemma refl_rclosure : forall R,
-  refl (rclosure R).
-Proof using. unfolds* refl, rclosure. Qed.
-
-Lemma sym_rclosure : forall R,
-  sym R ->
-  sym (rclosure R).
-Proof using. unfolds* sym, rclosure. Qed.
-
-Lemma antisym_rclosure : forall R,
-  antisym R -> 
-  antisym (rclosure R).
-Proof using. unfolds* antisym, rclosure. Qed.
-
-Lemma trans_rclosure : forall R,
-  trans R ->
-  trans (rclosure R).
-Proof using.
-  unfolds trans, rclosure. introv H M1 M2.
-  destruct M1; destruct M2; subst*.
-Qed.
-
-Lemma total_rclosure : forall R,
-  total R -> 
-  total (rclosure R).
-Proof using. 
-  unfolds total, rclosure. introv H. intros x y.
-  destruct* (H x y).
-Qed.
-
-Lemma rclosure_of_refl : forall R,
-  refl R ->
-  rclosure R = R.
-Proof using.
-  unfolds refl, rclosure. introv H. extens. iff M.
-  { destruct M; subst*. } { auto. }
-Qed.
-
-Lemma rclosure_inverse_eq : forall R,
-  rclosure (inverse R) = inverse (rclosure R).
-Proof using. unfold inverse, rclosure. extens*. Qed.
-
-(** Constructors *)
-
-Lemma rclosure_l : forall y x z R,
-  trans R -> 
-  rclosure R x y -> 
-  R y z -> 
-  rclosure R x z.
-Proof using. introv T [H|H] M; subst*. Qed.
-
-Lemma rclosure_r : forall y x z R,
-  trans R -> 
-  R x y -> 
-  rclosure R y z -> 
-  rclosure R x z.
-Proof using. introv T M [H|H]; subst*. Qed.
-
-Lemma trans_rclosure_l : forall y x z R,
-  trans R -> 
-  rclosure R x y -> 
-  R y z -> 
-  R x z.
-Proof using. introv T [H|H] M; subst*. Qed.
-
-Lemma trans_rclosure_r : forall y x z R,
-  trans R -> 
-  R x y -> 
-  rclosure R y z -> 
-  R x z.
-Proof using. introv T M [H|H]; subst*. Qed.
-
-(** Negation *)
-
-Lemma not_rclosure_inv : forall R x y,
-  ~ rclosure R x y ->
-  ~ R x y /\ x <> y.
-Proof using. unfolds* rclosure. Qed.
-
-Lemma not_rclosure_inv_rel : forall R x y,
-  ~ rclosure R x y ->
-  ~ R x y.
-Proof using. unfolds* rclosure. Qed.
-
-Lemma not_rclosure_inv_neq : forall R x y,
-  ~ rclosure R x y ->
-  x <> y.
-Proof using. unfolds* rclosure. Qed.
-
-(** Inclusions *)
-
-Lemma rel_incl_rclosure : forall R,
-  rel_incl R (rclosure R).
-Proof using. unfolds* rel_incl, rclosure. Qed.
-
-Lemma covariant_rclosure : forall R1 R2,
-  rel_incl R1 R2 ->
-  rel_incl (rclosure R1) (rclosure R2).
-Proof using. unfolds* rel_incl, rclosure. Qed.
-
-Lemma rel_incl_rclosure_rclosure : forall R1 R2,
-  rel_incl R1 (rclosure R2) ->
-  rel_incl (rclosure R1) (rclosure R2).
-Proof using. unfolds* rel_incl, rclosure. Qed.
-
-End Rclosure.
-
-
 (* ---------------------------------------------------------------------- *)
 (** ** Symmetric closure  *)
 
-Definition sclosure (A:Type) (R:binary A) : binary A :=
-  fun x y => R x y \/ R y x.
+Inductive sclosure (A:Type) (R:binary A) : binary A :=
+  | sclosure_once : forall x y,
+      R x y -> 
+      sclosure R x y
+  | sclosure_sym : forall x y,
+      sclosure R y x ->
+      sclosure R x y.
 
-Hint Unfold sclosure : sclosure.
+Hint Constructors sclosure : sclosure.
 
 Section Sclosure.
 Variable (A : Type).
 Implicit Types R : binary A.
+Hint Constructors sclosure.
+
+(** Equivalent definition *)
+
+Lemma sclosure_eq : forall R x y,  
+  sclosure R x y = (R x y \/ R y x).
+Proof using.
+  extens. iff M.
+  { induction* M. } 
+  { destruct M; subst*. }
+Qed.
+
+Lemma sclosure_inv : forall R x y,  
+  sclosure R x y ->
+  R x y \/ R y x.
+Proof using. introv M; rewrite* sclosure_eq in M. Qed.
 
 (** Properties *)
 
 Lemma refl_sclosure : forall R,
   refl R ->
   refl (sclosure R).
-Proof using. unfolds* refl, sclosure. Qed.
+Proof using. unfolds* refl. Qed.
 
 Lemma sym_sclosure : forall R,
   sym (sclosure R).
-Proof using. unfolds* sym, sclosure. Qed.
+Proof using. unfolds sym. introv N. destruct* N. Qed.
 
 Lemma total_sclosure : forall R,
   total R ->
   total (sclosure R).
 Proof using. 
-  unfolds total, sclosure. introv H. intros x y.
-  destruct* (H x y).
+  unfolds total. introv H. intros x y. destruct* (H x y).
 Qed.
 
 Lemma sclosure_of_sym : forall R,
   sym R ->
   sclosure R = R.
 Proof using.
-  unfolds sym, sclosure. introv H. extens. iff M.
-  { destruct M; subst*. } { auto. }
+  unfolds sym. introv H. extens. intros. rewrite sclosure_eq.
+  iff M. { destruct M; subst*. } { auto. }
 Qed.
 
 Lemma sclosure_inverse_eq : forall R,
-  sclosure (inverse R) = R.
-Proof using. intros. unfold inverse, sclosure. extens*. Qed.
+  sclosure (inverse R) = sclosure R.
+Proof using. 
+  unfolds inverse. extens. intros. do 2 rewrite sclosure_eq. autos*.
+Qed.
 
 (** Negation *)
 
 Lemma not_sclosure_inv : forall R x y,
   ~ sclosure R x y ->
   ~ R x y /\ ~ R y x.
-Proof using. unfolds* sclosure. Qed.
+Proof using. introv M. rewrite* sclosure_eq in M. Qed.
 
 Lemma not_sclosure_inv_l : forall R x y,
   ~ sclosure R x y ->
   R x y ->
   False.
-Proof using. unfolds* sclosure. Qed.
+Proof using. introv M. rewrite* sclosure_eq in M. Qed.
 
 Lemma not_sclosure_inv_r : forall R x y,
   ~ sclosure R x y ->
   R y x ->
   False.
-Proof using. unfolds* sclosure. Qed.
+Proof using. introv M. rewrite* sclosure_eq in M. Qed.
 
 (** Inclusions *)
 
 Lemma rel_incl_sclosure : forall R,
   rel_incl R (sclosure R).
-Proof using. unfolds* rel_incl, sclosure. Qed.
+Proof using. unfolds* rel_incl. Qed.
 
 Lemma rel_incl_inverse_sclosure : forall R,
   rel_incl (inverse R) (sclosure R).
-Proof using. unfolds* rel_incl, sclosure. Qed.
+Proof using. unfolds* rel_incl, inverse. Qed.
 
 Lemma covariant_sclosure : forall R1 R2,
   rel_incl R1 R2 ->
   rel_incl (sclosure R1) (sclosure R2).
-Proof using. unfolds* rel_incl, sclosure. Qed.
+Proof using. 
+  unfolds rel_incl. introv H M. rewrite sclosure_eq in *. destruct* M.
+Qed.
 
 Lemma rel_incl_sclosure_sclosure : forall R1 R2,
   rel_incl R1 (sclosure R2) ->
   rel_incl (sclosure R1) (sclosure R2).
-Proof using.
-  unfolds rel_incl, sclosure. introv M [N|N]; destruct* (M _ _ N).
+Proof using. 
+  unfolds rel_incl. introv H M. rewrite sclosure_eq in *.
+  destruct M as [M|M].
+  { forwards K: H M. rewrite* sclosure_eq in K. }
+  { forwards K: H M. rewrite* sclosure_eq in K. }
+  (* LATER: simplify using rewrite under binder *) 
 Qed.
 
 End Sclosure.
@@ -1199,106 +1108,102 @@ Inductive rsclosure (A:Type) (R:binary A) : binary A :=
       rsclosure R x y ->
       rsclosure R y x.
 
-Hint Constructors rstclosure : rstclosure.
-
-
-Definition rsclosure (A:Type) (R:binary A) : binary A :=
-  rclosure (sclosure R).
-
-Hint Unfold rsclosure : rsclosure.
+Hint Constructors rsclosure : rsclosure.
 
 Section Rsclosure.
 Variable (A : Type).
 Implicit Types R : binary A.
+Hint Constructors rsclosure.
+
+(** Equivalent definition *)
+
+Lemma rsclosure_eq : forall R x y,  
+  rsclosure R x y = (R x y \/ R y x \/ x = y).
+Proof using.
+  extens. iff M.
+  { induction* M. } 
+  { destruct M as [M|[M|M]]; subst*. }
+Qed.
+
+Lemma rsclosure_inv : forall R x y,  
+  rsclosure R x y ->
+  R x y \/ R y x \/ x = y.
+Proof using. introv M; rewrite* rsclosure_eq in M. Qed.
 
 (** Properties *)
 
 Lemma refl_rsclosure : forall R,
   refl (rsclosure R).
-Proof using.
-Qed.
+Proof using. unfolds* refl. Qed.
 
 Lemma sym_rsclosure : forall R,
   sym (rsclosure R).
-Proof using.
-  unfold sym, rsclosure. tauto.
-Qed.
-
-Lemma antisym_rsclosure : forall R,
-  antisym R -> 
-  antisym (rsclosure R).
-Proof using. 
-Qed.
-
-Lemma trans_rsclosure : forall R,
-  trans R ->
-  trans (rsclosure R).
-Proof using.
-Qed.
+Proof using. unfolds sym. introv N. destruct* N. Qed.
 
 Lemma total_rsclosure : forall R,
+  total R ->
   total (rsclosure R).
-Proof using. unfold sclosure. intros_all~. destruct* (H x y). Qed.
+Proof using.
+  unfolds total. introv H. intros x y. destruct* (H x y).
+Qed.
 
 Lemma rsclosure_inverse_eq : forall R,
-  rsclosure (inverse R) = R.
-Proof using. intros. unfold inverse, sclosure. extens*. Qed.
+  rsclosure (inverse R) = rsclosure R.
+Proof using.
+  unfold inverse. extens. intros. do 2 rewrite rsclosure_eq. autos*.
+Qed.
 
 (** Negation *)
 
 Lemma not_rsclosure_inv : forall R x y,
   ~ rsclosure R x y ->
   ~ R x y /\ ~ R y x /\ ~ x = y.
-Proof using.
-Qed.
+Proof using. introv M. rewrite* rsclosure_eq in M. Qed.
 
-Lemma not_sclosure_inv_l : forall R x y,
-  ~ sclosure R x y ->
+Lemma not_rsclosure_inv_l : forall R x y,
+  ~ rsclosure R x y ->
   R x y ->
   False.
-Proof using.
-Qed.
+Proof using. introv M. rewrite* rsclosure_eq in M. Qed.
 
-Lemma not_sclosure_inv_r : forall R x y,
-  ~ sclosure R x y ->
+Lemma not_rsclosure_inv_r : forall R x y,
+  ~ rsclosure R x y ->
   R y x ->
   False.
-Proof using.
-Qed.
+Proof using. introv M. rewrite* rsclosure_eq in M. Qed.
 
-Lemma not_sclosure_inv_neq : forall R x y,
-  ~ sclosure R x y ->
+Lemma not_rsclosure_inv_neq : forall R x y,
+  ~ rsclosure R x y ->
   x <> y.
-Proof using.
-Qed.
+Proof using. introv M. rewrite* rsclosure_eq in M. Qed.
 
 (** Inclusions *)
 
 Lemma rel_incl_rsclosure : forall R,
   rel_incl R (rsclosure R).
-Proof using.
-Qed
+Proof using. unfolds* rel_incl. Qed.
 
 Lemma rel_incl_inverse_rsclosure : forall R,
   rel_incl (inverse R) (rsclosure R).
-Proof using.
-Qed
+Proof using. unfolds* rel_incl, inverse. Qed.
 
 Lemma covariant_rsclosure : forall R1 R2,
   rel_incl R1 R2 ->
   rel_incl (rsclosure R1) (rsclosure R2).
-Proof using.
-  unfold sclosure, rel_incl. introv M H. destruct H; eauto.
+Proof using. 
+  unfolds rel_incl. introv H M. rewrite rsclosure_eq in *. destruct* M.
 Qed.
 
 Lemma rel_incl_rsclosure_rsclosure : forall R1 R2,
   rel_incl R1 (rsclosure R2) ->
   rel_incl (rsclosure R1) (rsclosure R2).
-Proof using.
-  unfold sclosure, rel_incl. introv h. introv H.
-  destruct H.
-  { eauto. }
-  { forwards M: h. eauto. destruct M; tauto. }
+Proof using. 
+  unfolds rel_incl. introv H M. rewrite rsclosure_eq in *.
+  destruct M as [M|[M|M]].
+  { forwards K: H M. rewrite* rsclosure_eq in K. }
+  { forwards K: H M. rewrite* rsclosure_eq in K. }
+  { subst*. }
+  (* LATER: simplify using rewrite under binder *) 
 Qed.
 
 End Rsclosure.
