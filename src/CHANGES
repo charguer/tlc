@@ -1,3 +1,23 @@
+convention:
+Lemma trans_strict_from_antisym : forall R,
+  trans R -> 
+  antisym R -> 
+  trans (strict R).
+=> trans_strict
+  because antisym is necessary.
+
+Lemma trans_large : forall R,
+  trans R -> 
+  trans (large R).
+Proof using. unfold large. introv Tr [H1|E1] [H2|E2]; subst*. Qed.
+=> because obvious that propagates from trans.
+
+
+
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Backward Compatibility Hints                                            *
@@ -1457,3 +1477,5 @@ Definition .. := rel_in_fun_from_fun_in_rel_functional
 Definition prop_ext_1 := pred_ext_1.
 Definition prop_ext_2 := pred_ext_2.
 etc..
+
+Hint Resolve equiv_eq. (* TODO: remove

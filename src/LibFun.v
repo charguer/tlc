@@ -31,6 +31,7 @@ Definition const4 {A1 A2 A3 A4 B} (v:B) : A1->A2->A3->A4->B :=
 Definition const5 {A1 A2 A3 A4 A5 B} (v:B) : A1->A2->A3->A4->A5->B :=
   fun _ _ _ _ _ => v.
 
+
 (* ********************************************************************** *)
 (** Function application *)
 
