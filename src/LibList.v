@@ -1683,6 +1683,8 @@ Proof using.
     { lets: length_filter l (<> x). math. } }
 Qed.
 
+(* LATER: lemma for [remove x (remove y) l = ...] *)
+
 End Remove.
 
 Opaque remove.
