@@ -850,8 +850,6 @@ Inductive rclosure (A:Type) (R:binary A) : binary A :=
   | rclosure_refl : forall x,
       rclosure R x x.
 
-Hint Constructors rclosure : rclosure.
-
 Section Rclosure.
 Variable (A : Type).
 Implicit Types R : binary A.
@@ -916,33 +914,33 @@ Proof using. unfold inverse. extens. iff M; destruct* M. Qed.
 
 (** Constructors *)
 
-Lemma rclosure_l : forall y x z R,
+Lemma rclosure_trans_l : forall y x z R,
   trans R -> 
   rclosure R x y -> 
   R y z -> 
   rclosure R x z.
-Proof using. introv T [H|H] M; subst*. Qed.
+Proof using. introv T M N. rewrite rclosure_eq in *. destruct M; subst*. Qed.
 
-Lemma rclosure_r : forall y x z R,
+Lemma rclosure_trans_r : forall y x z R,
   trans R -> 
   R x y -> 
   rclosure R y z -> 
   rclosure R x z.
-Proof using. introv T M [H|H]; subst*. Qed.
+Proof using. introv T M N. rewrite rclosure_eq in *. destruct N; subst*. Qed.
 
 Lemma trans_rclosure_l : forall y x z R,
   trans R -> 
   rclosure R x y -> 
   R y z -> 
   R x z.
-Proof using. introv T [H|H] M; subst*. Qed.
+Proof using. introv T M H. rewrite rclosure_eq in *. destruct M; subst*. Qed.
 
 Lemma trans_rclosure_r : forall y x z R,
   trans R -> 
   R x y -> 
   rclosure R y z -> 
   R x z.
-Proof using. introv T M [H|H]; subst*. Qed.
+Proof using. introv T M N. rewrite rclosure_eq in *. destruct N; subst*. Qed.
 
 (** Negation *)
 
@@ -979,6 +977,9 @@ Proof using. unfolds rel_incl. introv H M. destruct* M. Qed.
 
 End Rclosure.
 
+Hint Constructors rclosure : rclosure.
+(* LATER: here and later, add more hints *)
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Symmetric closure  *)
@@ -990,8 +991,6 @@ Inductive sclosure (A:Type) (R:binary A) : binary A :=
   | sclosure_sym : forall x y,
       sclosure R y x ->
       sclosure R x y.
-
-Hint Constructors sclosure : sclosure.
 
 Section Sclosure.
 Variable (A : Type).
@@ -1077,22 +1076,16 @@ Proof using. unfolds* rel_incl, inverse. Qed.
 Lemma covariant_sclosure : forall R1 R2,
   rel_incl R1 R2 ->
   rel_incl (sclosure R1) (sclosure R2).
-Proof using. 
-  unfolds rel_incl. introv H M. rewrite sclosure_eq in *. destruct* M.
-Qed.
+Proof using. unfolds rel_incl. introv H M. induction* M. Qed.
 
 Lemma rel_incl_sclosure_sclosure : forall R1 R2,
   rel_incl R1 (sclosure R2) ->
   rel_incl (sclosure R1) (sclosure R2).
-Proof using. 
-  unfolds rel_incl. introv H M. rewrite sclosure_eq in *.
-  destruct M as [M|M].
-  { forwards K: H M. rewrite* sclosure_eq in K. }
-  { forwards K: H M. rewrite* sclosure_eq in K. }
-  (* LATER: simplify using rewrite under binder *) 
-Qed.
+Proof using. unfolds rel_incl. introv H M. induction* M. Qed.
 
 End Sclosure.
+
+Hint Constructors sclosure : sclosure.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1107,8 +1100,6 @@ Inductive rsclosure (A:Type) (R:binary A) : binary A :=
   | rsclosure_sym : forall x y,
       rsclosure R x y ->
       rsclosure R y x.
-
-Hint Constructors rsclosure : rsclosure.
 
 Section Rsclosure.
 Variable (A : Type).
@@ -1190,23 +1181,16 @@ Proof using. unfolds* rel_incl, inverse. Qed.
 Lemma covariant_rsclosure : forall R1 R2,
   rel_incl R1 R2 ->
   rel_incl (rsclosure R1) (rsclosure R2).
-Proof using. 
-  unfolds rel_incl. introv H M. rewrite rsclosure_eq in *. destruct* M.
-Qed.
+Proof using. unfolds rel_incl. introv H M. induction* M. Qed.
 
 Lemma rel_incl_rsclosure_rsclosure : forall R1 R2,
   rel_incl R1 (rsclosure R2) ->
   rel_incl (rsclosure R1) (rsclosure R2).
-Proof using. 
-  unfolds rel_incl. introv H M. rewrite rsclosure_eq in *.
-  destruct M as [M|[M|M]].
-  { forwards K: H M. rewrite* rsclosure_eq in K. }
-  { forwards K: H M. rewrite* rsclosure_eq in K. }
-  { subst*. }
-  (* LATER: simplify using rewrite under binder *) 
-Qed.
+Proof using. unfolds rel_incl. introv H M. induction* M. Qed.
 
 End Rsclosure.
+
+Hint Constructors rsclosure : rsclosure.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1224,38 +1208,45 @@ Inductive tclosure (A:Type) (R:binary A) : binary A :=
 Section Tclosure.
 Variable (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rtclosure.
+Hint Constructors tclosure.
 
 (** Properties *)
 
 Lemma refl_tclosure : forall R,
   refl R ->
   refl (tclosure R).
-Proof using.
-Qed.
+Proof using. unfolds* refl. Qed.
 
 Lemma sym_tclosure : forall R,
   sym R ->
   sym (tclosure R).
-Proof using.
-  unfold sym. inversion 2; subst.
-  eapply tclosure_rtclosure_step.
-  eapply sym_rtclosure; eauto.
-  eauto.
-Qed.
+Proof using. unfolds sym. introv H N. induction* N. Qed.
 
 Lemma trans_tclosure : forall R,
   trans (tclosure R).
-Proof using. intros R y x z M1. autos*. Qed.
+Proof using. unfolds* trans. Qed.
 
 Lemma total_tclosure : forall R,
   total R ->
   total (tclosure R).
-Proof using. unfold sclosure. intros_all~. destruct* (H x y). Qed.
+Proof using. 
+  unfolds total. introv H. intros x y. destruct* (H x y).
+Qed.
+
+Lemma tclosure_of_trans : forall R,
+  trans R ->
+  tclosure R = R.
+Proof using.
+  unfolds trans. introv H. extens. iff M.
+  { induction M; subst*. }
+  { auto. }
+Qed.
 
 Lemma tclosure_inverse_eq : forall R,
   tclosure (inverse R) = inverse (tclosure R).
-Proof using. intros. unfold inverse, sclosure. extens*. Qed.
+Proof using. 
+  unfolds inverse. extens. intros x y. iff M; induction* M. 
+Qed.
 
 (** Constructors *)
 
@@ -1263,75 +1254,90 @@ Lemma tclosure_l : forall R y x z,
   R x y -> 
   tclosure R y z -> 
   tclosure R x z.
-Proof using. introv R1 R2. autos*. Qed.
+Proof using. autos*. Qed.
 
 Lemma tclosure_r : forall R y x z,
   tclosure R x y -> 
   R y z -> 
   tclosure R x z.
-Proof using. introv R1 R2. autos*. Qed.
+Proof using. autos*. Qed.
 
 (** Inclusions *)
 
 Lemma rel_incl_tclosure : forall R,
   rel_incl R (tclosure R).
-Proof using. unfolds rel_incl. intros. apply~ tclosure_once. Qed.
+Proof using. unfolds* rel_incl. Qed.
 
 Lemma covariant_tclosure : forall A (R1 R2 : binary A),
   rel_incl R1 R2 ->
   rel_incl (tclosure R1) (tclosure R2).
-Proof using.
-  unfold rel_incl. inversion 2; subst. econstructor.
-  eauto.
-  eapply covariant_rtclosure; eauto.
-Qed.
+Proof using. unfolds rel_incl. introv H M. induction* M. Qed.
 
 Lemma rel_incl_tclosure_tclosure : forall R1 R2,
   rel_incl R1 (tclosure R2) ->
   rel_incl (tclosure R1) (tclosure R2).
-Proof using.
-  unfold rel_incl. induction 2; eauto with rstclosure.
-Qed.
-
-(** Inversion principle with steps at head or tail *)
-
-Lemma tclosure_inv_l : forall R x y,
-  tclosure R x y ->
-  exists z, R z y /\ rtclosure R x z.
-Proof.
-  introv H. induction H using tclosure_ind_right.
-   exists x. splits~. constructors~.
-   exists y. splits~. apply~ tclosure_rtclosure.
-Qed.
-
-Lemma tclosure_inv_r : forall R x y,
-  tclosure R x y ->
-  exists z, rtclosure R x z /\ R z y.
-Proof.
-  introv H. induction H using tclosure_ind_right.
-   exists x. splits~. constructors~.
-   exists y. splits~. apply~ tclosure_rtclosure.
-Qed.
+Proof using. unfolds rel_incl. introv H M. induction* M. Qed.
 
 (** Induction principle with steps at head or tail *)
+
+Section Ind.
+
+Inductive tclosure'l (A:Type) (R:binary A) : binary A :=
+  | tclosure'l_once : forall x y,
+      R x y -> 
+      tclosure'l R x y
+  | tclosure'l_step : forall y x z,
+      R x y -> 
+      tclosure'l R y z -> 
+      tclosure'l R x z.
+
+Lemma tclosure'l_trans : forall R,
+  trans (tclosure'l R).
+Proof using.
+  Hint Constructors tclosure'l.
+  intros R y x z M1. gen z. induction M1; introv M2; autos*.
+Qed.  
+
+Lemma tclosure_eq_tclosure'l : forall R,
+  tclosure R = tclosure'l R.
+  (* LATER: tclosure'l = tclosure. *)
+Proof using.
+  extens. intros x y. iff M.  
+  { induction* M. applys* tclosure'l_trans. }
+  { induction* M. }
+Qed.
 
 Lemma tclosure_ind_l : forall R (P : A -> A -> Prop),
   (forall x y, R x y -> P x y) ->
   (forall y x z, R x y -> tclosure R y z -> P y z -> P x z) ->
   (forall x y, tclosure R x y -> P x y).
 Proof.
-  introv. iff C.
-   destruct C as [x y z HR HC]. gen x. induction HC; introv HR.
-    apply~ tclosure'_step.
-    applys~ tclosure'_trans x. constructors~.
-   induction C.
-    constructors*.
-    apply* tclosure_trans.
+  introv H1 H2 M. rewrite tclosure_eq_tclosure'l in *. induction* M.
+Qed.
 
-  introv S Ind H. inverts H as HR HC.
-  induction HC using rtclosure_ind_right.
-   apply* S.
-   applys Ind; try apply* tclosure_step_rtclosure; autos*.
+Inductive tclosure'r (A:Type) (R:binary A) : binary A :=
+  | tclosure'r_once : forall x y,
+      R x y -> 
+      tclosure'r R x y
+  | tclosure'r_step : forall y x z,
+      tclosure'r R x y -> 
+      R y z ->
+      tclosure'r R x z.
+
+Lemma tclosure'r_trans : forall R,
+  trans (tclosure'r R).
+Proof using.
+  Hint Constructors tclosure'r.
+  intros R y x z M1 M2. gen x. induction M2; introv M1; autos*.
+Qed.  
+
+Lemma tclosure_eq_tclosure'r : forall R,
+  tclosure R = tclosure'r R.
+  (* LATER: tclosure'l = tclosure. *)
+Proof using.
+  extens. intros x y. iff M.  
+  { induction* M. applys* tclosure'r_trans. }
+  { induction* M. }
 Qed.
 
 Lemma tclosure_ind_r : forall R (P : A -> A -> Prop),
@@ -1339,11 +1345,12 @@ Lemma tclosure_ind_r : forall R (P : A -> A -> Prop),
   (forall y x z, tclosure R x y -> P x y -> R y z -> P x z) ->
   (forall x y, tclosure R x y -> P x y).
 Proof.
-  introv S Ind H. inverts H as HR HC.
-  induction HC using rtclosure_ind_right.
-   apply* S.
-   applys Ind; try apply* tclosure_step_rtclosure; autos*.
+  introv H1 H2 M. rewrite tclosure_eq_tclosure'r in *. induction* M.
 Qed.
+
+(* LATER: can these induction principles be proved directly? *)
+
+End Ind.
 
 End Tclosure.
 
@@ -1465,7 +1472,7 @@ Qed.
 
 (** Induction principle with steps at the tail *)
 
-Lemma tclosure_ind_tail : forall R (P : A -> A -> Prop),
+Lemma rtclosure_ind_tail : forall R (P : A -> A -> Prop),
   (forall x, P x x) ->
   (forall y x z, rtclosure R x y -> P x y -> R y z -> P x z) ->
   (forall x y, rtclosure R x y -> P x y).
@@ -1474,6 +1481,32 @@ Proof.
   induction HC using rtclosure_ind_right.
    apply* S.
    applys Ind; try apply* tclosure_step_rtclosure; autos*.
+Qed.
+
+
+(** Inversion principle with steps at head or tail *)
+
+Lemma tclosure_inv_l : forall R x z,
+  tclosure R x z ->
+  exists y, R x y /\ tclosure R y z.
+Proof.
+  intros R. applys tclosure_ind_l. 
+  {  intros. exists y. splits~.
+ [ | |apply H]; clear H; intros.
+  eauto.
+
+ induction H using tclosure_ind_l.
+   exists x. splits~. constructors~.
+   exists y. splits~. apply~ tclosure_rtclosure.
+Qed.
+
+Lemma tclosure_inv_r : forall R x y,
+  tclosure R x y ->
+  exists z, tclosure R x z /\ R z y.
+Proof.
+  introv H. induction H using tclosure_ind_right.
+   exists x. splits~. constructors~.
+   exists y. splits~. apply~ tclosure_rtclosure.
 Qed.
 
 End Rtclosure.
