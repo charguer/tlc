@@ -30,17 +30,17 @@ Coercion istrue (b : bool) : Prop := (b = true).
 
 (** Specification *)
 
-Lemma istrue_to_eq_true : forall b,
+Lemma istrue_eq_eq_true : forall b,
   istrue b = (b = true).
 Proof using. reflexivity. Qed.
 
 Lemma istrue_true_eq : 
   istrue true = True.
-Proof using. rewrite istrue_to_eq_true. extens*. Qed.
+Proof using. rewrite istrue_eq_eq_true. extens*. Qed.
 
 Lemma istrue_false_eq : 
   istrue false = False.
-Proof using. rewrite istrue_to_eq_true. extens. iff; auto_false. Qed.
+Proof using. rewrite istrue_eq_eq_true. extens. iff; auto_false. Qed.
 
 Global Opaque istrue.
 
@@ -86,7 +86,7 @@ Definition isTrue (P : Prop) : bool :=
 
 (** Specification *)
 
-Lemma isTrue_to_if : forall P,
+Lemma isTrue_eq_if : forall P,
   isTrue P = If P then true else false.
 Proof using. reflexivity. Qed.
 
@@ -105,12 +105,12 @@ Global Opaque isTrue.
 Lemma isTrue_eq_true : forall P,
   P -> 
   isTrue P = true.
-Proof using. intros. rewrite isTrue_to_if. case_if*. Qed.
+Proof using. intros. rewrite isTrue_eq_if. case_if*. Qed.
 
 Lemma isTrue_eq_false : forall P,
   ~ P -> 
   isTrue P = false.
-Proof using. intros. rewrite isTrue_to_if. case_if*. Qed.
+Proof using. intros. rewrite isTrue_eq_if. case_if*. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -143,7 +143,7 @@ Proof using. apply (Extensionality_make bool_ext). Defined.
 
 Lemma istrue_isTrue_eq : forall P,
   istrue (isTrue P) = P.
-Proof using. extens. rewrite isTrue_to_if. case_if; auto_false*. Qed.
+Proof using. extens. rewrite isTrue_eq_if. case_if; auto_false*. Qed.
 
 Lemma istrue_neg_eq : forall b,
   istrue (!b) = ~ (istrue b).
@@ -190,15 +190,15 @@ Proof using. extens. rewrite* istrue_isTrue_eq. Qed.
 
 Lemma isTrue_not : forall P,
   isTrue (~ P) = ! isTrue P.
-Proof using. extens. do 2 rewrite isTrue_to_if. do 2 case_if; auto_false*. Qed.
+Proof using. extens. do 2 rewrite isTrue_eq_if. do 2 case_if; auto_false*. Qed.
 
 Lemma isTrue_and : forall P1 P2,
   isTrue (P1 /\ P2) = (isTrue P1 && isTrue P2).
-Proof using. extens. do 3 rewrite isTrue_to_if. do 3 case_if; auto_false*. Qed.
+Proof using. extens. do 3 rewrite isTrue_eq_if. do 3 case_if; auto_false*. Qed.
 
 Lemma isTrue_or : forall P1 P2,
   isTrue (P1 \/ P2) = (isTrue P1 || isTrue P2).
-Proof using. extens. do 3 rewrite isTrue_to_if. do 3 case_if; auto_false*. Qed.
+Proof using. extens. do 3 rewrite isTrue_eq_if. do 3 case_if; auto_false*. Qed.
 
 (** Corollary *)
 
@@ -211,7 +211,7 @@ Proof using. intros. rewrite isTrue_not. rewrite~ isTrue_istrue. Qed.
 Section IsTrueEqualities.
 
 Ltac prove_isTrue_lemma :=
-  intros; try extens; try iff; rewrite isTrue_to_if in *; case_if; auto_false*.
+  intros; try extens; try iff; rewrite isTrue_eq_if in *; case_if; auto_false*.
 
 Lemma true_eq_isTrue_eq : forall P,
   (true = isTrue P) = P.
@@ -232,7 +232,7 @@ Proof using. prove_isTrue_lemma. Qed.
 Lemma isTrue_eq_isTrue_eq : forall P1 P2,
   (isTrue P1 = isTrue P2) = (P1 <-> P2).
 Proof using.
-  intros. extens. iff; repeat rewrite isTrue_to_if in *;
+  intros. extens. iff; repeat rewrite isTrue_eq_if in *;
   repeat case_if; auto_false*.
 Qed.
 
@@ -254,7 +254,7 @@ Lemma isTrue_If : forall P1 P2 P3,
   = If P1 then isTrue P2 else isTrue P3.
 Proof using. extens. case_if*. Qed.
 
-Lemma isTrue_if_to_if : forall P1 P2 P3,
+Lemma isTrue_If_eq_if_isTrue : forall P1 P2 P3,
     isTrue (If P1 then P2 else P3) 
   = (if isTrue P1 then isTrue P2 else isTrue P3).
 Proof using. intros. rewrite if_isTrue. rewrite~ isTrue_If. Qed.
@@ -364,25 +364,25 @@ Hint Rewrite
   not_not_eq
   istrue_true_eq istrue_false_eq istrue_isTrue_eq
   istrue_neg_eq istrue_and_eq istrue_or_eq
-  : rew_logics.
+  : rew_bool_eq.
 
 Tactic Notation "rew_bool_eq" :=
-  autorewrite with rew_bool_to_prop.
+  autorewrite with rew_bool_eq.
 Tactic Notation "rew_bool_eq" "~" :=
   rew_bool_eq; auto_tilde.
 Tactic Notation "rew_bool_eq" "*" :=
   rew_bool_eq; auto_star.
 
 Tactic Notation "rew_bool_eq" "in" hyp(H) :=
-  autorewrite with rew_bool_to_prop in H.
+  autorewrite with rew_bool_eq in H.
 Tactic Notation "rew_bool_eq" "~" "in" hyp(H) :=
   rew_bool_eq in H; auto_tilde.
 Tactic Notation "rew_bool_eq" "*" "in" hyp(H) :=
   rew_bool_eq in H; auto_star.
 
 Tactic Notation "rew_bool_eq" "in" "*" :=
-  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_bool_to_prop).
-  (* autorewrite with rew_bool_to_prop in *. *)
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_bool_eq).
+  (* autorewrite with rew_bool_eq in *. *)
 Tactic Notation "rew_bool_eq" "~" "in" "*" :=
   rew_bool_eq; auto_tilde.
 Tactic Notation "rew_bool_eq" "*" "in" "*" :=

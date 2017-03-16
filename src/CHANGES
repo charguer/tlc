@@ -1508,3 +1508,12 @@ EVERYWHERE: pred_le => pred_incl
 Definition not_inj := injective_not.
 
 Definition proj_lemma := forall_conj_inv_1.
+
+
+
+
+Lemma rel_eq_inv : forall A (R1 R2:binary A),
+  R1 = R2 ->
+  (forall x y, R1 x y <-> R2 x y).
+Proof using. intros. subst*. Qed.
+(* Note: see [pred_eq_2] from LibEqual *)

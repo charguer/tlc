@@ -101,10 +101,10 @@ Lemma functional_unique_choice : forall A B (R:A->B->Prop),
   (exists! f, forall x, R x (f x)).
 Proof using.
   intros. destruct (functional_choice R) as [f Hf].
-  intros. apply (ex_unique_to_ex (H x)).
+  intros. apply (ex_of_ex_unique (H x)).
   exists f. split. auto.
    intros g Hg. apply fun_ext_1. intros y.
-   apply~ (ex_unique_to_at_most_one (H y)).
+   apply~ (at_most_one_of_ex_unique (H y)).
 Qed.
 
 
@@ -117,10 +117,10 @@ Theorem dependent_functional_unique_choice :
   (exists! f : (forall (x:A), B x), forall (x:A), R x (f x)).
 Proof using.
   intros. destruct (dependent_functional_choice R) as [f Hf].
-  intros. apply (ex_unique_to_ex (H x)).
+  intros. apply (ex_of_ex_unique (H x)).
   exists f. split. auto.
    intros g Hg. extens. intros y.
-   apply~ (ex_unique_to_at_most_one (H y)).
+   apply~ (at_most_one_of_ex_unique (H y)).
  Qed.
 
 Arguments dependent_functional_unique_choice [A] [B].

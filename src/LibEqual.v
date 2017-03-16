@@ -189,93 +189,6 @@ Proof using. intros. subst*. Qed.
 End EqInductionSym.
 
 
-(* ********************************************************************** *)
-(** * Equality of function applications *)
-
-(* TODO: would it be useful to generalize this section to dependent arguments? *)
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** A same function applied to equal arguments yield equal result *)
-
-Section ArgsEq.
-Variables (A1 A2 A3 A4 A5 B : Type).
-
-Lemma args_eq_1 : forall (f:A1->B) x1 y1,
-  x1 = y1 ->
-  f x1 = f y1.
-Proof using. intros. subst~. Qed.
-
-Lemma args_eq_2 : forall (f:A1->A2->B) x1 y1 x2 y2,
-  x1 = y1 -> 
-  x2 = y2 ->
-  f x1 x2 = f y1 y2.
-Proof using. intros. subst~. Qed.
-
-Lemma args_eq_3 : forall (f:A1->A2->A3->B) x1 y1 x2 y2 x3 y3,
-  x1 = y1 -> 
-  x2 = y2 -> 
-  x3 = y3 ->
-  f x1 x2 x3 = f y1 y2 y3.
-Proof using. intros. subst~. Qed.
-
-Lemma args_eq_4 : forall (f:A1->A2->A3->A4->B) x1 y1 x2 y2 x3 y3 x4 y4,
-  x1 = y1 -> 
-  x2 = y2 -> 
-  x3 = y3 -> 
-  x4 = y4 ->
-  f x1 x2 x3 x4 = f y1 y2 y3 y4.
-Proof using. intros. subst~. Qed.
-
-Lemma args_eq_5 : forall (f:A1->A2->A3->A4->A5->B) x1 y1 x2 y2 x3 y3 x4 y4 x5 y5,
-  x1 = y1 -> 
-  x2 = y2 -> 
-  x3 = y3 -> 
-  x4 = y4 -> 
-  x5 = y5 ->
-  f x1 x2 x3 x4 x5 = f y1 y2 y3 y4 y5.
-Proof using. intros. subst~. Qed.
-
-End ArgsEq.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Equal functions applied to sam arguments return equal results *)
-
-(** These results are exploited by tactic [fequals] (see LibTactics);
-    however the lemmas remain useful for forward-reasoning. *)
-
-Section FuncEq.
-Variables (A1 A2 A3 A4 A5 B:Type).
-Variables (x1:A1) (x2:A2) (x3:A3) (x4:A4) (x5:A5).
-
-Lemma fun_eq_1 : forall f g,
-  f = g ->
-  f x1 = g x1 :> B.
-Proof using. intros. subst~. Qed.
-
-Lemma fun_eq_2 : forall f g,
-  f = g -> 
-  f x1 x2 = g x1 x2 :> B.
-Proof using. intros. subst~. Qed.
-
-Lemma fun_eq_3 : forall f g,
-  f = g -> 
-  f x1 x2 x3 = g x1 x2 x3 :> B.
-Proof using. intros. subst~. Qed.
-
-Lemma fun_eq_4 : forall f g,
-  f = g -> 
-  f x1 x2 x3 x4 = g x1 x2 x3 x4 :> B.
-Proof using. intros. subst~. Qed.
-
-Lemma fun_eq_5 : forall f g,
-  f = g -> 
-  f x1 x2 x3 x4 x5 = g x1 x2 x3 x4 x5 :> B.
-Proof using. intros. subst~. Qed.
-
-End FuncEq.
-
 
 (* ********************************************************************** *)
 (** * Functional extensionality *)
@@ -522,6 +435,132 @@ Lemma pred_ext_nondep_6 :
   (forall x1 x2 x3 x4 x5 x6, P x1 x2 x3 x4 x5 x6 <-> Q x1 x2 x3 x4 x5 x6)  -> 
   P = Q.
 Proof using. intros. apply~ pred_ext_6. Qed.
+
+
+
+(* ********************************************************************** *)
+(** * Equality of function and predicate applications *)
+
+(* TODO: generalize this section to dependent arguments *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** A same function applied to equal arguments yield equal result *)
+
+Section ArgsEq.
+Variables (A1 A2 A3 A4 A5 B : Type).
+
+Lemma args_eq_1 : forall (f:A1->B) x1 y1,
+  x1 = y1 ->
+  f x1 = f y1.
+Proof using. intros. subst~. Qed.
+
+Lemma args_eq_2 : forall (f:A1->A2->B) x1 y1 x2 y2,
+  x1 = y1 -> 
+  x2 = y2 ->
+  f x1 x2 = f y1 y2.
+Proof using. intros. subst~. Qed.
+
+Lemma args_eq_3 : forall (f:A1->A2->A3->B) x1 y1 x2 y2 x3 y3,
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 ->
+  f x1 x2 x3 = f y1 y2 y3.
+Proof using. intros. subst~. Qed.
+
+Lemma args_eq_4 : forall (f:A1->A2->A3->A4->B) x1 y1 x2 y2 x3 y3 x4 y4,
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 -> 
+  x4 = y4 ->
+  f x1 x2 x3 x4 = f y1 y2 y3 y4.
+Proof using. intros. subst~. Qed.
+
+Lemma args_eq_5 : forall (f:A1->A2->A3->A4->A5->B) x1 y1 x2 y2 x3 y3 x4 y4 x5 y5,
+  x1 = y1 -> 
+  x2 = y2 -> 
+  x3 = y3 -> 
+  x4 = y4 -> 
+  x5 = y5 ->
+  f x1 x2 x3 x4 x5 = f y1 y2 y3 y4 y5.
+Proof using. intros. subst~. Qed.
+
+End ArgsEq.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Equal functions applied to same arguments return equal results *)
+
+(** These results are exploited by tactic [fequals] (see LibTactics);
+    however the lemmas remain useful for forward-reasoning. *)
+
+Section FuncEq.
+Variables (A1 A2 A3 A4 A5 B:Type).
+Variables (x1:A1) (x2:A2) (x3:A3) (x4:A4) (x5:A5).
+
+Lemma fun_eq_1 : forall f g,
+  f = g ->
+  f x1 = g x1 :> B.
+Proof using. intros. subst~. Qed.
+
+Lemma fun_eq_2 : forall f g,
+  f = g -> 
+  f x1 x2 = g x1 x2 :> B.
+Proof using. intros. subst~. Qed.
+
+Lemma fun_eq_3 : forall f g,
+  f = g -> 
+  f x1 x2 x3 = g x1 x2 x3 :> B.
+Proof using. intros. subst~. Qed.
+
+Lemma fun_eq_4 : forall f g,
+  f = g -> 
+  f x1 x2 x3 x4 = g x1 x2 x3 x4 :> B.
+Proof using. intros. subst~. Qed.
+
+Lemma fun_eq_5 : forall f g,
+  f = g -> 
+  f x1 x2 x3 x4 x5 = g x1 x2 x3 x4 x5 :> B.
+Proof using. intros. subst~. Qed.
+
+End FuncEq.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Equal predicates applied to same arguments return equivalent results *)
+
+(** These results are exploited by tactic [fequals] (see LibTactics);
+    however the lemmas remain useful for forward-reasoning. *)
+
+Section PredEq.
+Variables (A1 A2 A3 A4 A5 B:Type).
+Variables (x1:A1) (x2:A2) (x3:A3) (x4:A4) (x5:A5).
+
+Lemma pred_eq_1 : forall P Q,
+  P = Q ->
+  P x1 <-> Q x1.
+Proof using. intros. subst*. Qed.
+
+Lemma pred_eq_2 : forall P Q,
+  P = Q -> 
+  P x1 x2 <-> Q x1 x2.
+Proof using. intros. subst*. Qed.
+
+Lemma pred_eq_3 : forall P Q,
+  P = Q -> 
+  P x1 x2 x3 <-> Q x1 x2 x3.
+Proof using. intros. subst*. Qed.
+
+Lemma pred_eq_4 : forall P Q,
+  P = Q -> 
+  P x1 x2 x3 x4 <-> Q x1 x2 x3 x4.
+Proof using. intros. subst*. Qed.
+
+Lemma pred_eq_5 : forall P Q,
+  P = Q -> 
+  P x1 x2 x3 x4 x5 <-> Q x1 x2 x3 x4 x5.
+Proof using. intros. subst*. Qed.
+
+End PredEq.
 
 
 

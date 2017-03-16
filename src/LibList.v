@@ -918,12 +918,12 @@ Proof using. introv. reflexivity. Qed.
 
 Definition nth_def_cons := nth_def_succ.
 
-Lemma Nth_to_nth_def : forall n l x dummy,
+Lemma nth_def_of_Nth : forall n l x dummy,
   Nth n l x -> 
   nth_def dummy n l = x.
 Proof using. introv H. induction~ H. Qed.
 
-Lemma nth_def_to_Nth : forall l d n x,
+Lemma Nth_of_nth_def : forall l d n x,
   nth_def d n l = x ->
   n < length l ->
   Nth n l x.
@@ -973,34 +973,34 @@ Proof using.
   { rewrite nth_succ. fequals. math. } 
 Qed.
 
-Lemma Nth_to_nth : forall n l x,
+Lemma nth_of_Nth : forall n l x,
   Nth n l x -> 
   nth n l = x.
-Proof using. introv H. apply~ Nth_to_nth_def. Qed.
+Proof using. introv H. apply~ nth_def_of_Nth. Qed.
 
-Lemma nth_to_Nth : forall l n x,
+Lemma Nth_of_nth : forall l n x,
   nth n l = x ->
   n < length l ->
   Nth n l x.
-Proof using. intros. applys* nth_def_to_Nth. Qed.
+Proof using. intros. applys* Nth_of_nth_def. Qed.
 
 Lemma Nth_nth : forall l n,
   n < length l ->
   Nth n l (nth n l).
-Proof using. intros. applys* nth_to_Nth. Qed.
+Proof using. intros. applys* Nth_of_nth. Qed.
 
 Lemma mem_nth : forall l x,
   mem x l -> 
   exists n, nth n l = x.
 Proof using.
-  intros. forwards [n P]: mem_Nth H. exists n. apply~ Nth_to_nth.
+  intros. forwards [n P]: mem_Nth H. exists n. apply~ nth_of_Nth.
 Qed.
 
 Lemma nth_mem : forall n l x,
   nth n l = x ->
   n < length l ->
   mem x l.
-Proof using. introv E N. forwards~ H: nth_to_Nth E. applys* Nth_mem H. Qed.
+Proof using. introv E N. forwards~ H: Nth_of_nth E. applys* Nth_mem H. Qed.
 
 End NthFunc.
 
@@ -1205,7 +1205,7 @@ Qed.
 Lemma nth_make : forall i n v,
   i < n -> 
   nth i (make n v) = v.
-Proof using. intros. applys Nth_to_nth. applys~ Nth_make. Qed.
+Proof using. intros. applys nth_of_Nth. applys~ Nth_make. Qed.
 
 End Make.
 
@@ -1443,7 +1443,7 @@ Lemma nth_map : forall `{IA:Inhab A} `{IB:Inhab B} (f:A->B) (l:list A) n,
   n < length l -> 
   nth n (map f l) = f (nth n l).
 Proof using.
-  introv N. applys Nth_to_nth. applys Nth_map. applys~ nth_to_Nth.
+  introv N. applys nth_of_Nth. applys Nth_map. applys~ nth_to_Nth.
 Qed.
 
 
@@ -1951,7 +1951,7 @@ Lemma nth_combine : forall `{IA:Inhab A} `{IB:Inhab B} n (r:list A) (s:list B),
   length r = length s ->
   nth n (combine r s) = (nth n r, nth n s).
 Proof using. 
-  introv N E. applys Nth_to_nth. applys* Nth_combine.
+  introv N E. applys nth_of_Nth. applys* Nth_combine.
   { applys* Nth_nth. } { applys* Nth_nth. math. }
 Qed.
 
@@ -2051,9 +2051,9 @@ Lemma nth_split : forall `{IA:Inhab A} `{IB:Inhab B} n l (r:list A) (s:list B),
   n < length l ->
   nth n l = (nth n r, nth n s).
 Proof using. 
-  introv E N. applys Nth_to_nth. lets ([x y]&M): Nth_inbound_inv N.
+  introv E N. applys nth_of_Nth. lets ([x y]&M): Nth_inbound_inv N.
   forwards (F1&F2): Nth_split M E.
-  rewrite (Nth_to_nth F1). rewrite~ (Nth_to_nth F2).
+  rewrite (nth_of_Nth F1). rewrite~ (nth_of_Nth F2).
 Qed.
 
 Lemma nth_split_l : forall `{IA:Inhab A} `{IB:Inhab B} n l (r:list A) (s:list B),

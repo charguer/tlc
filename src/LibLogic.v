@@ -191,7 +191,7 @@ End Ifthenelse.
 
 (** Propositional extensionality stated using itself *)
 
-Lemma prop_eq_to_iff : forall P Q,
+Lemma eq_prop_eq_iff : forall P Q,
   (P = Q) = (P <-> Q).
 Proof using. intros. extens. iff. subst*. apply~ prop_ext. Qed.
 
@@ -242,7 +242,7 @@ Ltac tautop_case P :=
 
 Ltac tautop_pre tt :=
   intros;
-  repeat rewrite prop_eq_to_iff in *.
+  repeat rewrite eq_prop_eq_iff in *.
 
 Ltac tautop_post tt :=
   subst; 
@@ -703,7 +703,7 @@ Hint Rewrite
   not_not_eq not_and_eq not_or_eq not_impl_eq not_True_eq not_False_eq
   not_forall_not_eq not_exists_not_eq not_forall_eq
   not_exists_eq not_impl_eq
-  prop_eq_True_eq prop_eq_False_eq prop_eq_to_iff
+  prop_eq_True_eq prop_eq_False_eq eq_prop_eq_iff
   and_True_l_eq and_True_r_eq and_False_l_eq and_False_r_eq
   or_True_l_eq or_True_r_eq or_False_l_eq or_False_r_eq
   not_False_eq not_True_eq
@@ -881,9 +881,8 @@ Definition pred_incl (A : Type) (P Q : A -> Prop) :=
 
 (* LATER: create a section here *)
 
-Lemma pred_to_forall_impl : forall A (P Q : A -> Prop),
-  pred_incl P Q ->
-  (forall x, P x -> Q x).
+Lemma pred_eq_forall_impl : forall A (P Q : A -> Prop),
+  pred_incl P Q = (forall x, P x -> Q x).
 Proof using. auto. Qed.
 
 Lemma pred_incl_refl : forall A (P : A -> Prop),
@@ -950,14 +949,14 @@ Implicit Types  (P : A -> Prop).
 
 (** [exists! x, P] entails [exists x, P] *)
 
-Lemma ex_unique_to_ex : forall P,
+Lemma ex_of_ex_unique : forall P,
   ex_unique P -> 
   ex P.
 Proof using. introv (x&H&U). eauto. Qed.
 
 (** [exists! x, P] entails [at_most_one P] *)
 
-Lemma ex_unique_to_at_most_one : forall P,
+Lemma at_most_one_of_ex_unique : forall P,
   ex_unique P -> 
   at_most_one P.
 Proof using.

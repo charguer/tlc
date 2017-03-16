@@ -38,12 +38,6 @@ Instance Extensionality_binary : forall A,
   Extensionality (binary A).
 Proof using. intros. apply (Extensionality_make (@binary_ext A)). Defined.
 
-Lemma rel_eq_inv : forall A (R1 R2:binary A),
-  R1 = R2 ->
-  (forall x y, R1 x y <-> R2 x y).
-Proof using. intros. subst*. Qed.
-(* Note: see also [args_eq_2] from LibEqual *)
-
 
 (* ********************************************************************** *)
 (** * Properties of relations *)
@@ -83,16 +77,19 @@ Lemma irrefl_inv : forall x R,
   False.
 Proof using. introv H P. apply* H. Qed.
 
-Lemma irrefl_to_forall_neq : forall R,
-  irrefl R ->
-  (forall x y, R x y -> x <> y).
-Proof using. introv H P E. subst. apply* H. Qed.
+Lemma irrefl_eq_forall_neq : forall R,
+  irrefl R = (forall x y, R x y -> x <> y).
+Proof using. 
+  unfold irrefl. extens. iff M.
+  { introv H E. subst*. } 
+  { autos*. }
+Qed.
 
 Lemma irrefl_inv_neq : forall x y R,
   irrefl R ->
   R x y -> 
   x <> y.
-Proof using. intros. applys* irrefl_to_forall_neq. Qed.
+Proof using. introv H M. rewrite* irrefl_eq_forall_neq in H. Qed.
 
 End Irrefl.
 
@@ -113,15 +110,18 @@ Lemma sym_inv : forall x y R,
   R y x.
 Proof using. introv Sy R1. apply* Sy. Qed.
 
-Lemma sym_to_forall_eq : forall R,
-  sym R ->
-  (forall x y, R x y = R y x).
-Proof using. unfold sym. extens*. Qed.
-
-Lemma sym_to_eq : forall x y R,
+Lemma sym_inv_eq : forall x y R,
   sym R ->
   R x y = R y x.
 Proof using. unfold sym. extens*. Qed.
+
+Lemma sym_eq_forall_eq : forall R,
+  sym R = (forall x y, R x y = R y x).
+Proof using.
+  unfold sym. extens. iff M.
+  { extens*. }
+  { intros. rewrite* M. }
+Qed.
 
 End Sym.
 
@@ -136,10 +136,9 @@ Section Asym.
 Variables (A : Type).
 Implicit Types R : binary A.
 
-Lemma asym_to_forall_false : forall R,
-  asym R ->
-  (forall x y, R x y -> R y x -> False).
-Proof using. introv H M1 M2. apply* H. Qed.
+Lemma asym_eq_forall_false : forall R,
+  asym R = (forall x y, R x y -> R y x -> False).
+Proof using. unfold asym. extens*. Qed.
 
 Lemma asym_inv : forall x y R,
   asym R -> 
@@ -161,10 +160,9 @@ Section Antisym.
 Variables (A : Type).
 Implicit Types R : binary A.
 
-Lemma antisym_to_forall_eq : forall R,
-  antisym R ->
-  (forall x y, R x y -> R y x -> x = y).
-Proof using. unfolds* antisym. Qed.
+Lemma antisym_eq_forall_eq : forall R,
+  antisym R = (forall x y, R x y -> R y x -> x = y).
+Proof using. unfold antisym. extens*. Qed.
 
 Lemma antisym_inv : forall x y R,
   antisym R -> 
@@ -196,10 +194,9 @@ Section Trans.
 Variables (A : Type).
 Implicit Types R : binary A.
 
-Lemma trans_to_forall_impl : forall R,
-  trans R ->
-  (forall y x z, R x y -> R y z -> R x z).
-Proof using. unfolds* trans. Qed.
+Lemma trans_eq_forall_impl : forall R,
+  trans R = (forall y x z, R x y -> R y z -> R x z).
+Proof using. unfold trans. extens*. Qed.
 
 Lemma trans_inv : forall y x z R,
   trans R -> 
@@ -281,9 +278,8 @@ Section Incl.
 Variables (A B : Type).
 Implicit Types R : A->B->Prop.
 
-Lemma rel_incl_to_forall_impl : forall R1 R2,
-  rel_incl R1 R2 ->
-  (forall x y, R1 x y -> R2 x y).
+Lemma rel_incl_eq_forall_impl : forall R1 R2,
+  rel_incl R1 R2 = (forall x y, R1 x y -> R2 x y).
 Proof using. auto. Qed.
 
 Lemma refl_rel_incl : 
@@ -317,9 +313,8 @@ Section Total.
 Variables (A : Type).
 Implicit Types R : binary A.
 
-Lemma total_to_forall_or : forall R,
-  total R ->
-  (forall x y, R x y \/ R y x).
+Lemma total_eq_forall_or : forall R,
+  total R = (forall x y, R x y \/ R y x).
 Proof using. auto. Qed.
 
 Lemma total_inv : forall x y R,
@@ -352,9 +347,8 @@ Section Defined.
 Variables (A : Type).
 Implicit Types R : binary A.
 
-Lemma total_to_forall_exists : forall R,
-  defined R ->
-  (forall x, exists y, R x y).
+Lemma total_eq_forall_exists : forall R,
+  defined R = (forall x, exists y, R x y).
 Proof using. auto. Qed.
 
 Lemma defined_inv : forall x R,
@@ -381,9 +375,8 @@ Section Functional.
 Variables (A : Type).
 Implicit Types R : binary A.
 
-Lemma functional_to_forall_eq : forall R,
-  functional R ->
-  (forall x y z, R x y -> R x z -> y = z).
+Lemma functional_eq_forall_eq : forall R,
+  functional R = (forall x y z, R x y -> R x z -> y = z).
 Proof using. auto. Qed.
 
 Lemma functional_inv : forall x z y R,
@@ -2288,7 +2281,7 @@ End Strict.
 (** Function to relation *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Comparison between a relation and a function *)
+(** ** Inclusion of a function in a relation *)
 
 (** [fun_in_rel f R] asserts that input-output pairs of [f] are 
     included in the relation [R]. *)
@@ -2296,16 +2289,20 @@ End Strict.
 Definition fun_in_rel A B (f:A->B) (R:A->B->Prop) :=
   forall x, R x (f x).
 
-(** [rel_in_fun R f] asserts that input-output pairs of [R] 
-    are input-output for [f]. *)
+Section Fun_in_rel.
+Variables (A B : Type).
+Implicit Type f : A->B.
+Implicit Type R : A->B->Prop.
 
-Definition rel_in_fun A B  (R:A->B->Prop) (f:A->B) :=
-  forall x y, R x y -> y = f x.
+Lemma defined_of_fun_in_rel : forall f R,
+  fun_in_rel f R ->
+  defined R.
+Proof using. unfolds* fun_in_rel, defined. Qed.
 
 (** The relation built from a function [f] is included in a relation  
     [R] iff the function [f] is included in [R] *)
 
-Lemma rel_incl_rel_fun_eq_fun_in_rel : forall A B (f:A->B) (R:A->B->Prop),
+Lemma rel_incl_rel_fun_eq_fun_in_rel : forall f R,
   rel_incl (rel_fun f) R = fun_in_rel f R.
 Proof using.
   extens. unfold rel_fun, fun_in_rel. iff H; intros x; specializes H x.
@@ -2313,10 +2310,35 @@ Proof using.
   { intros y Hy. subst~. }
 Qed.
 
+End Fun_in_rel.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Inclusion of a relation in a function *)
+
+(** [rel_in_fun R f] asserts that input-output pairs of [R] 
+    are input-output for [f]. *)
+
+Definition rel_in_fun A B (R:A->B->Prop) (f:A->B) :=
+  forall x y, R x y -> y = f x.
+
+Section Rel_in_fun.
+Variables (A B : Type).
+Implicit Type f : A->B.
+Implicit Type R : A->B->Prop.
+
+Lemma functional_of_rel_in_fun : forall R f,
+  rel_in_fun R f ->
+  functional R.
+Proof using.
+  unfold rel_in_fun, functional. introv M N1 N2. 
+  rewrites (>> M N1). rewrites~ (>> M N2).
+Qed.
+
 (* If the relation [R] is functional and if [f] is included in [R],
    then [R] is included in [f], i.e., they coincide. *)
 
-Lemma rel_in_fun_of_fun_in_rel_functional : forall A B (f:A->B) (R:A->B->Prop),
+Lemma rel_in_fun_of_fun_in_rel_functional : forall f R,
   fun_in_rel f R ->
   functional R ->
   rel_in_fun R f.
@@ -2324,6 +2346,5 @@ Proof using.
   introv h1 h2. intros a b H. forwards M: h1 a. forwards*: h2 H M.
 Qed.
 
-(* TODO: [fun_in_rel f R] implies [defined R]
-         [rel_in_fun R f] implies [functional R] *)
+End Rel_in_fun.
 
