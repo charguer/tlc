@@ -53,7 +53,7 @@ Definition remove_impl : set A -> set A -> set A :=
   fun E F x => E x /\ ~ F x.
 
 Definition incl_impl : set A -> set A -> Prop :=
-  @pred_le A.
+  @pred_incl A.
 
 Definition disjoint_impl : set A -> set A -> Prop :=
   fun E F : set A => inter_impl E F = empty_impl.
@@ -86,7 +86,7 @@ End Operations.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance set_inhab : forall A, Inhab (set A).
+Instance Inhab_set : forall A, Inhab (set A).
 Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 
 
@@ -1033,9 +1033,9 @@ Proof using.
   apply~ foreach_single.
 Qed.
 
-Lemma foreach_pred_le: forall P Q E,
+Lemma foreach_pred_incl: forall P Q E,
   foreach P E -> 
-  pred_le P Q -> 
+  pred_incl P Q -> 
   foreach Q E.
 Proof using. introv H L K. apply~ L. Qed.
 
@@ -1046,7 +1046,7 @@ Proof using. introv M H. applys M. rewrite in_remove_eq in H. autos*. Qed.
 
 Lemma foreach_remove : forall P Q E F,
   foreach P E -> 
-  pred_le P (fun (x:A) => x \notin F -> Q x) -> 
+  pred_incl P (fun (x:A) => x \notin F -> Q x) -> 
   foreach Q (E \- F).
 Proof using. introv M H Px. rewrite in_remove_eq in Px. applys* H. Qed.
 

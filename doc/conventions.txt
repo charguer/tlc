@@ -440,6 +440,16 @@ Naming of lemmas
          sym R ->
          trans R ->
          stclosure R = R.
+   
+   In the rare case of ambiguities, an "and" separator may be 
+   inserted between the name of the hypotheses. For example,
+   when [comm], [assoc] and [comm_assoc] are three properties,
+   we may state:
+
+      Lemma comm_assoc_of_comm_and_assoc : forall f,
+        comm f -> 
+        assoc f -> 
+        comm_assoc f.
 
    An important exception is when the premise is a necessary requirement,
    then it is not needed to name the premise. For example, the transitive
@@ -449,7 +459,6 @@ Naming of lemmas
       Lemma refl_tclosure : forall R,
         refl R ->
         refl (tclosure R).
-
 
 *) The order of variables/hypotheses is usually not so important, as long as
    some basic principles are followed:
@@ -471,6 +480,20 @@ Naming of lemmas
          P x -> 
          Forall P (l++(x::nil)).
 
+*) There is one exception when the name of the lemma does not reflect its
+   statement, is when an auxiliary definition is used for stating the lemma,
+   but that the 
+   Example, where [eqb] is a boolean function testing equality of two booleans:
+
+      Lemma eqb_true_l : neutral_l eqb true.
+
+   because the statement is convertible with [forall x, eqb true x = x].
+   Similarly:
+
+      Lemma and_or_l : distrib_r and or.
+      (* equivalent to [forall x y z, (x || y) && z = x && z || y && z]. *)
+
+   [TODO: do we have a better way to handle this?]
 
 *) An inversion lemma takes as first hypothesis a result, and is meant
    for forward reasoning. The suffix should be "_inv", as for example:
@@ -540,7 +563,35 @@ Naming of lemmas
         l <> nil -> 
         exists x q, l = q ++ x::nil.
 
-   Sometimes an inversion lemma does not even have any hypothesis.
+*) Sometimes one might hesitate in deciding whether a lemma is
+   an inversion lemma or not. For example, should it be:
+
+      Lemma eq_of_eq_existT : forall ...
+        existT P p x = existT P p y -> 
+        x = y.
+
+      Lemma eq_existT_inv : forall ...
+        existT P p x = existT P p y -> 
+        x = y.
+
+   [TOCHECK] The intuition is that when a lemma can apply both 
+   as a forward-chaining lemma and a backward-chaining lemma,
+   then it likely asserts an equivalence between the hypotheses
+   and the conclusion, in which case it should have a version
+   stated as an equality [_eq] suffix, and one version stated as
+   an inversion lemma [_inv] useful for forward chaining.
+   Backward chaining can be more easily achieved by rewriting,
+   so it is usually not needed to have a separate lemma.
+
+      Lemma eq_existT_eq : forall ...
+        (existT P p x = existT P p y) = (x = y).
+
+      Lemma eq_existT_inv : forall ...
+        existT P p x = existT P p y -> 
+        x = y.
+
+
+*) Sometimes an inversion lemma does not even have any hypothesis.
    For example, a boolean is either true or false, so this result
    is an inversion result over a boolean value, resulting in a
    disjunction of equalities.
@@ -568,3 +619,12 @@ Naming of lemmas
    results about [tclosure], and not in the section about [inverse], since
    the section about [inverse] appears prior to the definition of [tclosure].
 
+*) A function that converts from a type to another should be named
+   using the infix keyword "to", and never "of", to avoid ambiguities
+   with our convention for naming lemmas.
+
+      bad:  Z_of_nat
+      good: nat_to_Z
+   
+   This does not match the OCaml convention, unfortunately, but it 
+   is an arbitrary convention anyway.

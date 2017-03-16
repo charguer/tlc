@@ -74,7 +74,7 @@ Proof using. intros A x. constructor. exists x. auto. Qed.
 
 (** Arrows are inhabited if their codomain is inhabited. *)
 
-Instance arrow_inhab : forall A B {I:Inhab B},
+Instance Inhab_impl : forall A B {I:Inhab B},
   Inhab (A -> B).
 Proof using. intros. apply (Inhab_of_val (fun _ => arbitrary)). Qed.
 
@@ -401,7 +401,7 @@ Proof using. tautop. Qed.
 
 (** Negation is injective *)
 
-Lemma not_inj : forall P Q,
+Lemma injective_not : forall P Q,
   (~P) = (~Q) -> 
   (P = Q).
 Proof using. tautop. Qed.
@@ -445,7 +445,7 @@ Qed.
 Lemma not_exists_eq : forall P,
   (~ (exists x, P x)) = (forall x, ~ P x).
 Proof using.
-  intros. apply not_inj. rewrite not_forall_eq.
+  intros. apply injective_not. rewrite not_forall_eq.
   rewrite not_not_eq. set (P':=P) at 1.
   rewrite~ (not_not_pred_eq P').
 Qed.
@@ -531,22 +531,22 @@ Proof using. tautop. Qed.
 
 (** Proving two propositions not equal *)
 
-Lemma prop_neq_l : forall P Q,
+Lemma prop_neq_of_iff_l : forall P Q,
   (P <-> ~ Q) -> 
   P <> Q.
 Proof using. tautop. Qed.
 
-Lemma prop_neq_r : forall P Q,
+Lemma prop_neq_of_iff_r : forall P Q,
   (~ P <-> Q) -> 
   P <> Q.
 Proof using. tautop. Qed.
 
-Lemma prop_neq_inv_l : forall P Q,
+Lemma prop_neq_inv_iff_l : forall P Q,
   P <> Q -> 
   (P <-> ~ Q).
 Proof using. tautop. Qed.
 
-Lemma prop_neq_inv_r : forall P Q,
+Lemma prop_neq_inv_iff_r : forall P Q,
   P <> Q -> 
   (~ P <-> Q).
 Proof using. tautop. Qed.
@@ -570,7 +570,8 @@ Implicit Types P Q : Prop.
 (** Peirce's result: proving a fact by assuming its negation *)
 
 Lemma assume_not : forall P,
-  (~ P -> P) -> P.
+  (~ P -> P) -> 
+  P.
 Proof using. tautop. Qed.
 
 (** Proving a disjunction, assuming the negation of the other branch *)
@@ -608,7 +609,7 @@ Implicit Types P Q R : Prop.
 
 (** Introduction *)
 
-Lemma iff_eq : forall P Q : Prop,
+Lemma iff_eq_and : forall P Q : Prop,
   (P <-> Q) = ((P -> Q) /\ (Q -> P)).
 Proof using. tautop. Qed.
 
@@ -616,7 +617,7 @@ Lemma iff_intro : forall P Q : Prop,
   (P -> Q) -> 
   (Q -> P) -> 
   (P <-> Q).
-Proof using. intros. rewrite* iff_eq. Qed.
+Proof using. intros. rewrite* iff_eq_and. Qed.
 
 (** Reflexivity: [refl iff] *)
 
@@ -679,7 +680,7 @@ Proof using. tautop. Qed.
 
 (** Negation can be cancelled on both sides *)
 
-Lemma iff_not_inj_eq : forall P Q,
+Lemma iff_not_not_eq : forall P Q,
   ((~ P) <-> (~Q)) = (P <-> Q).
 Proof using. tautop. Qed.
 
@@ -875,29 +876,29 @@ Proof using. intros. apply prop_ext. iff H. autos*. split; intros x; apply* (H x
 (* ---------------------------------------------------------------------- *)
 (** ** Order on predicates *)
 
-Definition pred_le (A : Type) (P Q : A -> Prop) :=
+Definition pred_incl (A : Type) (P Q : A -> Prop) :=
   forall x, P x -> Q x.
 
 (* LATER: create a section here *)
 
-Lemma pred_to_forall_impl : A (P Q : A -> Prop),
-  pred_le P Q ->
+Lemma pred_to_forall_impl : forall A (P Q : A -> Prop),
+  pred_incl P Q ->
   (forall x, P x -> Q x).
 Proof using. auto. Qed.
 
-Lemma pred_le_refl : forall A (P : A -> Prop),
-  pred_le P P.
-Proof using. unfolds~ pred_le. Qed.
+Lemma pred_incl_refl : forall A (P : A -> Prop),
+  pred_incl P P.
+Proof using. unfolds~ pred_incl. Qed.
 
-Lemma pred_le_trans : forall A (Q P R : A -> Prop),
-  pred_le P Q ->
-  pred_le Q R ->
-  pred_le P R.
-Proof using. unfolds~ pred_le. Qed.
+Lemma pred_incl_trans : forall A (Q P R : A -> Prop),
+  pred_incl P Q ->
+  pred_incl Q R ->
+  pred_incl P R.
+Proof using. unfolds~ pred_incl. Qed.
 
-Lemma pred_le_antisym : forall A (P Q : A -> Prop),
-  pred_le P Q ->
-  pred_le Q P -> 
+Lemma pred_incl_antisym : forall A (P Q : A -> Prop),
+  pred_incl P Q ->
+  pred_incl Q P -> 
   P = Q.
 Proof using. extens*. Qed. 
 
@@ -1053,97 +1054,97 @@ Variables (A9 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5
 Variables (A10 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4) (x6 : A6 x5) (x7 : A7 x6) (x8 : A8 x7) (x9 : A9 x8), Type).
 Variables (A11 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2) (x4 : A4 x3) (x5 : A5 x4) (x6 : A6 x5) (x7 : A7 x6) (x8 : A8 x7) (x9 : A9 x8) (x10 : A10 x9), Type).
 
-Ltac prove_proj_lemma := 
+Ltac prove_forall_conj_inv := 
   intros;
   match goal with H: context [_ /\ _] |- _ => 
     split; intros; apply H end.
 
-Lemma proj_lemma_1 : forall (P Q : forall (x1:A1), Prop),
+Lemma forall_conj_inv_1 : forall (P Q : forall (x1:A1), Prop),
   (forall x1, P x1 /\ Q x1) ->
   (forall x1, P x1) /\
   (forall x1, Q x1).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_2 : forall (P Q : forall (x1:A1) (x2:A2 x1), Prop),
+Lemma forall_conj_inv_2 : forall (P Q : forall (x1:A1) (x2:A2 x1), Prop),
   (forall x1 x2, P x1 x2 /\ Q x1 x2) ->
   (forall x1 x2, P x1 x2) /\
   (forall x1 x2, Q x1 x2).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_3 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), Prop),
+Lemma forall_conj_inv_3 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), Prop),
   (forall x1 x2 x3, P x1 x2 x3 /\ Q x1 x2 x3) ->
   (forall x1 x2 x3, P x1 x2 x3) /\
   (forall x1 x2 x3, Q x1 x2 x3).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_4 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma forall_conj_inv_4 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3), Prop),
   (forall x1 x2 x3 x4, P x1 x2 x3 x4 /\ Q x1 x2 x3 x4) ->
   (forall x1 x2 x3 x4, P x1 x2 x3 x4) /\
   (forall x1 x2 x3 x4, Q x1 x2 x3 x4).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_5 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma forall_conj_inv_5 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4), Prop),
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5 /\ Q x1 x2 x3 x4 x5) ->
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5) /\
   (forall x1 x2 x3 x4 x5, Q x1 x2 x3 x4 x5).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_6 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma forall_conj_inv_6 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5), Prop),
   (forall x1 x2 x3 x4 x5 x6, P x1 x2 x3 x4 x5 x6 /\ Q x1 x2 x3 x4 x5 x6) ->
   (forall x1 x2 x3 x4 x5 x6, P x1 x2 x3 x4 x5 x6) /\
   (forall x1 x2 x3 x4 x5 x6, Q x1 x2 x3 x4 x5 x6).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_7 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma forall_conj_inv_7 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7, P x1 x2 x3 x4 x5 x6 x7 /\ Q x1 x2 x3 x4 x5 x6 x7) ->
   (forall x1 x2 x3 x4 x5 x6 x7, P x1 x2 x3 x4 x5 x6 x7) /\
   (forall x1 x2 x3 x4 x5 x6 x7, Q x1 x2 x3 x4 x5 x6 x7).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_8 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma forall_conj_inv_8 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6) (x8:A8 x7), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7 x8, P x1 x2 x3 x4 x5 x6 x7 x8 /\ Q x1 x2 x3 x4 x5 x6 x7 x8) ->
   (forall x1 x2 x3 x4 x5 x6 x7 x8, P x1 x2 x3 x4 x5 x6 x7 x8) /\
   (forall x1 x2 x3 x4 x5 x6 x7 x8, Q x1 x2 x3 x4 x5 x6 x7 x8).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_9 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma forall_conj_inv_9 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6) (x8:A8 x7) (x9:A9 x8), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9, P x1 x2 x3 x4 x5 x6 x7 x8 x9 /\ Q x1 x2 x3 x4 x5 x6 x7 x8 x9) ->
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9, P x1 x2 x3 x4 x5 x6 x7 x8 x9) /\
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9, Q x1 x2 x3 x4 x5 x6 x7 x8 x9).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_10 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma forall_conj_inv_10 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6) (x8:A8 x7) (x9:A9 x8) (x10:A10 x9), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10, P x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 /\ Q x1 x2 x3 x4 x5 x6 x7 x8 x9 x10) ->
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10, P x1 x2 x3 x4 x5 x6 x7 x8 x9 x10) /\
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10, Q x1 x2 x3 x4 x5 x6 x7 x8 x9 x10).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
-Lemma proj_lemma_11 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
+Lemma forall_conj_inv_11 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
  (x4:A4 x3) (x5:A5 x4) (x6:A6 x5) (x7:A7 x6) (x8:A8 x7) (x9:A9 x8) (x10:A10 x9) (x11:A11 x10), Prop),
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11, P x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 /\ Q x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11) ->
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11, P x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11) /\
   (forall x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11, Q x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11).
-Proof using. prove_proj_lemma. Qed.
+Proof using. prove_forall_conj_inv. Qed.
 
 End ProjLemma.
 
-Arguments proj_lemma_1 [A1] [P] [Q].
-Arguments proj_lemma_2 [A1] [A2] [P] [Q].
-Arguments proj_lemma_3 [A1] [A2] [A3] [P] [Q].
-Arguments proj_lemma_4 [A1] [A2] [A3] [A4] [P] [Q].
-Arguments proj_lemma_5 [A1] [A2] [A3] [A4] [A5] [P] [Q].
-Arguments proj_lemma_6 [A1] [A2] [A3] [A4] [A5] [A6] [P] [Q].
-Arguments proj_lemma_7 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [P] [Q].
-Arguments proj_lemma_8 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [P] [Q].
-Arguments proj_lemma_9 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [A9] [P] [Q].
-Arguments proj_lemma_10 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [A9] [A10] [P] [Q].
-Arguments proj_lemma_11 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [A9] [A10] [A11] [P] [Q].
+Arguments forall_conj_inv_1 [A1] [P] [Q].
+Arguments forall_conj_inv_2 [A1] [A2] [P] [Q].
+Arguments forall_conj_inv_3 [A1] [A2] [A3] [P] [Q].
+Arguments forall_conj_inv_4 [A1] [A2] [A3] [A4] [P] [Q].
+Arguments forall_conj_inv_5 [A1] [A2] [A3] [A4] [A5] [P] [Q].
+Arguments forall_conj_inv_6 [A1] [A2] [A3] [A4] [A5] [A6] [P] [Q].
+Arguments forall_conj_inv_7 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [P] [Q].
+Arguments forall_conj_inv_8 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [P] [Q].
+Arguments forall_conj_inv_9 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [A9] [P] [Q].
+Arguments forall_conj_inv_10 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [A9] [A10] [P] [Q].
+Arguments forall_conj_inv_11 [A1] [A2] [A3] [A4] [A5] [A6] [A7] [A8] [A9] [A10] [A11] [P] [Q].
 
 

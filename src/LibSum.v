@@ -41,7 +41,7 @@ Proof using. intros. apply (Inhab_of_val (inl arbitrary)). Qed.
 Instance sum_inhab_r : forall `{Inhab B} A, Inhab (A + B).
 Proof using. intros. apply (Inhab_of_val (inr arbitrary)). Qed.
 
-Definition sum_inhab : forall `{Inhab A, Inhab B}, Inhab (A + B).
+Definition Inhab_sum : forall `{Inhab A, Inhab B}, Inhab (A + B).
 Proof using. typeclass. Qed.
 
 

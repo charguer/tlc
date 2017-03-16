@@ -1502,3 +1502,9 @@ Ltac prove_wf := solve_wf.
 
 EVERYWHERE left => l
 EVERYWHERE right => r
+
+EVERYWHERE: pred_le => pred_incl
+
+Definition not_inj := injective_not.
+
+Definition proj_lemma := forall_conj_inv_1.

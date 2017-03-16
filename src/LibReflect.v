@@ -46,22 +46,22 @@ Global Opaque istrue.
 
 (** Proving the goals [true] and [~ false] *)
 
-Lemma istrue_true : 
-  true. (*  [istrue true] *)
+Lemma istrue_true : istrue true. (* [true] *)
 Proof using. reflexivity. Qed.
 
-Lemma not_istrue_false : 
-  ~ false. (* ~ (istrue false). *)
+Lemma not_istrue_false : ~ (istrue false). (* ~ false. *)
 Proof using. rewrite istrue_false_eq. intuition. Qed.
 
 (** Equivalence of [false] and [False] *)
 
-Lemma False_to_false : 
-  False -> false.
+Lemma false_of_False : 
+  False -> 
+  false.
 Proof using. intros K. false. Qed.
 
-Lemma false_to_False : 
-  false -> False.
+Lemma False_of_false : 
+  false -> 
+  False.
 Proof using. intros K. rewrite~ istrue_false_eq in K. Qed.
 
 (** Hints for proving [false] and [False] *)
@@ -69,7 +69,7 @@ Proof using. intros K. rewrite~ istrue_false_eq in K. Qed.
 Hint Resolve istrue_true not_istrue_false.
 
 Hint Extern 1 (istrue false) =>
-  apply False_to_false.
+  apply false_of_False.
 
 Hint Extern 1 (False) => match goal with
   | H: istrue false |- _ => apply (not_istrue_false H) end.

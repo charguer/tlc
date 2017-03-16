@@ -80,7 +80,7 @@ Ltac number_to_nat N ::=
 (* ********************************************************************** *)
 (** * Inhabited *)
 
-Instance int_inhab : Inhab int.
+Instance Inhab_int : Inhab int.
 Proof using. intros. apply (Inhab_of_val 0). Qed.
 
 

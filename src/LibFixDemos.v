@@ -29,7 +29,7 @@ Hint Resolve list_equiv_equiv.
 Module DFS.
 
 Parameter marks : Type.
-Parameter marks_inhab : Inhab marks.
+Parameter Inhab_marks : Inhab marks.
 Existing Instance marks_inhab.
 Implicit Type i : nat.
 
@@ -534,7 +534,7 @@ Inductive tree : Type :=
   | leaf : nat -> tree
   | node : list tree -> tree.
 
-Instance tree_inhab : Inhab tree.
+Instance Inhab_tree : Inhab tree.
 Proof using. intros. apply (Inhab_of_val (leaf 0)). Qed.
 
 (** An induction principle for trees *)
@@ -621,7 +621,7 @@ CoInductive itree : Type :=
 
 (** The type [itree] is inhabited *)
 
-Instance itree_inhab : Inhab itree.
+Instance Inhab_itree : Inhab itree.
 Proof using. intros. apply (Inhab_of_val (itree_leaf 0)). Qed.
 
 (** Similarity up to level [i] between two trees *)

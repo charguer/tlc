@@ -30,7 +30,7 @@ Implicit Arguments None [[A]].
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance option_inhab : forall A, Inhab (option A).
+Instance Inhab_option : forall A, Inhab (option A).
 Proof using. intros. apply (Inhab_of_val None). Qed.
 
 

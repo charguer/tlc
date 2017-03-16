@@ -76,7 +76,7 @@ Instance card_inst : forall A, BagCard (multiset A).
 Global Opaque multiset empty_inst single_inst in_inst
  union_inst incl_inst fold_inst card_inst.
 
-Instance multiset_inhab : forall A, Inhab (multiset A).
+Instance Inhab_multiset : forall A, Inhab (multiset A).
 Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 
 
@@ -219,7 +219,7 @@ Qed.
 
 Lemma foreach_weaken : forall P Q E,
   foreach P E -> 
-  pred_le P Q -> 
+  pred_incl P Q -> 
   foreach Q E.
 Proof using. introv H L K. apply~ L. Qed.
 

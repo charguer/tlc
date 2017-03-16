@@ -24,7 +24,7 @@ Require Import LibTactics LibLogic LibOperation.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance bool_inhab : Inhab bool.
+Instance Inhab_bool : Inhab bool.
 Proof using. constructor. apply (Inhab_of_val true). Qed.
 
 
@@ -182,11 +182,11 @@ Lemma and_assoc : assoc and.
 Proof using. tautob. Qed.
 
 Lemma and_or_l : distrib_r and or.
-(* forall x y z, (x ||| y) &&& z = x &&& z ||| y &&& z. *)
+(* forall x y z, (x || y) && z = x && z ||| y && z. *)
 Proof using. tautob. Qed.
 
 Lemma and_or_r : distrib_l and or.
-(* forall x y z, x &&& (y ||| z) = x &&& y ||| x &&& z. *)
+(* forall x y z, x && (y ||| z) = x && y ||| x && z. *)
 Proof using. tautob. Qed.
 
 
@@ -215,11 +215,11 @@ Lemma or_assoc : assoc or.
 Proof using. tautob. Qed.
 
 Lemma or_and_l : distrib_r or and.
-(* forall x y z, (x &&& y) ||| z = (x ||| z) &&& (y ||| z). *)
+(* forall x y z, (x && y) || z = (x || z) && (y || z). *)
 Proof using. tautob. Qed.
 
 Lemma or_and_r : distrib_l or and.
-(* forall x y z, x ||| (y &&& z) = (x ||| y) &&& (x ||| z). *)
+(* forall x y z, x || (y && z) = (x || y) && (x || z). *)
 Proof using. tautob. Qed.
 
 
@@ -302,6 +302,8 @@ End PropertiesIf.
 (* ---------------------------------------------------------------------- *)
 (** ** Opacity *)
 
+Opaque eqb neg and or.
+
 
 (* ********************************************************************** *)
 (** * Tactics *)
@@ -310,18 +312,29 @@ End PropertiesIf.
 (** ** Tactic [rew_neg_neg] *)
 
 (** [rew_neg_neg] is a tactic that simplifies all double negations
-    of booleans, i.e. replaces [!!b] with [b]. 
-    It applies everywhere in the goal. *)
+    of booleans, i.e. replaces [!!b] with [b]. *)
 
 Hint Rewrite neg_neg : rew_neg_neg.
 
 Tactic Notation "rew_neg_neg" :=
-  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_neg_neg).
-  (* autorewrite with rew_neg_neg in *. *)
+  autorewrite with rew_neg_neg.
 Tactic Notation "rew_neg_neg" "~" :=
   rew_neg_neg; auto_tilde.
 Tactic Notation "rew_neg_neg" "*" :=
   rew_neg_neg; auto_star.
+Tactic Notation "rew_neg_neg" "in" hyp(H) :=
+  autorewrite with rew_neg_neg in H.
+Tactic Notation "rew_neg_neg" "~" "in" hyp(H) :=
+  rew_neg_neg in H; auto_tilde.
+Tactic Notation "rew_neg_neg" "*" "in" hyp(H) :=
+  rew_neg_neg in H; auto_star.
+Tactic Notation "rew_neg_neg" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_neg_neg).
+  (* autorewrite with rew_neg_neg in *. *)
+Tactic Notation "rew_neg_neg" "~" "in" "*" :=
+  rew_neg_neg in *; auto_tilde.
+Tactic Notation "rew_neg_neg" "*" "in" "*" :=
+  rew_neg_neg in *; auto_star.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -360,6 +373,4 @@ Tactic Notation "rew_bool" "~" "in" "*" :=
   rew_bool in *; auto_tilde.
 Tactic Notation "rew_bool" "*" "in" "*" :=
   rew_bool in *; auto_star.
-
-
 

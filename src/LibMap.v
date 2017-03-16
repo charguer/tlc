@@ -119,7 +119,7 @@ Global Opaque map empty_inst single_bind_inst binds_inst
  union_inst restrict_inst remove_inst read_inst
  dom_inst disjoint_inst index_inst fold_inst.
 
-Instance map_inhab : forall A, Inhab (map A B).
+Instance Inhab_map : forall A, Inhab (map A B).
 Proof using. intros. apply (Inhab_of_val (@empty_impl A B)). Qed.
 
 

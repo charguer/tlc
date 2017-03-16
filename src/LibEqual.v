@@ -630,7 +630,7 @@ Proof using. intros. applys identity_proofs_unique. Qed.
 
 (** Invariance by substitution of reflexive equality proofs *)
 
-Lemma eq_rect_eq :
+Lemma eq_rect_refl_eq :
   forall (A : Type) (p : A) (Q : A -> Type) (x : Q p) (h : p = p),
   eq_rect p Q x p h = x.
 Proof using. intros. rewrite~ (reflexive_identity_proofs_unique h). Qed.
@@ -639,7 +639,8 @@ Proof using. intros. rewrite~ (reflexive_identity_proofs_unique h). Qed.
 
 Lemma streicher_K : 
   forall (A : Type) (x : A) (P : x = x -> Prop),
-  P (refl_equal x) -> forall (p : x = x), P p.
+  P (refl_equal x) -> 
+  forall (p : x = x), P p.
 Proof using. intros. rewrite~ (reflexive_identity_proofs_unique p). Qed.
 
 
@@ -662,30 +663,44 @@ Arguments eq_dep_nd_intro [A] [P] [p] [x] [q] [y].
 
 (** Reflexivity of [eq_dep_nd] *)
 
-Lemma eq_dep_nd_direct : forall (A : Type) (P : A -> Type) (p : A) (x : P p),
+Lemma eq_dep_nd_refl : forall (A : Type) (P : A -> Type) (p : A) (x : P p),
   eq_dep_nd x x.
 Proof using. intros. apply (eq_dep_nd_intro (refl_equal p)). auto. Qed.
 
 (** Injectivity of [eq_dep_nd] *)
 
-Lemma eq_dep_nd_eq :
+Lemma eq_dep_nd_same_inv :
   forall (A : Type) (P : A -> Type) (p : A) (x y : P p),
-  eq_dep_nd x y -> x = y.
-Proof using. introv H. inversions H. rewrite~ eq_rect_eq. Qed.
+  eq_dep_nd x y -> 
+  x = y.
+Proof using. introv H. inversions H. rewrite~ eq_rect_refl_eq. Qed.
 
 (** Equality on dependent pairs implies [eq_dep_nd] *)
 
-Lemma eq_sigT_eq_dep_nd :
+Lemma eq_existT_inv :
   forall (A : Type) (P : A -> Type) (p q : A) (x : P p) (y : P q),
-  existT P p x = existT P q y -> eq_dep_nd x y.
-Proof using. introv E. dependent rewrite E. simpl. apply eq_dep_nd_direct. Qed.
+  existT P p x = existT P q y -> 
+  eq_dep_nd x y.
+Proof using. introv E. dependent rewrite E. simpl. apply eq_dep_nd_refl. Qed.
 
 (** Injectivity of equality on dependent pairs *)
 
-Lemma eq_sigT_to_eq :
+Lemma eq_existT_same_inv :
   forall (A : Type) (P : A -> Type) (p : A) (x y : P p),
-  existT P p x = existT P p y -> x = y.
-Proof using. intros. apply eq_dep_nd_eq. apply~ eq_sigT_eq_dep_nd. Qed.
+  existT P p x = existT P p y -> 
+  x = y.
+Proof using. intros. apply eq_dep_nd_same_inv. apply~ eq_existT_inv. Qed.
+
+(** Reformulated as an equality *)
+
+Lemma eq_existT_same_eq :
+  forall (A : Type) (P : A -> Type) (p : A) (x y : P p),
+  (existT P p x = existT P p y) = (x = y).
+Proof using. 
+  extens. iff M.
+  { apply eq_dep_nd_same_inv. apply~ eq_existT_inv. }
+  { subst*. }
+Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -695,14 +710,14 @@ Proof using. intros. apply eq_dep_nd_eq. apply~ eq_sigT_eq_dep_nd. Qed.
 
 Scheme eq_indd := Induction for eq Sort Prop.
 
-Lemma exist_eq : forall (A:Type) (P : A->Prop) (x y : A) (p : P x) (q : P y),
+Lemma exist_eq_exist : forall (A:Type) (P : A->Prop) (x y : A) (p : P x) (q : P y),
   x = y -> 
   exist P x p = exist P y q.
 Proof using.
   intros. rewrite (proof_irrelevance q (eq_rect x P p y H)). subst*.
 Qed.
 
-Lemma existT_eq : forall (A:Type) (P:A->Prop) (x y:A) (p:P x) (q:P y),
+Lemma existT_eq_existT : forall (A:Type) (P:A->Prop) (x y:A) (p:P x) (q:P y),
   x = y -> 
   existT P x p = existT P y q.
 Proof using.
@@ -744,7 +759,7 @@ Proof using. introv E F. destruct~ E. Qed.
 
 Scheme eq_induction := Induction for eq Sort Prop.
 
-Lemma eq_dep_nd_to_eq_dep :
+Lemma eq_dep_of_eq_dep_nd :
   forall (A : Type) (P : A -> Type) (p q : A) (x : P p) (y : P q),
   eq_dep_nd x y -> 
   eq_dep x y.
@@ -753,7 +768,7 @@ Proof using.
   destruct h using eq_induction. subst~. constructor.
 Qed.
 
-Lemma eq_dep_to_eq_dep_nd :
+Lemma eq_dep_nd_of_eq_dep :
   forall (A : Type) (P : A -> Type) (p q : A) (x : P p) (y : P q),
   eq_dep x y -> 
   eq_dep_nd x y.
@@ -761,15 +776,17 @@ Proof using. introv H. destruct H. apply (eq_dep_nd_intro (refl_equal p)); auto.
 
 (** Injectivity of dependent equality *)
 
-Lemma eq_dep_eq :
+Lemma eq_dep_same_inv :
   forall (A : Type) (P : A -> Type) (p : A) (x y : P p),
   eq_dep x y -> 
   x = y.
-Proof using. introv R. inversion R. apply eq_dep_nd_eq. apply~ eq_dep_to_eq_dep_nd. Qed.
+Proof using.
+  introv R. inversion R. apply eq_dep_nd_same_inv. apply~ eq_dep_nd_of_eq_dep.
+Qed.
 
 (** Equality on dependent pairs implies dependent equality *)
 
-Lemma eq_sigT_eq_dep :
+Lemma eq_dep_of_eq_existT :
   forall (A : Type) (P : A -> Type) (p q : A) (x : P p) (y : P q),
   existT P p x = existT P q y -> 
   eq_dep x y.
@@ -807,23 +824,23 @@ Local Hint Immediate JMeq_sym.
 
 (** Relation between [JMeq] and [eq_dep] *)
 
-Lemma JMeq_to_eq_dep : forall (A B : Type) (x : A) (y : B),
+Lemma eq_dep_of_JMeq : forall (A B : Type) (x : A) (y : B),
   JMeq x y -> 
   @eq_dep Type (fun T => T) A x B y.
 Proof using. introv E. destruct E. constructor. Qed.
 
-Lemma eq_dep_to_JMeq : forall (A B : Type) (x : A) (y : B),
+Lemma JMeq_of_eq_dep : forall (A B : Type) (x : A) (y : B),
   @eq_dep Type (fun T => T) A x B y -> 
   JMeq x y.
 Proof using. introv E. destruct~ E. Qed.
 
 (** Injectivity of [JMeq] *)
 
-Lemma JMeq_eq : forall (A : Type) (x y : A),
+Lemma JMeq_same_inv : forall (A : Type) (x y : A),
   JMeq x y -> 
   x = y.
 Proof using.
-  introv E. apply (@eq_dep_eq Type (fun T => T)).
-  apply~ JMeq_to_eq_dep.
+  introv E. apply (@eq_dep_same_inv Type (fun T => T)).
+  apply~ eq_dep_of_JMeq.
 Qed.
 

@@ -19,7 +19,7 @@ Parameter var : Set.
 
 (** This type is inhabited. *)
 
-Parameter var_inhab : Inhab var.
+Parameter Inhab_var : Inhab var.
 
 (** This type is comparable. *)
 Parameter var_comp : Comparable var.
@@ -45,7 +45,7 @@ Module Export Variables : VariablesType.
 
 Definition var := nat.
 
-Lemma var_inhab : Inhab var.
+Lemma Inhav_var : Inhab var.
 Proof using. apply (Inhab_of_val 0). Qed.
 
 Lemma var_comp : Comparable var.

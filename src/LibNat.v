@@ -34,7 +34,7 @@ Global Close Scope positive_scope.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance nat_inhab : Inhab nat.
+Instance Inhab_nat : Inhab nat.
 Proof using. intros. apply (Inhab_of_val 0). Qed.
 
 

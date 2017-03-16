@@ -62,7 +62,7 @@ Fixpoint nth A (n:nat) (s:stream A) : A :=
 
 (** Streams are inhabited *)
 
-Instance stream_inhab : forall `{Inhab A}, Inhab (stream A).
+Instance Inhab_stream : forall `{Inhab A}, Inhab (stream A).
 Proof using. intros. apply (Inhab_of_val (const arbitrary)). Qed.
 
 

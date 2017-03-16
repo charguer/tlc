@@ -46,7 +46,7 @@ Notation "[ x ; y ; .. ; z ]" :=  (cons x (cons y .. (cons z nil) ..)) : liblist
 (* ********************************************************************** *)
 (** * Inhabited *)
 
-Instance list_inhab : forall A, Inhab (list A).
+Instance Inhab_list : forall A, Inhab (list A).
 Proof using. intros. apply (Inhab_of_val nil). Qed.
 
 
@@ -1530,7 +1530,7 @@ Definition filter A (P:A->Prop) l :=
   fold_right (fun x acc => If P x then x::acc else acc) (@nil A) l.
 
 Section Filter.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types P : A -> Prop.
@@ -1641,7 +1641,7 @@ Definition remove A (a:A) (l:list A) :=
   filter (<> a) l.
 
 Section Remove.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types a x : A.
 Implicit Types l : list A.
 
@@ -1705,7 +1705,7 @@ Inductive noduplicates A : list A -> Prop :=
       noduplicates (x::l).
 
 Section Noduplicates.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types l : list A.
 Hint Constructors noduplicates.
 
@@ -1832,7 +1832,7 @@ Fixpoint remove_duplicates A (l:list A) :=
   end.
 
 Section Remove_duplicates.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types l : list A.
 Hint Constructors mem noduplicates.
 
@@ -2088,7 +2088,7 @@ Fixpoint take A (n:nat) (l:list A) : list A :=
   end.
 
 Section Take.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types n : nat.
 Implicit Types x : A.
 Implicit Types l : list A.
@@ -2186,7 +2186,7 @@ Fixpoint drop A (n:nat) (l:list A) : list A :=
   end.
 
 Section Drop.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types n : nat.
 Implicit Types x : A.
 Implicit Types l : list A.
@@ -2272,7 +2272,7 @@ Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
 (** ** Take and drop decomposition of a list *)
 
 Section TakeAndDrop.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 
@@ -2559,9 +2559,9 @@ Proof using.
   rewrite K in E. rewrite* Forall_app_eq in E.
 Qed.
 
-Lemma Forall_pred_le : forall P Q l,
+Lemma Forall_pred_incl : forall P Q l,
   Forall P l -> 
-  pred_le P Q ->
+  pred_incl P Q ->
   Forall Q l.
 Proof using. introv. induction l; introv H L; inverts* H. Qed.
 
@@ -2573,11 +2573,11 @@ Proof using.
   { rewrite filter_cons. cases_if~. }
 Qed.
 
-Lemma Forall_filter_pred_le : forall P Q l,
-  pred_le P Q ->
+Lemma Forall_filter_pred_incl : forall P Q l,
+  pred_incl P Q ->
   Forall Q (filter P l).
 Proof using.
-  introv E. applys~ Forall_pred_le P. applys Forall_filter_same.
+  introv E. applys~ Forall_pred_incl P. applys Forall_filter_same.
 Qed.
 
 End ForallProp.
@@ -2737,7 +2737,7 @@ Lemma Forall2_rel_le : forall P Q r s,
   rel_le P Q -> 
   Forall2 Q r s.
 Proof using.
-  introv F W. unfolds rel_le, pred_le. induction F; constructors~.
+  introv F W. unfolds rel_le, pred_incl. induction F; constructors~.
 Qed.
 
 Lemma Forall2_rev : forall P r s,
@@ -2982,15 +2982,15 @@ Proof using.
   { applys~ Exists_rev. }
 Qed.
 
-Lemma Exists_pred_le : forall P Q l,
+Lemma Exists_pred_incl : forall P Q l,
   Exists P l -> 
-  pred_le P Q ->
+  pred_incl P Q ->
   Exists Q l.
 Proof using. introv. induction l; introv H L; inverts* H. Qed.
 
-Lemma Exists_filter_pred_le : forall P Q l,
+Lemma Exists_filter_pred_incl : forall P Q l,
   Exists P l ->
-  pred_le P Q ->
+  pred_incl P Q ->
   Exists P (filter Q l).
 Proof using.
   introv M N. induction M; rew_listx.
@@ -3001,7 +3001,7 @@ Qed.
 Lemma Exists_filter_same : forall P l,
   Exists P l ->
   Exists P (filter P l).
-Proof using. introv M. applys* Exists_filter_pred_le. applys pred_le_refl. Qed.
+Proof using. introv M. applys* Exists_filter_pred_incl. applys pred_incl_refl. Qed.
 
 Lemma Exists_take_inv : forall P n l,
   Exists P (take n l) ->

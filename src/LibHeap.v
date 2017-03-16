@@ -231,7 +231,7 @@ Qed.
 Lemma not_indom_equiv_read_option : forall h k,
   (~ indom h k) = (read_option h k = None).
 Proof using.
-  introv. apply* not_inj. rew_logic. rewrite indom_equiv_binds.
+  introv. apply* injective_not. rew_logic. rewrite indom_equiv_binds.
   splits ; intro N.
    lets (v & B): rm N.
     rewrite binds_equiv_read_option in B. rewrite* B. discriminate.
@@ -289,7 +289,7 @@ Export HeapList.
 (***********************************************************)
 (** Facts *)
 
-Global Instance heap_inhab : forall (K V : Type), Inhab (heap K V).
+Global Instance Inhab_heap : forall (K V : Type), Inhab (heap K V).
 Proof using. introv. apply (Inhab_of_val empty). Qed.
 
 Section HeapFacts.

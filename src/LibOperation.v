@@ -6,12 +6,15 @@
 Set Implicit Arguments.
 Require Import LibTactics.
 
+(* LATER: eliminate the use of the section *)
+(* LATER: add inversion lemmas *)
+
 
 (* ********************************************************************** *)
 (** * Definitions *)
 
 Section Definitions.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types f g : A -> A -> A.
 Implicit Types i : A -> A.
 
@@ -159,8 +162,7 @@ Definition injective A B (f : A -> B) :=
 (** * Lemmas *)
 
 Section OpProperties.
-
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types h : A -> A.
 Implicit Types f g : A -> A -> A.
 

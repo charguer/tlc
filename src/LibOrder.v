@@ -19,7 +19,7 @@ Qed.
 *)
 
 (* TODO: requires liborder
-Lemma order_pred_le : forall A B,
+Lemma order_pred_incl : forall A B,
   order (@rel_incl A B).
 Proof using. 
   hint refl_rel_incl, antisym_rel_incl, trans_rel_incl.

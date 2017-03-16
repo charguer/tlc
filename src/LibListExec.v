@@ -79,7 +79,7 @@ Qed.
 (** ** Filter_bool *)
 
 Section Filterb.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types f : A -> bool.

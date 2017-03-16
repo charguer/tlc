@@ -16,7 +16,7 @@ Require Import LibTactics LibLogic LibReflect LibEpsilon LibInt
 
 Ltac destruct_if_post ::= tryfalse~.
 
-Hint Unfold pred_le pred_and.
+Hint Unfold pred_incl pred_and.
 Hint Unfold large empty.
 Hint Resolve empty_wf.
 Hint Resolve equiv_refl equiv_sym equiv_trans.
@@ -89,7 +89,7 @@ Notation "A --> B" := (partial A B) (right associativity, at level 55).
 (** The type of partial functions is inhabited as soon as the
     return type is inhabited. *)
 
-Instance partial_inhab : forall A B {I:Inhab B}, Inhab (A-->B).
+Instance Inhab_partial : forall A B {I:Inhab B}, Inhab (A-->B).
 Proof using. intros. apply (Inhab_of_val (Build_partial arbitrary (fun _ => True))). Qed.
 
 
@@ -120,7 +120,7 @@ Qed.
     equivalent results on the domain [D]. *)
 
 Definition extends A B (E:binary B) (f f': A-->B) :=
-  pred_le (dom f) (dom f') /\ pfun_equiv E (dom f) f f'.
+  pred_incl (dom f) (dom f') /\ pfun_equiv E (dom f) f f'.
 
 (** [extends] is an order relation on the set of partial
     fixed points (antisymmetry is modulo equiv). *)

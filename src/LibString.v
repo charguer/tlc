@@ -11,5 +11,5 @@ Require Export String.
 (* ********************************************************************** *)
 (** * Inhabited *)
 
-Instance string_inhab : Inhab string.
+Instance Inhab_string : Inhab string.
 Proof using. apply (Inhab_of_val EmptyString). Qed.

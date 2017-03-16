@@ -22,7 +22,7 @@ Definition binary (A : Type) := A -> A -> Prop.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance binary_inhab : forall A, Inhab (binary A).
+Instance Inhab_binary : forall A, Inhab (binary A).
 Proof using. intros. apply (Inhab_of_val (fun _ _ => True)). Qed.
 
 
@@ -55,7 +55,7 @@ Definition refl A (R:binary A) :=
   forall x, R x x.
 
 Section Refl.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma refl_inv : forall x y R,
@@ -74,7 +74,7 @@ Definition irrefl A (R:binary A) :=
   forall x, ~ (R x x).
 
 Section Irrefl.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma irrefl_inv : forall x R,
@@ -104,7 +104,7 @@ Definition sym A (R:binary A) :=
   forall x y, R x y -> R y x.
 
 Section Sym.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma sym_inv : forall x y R,
@@ -133,7 +133,7 @@ Definition asym A (R:binary A) :=
   forall x y, R x y -> ~ R y x.
 
 Section Asym.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma asym_to_forall_false : forall R,
@@ -158,7 +158,7 @@ Definition antisym A (R:binary A) :=
   forall x y, R x y -> R y x -> x = y.
 
 Section Antisym.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma antisym_to_forall_eq : forall R,
@@ -193,7 +193,7 @@ Definition trans A (R:binary A) :=
   forall y x z, R x y -> R y z -> R x z.
 
 Section Trans.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma trans_to_forall_impl : forall R,
@@ -261,7 +261,7 @@ Record equiv A (R:binary A) :=
    equiv_trans : trans R }.
 
 Section Equiv.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 (* LATER: lemmas *)
@@ -314,7 +314,7 @@ Definition total A (R:binary A) :=
   forall x y, R x y \/ R y x.
 
 Section Total.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma total_to_forall_or : forall R,
@@ -349,7 +349,7 @@ Definition defined A B (R:A->B->Prop) :=
   forall x, exists y, R x y.
 
 Section Defined.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma total_to_forall_exists : forall R,
@@ -378,7 +378,7 @@ Definition functional A B (R:A->B->Prop) :=
   forall x y z, R x y -> R x z -> y = z.
 
 Section Functional.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma functional_to_forall_eq : forall R,
@@ -404,7 +404,7 @@ End Functional.
 (** ** Criteria for equality *)
 
 Section Equality.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 (** If [R1] is defined, [R2] is functional, and [R1] is a subset of [R2],
@@ -462,23 +462,46 @@ End Eq.
     [LibRelation] are not yet available from that file. 
     See also [LibOrder] for a package of these properties. *)
 
-Section Pred_le.
+Section Pred_incl.
 Variables (A : Type).
 
-Lemma refl_pred_le : 
-  refl (@pred_le A).
-Proof using. unfold refl, pred_le. autos*. Qed.
+Lemma refl_pred_incl : 
+  refl (@pred_incl A).
+Proof using. unfold refl, pred_incl. autos*. Qed.
 
-Lemma antisym_pred_le : 
-  antisym (@pred_le A).
-Proof using. unfold antisym, pred_le. extens*. Qed.
+Lemma antisym_pred_incl : 
+  antisym (@pred_incl A).
+Proof using. unfold antisym, pred_incl. extens*. Qed.
 
-Lemma trans_pred_le : 
-  trans (@pred_le A).
-Proof using. unfold trans, pred_le. autos*. Qed.  
+Lemma trans_pred_incl : 
+  trans (@pred_incl A).
+Proof using. unfold trans, pred_incl. autos*. Qed.  
 
-End Pred_le.
+End Pred_incl.
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of the equivalence relation *)
+
+(** These results are not in [LibLogic] because the definitions from
+    [LibRelation] are not yet available from that file. 
+    See also [LibOrder] for a package of these properties. *)
+
+Section Iff.
+
+Lemma refl_iff : 
+  refl iff.
+Proof using. unfold refl, iff. autos*. Qed.
+
+Lemma antisym_iff : 
+  antisym iff.
+Proof using. unfold antisym, iff. extens*. Qed.
+
+Lemma trans_iff : 
+  trans iff.
+Proof using. unfold trans, iff. autos*. Qed.  
+
+End Iff.
 
 
 (* ********************************************************************** *)
@@ -508,7 +531,7 @@ Definition empty A : binary A :=
   fun x y => False.
 
 Section Empty.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types x y : A.
 
 Lemma empty_eq : forall x y,
@@ -536,7 +559,7 @@ Definition union A (R1 R2:binary A) : binary A :=
   fun x y => R1 x y \/ R2 x y.
 
 Section Union.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma union_l : forall R1 R2 x y,
@@ -625,7 +648,7 @@ Definition inverse A (R:binary A) : binary A :=
   fun x y => R y x.
 
 Section Inverse.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma injective_inverse : 
@@ -726,7 +749,7 @@ Definition rel_fun A B (f:A->B) :=
   fun x y => (y = f x).
 
 Section Rel_fun.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 
 (* LATER: properties of [rel_fun] *)
@@ -934,7 +957,7 @@ Inductive rclosure A (R:binary A) : binary A :=
       rclosure R x x.
 
 Section Rclosure.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors rclosure.
 
@@ -1076,7 +1099,7 @@ Inductive sclosure A (R:binary A) : binary A :=
       sclosure R x y.
 
 Section Sclosure.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors sclosure.
 
@@ -1185,7 +1208,7 @@ Inductive rsclosure A (R:binary A) : binary A :=
       rsclosure R y x.
 
 Section Rsclosure.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors rsclosure.
 
@@ -1289,7 +1312,7 @@ Inductive tclosure A (R:binary A) : binary A :=
       tclosure R x z.
 
 Section Tclosure.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors tclosure.
 
@@ -1468,7 +1491,7 @@ Inductive rtclosure A (R:binary A) : binary A :=
       rtclosure R x z.
 
 Section Rtclosure.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors rtclosure.
 
@@ -1666,7 +1689,7 @@ Inductive stclosure A (R:binary A) : binary A :=
       stclosure R x z.
 
 Section Stclosure.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors stclosure.
 
@@ -1761,7 +1784,7 @@ Inductive rstclosure A (R:binary A) : binary A :=
       rstclosure R x z.
 
 Section Rstclosure.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors rstclosure.
 
@@ -1855,7 +1878,7 @@ Hint Constructors rstclosure : rstclosure.
 (** ** Relationship between closures *)
 
 Section ClosuresRel.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors rtclosure rsclosure stclosure rstclosure.
 
@@ -1998,7 +2021,7 @@ End ClosuresRel.
 (** ** Iterated closures *)
 
 Section IterClosures.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors rclosure sclosure tclosure 
   rtclosure rsclosure stclosure rstclosure.
@@ -2086,7 +2109,7 @@ End IterClosures.
 (** ** Other lemmas -- TODO *)
 
 Section EquivClosures.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors rclosure sclosure tclosure rsclosure stclosure.
 
@@ -2146,7 +2169,7 @@ End EquivClosures.
 (** ** Mixed transitivity between closures *)
 
 Section MixedClosures.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Constructors tclosure.
 
@@ -2198,7 +2221,7 @@ Definition strict A (R:binary A) : binary A :=
   fun x y => R x y /\ x <> y.
 
 Section Strict.
-Variable (A : Type).
+Variables (A : Type).
 Implicit Types R : binary A.
 Hint Unfold strict.
 
