@@ -1223,7 +1223,7 @@ End PermutationTactic.
     for the given value of [n] *)
 
 Ltac permut_lemma_get n :=
-  match nat_from_number n with
+  match number_to_nat n with
   | 1%nat => constr:(permut_get_1)
   | 2%nat => constr:(permut_get_2)
   | 3%nat => constr:(permut_get_3)

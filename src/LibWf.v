@@ -638,7 +638,7 @@ End Wf_Transitive_Closure.
 
 *)
 
-Lemma tclosure_wf : forall A (R:binary A),
+Lemma wf_tclosure : forall A (R:binary A),
   wf R ->
   wf (tclosure R).
 Proof using.

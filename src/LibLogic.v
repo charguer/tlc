@@ -373,12 +373,12 @@ Implicit Types P : A -> Prop.
 
 (** Three auxiliary facts (private lemmas) *)
 
-Lemma exists_from_not_forall : forall P,
+Lemma exists_of_not_forall : forall P,
   ~ (forall x, ~ P x) -> 
   (exists x, P x).
 Proof using. intros. apply* not_not_inv. Qed.
 
-Lemma forall_from_not_exists : forall P,
+Lemma forall_of_not_exists : forall P,
   ~ (exists x, ~ P x) -> 
   (forall x, P x).
 Proof using. intros. apply* not_not_inv. Qed.
@@ -393,7 +393,7 @@ Lemma not_forall_eq : forall P,
   (~ (forall x, P x)) = (exists x, ~ P x).
 Proof using.
   extens. iff.
-  { apply exists_from_not_forall. rewrite~ (not_not_pred_eq P) in H. }
+  { apply exists_of_not_forall. rewrite~ (not_not_pred_eq P) in H. }
   { intros M. destruct~ H as [x Cx]. }
 Qed.
 
@@ -939,7 +939,7 @@ Qed.
 
 (** [exists x, P] and [at_most_one P] entail [exists! x, P] *)
 
-Lemma ex_unique_from_ex_at_most_one : forall P,
+Lemma ex_unique_of_ex_at_most_one : forall P,
   ex P -> 
   at_most_one P -> 
   ex_unique P.

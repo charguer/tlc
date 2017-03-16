@@ -5,10 +5,10 @@
 ***************************************************************************)
 
 Set Implicit Arguments.
-Generalizable Variables A B.
 Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
 Require Import LibTactics LibLogic LibReflect LibOperation
  LibProd LibOption LibNat LibInt LibWf LibMonoid LibRelation.
+Generalizable Variables A B.
 Local Open Scope nat_scope.
 Local Open Scope comp_scope.
 Global Close Scope list_scope.
@@ -2794,7 +2794,7 @@ Proof using.
   applys Forall2_Nth_inv n F; applys Nth_nth; math.
 Qed.
 
-Lemma Forall2_from_forall_nth : forall {IA:Inhab A} {IB:Inhab B} P r s,
+Lemma Forall2_of_forall_nth : forall {IA:Inhab A} {IB:Inhab B} P r s,
   (forall n, n < length r -> P (nth n r) (nth n s)) ->
   length r = length s ->
   Forall2 P r s.

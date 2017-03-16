@@ -1,5 +1,5 @@
 convention:
-Lemma trans_strict_from_antisym : forall R,
+Lemma trans_strict_of_antisym : forall R,
   trans R -> 
   antisym R -> 
   trans (strict R).
@@ -689,7 +689,7 @@ Definition absorb_r_or := or_true_r.
 
 Definition beq_impl := eqb.
 
-Definition comm_assoc_prove := comm_assoc_from_comm_and_assoc.
+Definition comm_assoc_prove := comm_assoc_of_comm_and_assoc.
 
 
 
@@ -799,7 +799,7 @@ Definition sorted_cons_head_of := sorted_cons_inv_head_le.
 
 Definition sorted_cons_head := sorted_cons.
 Definition head_le_Forall_le := Forall_le_head_le.
-Definition sorted_Forall_le := Forall_le_from_sorted_head_le.
+Definition sorted_Forall_le := Forall_le_of_sorted_head_le.
 Definition  := .
 Definition  := .
 Definition  := .
@@ -824,7 +824,7 @@ Qed.
 (** If [x::l2] is sorted and the head of [l1] is smaller than [x],
    then [x] is smaller than the head of [l2] . *)
 
-Lemma heads_le_from_sorted : forall x l1 l2,
+Lemma heads_le_of_sorted : forall x l1 l2,
   sorted le (x::l2) ->
   heads_le le l1 (x::l2) ->
   heads_le le (x::l1) l2.
@@ -1427,7 +1427,7 @@ AND SIMILAR
 Definition irrefl_neq := irrefl_inv_neq.
 Definition sym_to_eq := sym_inv_eq.
 
-Definition trans_strict := trans_strict_from_antisym.
+Definition trans_strict := trans_strict_of_antisym.
 
 
 
@@ -1447,7 +1447,7 @@ Definition eq_by_inverse_r := inverse_eq_r.
 Definition eq_equiv := equiv_eq
 
 
-Definition tclosure_rtclosure := rtclosure_from_tclosure.
+Definition tclosure_rtclosure := rtclosure_of_tclosure.
 Definition tclosure_right := tclosure_inv_r.
 
 Definition functional_empty := functional_rel_empty.
@@ -1467,7 +1467,7 @@ Definition double_incl := antisym_rel_incl.
 Hint Resolve rel_le_tclosure_self.
 Hint Resolve stclosure_step stclosure_sym stclosure_trans.
 
-Definition defined_rel_incl_functional := eq_from_incl_defined_functional.
+Definition defined_rel_incl_functional := eq_of_incl_defined_functional.
 
 Definition incl_fr := incl_fun_rel.
 Definition incl_rf := incl_rel_fun.
@@ -1478,7 +1478,7 @@ Definition Nth_func := Nth_functional.
 
 EVERYWHERE: func => fun.
 
-Definition .. := rel_in_fun_from_fun_in_rel_functional
+Definition .. := rel_in_fun_of_fun_in_rel_functional
 
 Definition prop_ext_1 := pred_ext_1.
 Definition prop_ext_2 := pred_ext_2.
@@ -1490,3 +1490,7 @@ Hint Resolve equiv_eq. (* TODO: remove
 EVERYWHERE: from -> of
 
 EVERYWHERE: once -> one
+
+Definition nat_of_number := number_to_nat.
+
+EVERYWHERE: iff -> eq

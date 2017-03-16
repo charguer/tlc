@@ -1,0 +1,371 @@
+
+
+============================================================================
+Sections and comments in files.
+
+Sections should be introduced with:
+
+(* ********************************************************************** *)
+(** * Title *)
+
+Subections should be introduced with:
+
+(* ---------------------------------------------------------------------- *)
+(** ** Title *)
+
+Sections and subsection titles should be preceeded by two blank lines,
+and followed by one blank line.
+
+Comments visible in the documentation should be introduced with:
+
+(** Text *)
+
+
+============================================================================
+Header of a file
+
+The top of the file should begin with elements in this order:
+
+   Set Implicit Arguments.
+   Require [Import|Export] Files.
+   Generalizable Variables A B.
+   Open Scope myscope.
+
+
+============================================================================
+Sections
+
+Definitions should not be placed inside sections, except for local
+definitions which are not intended to be exported.
+
+Only type variables and typeclasses instances (typically [Inhab])
+can be quantified as section variables.
+
+A section thus contains mainly lemmas, with explicit quantification
+of all variables and hypotheses, except type variables.
+The use of "Implicit Types" is highly encouraged as it drastically 
+reduces the number of type annotations required.
+
+Example:
+
+   Definition length A (l:list A) : nat :=
+     fold_right (fun x acc => 1+acc) 0 l.
+
+   Section Length.
+   Variable A : Type.
+   Implicit Types l : list A.
+
+   Lemma length_nil :
+     length (@nil A) = 0.
+   Proof using. auto. Qed.
+
+   Lemma length_cons : forall x l,
+     length (x::l) = 1 + length l.
+   Proof using. auto. Qed.
+
+   End Length.
+
+
+============================================================================
+Rewriting databases
+
+A rewriting base, e.g. [rew_list] is intended to contain a set of
+equalities to normalize expressions (the set should be confluent 
+and terminating). Only lemmas which are obviously simplifying the
+goal should be added. Example:
+
+   Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
+     app_cons_one_r : rew_list.
+
+In particular, lemmas such as [n+0=n] should be added, as they simplify.
+However, lemmas such as distributivity [a*(b+c)=a*b+a*c] should not be 
+added to rewriting base, as it is sometimes not desirable to distribute.
+
+It is useful to declare a tactic to avoid the heavy syntax
+[autorewriting with rew_list].
+
+   Tactic Notation "rew_list" :=
+     autorewrite with rew_list.
+   Tactic Notation "rew_list" "~" :=
+     rew_list; auto_tilde.
+   Tactic Notation "rew_list" "*" :=
+     rew_list; auto_star.
+   Tactic Notation "rew_list" "in" "*" :=
+     autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_list).
+     (* autorewrite with rew_list in *. *)
+   Tactic Notation "rew_list" "~" "in" "*" :=
+     rew_list in *; auto_tilde.
+   Tactic Notation "rew_list" "*" "in" "*" :=
+     rew_list in *; auto_star.
+   Tactic Notation "rew_list" "in" hyp(H) :=
+     autorewrite with rew_list in H.
+   Tactic Notation "rew_list" "~" "in" hyp(H) :=
+     rew_list in H; auto_tilde.
+   Tactic Notation "rew_list" "*" "in" hyp(H) :=
+     rew_list in H; auto_star.
+
+Remark: in the future, we hope to be able to define a generic tactic
+called [rew] in such a way that [rew list] does the same as [rew_list].
+Note that [rew_list in *] needs a workaround due to an efficiency bug.
+
+
+============================================================================
+Hints
+
+Hints added by [Hint Resolve] or [Hint Constructors] or [Hint Extern]
+should, by default, only be added to named hint databases.
+
+Since the current [eauto with] syntax is fairly painful, we tolerate
+a small number of obviously useful hints to be added to the core database.
+
+Transitivity results should never be added as hints, for efficiency reasons.
+One may, however, set up a Hint Extern for recognizing hypotheses that
+may be exploited by transitivity.
+
+
+============================================================================
+Naming of lemmas
+
+*) Interaction of a function and a constructor are named by concatenating
+   the name of the function and the constructor. Examples:
+
+      Lemma length_nil :
+        length (@nil A) = 0.
+
+      Lemma length_cons : forall x l,
+        length (x::l) = 1 + length l.
+
+*) Interaction of a function and another function is named similarly,
+   by concatenating the name of the two functions:
+
+      Lemma length_app : forall l1 l2,
+        length (l1 ++ l2) = length l1 + length l2.
+
+*) With propositional extensionality, there is no need for [<->],
+   only [=] should be used. The suffix [eq] should always be used for 
+   a lemma stating the equality between two propositions (but not be used
+   for describing the behavior of a function with a result of kind [Type]).
+   Examples:
+
+      Lemma Forall_cons_eq : forall P l x,
+        Forall P (x::l) = (P x /\ Forall P l).
+
+      Lemma Forall_eq_forall_mem : forall P l,
+        (Forall P l) = (forall x, mem x l -> P x).
+
+*) When a function has several arguments, the name of the lemma should,
+   in general, take into account all these arguments.
+
+      Lemma rel_incl_stclosure_rstclosure : forall R,
+        rel_incl (stclosure R) (rstclosure R).
+
+   Exception is when an argument is "forced". For example [nth_zero_cons]
+   can be abbreviated as [nth_zero], because the case [nth_zero_nil] is
+   not interseting.
+
+      Lemma nth_zero : forall x l,
+        nth 0 (x::l) = x.
+
+*) Sometimes two equivalent versions of a lemma are useful. Typically,
+   an argument could be either written [S n] or [n'] with [n'>0].
+   Thus, we have two versions: 
+
+      Lemma nth_succ : forall n x l,
+        nth (S n) (x::l) = nth n l.
+
+      Lemma nth_pos : forall n x l,
+        n > 0 ->
+        nth n (x::l) = nth (n-1) l.
+
+*) When a lemma has a "left" and a "right" version or projection,
+   the suffixes "_l" and "_r" should be used. Example:
+
+      Lemma drop_app_l : forall n l l',
+        (n <= length l) ->
+        drop n (l ++ l') = drop n l ++ l'.
+
+      Lemma drop_app_r : forall n l l',
+        (n >= length l) ->
+        drop n (l ++ l') = drop (n - length l) l'.
+
+   Another example, for making a step in a transitive closure:
+
+      Lemma tclosure_l : forall R y x z,
+        R x y -> 
+        tclosure R y z -> 
+        tclosure R x z.
+
+      Lemma tclosure_r : forall R y x z,
+        tclosure R x y -> 
+        R y z -> 
+        tclosure R x z.
+
+
+*) Interaction of a predicate and a constructor or function is more
+   interesting. Consider "Forall" (all elements in a list satisfy
+   a predicate) and "cons".
+   
+   The introduction lemma is named [Forall_cons]:
+
+       Lemma Forall_cons : forall l x,
+         P x -> 
+         Forall P l ->
+         Forall P (x::l).
+   
+   Other examples:
+
+      Lemma trans_tclosure : forall R,
+        trans (tclosure R).
+
+      Lemma rel_incl_tclosure : forall R,
+        rel_incl R (tclosure R).
+
+   When a lemma has pre-conditions, the name of these pre-conditions
+   is written after the "of" separator.
+
+      Lemma rstclosure_of_rsclosure : forall R x y,
+        rsclosure R x y -> 
+        rstclosure R x y.
+
+      Lemma sclosure_eq_of_sym : forall R,
+        sym R ->
+        sclosure R = R.
+
+   Observe that the above lemma could be given two corollaries:
+
+      Lemma rel_of_sclosure_sym : forall R,
+        sclosure R x y ->
+        sym R ->
+        R x y.
+
+      Lemma sclosure_of_rel_sym : forall R,
+        R x y ->
+        sym R ->
+        sclosure R x y.
+
+   When several premises are involved, just append their names:
+
+       Lemma stclosure_of_sym_trans : forall R,
+         sym R ->
+         trans R ->
+         stclosure R = R.
+
+   An important exception is when the premise is a necessary requirement,
+   then it is not needed to name the premise. For example, the transitive
+   closure of a relation R can only be reflexive if R is reflexive. Thus,
+   we shorten [refl_tclosure_of_refl] into [refl_tclosure]:
+
+      Lemma refl_tclosure : forall R,
+        refl R ->
+        refl (tclosure R).
+
+
+*) The order of variables/hypotheses is usually not so important, as long as
+   some basic principles are followed:
+   - variables that do not appear in the goal should be quantified first.
+   - if the goal is an equality, variables that do not appear in the LHS of 
+     an equality should be quantified before the others.
+   - hypotheses which involve the larger number of non-goal directed
+     variables should appear first.
+   - "side conditions" (e.g. n>0) should appear as last hypotheses.
+   - hypotheses should be in the "natural reading order". Example:
+
+       Lemma Forall_cons : forall l x,
+         P x -> 
+         Forall P l ->
+         Forall P (x::l).
+
+       Lemma Forall_last : forall l x,
+         Forall P l ->
+         P x -> 
+         Forall P (l++(x::nil)).
+
+
+*) An inversion lemma takes as first hypothesis a result, and is meant
+   for forward reasoning. The suffix should be "_inv", as for example:
+
+       Lemma Forall_cons_inv : forall l x,
+         Forall P (x::l) ->
+         P x /\ Forall P l.
+
+   Often it is useful to have corolloralies to the inversion lemma,
+   named [Forall_cons_inv_xxx], where the suffix [xxx] describes
+   which projection is obtained:
+
+      Lemma Forall_cons_inv_head : forall P l x,
+        Forall P (x::l) ->
+        P x.
+
+      Lemma Forall_cons_inv_tail : forall P l x,
+        Forall P (x::l) ->
+        Forall P l.
+
+      Lemma mem_cons_inv : forall l x y,
+        mem x (y::l) ->
+        x = y \/ mem x l.
+
+      Lemma mem_inv_middle : forall l x,
+        mem x l ->
+        exists l1 l2, l = l1++x::l2.
+
+      Lemma mem_inv_middle_first : forall l x,
+        mem x l ->
+        exists l1 l2, l = l1++x::l2 /\ ~ mem x l1.
+
+      Lemma tclosure_inv_r : forall R x z,
+        tclosure R x z ->
+        (R x z) \/ (exists y, tclosure R x y /\ R y z).
+
+   Other examples of inversion lemmas, where [Nth n l x] asserts
+   that the n-th element of [l] exists and is equal to [x].
+
+      Lemma Nth_inv_neq_nil : forall n l x,
+        Nth n l x -> 
+        l <> nil.
+
+      Lemma Nth_nil_inv : forall n x,
+        Nth n nil x -> 
+        False.
+
+   Inversion lemmas that apply to an hypothesis which is not a
+   predicate but an equality or disequality have their name
+   starting with a description of the equality, then followed
+   by "inv", then possibly followed by a suffix describing the
+   kind of result obtained:
+
+      Lemma cons_eq_nil_inv : forall x l,
+        x::l = nil ->
+        False.
+
+      Lemma nil_eq_cons_inv : forall x l,
+        nil = x::l ->
+        False.
+
+      Lemma list_neq_nil_inv_cons : forall l,
+        l <> nil -> 
+        exists x q, l = x :: q.
+
+      Lemma list_neq_nil_inv_last : forall l,
+        l <> nil -> 
+        exists x q, l = q ++ x::nil.
+
+
+
+*) Sometimes it is not obvious in which direction it is desirable to state
+   the equality. Consider the transitive closure of an inverse relation:
+
+       tclosure (inverse R) = inverse (tclosure R)
+
+   versus the other direction:
+
+           inverse (tclosure R) = tclosure (inverse R).
+
+   We impose the following convention: we assign a (somewhat arbitrary) 
+   order on definitions, which correspond to the order that definitions
+   appear in the files, and intuitively puts the definitions that are 
+   more "basic" before the ones that are more "complex" or less frequently
+   used. Here, we have decided that "inverse" is more basic than "tclosure".
+   Thus, we write:
+
+      Lemma tclosure_inverse_eq : forall R,
+        tclosure (inverse R) = inverse (tclosure R).

@@ -48,7 +48,7 @@ Proof using. intros. apply (prove_Inhab (arbitrary, arbitrary)). Qed.
 
 (** Decomposition as projection *)
 
-Lemma tuple2_from_proj : forall A1 A2 (x:A1*A2),
+Lemma tuple2_of_proj : forall A1 A2 (x:A1*A2),
   (fst x, snd x) = x.
 Proof using. intros. destruct~ x. Qed.
 

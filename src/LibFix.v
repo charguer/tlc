@@ -666,7 +666,7 @@ Qed.
     [i], and then that [v] is globally-coherent. Finally, we show that
     the global limit of [v] is also a limit for [u]. *)
 
-Lemma complete_from_locally_and_globally_complete :
+Lemma complete_of_locally_and_globally_complete :
   forall I A {IA:Inhab A} (M:family I A),
   OFE M -> 
   locally_complete M -> 
@@ -704,14 +704,14 @@ Qed.
 
 (** Summary: the two definitions of completeness are equivalent *)
 
-Lemma complete_iff_complete' : forall I A {IA:Inhab A} (M:family I A),
+Lemma complete_eq_complete' : forall I A {IA:Inhab A} (M:family I A),
   OFE M -> 
-  (complete M <-> complete' M).
+  (complete M = complete' M).
 Proof using.
   split. split.
     apply~ complete_to_locally_complete.
     apply~ complete_to_globally_complete.
-  intros [H1 H2]. apply~ complete_from_locally_and_globally_complete.
+  intros [H1 H2]. apply~ complete_of_locally_and_globally_complete.
 Qed.
 
 (** -------- A direct lemma to build COFE --------- *)
@@ -1357,7 +1357,7 @@ Proof using.
     apply lt_wf.
     intros_all~. nat_math.
     apply Equiv.
-  constructor~. apply~ complete_from_locally_and_globally_complete.
+  constructor~. apply~ complete_of_locally_and_globally_complete.
   (* local completeness *)
   introv Cohu. sets v: (fun j => If j < i then u j else u (i-1)%nat).
   forwards [l L]: (Comp v). intros j. tests: (S j < i).
@@ -1395,7 +1395,7 @@ Proof using.
     apply lt_wf.
     intros_all~. math.
     apply Equiv.
-  constructor~. apply~ complete_from_locally_and_globally_complete.
+  constructor~. apply~ complete_of_locally_and_globally_complete.
   (* local completeness *)
   introv Cohu. sets v: (fun j => If j < i then u j else u (i-1)%nat).
   forwards [l L]: (Comp v). intros k j Rkj. tests: (S j < i).
@@ -1500,7 +1500,7 @@ Definition lesser_fixed_point A B (E:binary B) (F:(A->B)->(A->B)) :=
     [optimal_fixed_point E F f] and
     [Fix_prop (partial_equiv E) (lesser_fixed_point E F) (partialize F) f]. *)
 
-Lemma Fix_prop_from_optimal:
+Lemma Fix_prop_of_optimal:
   forall A B (E:binary B) (F:(A->B)->(A->B)) (f:A-->B),
   optimal_fixed_point E F f ->
   Fix_prop (partial_equiv E) (lesser_fixed_point E F) (partialize F) f.
@@ -1743,7 +1743,7 @@ Proof using.
   introv Deff Equiv Gcf'.
   unfolds FixFunMod, Fix. spec_epsilon as g [Fixg Bestg].
     forwards* [g Opt]: (@optimal_fixed_point_exists _ _ _ E F).
-    exists g. apply~ Fix_prop_from_optimal.
+    exists g. apply~ Fix_prop_of_optimal.
   subst f.
   lets Fixf: (proj1 Gcf'). lets Fixf': (partial_fixed_point_inv Fixf).
   rewrite partial_fixed_point_definitions in Fixf.
@@ -1768,7 +1768,7 @@ Proof using.
   introv Deff Equiv Comp Wfr Contr.
   unfolds FixFunMod, Fix. spec_epsilon as g [Fixg Bestg].
     forwards* [g Opt]: (@optimal_fixed_point_exists _ _ _ E F).
-    exists g. apply~ Fix_prop_from_optimal.
+    exists g. apply~ Fix_prop_of_optimal.
   subst f.
   forwards~ (f&Fixf&Inv): (@rec_fixed_point _ _ _ F R P S E).
   lets Fixf': Fixf. rewrite partial_fixed_point_definitions in Fixf'.
@@ -1887,7 +1887,7 @@ Proof using.
   asserts Equiv: (equiv E). rewrite~ SimE.
   unfolds FixFunMod, Fix. spec_epsilon as g [Fixg Bestg].
     forwards* [g Opt]: (@optimal_fixed_point_exists _ _ _ E F).
-    exists g. apply~ Fix_prop_from_optimal.
+    exists g. apply~ Fix_prop_of_optimal.
   subst f.
   forwards~ (f&Fixf&Inv): (@mixed_fixed_point _ _ _ _ M E P F R S).
   lets Fixf': Fixf. rewrite partial_fixed_point_definitions in Fixf'.

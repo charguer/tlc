@@ -255,7 +255,7 @@ End PermutationTactic.
 Hint Rewrite app_assoc app_nil_l app_nil_r : permut_rew.
 
 Ltac permut_lemma_get n :=
-  match nat_from_number n with
+  match number_to_nat n with
   | 1 => constr:(permut_get_1)
   | 2 => constr:(permut_get_2)
   | 3 => constr:(permut_get_3)
@@ -395,7 +395,7 @@ Proof using. introv H. inverts~ H. Qed.
 (** Key lemma: if [l] is sorted and [x] is smaller than the
    head of [l], then [x] is smaller than all elements in [l]. *)
 
-Lemma Forall_le_from_sorted_head_le : forall x l,
+Lemma Forall_le_of_sorted_head_le : forall x l,
   trans le ->
   sorted le l ->
   head_le le x l ->

@@ -308,12 +308,12 @@ Ltac notin_false :=
   | _ => intros_all; false; notin_solve_false
   end.
 
-Ltac notin_from_fresh_in_context :=
+Ltac notin_of_fresh_in_context :=
   repeat (match goal with H: fresh _ _ _ |- _ =>
     progress (simpl in H; destructs H) end).
 
 Ltac notin_solve :=
-  notin_from_fresh_in_context;
+  notin_of_fresh_in_context;
   first [ notin_simpl; try notin_solve_one
         | notin_false ].
 

@@ -190,7 +190,7 @@ Qed.
 End Reformulation.
 
 
-(* Hint Resolve index_from_indom. *)
+(* Hint Resolve index_of_indom. *)
 
 
 (* ********************************************************************** *)
@@ -213,7 +213,7 @@ Hint Extern 1 (None <> Some _) => congruence.
 (* ---------------------------------------------------------------------- *)
 (** index *)
 
-Lemma index_from_indom : forall A B (M:map A B) k,
+Lemma index_of_indom : forall A B (M:map A B) k,
   k \indom M -> index M k.
 Proof using. intros. rewrite~ index_def. Qed.
 
@@ -468,9 +468,9 @@ Qed.
 Lemma binds_update_neq_inv' : forall A B i j v w (M:map A B),
   binds (M[j:=w]) i v -> j \notindom M -> binds M i v.
 
-Lemma binds_update_neq_iff : forall A `{Inhab B} i j v w (M:map A B),
+Lemma binds_update_neq_eq : forall A `{Inhab B} i j v w (M:map A B),
   j \notindom M ->
-  (binds M i v <-> binds (M[j:=w]) i v).
+  (binds M i v = binds (M[j:=w]) i v).
 Proof using.
   split; intros.
   { eapply binds_update_neq; [ | eauto ].
@@ -491,11 +491,11 @@ Proof using.
   left. forwards*: binds_update_neq_inv H.
 Qed.
 
-Lemma binds_update_indom_iff :
+Lemma binds_update_indom_eq :
   forall A B (M : map A B) a1 a2 b1 b2,
-  (a2 <> a1 /\ binds M a2 b2 \/ a2 = a1 /\ b2 = b1)
-  <->
-  binds (M[a1:=b1]) a2 b2.
+  binds (M[a1:=b1]) a2 b2 =
+  (    (a2 <> a1 /\ binds M a2 b2) 
+    \/ (a2 = a1 /\ b2 = b1)).
 Proof using.
   split. introv [ [ ? ? ] | [ ? ? ] ].
   { eauto using binds_update_neq. }

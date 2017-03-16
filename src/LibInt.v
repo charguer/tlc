@@ -62,18 +62,18 @@ Coercion my_Z_of_nat : nat >-> Z.
 (* ********************************************************************** *)
 (** * Conversion to natural numbers, for tactic programming *)
 
-Definition ltac_nat_from_int (x:Z) : nat :=
+Definition ltac_nat_of_int (x:Z) : nat :=
   match x with
   | Z0 => 0%nat
   | Zpos p => nat_of_P p
   | Zneg p => 0%nat
   end.
 
-Ltac nat_from_number N ::=
+Ltac number_to_nat N ::=
   match type of N with
   | nat => constr:(N)
-  | int => let N' := constr:(ltac_nat_from_int N) in eval compute in N'
-  | Z => let N' := constr:(ltac_nat_from_int N) in eval compute in N'
+  | int => let N' := constr:(ltac_nat_of_int N) in eval compute in N'
+  | Z => let N' := constr:(ltac_nat_of_int N) in eval compute in N'
   (*todo: last case not needed*)
   end.
 

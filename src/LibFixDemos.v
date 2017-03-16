@@ -212,7 +212,7 @@ Lemma uv_fix : mu === MU mu mv /\ mv === MV mu mv.
 Proof using.
   applys (FixValModMut2_fix
     (prod_family (stream_family nat) (stream_family nat))).
-  apply tuple2_from_proj.
+  apply tuple2_of_proj.
   unfold bisimilar. rewrite stream_mod_similarity. apply prod_similar.
   apply prod_cofe; typeclass.
   intros i u1 v1 u2 v2 H. simpls. destruct~ i. split.

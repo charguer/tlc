@@ -358,17 +358,17 @@ Ltac fast_rm_inside E :=
 
 Require Coq.Numbers.BinNums Coq.ZArith.BinInt.
 
-Definition ltac_nat_from_int (x:BinInt.Z) : nat :=
+Definition ltac_nat_of_int (x:BinInt.Z) : nat :=
   match x with
   | BinInt.Z0 => 0%nat
   | BinInt.Zpos p => BinPos.nat_of_P p
   | BinInt.Zneg p => 0%nat
   end.
 
-Ltac nat_from_number N :=
+Ltac number_to_nat N :=
   match type of N with
   | nat => constr:(N)
-  | BinInt.Z => let N' := constr:(ltac_nat_from_int N) in eval compute in N'
+  | BinInt.Z => let N' := constr:(ltac_nat_of_int N) in eval compute in N'
   end.
 
 (** [ltac_pattern E at K] is the same as [pattern E at K] except that
@@ -376,7 +376,7 @@ Ltac nat_from_number N :=
     [ltac_pattern E as K in H] is also available. *)
 
 Tactic Notation "ltac_pattern" constr(E) "at" constr(K) :=
-  match nat_from_number K with
+  match number_to_nat K with
   | 1 => pattern E at 1
   | 2 => pattern E at 2
   | 3 => pattern E at 3
@@ -388,7 +388,7 @@ Tactic Notation "ltac_pattern" constr(E) "at" constr(K) :=
   end.
 
 Tactic Notation "ltac_pattern" constr(E) "at" constr(K) "in" hyp(H) :=
-  match nat_from_number K with
+  match number_to_nat K with
   | 1 => pattern E at 1 in H
   | 2 => pattern E at 2 in H
   | 3 => pattern E at 3 in H
@@ -417,7 +417,7 @@ Lemma dup_lemma : forall P, P -> P -> P.
 Proof using. auto. Qed.
 
 Ltac dup_tactic N :=
-  match nat_from_number N with
+  match number_to_nat N with
   | 0 => idtac
   | S 0 => idtac
   | S ?N' => apply dup_lemma; [ | dup_tactic N' ]
@@ -1485,7 +1485,7 @@ Proof using. intros. subst. auto. Qed.
 End equatesLemma.
 
 Ltac equates_lemma n :=
-  match nat_from_number n with
+  match number_to_nat n with
   | 0 => constr:(equates_0)
   | 1 => constr:(equates_1)
   | 2 => constr:(equates_2)
@@ -3293,7 +3293,7 @@ Tactic Notation "splits" :=
     definitions as necessary to obtain an [N]-ary conjunction. *)
 
 Tactic Notation "splits" constr(N) :=
-  let N := nat_from_number N in
+  let N := number_to_nat N in
   splits_tactic N.
 
 
@@ -3327,7 +3327,7 @@ Tactic Notation "destructs" constr(T) :=
     names. Remark that it is not restricted to N-ary conjunctions. *)
 
 Tactic Notation "destructs" constr(N) constr(T) :=
-  let N := nat_from_number N in
+  let N := number_to_nat N in
   destructs_conjunction_tactic N T.
 
 
@@ -3379,7 +3379,7 @@ Ltac get_goal_disjunction_arity :=
     [branch K of N]. *)
 
 Tactic Notation "branch" constr(K) :=
-  let K := nat_from_number K in
+  let K := number_to_nat K in
   unfold_goal_until_disjunction;
   let N := get_goal_disjunction_arity in
   branch_tactic K N.
@@ -3391,8 +3391,8 @@ Tactic Notation "branch" constr(K) :=
     [P1 \/ ... \/ PK \/ ... \/ PN] and leaves the goal [PK]. *)
 
 Tactic Notation "branch" constr(K) "of" constr(N) :=
-  let N := nat_from_number N in
-  let K := nat_from_number K in
+  let N := number_to_nat N in
+  let K := number_to_nat K in
   branch_tactic K N.
 
 
@@ -3423,7 +3423,7 @@ Tactic Notation "branches" constr(T) :=
     on the fly. *)
 
 Tactic Notation "branches" constr(N) constr(T) :=
-  let N := nat_from_number N in
+  let N := number_to_nat N in
   destructs_disjunction_tactic N T.
 
 (** [branches] automatically finds a hypothesis [h] that is a disjunction
@@ -3500,7 +3500,7 @@ Tactic Notation "exists___" constr(N) :=
     | 0 => idtac
     | S ?N' => esplit; aux N'
     end in
-  let N := nat_from_number N in aux N.
+  let N := number_to_nat N in aux N.
 
   (* todo: deprecated *)
 Tactic Notation "exists___" :=
@@ -4713,7 +4713,7 @@ Tactic Notation "clears_last" :=
   match goal with H: ?T |- _ => clear H end.
 
 Ltac clears_last_base N :=
-  match nat_from_number N with
+  match number_to_nat N with
   | 0 => idtac
   | S ?p => clears_last; clears_last_base p
   end.
