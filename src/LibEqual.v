@@ -14,16 +14,8 @@ Generalizable Variables A.
 (* ---------------------------------------------------------------------- *)
 (** ** Definition of Leibnitz' equality *)
 
-(* The Prelude defines equality [eq], written [x = y] or 
-   [x = y :> A] 
-
-  Inductive eq (A : Type) (x : A) : A -> Prop :=
-    | eq_refl : eq x x.
-
-  Notation "x = y :> A" := (@eq A x y) : type_scope.
-  Notation "x = y" := (eq x y) : type_scope.
-  Notation "x <> y :> A" := (~ @eq A x y) : type_scope.
-  Notation "x <> y" := (~ eq x y) : type_scope.
+(* Recall that the prelude defines equality [eq], with the notation
+   [x = y] and [x = y :> A].
 *)
 
 Arguments eq {A}.
@@ -722,7 +714,7 @@ Qed.
 
 (** In this section, we prove that [eq_dep x y] implies [x = y]. *)
 
-(** Definition of [eq_dep] (copied from the LibPrelude) *)
+(** Definition of [eq_dep] (copied from the Prelude) *)
 
 Inductive eq_dep (A : Type) (P : A -> Type) (p : A) (x : P p)
   : forall q, P q -> Prop :=
@@ -779,10 +771,16 @@ Proof using. introv E. dependent rewrite E. simple~. constructor. Qed.
 (* ********************************************************************** *)
 (** * John Major's equality *)
 
-(** In this section, we prove that [JMeq x y] implies [x = y]
-    when both [x] and [y] have the same type. *)
-
 Require Import JMeq.
+
+(** The module above defines John Major's equality:
+
+  Inductive JMeq (A : Type) (x : A) : forall B : Type, B -> Prop :=
+     | JMeq_refl : JMeq x x.
+*)
+
+(** In this section, we prove that [JMeq x y] implies [x = y]
+    when [x] and [y] have the same type. *)
 
 (** Symmetry, transitivity of [JMeq] *)
 

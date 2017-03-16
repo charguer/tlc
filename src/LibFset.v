@@ -138,7 +138,7 @@ Section Operations.
 Variables (A:Type).
 
 Definition mem (x:A) (E:fset A) :=
-  is_in x (proj1_sig E).
+  is_in x (sig_val E).
 
 Lemma finite_empty : @finite A LibContainer.empty.
 Proof using. exists (@nil A). intros x. rewrite in_empty_eq. auto_false. Qed.
@@ -164,7 +164,7 @@ Proof using.
 Qed.
 
 Definition union (E F : fset A) :=
-  build_fset (union_finite (proj2_sig E) (proj2_sig F)).
+  build_fset (union_finite (sig_proof E) (sig_proof F)).
 
 Lemma inter_finite : forall U V : set A,
   finite U -> finite V -> finite (inter U V).
@@ -174,7 +174,7 @@ Proof using.
 Qed.
 
 Definition inter (E F : fset A) :=
-  build_fset (inter_finite (proj2_sig E) (proj2_sig F)).
+  build_fset (inter_finite (sig_proof E) (sig_proof F)).
 
 Lemma remove_finite : forall U V : set A,
   finite U -> finite V -> finite (remove U V).
@@ -184,7 +184,7 @@ Proof using.
 Qed.
 
 Definition remove (E F : fset A) :=
-  build_fset (remove_finite (proj2_sig E) (proj2_sig F)).
+  build_fset (remove_finite (sig_proof E) (sig_proof F)).
 
 Definition subset E F :=
   forall x, mem x E -> mem x F.

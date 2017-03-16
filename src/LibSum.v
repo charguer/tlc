@@ -7,24 +7,43 @@ Set Implicit Arguments.
 Require Import LibTactics LibLogic LibBool.
 Generalizable Variables A B.
 
+
 (* ********************************************************************** *)
-(** * Fixing implicit types *)
+(** * Sum type *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Definition *)
+
+(** From the Prelude:
+
+    Inductive sum A B : Type :=
+      | inl : A -> sum A B
+      | inr : B -> sum A B.
+
+    Hint Constructors sum : core.
+    Notation "x + y" := (sum x y) : type_scope.
+
+  Remark: ideally, constructors would be renamed to [sum_l] and [sum_r];
+  to follow conventions.
+ 
+*)
 
 Arguments inl {A} {B}.
 Arguments inr {A} {B}.
 
 
-(* ********************************************************************** *)
-(** * Inhabited *)
+(* ---------------------------------------------------------------------- *)
+(** ** Inhabited *)
 
-Instance sum_inhab_left : forall `{Inhab A} B, Inhab (A + B).
+Instance sum_inhab_l : forall `{Inhab A} B, Inhab (A + B).
 Proof using. intros. apply (prove_Inhab (inl arbitrary)). Qed.
 
-Instance sum_inhab_right : forall `{Inhab B} A, Inhab (A + B).
+Instance sum_inhab_r : forall `{Inhab B} A, Inhab (A + B).
 Proof using. intros. apply (prove_Inhab (inr arbitrary)). Qed.
 
 Definition sum_inhab : forall `{Inhab A, Inhab B}, Inhab (A + B).
 Proof using. typeclass. Qed.
+
 
 
 (* ********************************************************************** *)

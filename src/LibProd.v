@@ -8,8 +8,36 @@ Require Import LibTactics LibLogic LibReflect.
 Generalizable Variables A B.
 
 
+
 (* ********************************************************************** *)
-(** * Inhabited *)
+(** * Product type *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Definition *)
+
+(** From the Prelude:
+
+    Inductive prod A B : Type :=
+      | pair : A -> B -> prod A B.
+
+    Hint Constructors prod : core.
+
+    Add Printing Let prod.
+    Notation "x * y" := (prod x y) : type_scope.
+    Notation "( x , y , .. , z )" := (pair .. (pair x y) .. z) : core_scope.
+
+    Definition fst A B (p:A*B) : A := 
+      match p with (x,y) => x end.
+
+    Definition snd A B (p:A*B) : B := 
+      match p with (x,y) => y end.
+ 
+  Remark: to follow conventions [pair] should be renamed to [prod_intro].
+
+*)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Inhabited *)
 
 Global Instance prod_inhab : forall `{Inhab A, Inhab B}, Inhab (A * B).
 Proof using. intros. apply (prove_Inhab (arbitrary, arbitrary)). Qed.

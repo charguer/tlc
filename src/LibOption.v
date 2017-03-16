@@ -14,7 +14,21 @@ Implicit Arguments None [[A]].
 
 
 (* ********************************************************************** *)
-(** * Inhabited *)
+(** * Option type *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Definition *)
+
+(** From the Prelude:
+
+  Inductive option A : Type :=
+    | Some : A -> option A
+    | None : option A.
+
+*)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Inhabited *)
 
 Instance option_inhab : forall A, Inhab (option A).
 Proof using. intros. apply (prove_Inhab None). Qed.

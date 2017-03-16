@@ -31,7 +31,7 @@ Proof using.
 Qed.
 
 Definition epsilon `{Inhab A} (P : A -> Prop) : A
-  := proj1_sig (epsilon_def P).
+  := sig_1 (epsilon_def P).
 
 
 (* ---------------------------------------------------------------------- *)
@@ -39,7 +39,7 @@ Definition epsilon `{Inhab A} (P : A -> Prop) : A
 
 Lemma epsilon_spec_exists : forall `{Inhab A} (P : A->Prop),
   (exists x, P x) -> P (epsilon P).
-Proof using. intros. apply~ (proj2_sig (epsilon_def P)). Qed.
+Proof using. intros. apply~ (sig_proof (epsilon_def P)). Qed.
 
 Lemma epsilon_inv_exists : forall `{Inhab A} (P Q : A->Prop),
   (exists x, P x) -> (forall x, P x -> Q x) -> Q (epsilon P).

@@ -38,7 +38,7 @@ Ltac intro_nondeps_aux_special_intro G ::=
     where a value of an inhabited type is expected. *)
 
 Definition arbitrary `{Inhab A} : A :=
-  proj1_sig (@indefinite_description A _ inhabited).
+  sig_val (@indefinite_description A _ inhabited).
 
 (** Extraction of [arbitrary] constants as a runtime error. *)
 
@@ -79,8 +79,8 @@ Proof using.
   asserts H2: (ex B2). exists false. left~.
   sets i1: (indefinite_description H1).
   sets i2: (indefinite_description H2).
-  destruct (proj2_sig i1) as [HA|]; [|auto].
-  destruct (proj2_sig i2) as [HB|]; [|auto].
+  destruct (sig_proof i1) as [HA|]; [|auto].
+  destruct (sig_proof i2) as [HB|]; [|auto].
   right. intros HP. asserts EB: (B1 = B2).
     apply pred_ext_1. intros b. split; intros _; right; auto.
   subst i1 i2. destruct EB.
@@ -864,6 +864,19 @@ Lemma pred_le_antisym : forall A (P Q : A -> Prop),
   pred_le Q P -> 
   P = Q.
 Proof using. extens*. Qed. 
+
+
+
+(* ********************************************************************** *)
+(** * Strong existentials *)
+
+(** Projections *)
+
+Definition sig_val (A : Type) (P : A->Prop) (e : sig P) : A :=
+  match e with exist _ a _ => a end.
+
+Definition sig_proof (A : Type) (P : A->Prop) (e : sig P) : P (sig_val e) :=
+  match e with exist _ _ b => b end.
 
 
 

@@ -8,7 +8,18 @@ Require Import LibTactics LibLogic LibOperation.
 
 
 (* ********************************************************************** *)
-(** * Properties of the boolean type *)
+(** * Boolean type *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Definition *)
+
+(** From the Prelude:
+
+  Inductive bool : Type :=
+    | true : bool
+    | false : bool.
+
+*)
 
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
@@ -29,14 +40,6 @@ Proof using. constructor. apply (prove_Inhab true). Qed.
 Section Definitions.
 Implicit Types x y z : bool.
 
-(** Negation *)
-
-Definition neg x :=
-  match x with
-  | true => false
-  | false => true
-  end.
-
 (** ** Comparison *)
 
 Definition eqb x y :=
@@ -44,6 +47,14 @@ Definition eqb x y :=
   | true, true => true
   | false, false => true
   | _, _ => false
+  end.
+
+(** Negation *)
+
+Definition neg x :=
+  match x with
+  | true => false
+  | false => true
   end.
 
 (** Conjunction *)

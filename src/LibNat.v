@@ -12,10 +12,34 @@ Global Close Scope positive_scope.
 
 
 (* ********************************************************************** *)
-(** * Inhabited *)
+(** * Nat type *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Definition *)
+
+(** From the Prelude:
+
+  Inductive nat : Set :=
+    | O : nat
+    | S : nat -> nat.
+
+  Remark: ideally, constructors would be renamed to [zero] and [succ],
+  or [nat_zero] and [nat_succ], with the notations 
+  [O] or [0%nat], and [S n] or [succ n].
+  It is indeed proablematic to prevent the use of single letter 
+  variables in pattern matching to the user who does not care about [nat].
+
+*)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Inhabited *)
 
 Instance nat_inhab : Inhab nat.
 Proof using. intros. apply (prove_Inhab 0). Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Comparison *)
 
 Fixpoint nat_compare (x y : nat) :=
   match x, y with

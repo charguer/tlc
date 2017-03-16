@@ -11,10 +11,7 @@ Require Import LibTactics LibLogic
 (* ********************************************************************** *)
 (** * Compatibility *)
 
-(** Definition from Stdlib, which we reuse for compatibility
-    with Coq tactics, in particular the Program feature:
-
-Section Well_founded.
+(** From the Prelude:
 
  Inductive Acc A (R:A->A->Prop) (x:A) : Prop :=
    |  Acc_intro : (forall y:A, R y x -> Acc y) -> Acc x.
@@ -23,8 +20,8 @@ Section Well_founded.
 
 *)
 
-(** We introduce [wf] as a shorthand for [well_founded], both
-    for conciseness and for tactic to specifically recognize 
+(** We introduce [wf] as a shorter name for [well_founded], both
+    for conciseness and for tactics to specifically recognize 
     this symbol. *)
 
 Definition wf := well_founded.

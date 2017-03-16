@@ -1,0 +1,64 @@
+
+Stable files:
+
+   LibTactics
+
+   LibAxioms
+   LibEqual
+   LibLogic
+
+   LibOperation
+   LibBool
+   LibReflect
+
+   LibProd
+   LibSum
+   LibUnit
+   LibOption
+
+   LibRelation
+   LibEpsilon
+
+
+
+Demo files:
+
+   LibTacticsDemos.v
+   LibFixDemos.v
+   LibOtherDemos.v
+
+
+Under cleanup:
+
+TODO:
+   LibChoice.v
+   LibContainer.v
+   LibCore.v
+   LibEnv.v
+   LibFix.v
+   LibFset.v
+   LibFun.v
+   LibGraph.v
+   LibHeap.v
+   LibInt.v
+   LibListExec.v
+   LibListSort.v
+   LibListSub.v
+   LibList.v
+   LibListZ.v
+   LibLN.v
+   LibLogic.v
+   LibMap.v
+   LibMin.v
+   LibMonoid.v
+   LibMultiset.v
+   LibNat.v
+   LibOperation.v
+   LibOrder.v
+   LibPer.v
+   LibRelation.v
+   LibSet.v
+   LibStream.v
+   LibString.v
+   LibVar.v
+   LibWf.v

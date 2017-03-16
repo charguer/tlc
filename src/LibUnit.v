@@ -7,6 +7,20 @@ Require Import LibTactics LibLogic LibReflect.
 
 
 (* ********************************************************************** *)
+(** * Definition  *)
+
+(** From the Prelude. 
+
+  Inductive unit : Type :=
+    | tt : unit.
+
+  Add Printing If bool.
+  Delimit Scope bool_scope with bool.
+
+*)
+
+
+(* ********************************************************************** *)
 (** * Inhabited  *)
 
 Instance unit_inhab : Inhab unit.

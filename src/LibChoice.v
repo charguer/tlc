@@ -27,8 +27,8 @@ Lemma functional_choice : forall A B (R:A->B->Prop),
   (forall x, exists y, R x y) -> 
   (exists f, forall x, R x (f x)).
 Proof using.
-  intros. exists (fun x => proj1_sig (indefinite_description (H x))).
-  intro x. apply (proj2_sig (indefinite_description (H x))).
+  intros. exists (fun x => sig_val (indefinite_description (H x))).
+  intro x. apply (sig_proof (indefinite_description (H x))).
 Qed.
 (* LATER: the premise is called [defined] in LibRelation *)
 (* LATER: functionality -> definedness? *)
@@ -193,6 +193,8 @@ Proof using.
        intros y' (H'Px,HR'xy'). apply Uniq.
         rewrite~ (proof_irrelevance HPx H'Px).
 Qed.
+
+... can sig be used instead of sigT? 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Omniscient relation choice *)
