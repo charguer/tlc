@@ -563,6 +563,11 @@ Naming of lemmas
         l <> nil -> 
         exists x q, l = q ++ x::nil.
 
+      Lemma apply_eq_none_inv : forall A B (f : A->option B) x,
+        apply x f = None ->
+           (x = None)
+        \/ (exists y, x = Some y /\ f y = None).
+
 *) Sometimes one might hesitate in deciding whether a lemma is
    an inversion lemma or not. For example, should it be:
 
@@ -598,6 +603,11 @@ Naming of lemmas
 
       Lemma bool_inv_or_eq : forall b,
          b = true \/ b = false.
+
+   Similarly:
+
+      Lemma unit_eq : forall (tt1 tt2 : unit),
+        tt1 = tt2.
 
 *) Sometimes it is not obvious in which direction it is desirable to state
    the equality. Consider the transitive closure of an inverse relation:

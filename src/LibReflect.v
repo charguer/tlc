@@ -90,11 +90,11 @@ Lemma isTrue_to_if : forall P,
   isTrue P = If P then true else false.
 Proof using. reflexivity. Qed.
 
-Lemma isTrue_True_eq : 
+Lemma isTrue_True : 
   isTrue True = true.
 Proof using. unfolds. case_if; auto_false~. Qed.
 
-Lemma isTrue_False_eq : 
+Lemma isTrue_False : 
   isTrue False = false.
 Proof using. unfolds. case_if; auto_false~. Qed.
 
@@ -102,12 +102,12 @@ Global Opaque isTrue.
 
 (** Lemmas *)
 
-Lemma isTrue_true : forall P,
+Lemma isTrue_eq_true : forall P,
   P -> 
   isTrue P = true.
 Proof using. intros. rewrite isTrue_to_if. case_if*. Qed.
 
-Lemma isTrue_false : forall P,
+Lemma isTrue_eq_false : forall P,
   ~ P -> 
   isTrue P = false.
 Proof using. intros. rewrite isTrue_to_if. case_if*. Qed.
@@ -210,24 +210,24 @@ Proof using. intros. rewrite isTrue_not. rewrite~ isTrue_istrue. Qed.
 
 Section IsTrueEqualities.
 
-Ltac isTrue_prove :=
+Ltac prove_isTrue_lemma :=
   intros; try extens; try iff; rewrite isTrue_to_if in *; case_if; auto_false*.
 
 Lemma true_eq_isTrue_eq : forall P,
   (true = isTrue P) = P.
-Proof using. isTrue_prove. Qed.
+Proof using. prove_isTrue_lemma. Qed.
 
 Lemma isTrue_eq_true_eq : forall P,
   (isTrue P = true) = P.
-Proof using. isTrue_prove. Qed.
+Proof using. prove_isTrue_lemma. Qed.
 
 Lemma false_eq_isTrue_eq : forall P,
   (false = isTrue P) = ~ P.
-Proof using. isTrue_prove. Qed.
+Proof using. prove_isTrue_lemma. Qed.
 
 Lemma isTrue_eq_false_eq : forall P,
   (isTrue P = false) = ~ P.
-Proof using. isTrue_prove. Qed.
+Proof using. prove_isTrue_lemma. Qed.
 
 Lemma isTrue_eq_isTrue_eq : forall P1 P2,
   (isTrue P1 = isTrue P2) = (P1 <-> P2).
@@ -323,7 +323,7 @@ Tactic Notation "rew_istrue" "*" "in" "*" :=
     This tactic is probably much less useful than [rew_istrue], since logical
     operators are often simpler to work with. *)
 
-Hint Rewrite isTrue_True_eq isTrue_False_eq isTrue_istrue
+Hint Rewrite isTrue_True isTrue_False isTrue_istrue
   isTrue_not isTrue_and isTrue_or 
   if_isTrue isTrue_If : rew_isTrue.
 

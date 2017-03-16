@@ -7,7 +7,10 @@ Require Import LibTactics LibLogic LibReflect.
 
 
 (* ********************************************************************** *)
-(** * Definition  *)
+(** * Unit type *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Definition *)
 
 (** From the Prelude. 
 
@@ -19,18 +22,20 @@ Require Import LibTactics LibLogic LibReflect.
 
 *)
 
-
-(* ********************************************************************** *)
-(** * Inhabited  *)
+(* ---------------------------------------------------------------------- *)
+(** ** Inhabited *)
 
 Instance Inhab_unit : Inhab unit.
 Proof using. intros. apply (Inhab_of_val tt). Qed.
 
 
 (* ********************************************************************** *)
-(** * Structure *)
+(** * Properties *)
 
-Lemma unit_unique : forall tt1 tt2 : unit,
+(* ---------------------------------------------------------------------- *)
+(** ** Uniqueness *)
+
+Lemma unit_eq : forall (tt1 tt2 : unit),
   tt1 = tt2.
 Proof using. intros. destruct tt1. destruct~ tt2. Qed.
 

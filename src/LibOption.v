@@ -7,10 +7,7 @@ Set Implicit Arguments.
 Require Import LibTactics LibReflect.
 Generalizable Variables A.
 
-(** Fixing implicit arguments *)
-
-Implicit Arguments Some [[A]].
-Implicit Arguments None [[A]].
+(* TODO: find a more explicit name? *)
 
 
 (* ********************************************************************** *)
@@ -27,6 +24,10 @@ Implicit Arguments None [[A]].
 
 *)
 
+Arguments Some {A}.
+Arguments None {A}.
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
@@ -35,10 +36,10 @@ Proof using. intros. apply (Inhab_of_val None). Qed.
 
 
 (* ********************************************************************** *)
-(** * Operations and their properties *)
+(** * Operations *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Definitions *)
+(** ** [is_some] *)
 
 (** [is_some o] holds when [o] is of the form [Some x] *)
 
@@ -48,20 +49,32 @@ Definition is_some A (o:option A) :=
   | Some _ => true
   end.
 
-(** [unsome_default d o] returns the content of the option, and returns [d]
+
+(* ---------------------------------------------------------------------- *)
+(** ** [unsome_def] *)
+
+(** [unsome_def d o] returns the content of the option, and returns [d]
     in case the option in [None]. *)
 
-Definition unsome_default A d (o:option A) :=
+Definition unsome_def A d (o:option A) :=
   match o with
   | None => d
   | Some x => x
   end.
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** [unsome] *)
+
 (** [unsome o] returns the content of the option, and returns an arbitrary
     value in case the option in [None]. *)
 
 Definition unsome `{Inhab A} :=
-  unsome_default arbitrary.
+  unsome_def arbitrary.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** [map] *)
 
 (** [map f o] takes an option and returns an option, and maps the function
     [f] to the content of the option if it has one. *)
@@ -72,56 +85,78 @@ Definition map A B (f : A -> B) (o : option A) : option B :=
   | Some x => Some (f x)
   end.
 
+Lemma map_eq_none_inv : forall A B (f : A->B) o,
+  map f o = None ->
+  o = None.
+Proof using. introv H. destruct o; simpl; inverts* H. Qed.
+
+Lemma map_eq_some_inv : forall A B (f : A->B) o x,
+  map f o = Some x ->
+  exists z, o = Some z /\ x = f z.
+Proof using. introv H. destruct o; simpl; inverts* H. Qed.
+
+Arguments map_eq_none_inv [A] [B] [f] [o].
+Arguments map_eq_some_inv [A] [B] [f] [o] [x].
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** [map_on] *)
+
+(* TODO: is this really useful? *)
 (** [map_on o f] is the same as [map f o], only the arguments are swapped. *)
 
 Definition map_on A B (o : option A) (f : A -> B) : option B :=
   map f o.
 
-(** [apply f o] optionnaly applies a function of type [A -> option B] *)
-(* --todo: find a more explicit name *)
+Lemma map_on_eq_none_inv : forall A B (f : A -> B) o,
+  map f o = None -> 
+  o = None.
+Proof using. introv H. destruct~ o; tryfalse. Qed.
 
-Definition apply A B (f : A -> option B) (o : option A) : option B :=
+Lemma map_on_eq_some_inv : forall A B (f : A -> B) o x,
+  map_on o f = Some x ->
+  exists z, o = Some z /\ x = f z.
+Proof using. introv H. destruct o; simpl; inverts* H. Qed.
+
+Arguments map_eq_none_inv [A] [B] [f] [o].
+Arguments map_on_eq_some_inv [A] [B] [f] [o] [x].
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** [apply] *)
+
+(** [apply f o] optionnaly applies a function of type [A -> option B] *)
+
+Definition apply A B (f : A->option B) (o : option A) : option B :=
   match o with
   | None => None
   | Some x => f x
   end.
 
-(** [apply_on o f] is the same as [apply f o] *)
-
-Definition apply_on A B (o : option A) (f : A -> option B) : option B:=
-  apply f o.
-
 
 (* ---------------------------------------------------------------------- *)
-(** ** Properties *)
+(** ** [apply_on] *)
 
-Lemma apply_on_inv : forall A B (f : A->option B) x y,
-  apply_on x f = Some y ->
-  exists z, x = Some z /\ f z = Some y.
-Proof using. destruct x; simpl; introv H; inverts* H. Qed.
+(* TODO: is this really useful? *)
+(** [apply_on o f] is the same as [apply f o] *)
 
-Implicit Arguments apply_on_inv [A B f x y].
+Definition apply_on A B (o : option A) (f : A->option B) : option B:=
+  apply f o.
 
-Lemma apply_on_inv_none : forall A B (f : A->option B) x,
-  apply_on x f = None ->
-  x = None \/ exists y, x = Some y /\ f y = None.
-Proof using. destruct x; simpl; introv H; inverts* H. Qed.
+Lemma apply_on_eq_none_inv : forall A B (f : A->option B) o,
+  apply_on o f = None ->
+     (o = None) 
+  \/ (exists x, o = Some x /\ f x = None).
+Proof using. introv H. destruct o; simpl; inverts* H. Qed.
 
-Lemma map_inv : forall A B (f : A->B) x y,
-  map f x = Some y ->
-  exists z, x = Some z /\ y = f z.
-Proof using. destruct x; simpl; introv H; inverts* H. Qed.
+Lemma apply_on_eq_some_inv : forall A B (f : A->option B) o x,
+  apply_on o f = Some x ->
+  exists z, o = Some z /\ f z = Some x.
+Proof using. introv H. destruct o; simpl; inverts* H. Qed.
 
-Implicit Arguments map_inv [A B f x y].
+Arguments apply_on_eq_none_inv [A] [B] [f] [o].
+Arguments apply_on_eq_some_inv [A] [B] [f] [o] [x].
 
-Lemma map_on_inv : forall A B (f : A->B) x y,
-  map_on x f = Some y ->
-  exists z, x = Some z /\ y = f z.
-Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 
-Implicit Arguments map_on_inv [A B f x y].
 
-Lemma option_map_none_inv : forall A B (f : A -> B) o,
-  map f o = None -> o = None.
-Proof using. introv E. destruct~ o; tryfalse. Qed.
 

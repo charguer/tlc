@@ -48,8 +48,8 @@ Proof using. intros. apply (Inhab_of_val (arbitrary, arbitrary)). Qed.
 
 (** Decomposition as projection *)
 
-Lemma tuple2_of_proj : forall A1 A2 (x:A1*A2),
-  (fst x, snd x) = x.
+Lemma prod2_eq_tuple_proj : forall A1 A2 (x:A1*A2),
+  x = (fst x, snd x).
 Proof using. intros. destruct~ x. Qed.
 
 (** Structural equality *)

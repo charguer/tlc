@@ -49,6 +49,9 @@ Proof using. typeclass. Qed.
 (* ********************************************************************** *)
 (** * Operations *)
 
+(* ---------------------------------------------------------------------- *)
+(** ** Testing the branch of the sum *)
+
 Definition is_inl (A B : Type) (x : A + B) : bool :=
   match x with
   | inl _ => true
@@ -60,7 +63,6 @@ Definition is_inr (A B : Type) (x : A + B) : bool :=
   | inl _ => false
   | inr _ => true
   end.
-
 
 Section IsIn.
 Variables (A B : Type).
@@ -76,9 +78,6 @@ Proof using. intros x. destruct~ x. Qed.
 
 End IsIn.
 
-
-(* ********************************************************************** *)
-(** * Projections *)
 
 (*-----------------------------------------------------*)
 (** ** Stripping of the branch tag *)
