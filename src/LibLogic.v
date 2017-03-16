@@ -701,8 +701,8 @@ End IffProp.
    and samewise for [not_forall_not_eq] and [not_exists_not_eq]. *)
 Hint Rewrite 
   not_not_eq not_and_eq not_or_eq not_impl_eq not_True_eq not_False_eq
-  not_forall_not_eq not_exists_not_eq not_forall_eq
-  not_exists_eq not_impl_eq
+  not_forall_eq not_forall_not_eq  
+  not_exists_eq not_exists_not_eq not_impl_eq
   prop_eq_True_eq prop_eq_False_eq eq_prop_eq_iff
   and_True_l_eq and_True_r_eq and_False_l_eq and_False_r_eq
   or_True_l_eq or_True_r_eq or_False_l_eq or_False_r_eq

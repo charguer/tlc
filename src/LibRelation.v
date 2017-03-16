@@ -2320,7 +2320,7 @@ End Fun_in_rel.
     are input-output for [f]. *)
 
 Definition rel_in_fun A B (R:A->B->Prop) (f:A->B) :=
-  forall x y, R x y -> y = f x.
+  forall x y, R x y -> f x = y.
 
 Section Rel_in_fun.
 Variables (A B : Type).
@@ -2332,7 +2332,7 @@ Lemma functional_of_rel_in_fun : forall R f,
   functional R.
 Proof using.
   unfold rel_in_fun, functional. introv M N1 N2. 
-  rewrites (>> M N1). rewrites~ (>> M N2).
+  lets: M N1. lets: M N2. congruence.
 Qed.
 
 (* If the relation [R] is functional and if [f] is included in [R],
