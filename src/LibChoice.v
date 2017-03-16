@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibEpsilon.
+Require Import LibTactics LibLogic LibEpsilon LibRelation.
 Generalizable Variables A B.
 
 (** This files includes several versions of the axiom of choice.
@@ -44,7 +44,7 @@ Scheme eq_indd := Induction for eq Sort Prop.
 
 Lemma dependent_functional_choice :
   forall A (B:A->Type) (R:forall x, B x -> Prop),
-  (forall x , exists y, R x y) ->
+  (forall x, exists y, R x y) ->
   (exists f, forall x, R x (f x)).
 Proof using.
   introv H.
@@ -59,7 +59,7 @@ Proof using.
   destruct (f x). simpls. destruct Heq using eq_indd. apply HR.
 Qed.
 
-Implicit Arguments dependent_functional_choice [A B].
+Arguments dependent_functional_choice [A] [B].
 
 
 (* ---------------------------------------------------------------------- *)
@@ -74,6 +74,7 @@ Proof using.
   intros. apply (functional_choice (fun x y => P x -> R x y)).
   intros. apply~ indep_general_premises.
 Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Omniscient functional choice *)
@@ -106,22 +107,24 @@ Proof using.
    apply~ (ex_unique_to_at_most_one (H y)).
 Qed.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Dependent functional unique choice *)
 
 Theorem dependent_functional_unique_choice :
-  forall (A:Type) (B:A -> Type) (R:forall x:A, B x -> Prop),
-  (forall x:A, exists! y : B x, R x y) ->
-  (exists! f : (forall x:A, B x), forall x:A, R x (f x)).
+  forall (A:Type) (B:A->Type) (R:forall (x:A), B x -> Prop),
+  (forall (x:A), exists! y : B x, R x y) ->
+  (exists! f : (forall (x:A), B x), forall (x:A), R x (f x)).
 Proof using.
   intros. destruct (dependent_functional_choice R) as [f Hf].
   intros. apply (ex_unique_to_ex (H x)).
   exists f. split. auto.
-   intros g Hg. apply fun_ext_dep_1. intros y.
+   intros g Hg. extens. intros y.
    apply~ (ex_unique_to_at_most_one (H y)).
  Qed.
 
-Implicit Arguments dependent_functional_unique_choice [A B].
+Arguments dependent_functional_unique_choice [A] [B].
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Guarded functional unique choice *)
@@ -135,6 +138,7 @@ Proof using.
   intros. apply indep_general_premises.
   introv H. destruct* (M _ H) as (y&Hy&_).
 Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Omniscient functional unique choice *)
@@ -157,12 +161,9 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Relational choice *)
 
-Definition subrelation A B (R1 R2 : A->B->Prop) :=
-  forall x y, R1 x y -> R2 x y.
-
 Lemma rel_choice : forall A B (R:A->B->Prop),
   (forall x, exists y, R x y) ->
-  (exists R', subrelation R' R
+  (exists R', rel_incl R' R
            /\ forall x, exists! y, R' x y).
 Proof using.
   introv H. destruct~ (functional_choice R) as [f Hf].
@@ -173,34 +174,34 @@ Qed.
 
 (* TODO: Dependent relational choice, is it meaningful?, useful? *)
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Guarded relational choice *)
 
 Lemma guarded_rel_choice : forall A B (P : A->Prop) (R : A->B->Prop),
   (forall x, P x -> exists y, R x y) ->
-  (exists R', subrelation R' R
+  (exists R', rel_incl R' R
            /\ forall x, P x -> exists! y, R' x y).
 Proof using.
-  intros. destruct (rel_choice (fun (x:sigT P) (y:B) => R (projT1 x) y))
+  intros. destruct (rel_choice (fun (x:sig P) (y:B) => R (sig_val x) y))
    as (R',(HR'R,M)).
     intros (x,HPx). destruct (H _ HPx) as (y,HRxy). exists~ y.
-  set (R'' := fun (x:A) (y:B) => exists (H : P x), R' (existT P x H) y).
+  set (R'' := fun (x:A) (y:B) => exists (H : P x), R' (exist P x H) y).
   exists R''. split.
     intros x y (HPx,HR'xy). apply (HR'R _ _ HR'xy).
-    intros x HPx. destruct (M (existT P x HPx)) as (y,(HR'xy,Uniq)).
+    intros x HPx. destruct (M (exist P x HPx)) as (y,(HR'xy,Uniq)).
      exists y. split.
        exists~ HPx.
        intros y' (H'Px,HR'xy'). apply Uniq.
         rewrite~ (proof_irrelevance HPx H'Px).
 Qed.
 
-... can sig be used instead of sigT? 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Omniscient relation choice *)
 
 Lemma omniscient_rel_choice : forall A B (R : A->B->Prop),
-  exists R', subrelation R' R
+  exists R', rel_incl R' R
           /\ forall x, (exists y, R x y) -> (exists! y, R' x y).
 Proof using. intros. apply~ guarded_rel_choice. Qed.
 

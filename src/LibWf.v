@@ -14,7 +14,7 @@ Require Import LibTactics LibLogic
 (** From the Prelude:
 
  Inductive Acc A (R:A->A->Prop) (x:A) : Prop :=
-   |  Acc_intro : (forall y:A, R y x -> Acc y) -> Acc x.
+   | Acc_intro : (forall y:A, R y x -> Acc y) -> Acc x.
 
  Definition well_founded A (R:A->A->Prop) := forall (x:A), Acc x.
 
@@ -45,23 +45,14 @@ Proof using.
   intros x IH. constructor. intros. apply IH. apply~ Inc.
 Qed.
 
-(** Well-foundedness modulo extensional equality *)
-(* Remark: this can be simulated using [applys args_eq_1. extens] *)
-
-Lemma wf_iff : forall A (R1 R2:binary A),
-  wf R1 -> 
-  (forall x y, R1 x y <-> R2 x y) -> 
-  wf R2.
-Proof using. introv W1 Ext. apply* incl_wf. introv H. rewrite~ Ext. Qed.
-
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics *)
 
-(** [prove_wf] is a tactic that tries to prove a goal of the
+(** [solve_wf] is a tactic that tries to prove a goal of the
     form [wf R]. It is implemented using [auto]. *)
 
-Tactic Notation "prove_wf" :=
+Tactic Notation "solve_wf" :=
   solve [ auto with wf ].
 
 (** [auto with wf] attempts to unfold names of relations. *)
@@ -534,7 +525,7 @@ Hint Resolve inverse_image_wf : wf.
 (* TODO..
 
 Section WfUnion.
-  Variable A : Type.
+  Variables (A : Type).
   Variables R1 R2 : binary A.
 
   Notation Union := (union A R1 R2).
@@ -604,7 +595,7 @@ End WfUnion.
 (* TODO
 
 Section Wf_Transitive_Closure.
-  Variable A : Type.
+  Variables (A : Type).
   Variable R : relation A.
 
   Notation trans_clos := (clos_trans A R).

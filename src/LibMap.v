@@ -120,7 +120,7 @@ Global Opaque map empty_inst single_bind_inst binds_inst
  dom_inst disjoint_inst index_inst fold_inst.
 
 Instance map_inhab : forall A, Inhab (map A B).
-Proof using. intros. apply (prove_Inhab (@empty_impl A B)). Qed.
+Proof using. intros. apply (Inhab_of_val (@empty_impl A B)). Qed.
 
 
 (* Check that update is derivable via bag_update_as_union_single

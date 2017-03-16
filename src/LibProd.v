@@ -40,7 +40,7 @@ Generalizable Variables A B.
 (** ** Inhabited *)
 
 Global Instance prod_inhab : forall `{Inhab A, Inhab B}, Inhab (A * B).
-Proof using. intros. apply (prove_Inhab (arbitrary, arbitrary)). Qed.
+Proof using. intros. apply (Inhab_of_val (arbitrary, arbitrary)). Qed.
 
 
 (* ********************************************************************** *)

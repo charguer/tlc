@@ -60,7 +60,7 @@ Qed.
 
 Section Prefix.
 
-Variable A : Type.
+Variables (A : Type).
 
 (* A definition in terms of concatenation. See also [LibListZ]. *)
 
@@ -233,7 +233,7 @@ Lemma use_prefix_snoc:
   prefix (xs & x) ys ->
   ys = xs ++ zs ->
   exists zs', zs = x :: zs'.
-Proof.
+Proof using.
   introv h ?. subst.
   forwards: eliminate_common_prefix h.
   eauto using use_prefix_cons.
@@ -293,7 +293,7 @@ Hint Resolve
 
 Section PrefixClosed.
 
-Variable A : Type.
+Variables (A : Type).
 
 Implicit Types xs ys : list A.
 
@@ -334,7 +334,7 @@ Qed.
 Lemma prefix_closure_is_prefix_closed:
   forall P,
   prefix_closed (prefix_closure P).
-Proof.
+Proof using.
   unfold prefix_closed, prefix_closure.
   introv (zs&?&?). eauto using prefix_transitive.
 Qed.

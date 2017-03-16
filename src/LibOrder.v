@@ -7,12 +7,33 @@ Set Implicit Arguments.
 Require Import LibTactics LibLogic LibReflect LibOperation LibRelation.
 Generalizable Variables A.
 
+
+
+(* TODO: requires liborder
+Lemma order_rel_incl : forall A B,
+  order (@rel_incl A B).
+Proof using. 
+  hint refl_rel_incl, antisym_rel_incl, trans_rel_incl.
+  constructors*.
+Qed.
+*)
+
+(* TODO: requires liborder
+Lemma order_pred_le : forall A B,
+  order (@rel_incl A B).
+Proof using. 
+  hint refl_rel_incl, antisym_rel_incl, trans_rel_incl.
+  constructors*.
+Qed.
+*)
+
+
 (**************************************************************************)
 (* * Preorder *)
 
 (** Definition *)
 
-Record preorder (A:Type) (R:binary A) : Prop := {
+Record preorder A (R:binary A) : Prop := {
    preorder_refl : refl R;
    preorder_trans : trans R }.
 
@@ -34,7 +55,7 @@ Proof using. introv [Re Tr]. constructor; autos~ large_refl large_trans. Qed.
 
 (** Definition of total preorder relations *)
 
-Record total_preorder (A:Type) (R:binary A) : Prop := {
+Record total_preorder A (R:binary A) : Prop := {
    total_preorder_trans : trans R;
    total_preorder_total : total R }.
 
@@ -83,7 +104,7 @@ Qed.
 
 (** Definition *)
 
-Record order (A:Type) (R:binary A) : Prop := {
+Record order A (R:binary A) : Prop := {
    order_refl : refl R;
    order_trans : trans R;
    order_antisym : antisym R }.
@@ -93,7 +114,7 @@ Implicit Arguments order_antisym [A R o x y].
 
 (** Conversion to preorder *)
 
-Coercion order_to_preorder (A:Type) (R:binary A)
+Coercion order_to_preorder A (R:binary A)
   (O:order R) : preorder R.
 Proof using. destruct* O. constructors*. Qed.
 
@@ -123,7 +144,7 @@ Qed.
 
 (** Definition *)
 
-Record total_order (A:Type) (R:binary A) : Prop := {
+Record total_order A (R:binary A) : Prop := {
    total_order_order :> order R;
    total_order_total : total R }.
 
@@ -147,7 +168,7 @@ Qed.
 
 (** Conversion to order *)
 
-Coercion total_order_to_total_preorder (A:Type) (R:binary A)
+Coercion total_order_to_total_preorder A (R:binary A)
   (O:total_order R) : total_preorder R.
 Proof using. destruct* O. constructors*. applys* order_trans. Qed.
 
@@ -255,7 +276,7 @@ End TotalOrderProp.
 
 (** Definition *)
 
-Record strict_order (A:Type) (R:binary A) : Prop := {
+Record strict_order A (R:binary A) : Prop := {
    strict_order_irrefl : irrefl R;
    strict_order_asym : asym R;
    strict_order_trans : trans R }.
@@ -271,7 +292,7 @@ Proof using.
   autos~ flip_antisym flip_trans flip_asym.
 Qed.
 
-Lemma strict_order_strict : forall (A:Type) (R:binary A),
+Lemma strict_order_strict : forall A (R:binary A),
   order R -> strict_order (strict R).
 Proof using.
   introv [Re As Tr]. unfold strict. constructor; intros_all; simpls.
@@ -280,7 +301,7 @@ Proof using.
   split. applys* As. intros E. subst. applys* antisym_inv y z.
 Qed.
 
-Lemma order_of_strict : forall (A:Type) (R:binary A),
+Lemma order_of_strict : forall A (R:binary A),
   strict_order R -> order (large R).
 Proof using.
   introv [Re As Tr]. unfold large. constructor; simpl.
@@ -298,7 +319,7 @@ Qed.
 (** Trichotomy *)
 (* todo: move *)
 
-Inductive trichotomy (A:Type) (R:binary A) : binary A :=
+Inductive trichotomy A (R:binary A) : binary A :=
   | trichotomy_left: forall x y,
       R x y -> x <> y -> ~ R y x -> trichotomy R x y
   | trichotomy_eq : forall x,
@@ -306,10 +327,10 @@ Inductive trichotomy (A:Type) (R:binary A) : binary A :=
   | trichotomy_right : forall x y,
       ~ R x y -> x <> y -> R y x -> trichotomy R x y.
 
-Definition trichotomous (A:Type) (R:binary A) :=
+Definition trichotomous A (R:binary A) :=
   forall x y, trichotomy R x y.
 
-Lemma flip_trichotomous : forall (A:Type) (R:binary A),
+Lemma flip_trichotomous : forall A (R:binary A),
   trichotomous R -> trichotomous (flip R).
 Proof using.
   introv H. intros x y. destruct (H x y).
@@ -320,7 +341,7 @@ Qed.
 
 (** Definition *)
 
-Record strict_total_order (A:Type) (R:binary A) : Prop := {
+Record strict_total_order A (R:binary A) : Prop := {
    strict_total_order_trans : trans R;
    strict_total_order_trichotomous : trichotomous R }.
 
@@ -355,7 +376,7 @@ Proof using.
 Qed.
 (** From total order *)
 
-Lemma strict_total_order_of_total_order : forall (A:Type) (R:binary A),
+Lemma strict_total_order_of_total_order : forall A (R:binary A),
   total_order R -> strict_total_order (strict R).
 Proof using.
   introv [[Re Tr As] To]. constructor.
@@ -800,7 +821,7 @@ Proof using.
     forwards K:(flip_strict_of_not (R:=le)); eauto.
       apply le_total. apply (proj1 K).
     subst. apply le_refl.
-  apply classic_left. intros P Q. apply P. apply* le_antisym.
+  apply or_classic_l. intros P Q. apply P. apply* le_antisym.
 Qed.
 
 Global Instance nlt_as_ge_from : Le_total_order -> NLt_As_Ge.

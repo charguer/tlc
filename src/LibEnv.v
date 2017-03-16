@@ -196,7 +196,7 @@ Open Scope env_scope.
 (** ** Additional definitions *)
 
 Section MoreDefinitions.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types E F : env A.
 
 (** Well-formed environments contains no duplicate bindings. *)
@@ -446,7 +446,7 @@ End SinglesProperties.
 
 Section StructProperties.
 
-Variable A : Type.
+Variables (A : Type).
 Implicit Types x : var.
 Implicit Types v : A.
 Implicit Types E F : env A.
@@ -501,7 +501,7 @@ End StructProperties.
 
 Section MoreProperties.
 
-Variable A : Type.
+Variables (A : Type).
 Implicit Types x : var.
 Implicit Types v : A.
 Implicit Types E F : env A.
@@ -1127,7 +1127,7 @@ Tactic Notation "binds_push" "*" constr(H) :=
 (** ** Properties of environment inclusion *)
 
 Section ExtendsProperties.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types x : var.
 Implicit Types v : A.
 Implicit Types E F : env A.

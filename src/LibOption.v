@@ -31,7 +31,7 @@ Implicit Arguments None [[A]].
 (** ** Inhabited *)
 
 Instance option_inhab : forall A, Inhab (option A).
-Proof using. intros. apply (prove_Inhab None). Qed.
+Proof using. intros. apply (Inhab_of_val None). Qed.
 
 
 (* ********************************************************************** *)
@@ -105,7 +105,7 @@ Implicit Arguments apply_on_inv [A B f x y].
 Lemma apply_on_inv_none : forall A B (f : A->option B) x,
   apply_on x f = None ->
   x = None \/ exists y, x = Some y /\ f y = None.
-Proof. destruct x; simpl; introv H; inverts* H. Qed.
+Proof using. destruct x; simpl; introv H; inverts* H. Qed.
 
 Lemma map_inv : forall A B (f : A->B) x y,
   map f x = Some y ->
@@ -123,5 +123,5 @@ Implicit Arguments map_on_inv [A B f x y].
 
 Lemma option_map_none_inv : forall A B (f : A -> B) o,
   map f o = None -> o = None.
-Proof. introv E. destruct~ o; tryfalse. Qed.
+Proof using. introv E. destruct~ o; tryfalse. Qed.
 

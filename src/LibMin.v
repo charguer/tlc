@@ -20,14 +20,14 @@ Generalizable Variables A.
 (* [lower_bound le P x] means that [x] is a lower bound for the
    set [P] with respect to the ordering [le]. *)
 
-Definition lower_bound (A:Type) (le:binary A) (P:A->Prop) (x:A) :=
+Definition lower_bound A (le:binary A) (P:A->Prop) (x:A) :=
   forall y, P y -> le x y.
 
 (* [min_element le P x] means that [x] is a minimal element of
    [P], i.e., it is both a member of [P] and a lower bound for
    [P]. *)
 
-Definition min_element (A:Type) (le:binary A) (P:A->Prop) (x:A) :=
+Definition min_element A (le:binary A) (P:A->Prop) (x:A) :=
   P x /\ lower_bound le P x.
 
 (* [mmin le P] is a minimal element of [P] with respect to [le],
@@ -43,14 +43,14 @@ Definition mmin `{Inhab A} (le:binary A) (P:A->Prop) :=
 (* [upper_bound le P x] means that [x] is a lower bound for the
    set [P] with respect to the ordering [le]. *)
 
-Definition upper_bound (A:Type) (le:binary A) (P:A->Prop) (x:A) :=
+Definition upper_bound A (le:binary A) (P:A->Prop) (x:A) :=
   forall y, P y -> le y x.
 
 (* [max_element le P x] means that [x] is a maximal element of
    [P], i.e., it is both a member of [P] and a lower bound for
    [P]. *)
 
-Definition max_element (A:Type) (le:binary A) (P:A->Prop) (x:A) :=
+Definition max_element A (le:binary A) (P:A->Prop) (x:A) :=
   P x /\ upper_bound le P x.
 
 (* [mmax le P] is a minimal element of [P] with respect to [le],
@@ -105,7 +105,7 @@ Qed.
    the case that every non-empty set that admits a lower
    bound has a minimal element. *)
 
-Definition bounded_has_minimal (A:Type) (le:binary A) :=
+Definition bounded_has_minimal A (le:binary A) :=
   (* Recall that [ex P] means that [P] has an inhabitant; i.e.,
      it is equivalent to [exists x, P x]. *)
   forall P,
@@ -174,7 +174,7 @@ Proof using.
      is the desired minimal element. If it does not, this implies
      that [x + 1] is a lower bound for [P], and the induction
      hypothesis can be used. *)
-  destruct (classic (P x)).
+  destruct (prop_inv (P x)).
     { exists x. split; eauto. }
     { eapply (IHk (x + 1)%nat). nat_math. eauto using increment_lower_bound_nat. }
 Qed.

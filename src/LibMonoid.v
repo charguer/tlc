@@ -18,12 +18,12 @@ Record monoid_def (A:Type) : Type := monoid_ {
    monoid_oper : A -> A -> A;
    monoid_neutral : A }.
 
-Class Monoid (A:Type) (m:monoid_def A) : Prop := {
+Class Monoid A (m:monoid_def A) : Prop := {
    monoid_assoc_prop : let (o,n) := m in assoc o;
    monoid_neutral_l_prop : let (o,n) := m in neutral_l o n;
    monoid_neutral_r_prop : let (o,n) := m in neutral_r o n }.
 
-Class Monoid_commutative (A:Type) (m:monoid_def A) : Prop := {
+Class Monoid_commutative A (m:monoid_def A) : Prop := {
    monoid_commutative_monoid : Monoid m;
    monoid_commutative_comm : let (o,n) := m in comm o }.
 

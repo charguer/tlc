@@ -131,7 +131,7 @@ Opaque filterb.
 (** ** Mem *)
 
 Section Memb.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types x k : A.
 Implicit Types l : list A.
 

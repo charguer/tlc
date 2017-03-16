@@ -46,7 +46,7 @@ Module Export Variables : VariablesType.
 Definition var := nat.
 
 Lemma var_inhab : Inhab var.
-Proof using. apply (prove_Inhab 0). Qed.
+Proof using. apply (Inhab_of_val 0). Qed.
 
 Lemma var_comp : Comparable var.
 Proof using. apply nat_comparable. Qed.

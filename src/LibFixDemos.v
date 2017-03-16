@@ -249,7 +249,7 @@ Lemma eventually_to_dist : forall A (P:A->Prop) s,
   eventually P s -> exists n, first_st_at P s n.
 Proof using.
   introv H. induction H. exists 0. simple~.
-  destruct (classic (P x)).
+  destruct (prop_inv (P x)).
     exists 0. simple~.
     destruct IHeventually as [n Pn]. exists (S n). simple~.
 Qed.
@@ -271,7 +271,7 @@ Context (A:Type) {IA:Inhab A}.
 Variable (P:A->Prop).
 
 Definition Filter filter s :=
-  let '(x:::s') := s in
+  let '(x::ps') := s in
   let s'' := filter s' in
   If P x then x:::s'' else s''.
 
@@ -535,7 +535,7 @@ Inductive tree : Type :=
   | node : list tree -> tree.
 
 Instance tree_inhab : Inhab tree.
-Proof using. intros. apply (prove_Inhab (leaf 0)). Qed.
+Proof using. intros. apply (Inhab_of_val (leaf 0)). Qed.
 
 (** An induction principle for trees *)
 
@@ -622,7 +622,7 @@ CoInductive itree : Type :=
 (** The type [itree] is inhabited *)
 
 Instance itree_inhab : Inhab itree.
-Proof using. intros. apply (prove_Inhab (itree_leaf 0)). Qed.
+Proof using. intros. apply (Inhab_of_val (itree_leaf 0)). Qed.
 
 (** Similarity up to level [i] between two trees *)
 
@@ -954,7 +954,7 @@ Hint Resolve regexp_sub_wf : wf.
 Definition text_sub : binary text := tclosure (@list_sub _).
 
 Lemma text_sub_wf : wf text_sub.
-Proof using. lets: tclosure_wf. unfold text_sub. prove_wf. Qed.
+Proof using. lets: tclosure_wf. unfold text_sub. solve_wf. Qed.
 
 Hint Resolve text_sub_wf : wf.
 
@@ -983,7 +983,7 @@ Definition parse_sub : binary (regexp * text) :=
   lexico2 regexp_sub text_sub.
 
 Lemma parse_sub_wf : wf parse_sub.
-Proof using. prove_wf. Qed.
+Proof using. solve_wf. Qed.
 
 Hint Unfold parse_sub.
 Hint Resolve parse_sub_wf : wf.
@@ -1320,16 +1320,18 @@ Qed.
 (** We can reformulate those two results in the form of an
     equivalence between [sem] and [parse] *)
 
-Theorem parse_iff_sem : forall r s, normal r ->
-  (parse (r,s,is_nil) = true <-> sem r s).
-Proof using. split. apply~ parse_to_sem. intros. apply~ sem_to_parse. Qed.
+Theorem parse_eq_sem : forall r s, normal r ->
+    (parse (r,s,is_nil) = true) 
+  = (sem r s).
+Proof using. extens. apply~ parse_to_sem. intros. apply~ sem_to_parse. Qed.
 
 (** A similar, more general, result *)
 
-Theorem parse_iff_sem_ind : forall r s k, normal r ->
-  (parse (r,s,k) = true <-> (exists s1 s2, s = s1 ++ s2 /\ sem r s1 /\ k s2 = true)).
+Theorem parse_eq_sem_ind : forall r s k, normal r ->
+    (parse (r,s,k) = true)
+  = (exists s1 s2, s = s1 ++ s2 /\ sem r s1 /\ k s2 = true).
 Proof using.
-  split. intros. apply~ parse_to_sem_ind.
+  extens. intros. apply~ parse_to_sem_ind.
   intros (s1&s2&?&?&?). subst. apply~ sem_to_parse_ind.
 Qed.
 

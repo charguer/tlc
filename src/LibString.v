@@ -12,4 +12,4 @@ Require Export String.
 (** * Inhabited *)
 
 Instance string_inhab : Inhab string.
-Proof using. apply (prove_Inhab EmptyString). Qed.
+Proof using. apply (Inhab_of_val EmptyString). Qed.

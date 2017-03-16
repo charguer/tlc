@@ -1154,7 +1154,7 @@ Qed.
 
 Lemma demo_ereplace_working : forall (P:nat->nat->Prop) x y,
   (forall n, P n n) -> (x > 0 -> x = y) -> (x > 0) -> P x y.
-Proof.
+Proof using.
   introv H E L. dup 4.
   (* here, the hypothesis [P n n] cannot be applied directly *)
   try apply H.

@@ -56,11 +56,11 @@ Hint Rewrite LibListZ_length_def : rew_maths.
 (* DEMO: *)
 
 Goal forall A (l : list A), 0 <= length l.
-Proof. intros. math. Qed.
+Proof using. intros. math. Qed.
 
 Goal forall (l : list Z) (s n : int),
      s <= n -> s = length l -> n >= 0.
-Proof. intros. math. Qed.
+Proof using. intros. math. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -107,7 +107,7 @@ Global Opaque binds_inst
 (** * Properties of length *)
 
 Section LengthProperties.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types l : list A.
 Ltac auto_tilde ::= eauto with maths.
 
@@ -147,7 +147,7 @@ Lemma abs_length:
   forall i l,
   i = length l ->
   abs i = LibList.length l.
-Proof.
+Proof using.
   unfold length. intros. subst.
   generalize (LibList.length l). clear A l. (* for clarity *)
   rew_maths. eapply Zabs2Nat.id.
@@ -185,7 +185,7 @@ Proof using.
 Qed.
 
 Lemma cons_make: forall n A (x : A), 0 < n -> x :: make (n - 1) x = make n x.
-Proof.
+Proof using.
   intros.
   unfold make. do 2 (case_if; [ math | ]).
   (* This is really painful. *)
@@ -214,7 +214,7 @@ Context (A : Type) `{Inhab A}.
 Lemma read_zero:
   forall x (xs : list A),
   (x :: xs)[0] = x.
-Proof.
+Proof using.
   intros. unfold read, read_inst, read_impl, nth.
   case_if; [ math | ]. reflexivity.
 Qed.
@@ -223,7 +223,7 @@ Lemma read_succ:
   forall x (xs : list A) i,
   0 <= i < length xs ->
   (x :: xs)[i + 1] = xs[i].
-Proof.
+Proof using.
   intros. unfold read, read_inst, read_impl, nth, LibList.nth.
   do 2 (case_if; [ math | ]).
   change (i + 1) with (Z.succ i).
@@ -241,7 +241,7 @@ Lemma ext_eq:
   length xs = length ys ->
   (forall i, 0 <= i < length xs -> xs[i] = ys[i]) ->
   xs = ys.
-Proof.
+Proof using.
   induction xs; destruct ys; simpl; introv Heq Hread;
   try solve [ eauto | false ]. f_equal.
   (* The head. *)
@@ -263,7 +263,7 @@ Lemma ext_eq_index:
   length xs = length ys ->
   (forall i, index xs i -> xs[i] = ys[i]) ->
   xs = ys.
-Proof.
+Proof using.
   eauto using ext_eq.
 Qed.
 
@@ -342,7 +342,7 @@ Lemma update_app_right:
   0 <= j ->
   ij = i + j ->
   (xs ++ ys)[ij:=v] = xs ++ ys[j:=v].
-Proof.
+Proof using.
   intros. subst ij.
   unfold LibContainer.update, update_inst, update_impl.
   unfold update. do 2 (case_if; [ math | ]).
@@ -355,7 +355,7 @@ Lemma update_app_right_here:
   forall A i (xs ys : list A) x y,
   i = length xs ->
   (xs ++ y :: ys)[i := x] = xs & x ++ ys.
-Proof.
+Proof using.
   intros.
   unfold LibContainer.update, update_inst, update_impl.
   unfold update. case_if; [ math | ].
@@ -720,11 +720,11 @@ End ZindicesOld.
 
 Section Prefix.
 
-Variable A : Type.
+Variables (A : Type).
 Implicit Types xs ys : list A.
 
 Lemma le_implies_ge: forall x y, x <= y -> y >= x.
-Proof. math. Qed.
+Proof using. math. Qed.
 
 Local Hint Resolve le_implies_ge length_nonneg.
 

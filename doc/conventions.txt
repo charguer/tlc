@@ -1,5 +1,6 @@
 
 
+
 ============================================================================
 Sections and comments in files.
 
@@ -52,7 +53,7 @@ Example:
      fold_right (fun x acc => 1+acc) 0 l.
 
    Section Length.
-   Variable A : Type.
+   Variables (A : Type).
    Implicit Types l : list A.
 
    Lemma length_nil :
@@ -64,6 +65,154 @@ Example:
    Proof using. auto. Qed.
 
    End Length.
+
+The command "Variables" is accepted for historical reasons,
+but the modern version is "Context", which is more powerful:
+
+   Section Nth.
+   Context (A:Type) {IA:Inhab A}.
+   Implicit Types n : nat.
+   Implicit Types x : A.
+   Implicit Types l : list A.
+
+Note that all typeclass instances must be assigned a name explicitly.
+
+Remark: the syntax of "Variables" without parenthesis is accepted for 
+historical reasons, but is discouraged:
+
+   Variables A : Type.
+
+
+============================================================================
+Indentation and style
+
+Indentation should use two spaces. 
+
+The name of the lemma should be followed by a ":" surounded with spaces.
+
+The arguments should follow on the same line (except if they don't fit on
+the line, in which case they may start on the next line). 
+
+   The statement should be on the next line, indented with two spaces.
+There is an exception for the special case where there are not 
+variables involved; then, the statement may be placed directly on the line.
+
+Proofs should always begin with "Proof using." and end with "Qed.",
+except typeclass instances which may conclude with "Defined."
+
+Examples:
+
+   Lemma istrue_or_eq : forall b1 b2,
+     istrue (b1 || b2) = (istrue b1 \/ istrue b2).
+   Proof using. extens. tautob. Qed.
+
+   Lemma and_comm : comm and.
+   Proof using. tautob. Qed.
+
+There should be only one hypothesis per line.
+
+   Lemma asym_inv : forall x y R,
+     asym R -> 
+     R x y -> 
+     R y x ->
+     False.
+
+Multiline conclusions should be presented as follows:
+
+   Lemma remove_duplicates_spec : forall l l',
+     l' = remove_duplicates l ->
+        noduplicates l'
+     /\ (forall x, mem x l' <-> mem x l)
+     /\ length l' <= length l.
+
+   Lemma Exists_inv_middle_first : forall P l,
+     Exists P l ->
+     exists l1 x l2, 
+          l = l1++x::l2
+       /\ Forall (fun x => ~ P x) l1
+       /\ P x.
+
+Similar conventions apply to definitions. 
+The body of the definition may be placed on the next line.
+
+   Definition epsilon `{Inhab A} (P : A->Prop) : A := 
+     sig_val (epsilon_def P).
+
+   Definition env (A:Type) := list (var * A).
+
+
+
+============================================================================
+Parentheses
+
+Variables quantified by "forall" or "fun" or "exists", when they are
+annotated with a type, should be enclosed in parentheses.
+
+  good:     fun (a:A) => ...
+  bad:      fun a:A => ...
+  good:     forall (a b:A), ...
+  bad:      forall a b:A, ... 
+
+Variables of type "Type" may be written without annotation whenever
+there are followed by other arguments using that type variables.
+Then, it is not needed to annotate [(A:Type] since [A] suffices.
+
+   Definition asym A (R:binary A) :=
+     forall x y, R x y -> ~ R y x.
+
+Note, however, the need to annotate type variables, e.g. in:
+
+   Definition env (A:Type) := list (var * A).
+
+Consecutive variables of a same type can be grouped, although this is not
+mentatory.
+
+   Definition incl A B (R1 R2 : A->B->Prop) :=
+     forall x y, R1 x y -> R2 x y.
+
+Spaces around ":" in type annotations may be removed, although this is not
+mentatory.
+
+   Definition incl A B (R1 R2:A->B->Prop) :=
+     forall x y, R1 x y -> R2 x y.
+
+The use of spaces around "->" is discouraged, as it takes too much space.
+Sometimes, sure, it looks fine:
+
+   Definition incl A B (R1 R2 : A -> B -> Prop) :=
+     forall x y, R1 x y -> R2 x y.
+
+but the use of too many spaces tend to not scale up well. Compare:
+
+   Definition FixFunMod A B {IB:Inhab B} (E:binary B) (F:(A->B)->(A->B)) : A->B :=
+   Definition FixFunMod A B {IB : Inhab B} (E : binary B) (F : (A -> B) -> (A -> B)) : A -> B :=
+
+Automatic generalization is allowed, but only for type variables.
+Typical pattern  [`{IA:Inhab A}] which quantifies [A] automatically.
+
+Instance variables should be named (because otherwise using "Arguments"
+for changing implicit arguments requires the "renaming" flag, whose use 
+may cause harm upon code refactoring.)
+
+  good:     forall `{Inhab A}, ...
+  bad:      forall `{IA:Inhab A}, ... 
+
+Definitions should have an explicit return type:
+
+   Definition choose A `{IB:Inhab B} (R:A->B->Prop) : A->B := 
+     fun (a:A) => epsilon (fun b => R a b).
+
+   Definition neg (x:bool) : bool := ...
+   
+with an exception for when the result type is [Prop] or [Type]:
+
+   Definition map (A B : Type) := A -> option B.
+
+   Definition not (P : Prop) := P -> False.
+
+   Class Notin_empty :=
+     { notin_empty : forall x, x \notin \{} }.
+
 
 
 ============================================================================
@@ -121,6 +270,48 @@ a small number of obviously useful hints to be added to the core database.
 Transitivity results should never be added as hints, for efficiency reasons.
 One may, however, set up a Hint Extern for recognizing hypotheses that
 may be exploited by transitivity.
+
+
+============================================================================
+Naming of definitions
+
+*) Constructors for Inductive and Record definitions should be prefixed
+   with the name of the result type.
+
+   Inductive Forall A (P:A->Prop) : list A -> Prop :=
+     | Forall_nil :
+         Forall P nil
+     | Forall_cons : forall l x,
+         P x -> 
+         Forall P l ->
+         Forall P (x::l).
+
+*) Records should have a constructor explicitly named with the 
+   suffix [_make]. (Coq uses the prefix [Build_] by default,
+   but this does not match our conventions.)
+
+   Record order A (R:binary A) : Prop := order_make {
+      order_refl : refl R;
+      order_trans : trans R;
+      order_antisym : antisym R }.
+
+
+*) The suffix "_intro" should be used for an Inductive definition 
+   with a single constructor, or a Record with a single field.
+
+      Class Inhab (A:Type) : Prop :=
+        { Inhab_intro : (exists (x:A), True) }.
+
+      Inductive Acc A (R:A->A->Prop) (x:A) : Prop :=
+         | Acc_intro : (forall y:A, R y x -> Acc y) -> Acc x.
+
+   Exception is for typeclass constructors with a single field,
+   where the typeclass name is capitalized, and the constructor 
+   may be the same name in lowercase, instead of using the "_intro" 
+   suffix.
+
+      Class In_union_l :=
+        { in_union_l : forall x E F, x \in E -> x \in (E \u F) }.
 
 
 ============================================================================
@@ -349,23 +540,31 @@ Naming of lemmas
         l <> nil -> 
         exists x q, l = q ++ x::nil.
 
+   Sometimes an inversion lemma does not even have any hypothesis.
+   For example, a boolean is either true or false, so this result
+   is an inversion result over a boolean value, resulting in a
+   disjunction of equalities.
 
+      Lemma bool_inv_or_eq : forall b,
+         b = true \/ b = false.
 
 *) Sometimes it is not obvious in which direction it is desirable to state
    the equality. Consider the transitive closure of an inverse relation:
 
        tclosure (inverse R) = inverse (tclosure R)
 
-   versus the other direction:
-
-           inverse (tclosure R) = tclosure (inverse R).
-
-   We impose the following convention: we assign a (somewhat arbitrary) 
+   There is a priori no reason to favor one direction rather than the other.
+   We thus impose the following convention: we assign a (somewhat arbitrary) 
    order on definitions, which correspond to the order that definitions
-   appear in the files, and intuitively puts the definitions that are 
-   more "basic" before the ones that are more "complex" or less frequently
-   used. Here, we have decided that "inverse" is more basic than "tclosure".
+   appear in the files. Intuitively, we try to put the definitions that are 
+   more "basic" before the ones that are more "complex" (or less frequently
+   used). Here, we have decided that "inverse" is more basic than "tclosure".
    Thus, we write:
 
       Lemma tclosure_inverse_eq : forall R,
         tclosure (inverse R) = inverse (tclosure R).
+
+   Note that this lemma would thus be included in the section establishing
+   results about [tclosure], and not in the section about [inverse], since
+   the section about [inverse] appears prior to the definition of [tclosure].
+

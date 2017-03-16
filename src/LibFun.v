@@ -80,7 +80,7 @@ Proof using. intros. subst~. Qed.
 Require Import LibList.
 Lemma list_map_compose : forall A B C (f : A -> B) (g : B -> C) l,
   LibList.map g (LibList.map f l) = LibList.map (g \o f) l.
-Proof.
+Proof using.
   introv. induction l.
    reflexivity.
    rew_list. fequals~.
@@ -110,7 +110,7 @@ Definition fupdate A B (f : A -> B) (a : A) (b : B) : A -> B :=
 
 Lemma fupdate_def : forall A B (f:A->B) a b x,
   fupdate f a b x = If (x = a) then b else f x.
-Proof. auto. Qed.
+Proof using. auto. Qed.
 
 Lemma fupdate_eq : forall A B (f:A->B) a b x,
   x = a ->
@@ -190,6 +190,7 @@ End FunctionImage.
 
 Hint Resolve finite_image : finite.
 
+
 (* ********************************************************************** *)
 (** ** Function preimage *)
 
@@ -200,7 +201,6 @@ Definition preimage A B (f : A -> B) (E : set B) : set A :=
   \set{ x | exists_ y \in E, y = f x }.
 
 End FunctionPreimage.
-
 
 
 (* ********************************************************************** *)
@@ -214,18 +214,18 @@ Fixpoint applyn A n (f : A -> A) x :=
 
 Lemma applyn_fix : forall A n f (x : A),
   applyn (S n) f x = applyn n f (f x).
-Proof. introv. induction~ n. simpls. rewrite~ IHn. Qed.
+Proof using. introv. induction~ n. simpls. rewrite~ IHn. Qed.
 
 Lemma applyn_comp : forall A n m f (x : A),
   applyn n f (applyn m f x) = applyn (n + m) f x.
-Proof.
+Proof using.
   introv. gen m; induction n; introv; simpls~.
   rewrite~ IHn.
 Qed.
 
 Lemma applyn_nested : forall A n m f (x : A),
   applyn n (applyn m f) x = applyn (n * m) f x.
-Proof.
+Proof using.
   introv. gen m. induction n; introv; simpls~.
   rewrite IHn. rewrite~ applyn_comp.
 Qed.
@@ -233,13 +233,13 @@ Qed.
 Lemma applyn_altern : forall A B (f : A -> B) (g : B -> A) x n,
   applyn n (fun x => f (g x)) (f x) =
     f (applyn n (fun x => g (f x)) x).
-Proof. introv. gen x. induction~ n. introv. repeat rewrite applyn_fix. autos~. Qed.
+Proof using. introv. gen x. induction~ n. introv. repeat rewrite applyn_fix. autos~. Qed.
 
 Lemma applyn_ind : forall A (P : A -> Prop) (f : A -> A) x n,
   (forall x, P x -> P (f x)) ->
   P x ->
   P (applyn n f x).
-Proof. introv I. induction n; introv Hx; autos*. Qed.
+Proof using. introv I. induction n; introv Hx; autos*. Qed.
 
 
 (* TODO: rename applyn to iter *)

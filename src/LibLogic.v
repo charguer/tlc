@@ -10,6 +10,20 @@ Generalizable Variables A B P.
 
 
 (* ********************************************************************** *)
+(** * Strong existentials *)
+
+(** Type [sig] is defined in LibLogicCore *)
+
+(** Projections *)
+
+Definition sig_val (A : Type) (P : A->Prop) (e : sig P) : A :=
+  match e with exist _ a _ => a end.
+
+Definition sig_proof (A : Type) (P : A->Prop) (e : sig P) : P (sig_val e) :=
+  match e with exist _ _ b => b end.
+
+
+(* ********************************************************************** *)
 (** * Inhabited types *)
 
 (* ---------------------------------------------------------------------- *)
@@ -19,8 +33,11 @@ Generalizable Variables A B P.
     inhabited (i.e., there exists at least one value of type [A]). *)
 
 Class Inhab (A:Type) : Prop :=
-  { inhabited : (exists (x:A), True) }.
+  { Inhab_intro : (exists (x:A), True) }.
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Tactics taking into account *)
 
 (** Extension to LibTactics' fast introduction tactic [=>>] 
     to handle specifically the case of the Inhabited typeclass. *)
@@ -38,7 +55,7 @@ Ltac intro_nondeps_aux_special_intro G ::=
     where a value of an inhabited type is expected. *)
 
 Definition arbitrary `{Inhab A} : A :=
-  sig_val (@indefinite_description A _ inhabited).
+  sig_val (@indefinite_description A _ Inhab_intro).
 
 (** Extraction of [arbitrary] constants as a runtime error. *)
 
@@ -50,15 +67,16 @@ Extract Constant arbitrary => "(raise Not_found)".
 
 (** Proving a type to be inhabited *)
 
-Lemma prove_Inhab : forall (A:Type), 
-  A -> Inhab A.
+Lemma Inhab_of_val : forall (A:Type), 
+  A -> 
+  Inhab A.
 Proof using. intros A x. constructor. exists x. auto. Qed.
 
 (** Arrows are inhabited if their codomain is inhabited. *)
 
 Instance arrow_inhab : forall A B {I:Inhab B},
   Inhab (A -> B).
-Proof using. intros. apply (prove_Inhab (fun _ => arbitrary)). Qed.
+Proof using. intros. apply (Inhab_of_val (fun _ => arbitrary)). Qed.
 
 
 
@@ -70,7 +88,8 @@ Proof using. intros. apply (prove_Inhab (fun _ => arbitrary)). Qed.
 
 (** Every proposition is either [True] or [False]. *)
 
-Lemma classic : forall (P : Prop), P \/ ~ P.
+Lemma classic : forall (P : Prop), 
+  P \/ ~ P.
 Proof using.
   intros.
   set (B1 := fun b => b = true \/ P).
@@ -87,6 +106,8 @@ Proof using.
   rewrite (proof_irrelevance H2 H1) in HB. congruence.
 Qed.
 
+Definition prop_inv := classic.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Strong excluded middle *)
@@ -96,22 +117,23 @@ Qed.
     definitions to make a case analysis on the truth value of any
     proposition. *)
 
-Lemma classicT : forall (P : Prop), {P} + {~ P}.
+Lemma classicT : forall (P : Prop), 
+  {P} + {~ P}.
 Proof using.
   intros. pose (select := fun (b:bool) => if b then P else ~P).
   cuts (M,HP): { b:bool | select b }.
     destruct M. left~. right~.
   apply indefinite_description.
-  destruct (classic P). exists~ true. exists~ false.
+  destruct (prop_inv P). exists~ true. exists~ false.
 Qed.
 
 (** Simplification lemmas *)
 
-Lemma classicT_left : forall (P : Prop) (H:P),
+Lemma classicT_l : forall (P : Prop) (H:P),
    classicT P = left _ H.
 Proof using. intros. destruct (classicT P). fequals. false~. Qed.
 
-Lemma classicT_right : forall (P : Prop) (H:~P),
+Lemma classicT_r : forall (P : Prop) (H:~P),
    classicT P = right _ H.
 Proof using. intros. destruct (classicT P). false~. fequals. Qed.
 
@@ -126,21 +148,26 @@ Notation "'If' P 'then' v1 'else' v2" :=
   (if (classicT P) then v1 else v2)
   (at level 200, right associativity) : type_scope.
 
+Section Ifthenelse.
+Variables A : Type.
+Implicit Types P : Prop.
+Implicit Types x y : A.
+
 (** Lemmas to simplify If-then-else statement *)
 
-Lemma If_l : forall (A:Type) (P:Prop) (x y : A),
+Lemma If_l : forall P x y,
   P -> 
   (If P then x else y) = x.
 Proof using. intros. case_if*. Qed.
 
-Lemma If_r : forall (A:Type) (P:Prop) (x y : A),
+Lemma If_r : forall P x y,
   ~ P -> 
   (If P then x else y) = y.
 Proof using. intros. case_if*. Qed.
 
 (** A lemma to prove an equality between two If-then-else *)
 
-Lemma If_eq : forall (A : Type) (P P' : Prop) (x x' y y' : A),
+Lemma If_eq : forall P P' x x' y y',
   (P <-> P') ->
   (P -> x = x') -> 
   (~P -> y = y') ->
@@ -149,12 +176,14 @@ Proof using. intros. do 2 case_if; autos*. Qed.
 
 (** A simpler version of the above lemma *)
 
-Lemma If_eq_simple : forall (A:Type) (P P':Prop) (x x' y y' : A),
+Lemma If_eq_simple : forall P P' x x' y y',
   (P <-> P') -> 
   (x = x') -> 
   (y = y') ->
   (If P then x else y) = (If P' then x' else y').
 Proof using. intros. subst. asserts_rewrite (P = P'). apply~ prop_ext. auto. Qed.
+
+End Ifthenelse.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -171,7 +200,7 @@ Proof using. intros. extens. iff. subst*. apply~ prop_ext. Qed.
 Lemma prop_degeneracy : forall (P : Prop),
    P = True \/ P = False.
 Proof using.
-  intros. destruct (classic P).
+  intros. destruct (prop_inv P).
     left. apply* prop_ext.
     right. apply* prop_ext.
 Qed.
@@ -183,7 +212,7 @@ Lemma indep_general_premises :
   (Q -> exists x, P x) ->
   (exists x, Q -> P x).
 Proof using.
-  introv I M. destruct (classic Q).
+  introv I M. destruct (prop_inv Q).
   destruct* (M H).
   exists arbitrary. auto_false.
 Qed.
@@ -193,7 +222,7 @@ Qed.
 Lemma small_drinker_paradox : forall `{Inhab A} (P : A -> Prop),
   exists x, (exists x, P x) -> P x.
 Proof using.
-  intros A I P. destruct (classic (exists x, P x)).
+  intros A I P. destruct (prop_inv (exists x, P x)).
   destruct H. exists x. auto.
   exists arbitrary. auto_false.
 Qed.
@@ -258,28 +287,36 @@ Tactic Notation "tautop" constr(P1) constr(P2) constr(P3) :=
 Section SimplConjDisj.
 Implicit Types P Q : Prop.
 
-Lemma and_True_l_eq : forall P, (True /\ P) = P.
+Lemma and_True_l_eq : forall P, 
+  (True /\ P) = P.
 Proof using. tautop. Qed.
 
-Lemma and_True_r_eq : forall P, (P /\ True) = P.
+Lemma and_True_r_eq : forall P, 
+  (P /\ True) = P.
 Proof using. tautop. Qed.
 
-Lemma and_False_l_eq : forall P, (False /\ P) = False.
+Lemma and_False_l_eq : forall P, 
+  (False /\ P) = False.
 Proof using. tautop. Qed.
 
-Lemma and_False_r_eq : forall P, (P /\ False) = False.
+Lemma and_False_r_eq : forall P, 
+  (P /\ False) = False.
 Proof using. tautop. Qed.
 
-Lemma or_True_l_eq : forall P, (True \/ P) = True.
+Lemma or_True_l_eq : forall P, 
+  (True \/ P) = True.
 Proof using. tautop. Qed.
 
-Lemma or_True_r_eq : forall P, (P \/ True) = True.
+Lemma or_True_r_eq : forall P, 
+  (P \/ True) = True.
 Proof using. tautop. Qed.
 
-Lemma or_False_l_eq : forall P, (False \/ P) = P.
+Lemma or_False_l_eq : forall P, 
+  (False \/ P) = P.
 Proof using. tautop. Qed.
 
-Lemma or_False_r_eq : forall P, (P \/ False) = P.
+Lemma or_False_r_eq : forall P, 
+  (P \/ False) = P.
 Proof using. tautop. Qed.
 
 End SimplConjDisj.
@@ -291,30 +328,38 @@ End SimplConjDisj.
 Section SimplNot.
 Implicit Types P Q : Prop.
 
-Lemma not_True_eq : (~ True) = False.
+Lemma not_True_eq : 
+  (~ True) = False.
 Proof using. tautop. Qed.
 
-Lemma not_False_eq : (~ False) = True.
+Lemma not_False_eq :
+  (~ False) = True.
 Proof using. tautop. Qed.
 
-Lemma not_not_eq : forall P, (~ (~ P)) = P.
+Lemma not_not_eq : forall P, 
+  (~ (~ P)) = P.
 Proof using. tautop. Qed.
 
-Lemma not_and_eq : forall P Q, (~ (P /\ Q)) = (~ P \/ ~ Q).
+Lemma not_and_eq : forall P Q, 
+  (~ (P /\ Q)) = (~ P \/ ~ Q).
 Proof using. tautop. Qed.
 
-Lemma not_or_eq : forall P Q, (~ (P \/ Q)) = (~ P /\ ~ Q).
+Lemma not_or_eq : forall P Q, 
+  (~ (P \/ Q)) = (~ P /\ ~ Q).
 Proof using. tautop. Qed.
 
-Lemma not_impl_eq : forall P Q, (~ (P -> Q)) = (P /\ ~ Q).
+Lemma not_impl_eq : forall P Q, 
+  (~ (P -> Q)) = (P /\ ~ Q).
 Proof using. tautop. Qed.
 
 (* Derived versions *)
 
-Lemma not_or_nots_eq : forall P Q, (~ (~ P \/ ~ Q)) = (P /\ Q).
+Lemma not_or_nots_eq : forall P Q, 
+  (~ (~ P \/ ~ Q)) = (P /\ Q).
 Proof using. tautop. Qed.
 
-Lemma not_and_nots_eq : forall P Q, (~ (~ P /\ ~ Q)) = (P \/ Q).
+Lemma not_and_nots_eq : forall P Q, 
+  (~ (~ P /\ ~ Q)) = (P \/ Q).
 Proof using. tautop. Qed.
 
 End SimplNot.
@@ -530,12 +575,12 @@ Proof using. tautop. Qed.
 
 (** Proving a disjunction, assuming the negation of the other branch *)
 
-Lemma classic_left : forall P Q,
+Lemma or_classic_l : forall P Q,
   (~ Q -> P) -> 
   P \/ Q.
 Proof using. tautop. Qed.
 
-Lemma classic_right : forall P Q,
+Lemma or_classic_r : forall P Q,
   (~ P -> Q) ->
   P \/ Q.
 Proof using. tautop. Qed.
@@ -833,21 +878,12 @@ Proof using. intros. apply prop_ext. iff H. autos*. split; intros x; apply* (H x
 Definition pred_le (A : Type) (P Q : A -> Prop) :=
   forall x, P x -> Q x.
 
-(* Following statement require definitions from LibRelation,
-   which imports LibLogic. Thus, we use lower-level verison.
+(* LATER: create a section here *)
 
-  Lemma pred_le_refl : forall A,
-    refl (@pred_le A).
-  Proof using. unfolds~ pred_le. Qed.
-
-  Lemma pred_le_trans : forall A,
-    trasn (@pred_le A).
-  Proof using. unfolds~ pred_le. Qed.
-
-  Lemma pred_le_antisym : forall A,
-    antisym (@pred_le A).
-  Proof using. intros_all. applys* pred_ext_1. Qed.
-*)
+Lemma pred_to_forall_impl : A (P Q : A -> Prop),
+  pred_le P Q ->
+  (forall x, P x -> Q x).
+Proof using. auto. Qed.
 
 Lemma pred_le_refl : forall A (P : A -> Prop),
   pred_le P P.
@@ -865,18 +901,8 @@ Lemma pred_le_antisym : forall A (P Q : A -> Prop),
   P = Q.
 Proof using. extens*. Qed. 
 
-
-
-(* ********************************************************************** *)
-(** * Strong existentials *)
-
-(** Projections *)
-
-Definition sig_val (A : Type) (P : A->Prop) (e : sig P) : A :=
-  match e with exist _ a _ => a end.
-
-Definition sig_proof (A : Type) (P : A->Prop) (e : sig P) : P (sig_val e) :=
-  match e with exist _ _ b => b end.
+(** See also [LibRelation] and [LibOrder] for higher-level statements 
+    of these results *)
 
 
 

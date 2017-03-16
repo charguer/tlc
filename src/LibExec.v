@@ -75,7 +75,7 @@ Defined.
 
 Lemma sumbool_decidable_decidable_sumbool : forall P (d : {P}+{~P}),
   decidable_sumbool (sumbool_decidable d) = d.
-Proof.
+Proof using.
   introv. unfolds.
   asserts R1: (forall (d : bool) B C C1 C2,
     d ->
@@ -457,7 +457,7 @@ Proof using. intros. apply~ neqb_eq. Qed.
 
 Lemma eqb_sym : forall A (x y : A),
   (x '= y) = (y '= x).
-Proof.
+Proof using.
   introv. tests D: (x = y).
    rewrite~ eqb_self.
    do 2 rewrite~ eqb_neq.

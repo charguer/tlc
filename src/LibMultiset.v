@@ -77,7 +77,7 @@ Global Opaque multiset empty_inst single_inst in_inst
  union_inst incl_inst fold_inst card_inst.
 
 Instance multiset_inhab : forall A, Inhab (multiset A).
-Proof using. intros. apply (prove_Inhab (@empty_impl A)). Qed.
+Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 
 
 (* ********************************************************************** *)

@@ -47,7 +47,7 @@ Notation "[ x ; y ; .. ; z ]" :=  (cons x (cons y .. (cons z nil) ..)) : liblist
 (** * Inhabited *)
 
 Instance list_inhab : forall A, Inhab (list A).
-Proof using. intros. apply (prove_Inhab nil). Qed.
+Proof using. intros. apply (Inhab_of_val nil). Qed.
 
 
 
@@ -307,7 +307,7 @@ Definition length A (l:list A) : nat :=
   fold_right (fun x acc => 1+acc) 0 l.
 
 Section Length.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types l : list A.
 
 Lemma length_nil :
@@ -361,8 +361,8 @@ Proof using.
   intros l. destruct l; rew_list; introv E. { auto. } { false. }
 Qed.
 
-Lemma length_zero_iff_nil : forall l,
-  length l = 0 <-> l = nil.
+Lemma length_zero_eq_eq_nil : forall l,
+  (length l = 0) = (l = nil).
 Proof using.
   intros. iff M. destruct l; rew_list; auto_false*. { subst*. }
 Qed.
@@ -945,13 +945,14 @@ Hint Rewrite nth_def_nil nth_def_zero nth_def_succ : rew_listx.
 (* ---------------------------------------------------------------------- *)
 (** ** [nth] as a partial function *)
 
+Definition nth `{IA:Inhab A} := 
+  nth_def arbitrary.
+
 Section NthFunc.
 Context (A:Type) {IA: Inhab A}.
 Implicit Types n : nat.
 Implicit Types x : A.
 Implicit Types l : list A.
-
-Definition nth := nth_def arbitrary.
 
 Lemma nth_zero : forall x l,
   nth 0 (x::l) = x.
@@ -1016,7 +1017,7 @@ Definition rev A (l:list A) : list A :=
   fold_left (fun x acc => x::acc) (@nil A) l.
 
 Section Rev.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 
@@ -1078,8 +1079,8 @@ Proof using.
   { rewrite rev_cons. apply~ mem_last_l. }
 Qed.
 
-Lemma mem_rev_iff : forall l x,
-  mem x l <-> mem x (rev l).
+Lemma mem_rev_eq : forall l x,
+  mem x (rev l) = mem x l.
 Proof using.
   iff M.
   { apply~ mem_rev. }
@@ -1112,7 +1113,7 @@ Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_listx.
 (** ** Inversion for rev *)
 
 Section RevInversion.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types l : list A.
 
 Lemma rev_eq_nil_inv : forall l,
@@ -1264,7 +1265,7 @@ Qed.
 Lemma update_app_l : forall l1 l2 n v,
   n < length l1 ->
   update n v (l1 ++ l2) = update n v l1 ++ l2.
-Proof.
+Proof using.
   intros l1. induction l1 as [| x l1' ]; introv E; rew_list in *.
   { fequals. math. }
   { destruct n as [|n'].
@@ -1276,7 +1277,7 @@ Qed.
 Lemma update_app_r : forall l1 l2 n v,
   n >= length l1 ->
   update n v (l1 ++ l2) = l1 ++ update (n - length l1) v l2.
-Proof.
+Proof using.
   intros l1. induction l1 as [| x l1' ]; introv E; rew_list in *.
   { fequals. math. }
   { destruct n as [|n']. { false. math. }
@@ -1285,7 +1286,7 @@ Qed.
 
 Lemma update_prefix_length : forall l1 l2 x v,
   update (length l1) v (l1 ++ x :: l2) = l1 & v ++ l2.
-Proof.
+Proof using.
   intros. rew_list. rewrites update_app_r.
   { math_rewrite (length l1 - length l1 = 0). rew_list~. }
   { math. }
@@ -1294,7 +1295,7 @@ Qed.
 Lemma update_ge_length : forall n v l,
   n >= length l ->
   update n v l = l.
-Proof.
+Proof using.
   introv E. gen n. induction l; rew_list; intros.
   { auto. }
   { rewrite update_cons_pos; [|math]. fequals. applys IHl. math. }
@@ -1453,7 +1454,7 @@ Definition concat A (m:list (list A)) : list A :=
   fold_right (@app A) (@nil A) m.
 
 Section Concat.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types m : list (list A).
@@ -1484,9 +1485,9 @@ Lemma concat_last : forall l m,
   concat (m & l) = concat m ++ l.
 Proof using. intros. rewrite~ concat_app. rewrite~ concat_one. Qed.
 
-Lemma mem_concat_iff : forall m x,
-      mem x (concat m)
-  <-> exists l, mem l m /\ mem x l.
+Lemma mem_concat_eq : forall m x,
+    mem x (concat m)
+  = exists l, mem l m /\ mem x l.
 Proof using.
   Hint Constructors mem.
   introv. induction m.
@@ -2495,8 +2496,8 @@ Proof using. introv H. rewrite* Forall_last_eq in H. Qed.
 
 (* Others *)
 
-Lemma Forall_iff_forall_mem : forall P l,
-  Forall P l <-> (forall x, mem x l -> P x).
+Lemma Forall_eq_forall_mem : forall P l,
+  Forall P l = (forall x, mem x l -> P x).
 Proof using.
   introv. induction l; iff I.
   { introv IN. inverts IN. }
@@ -2511,7 +2512,7 @@ Lemma Forall_mem_inv : forall P l x,
   Forall P l ->
   mem x l ->
   P x.
-Proof using. introv F I. rewrite Forall_iff_forall_mem in F. apply~ F. Qed.
+Proof using. introv F I. rewrite Forall_eq_forall_mem in F. apply~ F. Qed.
 
 Lemma Forall_Nth_inv : forall P n l x,
   Forall P l ->
@@ -2925,7 +2926,7 @@ Proof using. introv H. rewrite* Exists_last_eq in H. Qed.
 
 (* Interactions *)
 
-Lemma Exists_iff_exists_mem : forall P l,
+Lemma Exists_eq_exists_mem : forall P l,
   Exists P l <-> (exists x, mem x l /\ P x).
 Proof using. 
   Hint Constructors mem.
@@ -2944,12 +2945,12 @@ Lemma mem_Exists : forall P l x,
   mem x l ->
   P x ->
   Exists P l.
-Proof using. introv M H. rewrite* Exists_iff_exists_mem. Qed.
+Proof using. introv M H. rewrite* Exists_eq_exists_mem. Qed.
 
 Lemma mem_Exists_eq : forall P l x,
   mem x l = Exists (= x) l.
 Proof using.
-  intros. extens. rewrite* Exists_iff_exists_mem. iff M (y&?&?); subst*.
+  intros. extens. rewrite* Exists_eq_exists_mem. iff M (y&?&?); subst*.
 Qed.
 
 Lemma Nth_Exists : forall P n l x,
@@ -3020,7 +3021,8 @@ Qed.
 
 Lemma Exists_inv_middle_first : forall P l,
   Exists P l ->
-  exists l1 x l2, l = l1++x::l2
+  exists l1 x l2,
+       l = l1++x::l2
     /\ Forall (fun x => ~ P x) l1
     /\ P x.
 Proof using.

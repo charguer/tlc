@@ -1,0 +1,2 @@
+
+- destruct (prop_inv P) ==> should replace with the "test" tactic

@@ -48,21 +48,20 @@ Open Scope Int_scope.
    makes all proofs with omega to fail
 *)
 
-(* TODO: rename to nat_to_Z, etc... *)
-Definition my_Z_of_nat := Z_of_nat.
+Definition nat_to_Z := Z_of_nat.
 
-Lemma my_Z_of_nat_def : my_Z_of_nat = Z_of_nat.
+Lemma nat_to_Z_def : nat_to_Z = Z_of_nat.
 Proof using. reflexivity. Qed.
 
-Global Opaque my_Z_of_nat.
+Global Opaque nat_to_Z.
 
-Coercion my_Z_of_nat : nat >-> Z.
+Coercion nat_to_Z : nat >-> Z.
 
 
 (* ********************************************************************** *)
 (** * Conversion to natural numbers, for tactic programming *)
 
-Definition ltac_nat_of_int (x:Z) : nat :=
+Definition ltac_int_to_nat (x:Z) : nat :=
   match x with
   | Z0 => 0%nat
   | Zpos p => nat_of_P p
@@ -82,7 +81,7 @@ Ltac number_to_nat N ::=
 (** * Inhabited *)
 
 Instance int_inhab : Inhab int.
-Proof using. intros. apply (prove_Inhab 0). Qed.
+Proof using. intros. apply (Inhab_of_val 0). Qed.
 
 
 
@@ -217,7 +216,7 @@ Proof using. intros. rewrite <- Z_of_nat_S. fequals~. Qed.
 (** [rew_maths] rewrite any lemma in the base [rew_maths].
     The goal should not contain any evar, otherwise tactic might loop. *)
 
-Hint Rewrite my_Z_of_nat_def Z_of_nat_O Z_of_nat_S Z_of_nat_plus1 : rew_maths.
+Hint Rewrite nat_to_Z_def Z_of_nat_O Z_of_nat_S Z_of_nat_plus1 : rew_maths.
 
 Ltac rew_maths :=
   autorewrite with rew_maths in *.
@@ -533,7 +532,7 @@ Hint Extern 3 (@gt int _ _ _ -> False) => math_hint : maths.
 (** ** Extend [zify] to handle [Z.to_nat]. *)
 
 Lemma Z_of_nat_zify : forall x, Z.of_nat (Z.to_nat x) = Z.max 0 x.
-Proof.
+Proof using.
   intros x. destruct x.
   - rewrite Z2Nat.id; reflexivity.
   - rewrite Z2Nat.inj_pos. math_lia.
@@ -662,11 +661,11 @@ Proof using. math. Qed.
 
 Lemma nat_int_le : forall (x y:nat),
   x <= y -> ((x:int) <= (y:int)).
-Proof. math. Qed.
+Proof using. math. Qed.
 
 Lemma nat_int_ge : forall (x y:nat),
   x >= y -> ((x:int) >= (y:int)).
-Proof. math. Qed.
+Proof using. math. Qed.
 
 Lemma succ_abs : forall n : int,
   n >= 0 -> S (abs n) = abs (1 + n) :> nat.
@@ -715,8 +714,8 @@ Proof using. intros. applys Zabs2Nat.inj_sub; math. Qed.
 Lemma plus_nat_int : forall a b : nat,
   (a+b)%nat = (a:int) + (b:int) :> int.
 Proof using.
-  Transparent my_Z_of_nat.
-  intros. unfold my_Z_of_nat. applys Nat2Z.inj_add.
+  Transparent nat_to_Z.
+  intros. unfold nat_to_Z. applys Nat2Z.inj_add.
 Qed.
 
 Hint Rewrite plus_nat_int : rew_maths.

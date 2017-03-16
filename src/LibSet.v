@@ -87,7 +87,7 @@ End Operations.
 (** ** Inhabited *)
 
 Instance set_inhab : forall A, Inhab (set A).
-Proof using. intros. apply (prove_Inhab (@empty_impl A)). Qed.
+Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -673,7 +673,7 @@ Ltac set_specialize_classic x :=
   repeat match goal with E: set _ |- _ =>
     match goal with
     | H: x \in E \/ ~ x \in E |- _ => fail 1
-    | _ => lets: (classic (x \in E))
+    | _ => lets: (prop_inv (x \in E))
     end
   end.
 

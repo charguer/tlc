@@ -18,7 +18,8 @@ Generalizable Variables A B.
     returns a value [x] of type [A] that satisfies [P], if there exists 
     one such value, else it returns an arbitrary value of type [A]. *)
 
-Lemma Inhab_witness : forall `{Inhab A}, { x : A | True }.
+Lemma Inhab_witness : forall `{Inhab A},
+  { x : A | True }.
 Proof using. intros. destruct H as [H]. apply~ indefinite_description. Qed.
 
 Lemma epsilon_def : forall `{Inhab A} (P : A->Prop),
@@ -30,8 +31,8 @@ Proof using.
      exists x. auto_false~.
 Qed.
 
-Definition epsilon `{Inhab A} (P : A -> Prop) : A
-  := sig_1 (epsilon_def P).
+Definition epsilon `{Inhab A} (P : A->Prop) : A := 
+  sig_val (epsilon_def P).
 
 
 (* ---------------------------------------------------------------------- *)
@@ -56,7 +57,7 @@ Proof using. introv Px W. apply W. apply* epsilon_spec_exists. Qed.
 Lemma epsilon_eq : forall A {I:Inhab A} (P P':A->Prop),
   (forall x, P x <-> P' x) ->
   epsilon P = epsilon P'.
-Proof using. introv H. fequals. apply~ prop_ext_1. Qed.
+Proof using. introv H. fequals. extens*. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -149,7 +150,7 @@ Definition choose A `{IB:Inhab B} (R:A->B->Prop) : A -> B :=
   fun (a:A) => epsilon (fun b => R a b).
 
 Section Choose.
-Context (A B : Type) `{IB:Inhab B}.
+Context (A B : Type) {IB:Inhab B}.
 Implicit Types R : A -> B -> Prop.
 
 (* TODO choose_spec and choose_unique could be reformulated using
@@ -159,7 +160,7 @@ Implicit Types R : A -> B -> Prop.
 
 Lemma choose_spec : forall R a,
   ~ (forall b, ~ R a b) ->
-  R a (choose a).
+  R a (choose R a).
 Proof using IB.
   intros.
   (* Since [a] is not a root, it has a parent [b]. *)
@@ -177,7 +178,7 @@ Lemma choose_unique : forall R a b,
   (* functional R *)
   (forall a b1 b2, R a b1 -> R a b2 -> b1 = b2) ->
   R a b ->
-  choose a = b.
+  choose R a = b.
 Proof using IB.
   intros.
   (* [R a b] implies that [a] is in the domain of [R].
@@ -193,5 +194,7 @@ End Choose.
    one may get away without providing a proof of [Inhab A]. *)
 
 Definition choose_ A (R : A -> A -> Prop) (a : A) : A :=
-  @choose A A R (prove_Inhab a) a.
+  @choose A A (Inhab_of_val a) R a.
+
+
 

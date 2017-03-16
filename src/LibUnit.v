@@ -24,7 +24,7 @@ Require Import LibTactics LibLogic LibReflect.
 (** * Inhabited  *)
 
 Instance unit_inhab : Inhab unit.
-Proof using. intros. apply (prove_Inhab tt). Qed.
+Proof using. intros. apply (Inhab_of_val tt). Qed.
 
 
 (* ********************************************************************** *)

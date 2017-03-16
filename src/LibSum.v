@@ -36,10 +36,10 @@ Arguments inr {A} {B}.
 (** ** Inhabited *)
 
 Instance sum_inhab_l : forall `{Inhab A} B, Inhab (A + B).
-Proof using. intros. apply (prove_Inhab (inl arbitrary)). Qed.
+Proof using. intros. apply (Inhab_of_val (inl arbitrary)). Qed.
 
 Instance sum_inhab_r : forall `{Inhab B} A, Inhab (A + B).
-Proof using. intros. apply (prove_Inhab (inr arbitrary)). Qed.
+Proof using. intros. apply (Inhab_of_val (inr arbitrary)). Qed.
 
 Definition sum_inhab : forall `{Inhab A, Inhab B}, Inhab (A + B).
 Proof using. typeclass. Qed.

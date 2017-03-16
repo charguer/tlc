@@ -290,7 +290,7 @@ Export HeapList.
 (** Facts *)
 
 Global Instance heap_inhab : forall (K V : Type), Inhab (heap K V).
-Proof using. introv. apply (prove_Inhab empty). Qed.
+Proof using. introv. apply (Inhab_of_val empty). Qed.
 
 Section HeapFacts.
 Context `{HK:Comparable K} `{HV:Inhab V}.

@@ -1,4 +1,4 @@
-in(**************************************************************************
+(**************************************************************************
 * TLC: A library for Coq                                                  *
 * Binary relations                                                        *
 **************************************************************************)
@@ -23,7 +23,7 @@ Definition binary (A : Type) := A -> A -> Prop.
 (** ** Inhabited *)
 
 Instance binary_inhab : forall A, Inhab (binary A).
-Proof using. intros. apply (prove_Inhab (fun _ _ => True)). Qed.
+Proof using. intros. apply (Inhab_of_val (fun _ _ => True)). Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -34,8 +34,9 @@ Lemma binary_ext : forall A (R1 R2:binary A),
   R1 = R2.
 Proof using. extens*. Qed.
 
-Instance extensionality_binary : forall A, Extensionality (binary A).
-Proof using. intros. apply (extensionality_make (@binary_ext A)). Defined.
+Instance Extensionality_binary : forall A, 
+  Extensionality (binary A).
+Proof using. intros. apply (Extensionality_make (@binary_ext A)). Defined.
 
 Lemma rel_eq_inv : forall A (R1 R2:binary A),
   R1 = R2 ->
@@ -263,11 +264,7 @@ Section Equiv.
 Variable (A : Type).
 Implicit Types R : binary A.
 
-(** Equality is an equivalence relation *)
-
-Lemma equiv_eq : forall A, 
-  equiv (@eq A).
-Proof using. intros. constructor; intros_all; subst~. Qed.
+(* LATER: lemmas *)
 
 End Equiv.
 
@@ -281,40 +278,31 @@ Definition rel_incl A B (R1 R2:A->B->Prop) :=
   forall x y, R1 x y -> R2 x y.
 
 Section Incl.
-Variable (A : Type).
-Implicit Types R : binary A.
+Variables (A B : Type).
+Implicit Types R : A->B->Prop.
 
 Lemma rel_incl_to_forall_impl : forall R1 R2,
   rel_incl R1 R2 ->
   (forall x y, R1 x y -> R2 x y).
 Proof using. auto. Qed.
 
-Lemma refl_rel_incl : forall A B,
+Lemma refl_rel_incl : 
   refl (@rel_incl A B).
   (* forall (R:A->B->Prop), rel_incl R R *)
-Proof. unfolds refl, rel_incl. autos*. Qed.
+Proof using. unfolds refl, rel_incl. autos*. Qed.
 
 Hint Resolve refl_rel_incl.
 
-Lemma antisym_rel_incl : forall A B, 
+Lemma antisym_rel_incl : 
   antisym (@rel_incl A B).
   (* forall R1 R2, rel_incl R1 R2 -> rel_incl R2 R1 -> R1 = R2. *)
 Proof using. unfolds rel_incl. extens*. Qed.
   (* See also extensionality_pred_2 from LibEqual *)
 
-Lemma trans_rel_incl : forall A B,
+Lemma trans_rel_incl : 
   trans (@rel_incl A B).
 Proof using. unfold trans, rel_incl. autos*. Qed.  
   (* forall R1 R2 R3, rel_incl R1 R2 -> rel_incl R2 R3 ->  rel_incl R1 R3. *)
-
-(* TODO: requires liborder
-Lemma order_rel_incl : forall A B,
-  order (@rel_incl A B).
-Proof using. 
-  hint refl_rel_incl, antisym_rel_incl, trans_rel_incl.
-  constructors*.
-Qed.
-*)
 
 End Incl.
 
@@ -415,7 +403,7 @@ End Functional.
 (* ---------------------------------------------------------------------- *)
 (** ** Criteria for equality *)
 
-Section Equal.
+Section Equality.
 Variable (A : Type).
 Implicit Types R : binary A.
 
@@ -436,7 +424,61 @@ Proof using.
     forwards: Hfun M M2. subst*. }
 Qed.
 
-End Equal.
+End Equality.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of the equality relation *)
+
+(** These results are not in [LibEqual] because the definitions from
+    [LibRelation] are not yet available from that file. *)
+
+Section Eq.
+Variables (A : Type).
+
+Lemma refl_eq :
+  refl (@eq A).
+Proof using. intros_all; subst~. Qed.
+
+Lemma sym_eq :
+  sym (@eq A).
+Proof using. intros_all; subst~. Qed.
+
+Lemma trans_eq :
+  trans (@eq A).
+Proof using. intros_all; subst~. Qed.
+
+Lemma equiv_eq :
+  equiv (@eq A).
+Proof using. intros. constructor; intros_all; subst~. Qed.
+
+End Eq.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of the equality relation *)
+
+(** These results are not in [LibLogic] because the definitions from
+    [LibRelation] are not yet available from that file. 
+    See also [LibOrder] for a package of these properties. *)
+
+Section Pred_le.
+Variables (A : Type).
+
+Lemma refl_pred_le : 
+  refl (@pred_le A).
+Proof using. unfold refl, pred_le. autos*. Qed.
+
+Lemma antisym_pred_le : 
+  antisym (@pred_le A).
+Proof using. unfold antisym, pred_le. extens*. Qed.
+
+Lemma trans_pred_le : 
+  trans (@pred_le A).
+Proof using. unfold trans, pred_le. autos*. Qed.  
+
+End Pred_le.
+
 
 
 (* ********************************************************************** *)
@@ -528,12 +570,12 @@ Proof using. unfold refl, union. eauto. Qed.
 Lemma comm_union : 
   comm (@union A).
   (* forall R1 R2, union R1 R2 = union R2 R1. *)
-Proof. unfold union. extens*. Qed.
+Proof using. unfold union. extens*. Qed.
 
 Lemma comm_union_args : forall R1 R2 x y,
   union R2 R1 x y ->
   union R1 R2 x y.
-Proof. intros. rewrite~ comm_union. Qed.
+Proof using. intros. rewrite~ comm_union. Qed.
 
 (** Union is functional provided disjoint domains *)
 Lemma functional_union : forall R1 R2,
@@ -656,7 +698,7 @@ End Inverse.
 Definition rel_preimage (A B:Type) (R:binary B) (f:A->B) : binary A :=
   fun x y => R (f x) (f y).
 
-(* TODO: lemams *)
+(* TODO: lemmas *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -670,11 +712,10 @@ Definition rel_seq (A B C:Type) (R1:A->B->Prop) (R2:B->C->Prop) : A->C->Prop :=
 (** A relation [R] is functional if and only if [inverse R] composed
     with [R] is a subset of the diagonal relation [eq]. *)
 
-Lemma functional_iff_seq_inverse_incl_eq : forall A (R:binary A),
-  functional R <->
-  rel_incl (rel_seq (inverse R) R) eq.
+Lemma functional_eq_seq_inverse_incl_eq : forall A (R:binary A),
+  functional R = rel_incl (rel_seq (inverse R) R) eq.
 Proof using.
-  unfold functional, rel_incl, rel_seq, inverse. iff; jauto.
+  unfold functional, rel_incl, rel_seq, inverse. extens. iff M; jauto.
 Qed.
 
 
@@ -885,7 +926,7 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Reflexive closure  *)
 
-Inductive rclosure (A:Type) (R:binary A) : binary A :=
+Inductive rclosure A (R:binary A) : binary A :=
   | rclosure_once : forall x y,
       R x y -> 
       rclosure R x y
@@ -1026,7 +1067,7 @@ Hint Constructors rclosure : rclosure.
 (* ---------------------------------------------------------------------- *)
 (** ** Symmetric closure  *)
 
-Inductive sclosure (A:Type) (R:binary A) : binary A :=
+Inductive sclosure A (R:binary A) : binary A :=
   | sclosure_once : forall x y,
       R x y -> 
       sclosure R x y
@@ -1133,7 +1174,7 @@ Hint Constructors sclosure : sclosure.
 (* ---------------------------------------------------------------------- *)
 (** ** Reflexive-symmetric closure  *)
 
-Inductive rsclosure (A:Type) (R:binary A) : binary A :=
+Inductive rsclosure A (R:binary A) : binary A :=
   | rsclosure_once : forall x y,
       R x y -> 
       rsclosure R x y
@@ -1238,7 +1279,7 @@ Hint Constructors rsclosure : rsclosure.
 (* ---------------------------------------------------------------------- *)
 (** ** Transitive closure ( R+ ), defined as [R \o R*] *)
 
-Inductive tclosure (A:Type) (R:binary A) : binary A :=
+Inductive tclosure A (R:binary A) : binary A :=
   | tclosure_once : forall x y,
       R x y -> 
       tclosure R x y
@@ -1324,7 +1365,7 @@ Proof using. introv H M. induction* M. Qed.
 
 Section Ind.
 
-Inductive tclosure'l (A:Type) (R:binary A) : binary A :=
+Inductive tclosure'l A (R:binary A) : binary A :=
   | tclosure'l_once : forall x y,
       R x y -> 
       tclosure'l R x y
@@ -1353,11 +1394,11 @@ Lemma tclosure_ind_l : forall R (P : A -> A -> Prop),
   (forall x y, R x y -> P x y) ->
   (forall y x z, R x y -> tclosure R y z -> P y z -> P x z) ->
   (forall x y, tclosure R x y -> P x y).
-Proof.
+Proof using.
   introv H1 H2 M. rewrite tclosure_eq_tclosure'l in *. induction* M.
 Qed.
 
-Inductive tclosure'r (A:Type) (R:binary A) : binary A :=
+Inductive tclosure'r A (R:binary A) : binary A :=
   | tclosure'r_once : forall x y,
       R x y -> 
       tclosure'r R x y
@@ -1386,7 +1427,7 @@ Lemma tclosure_ind_r : forall R (P : A -> A -> Prop),
   (forall x y, R x y -> P x y) ->
   (forall y x z, tclosure R x y -> P x y -> R y z -> P x z) ->
   (forall x y, tclosure R x y -> P x y).
-Proof.
+Proof using.
   introv H1 H2 M. rewrite tclosure_eq_tclosure'r in *. induction* M.
 Qed.
 
@@ -1399,12 +1440,12 @@ End Ind.
 Lemma tclosure_inv_l : forall R x z,
   tclosure R x z ->
   (R x z) \/ (exists y, R x y /\ tclosure R y z).
-Proof. intros R. applys* tclosure_ind_l. Qed.
+Proof using. intros R. applys* tclosure_ind_l. Qed.
 
 Lemma tclosure_inv_r : forall R x z,
   tclosure R x z ->
   (R x z) \/ (exists y, tclosure R x y /\ R y z).
-Proof. intros R. applys* tclosure_ind_r. Qed.
+Proof using. intros R. applys* tclosure_ind_r. Qed.
 
 End Tclosure.
 
@@ -1415,7 +1456,7 @@ Hint Resolve tclosure_once tclosure_l tclosure_r
 (* ---------------------------------------------------------------------- *)
 (** ** Reflexive-transitive closure ( R* ) *)
 
-Inductive rtclosure (A:Type) (R:binary A) : binary A :=
+Inductive rtclosure A (R:binary A) : binary A :=
   | rtclosure_once : forall x y,
       R x y ->
       rtclosure R x y
@@ -1525,7 +1566,7 @@ Proof using. introv M E. subst. induction* M. Qed.
 
 Section Ind.
 
-Inductive rtclosure'l (A:Type) (R:binary A) : binary A :=
+Inductive rtclosure'l A (R:binary A) : binary A :=
   | rtclosure'l_refl : forall x,
       rtclosure'l R x x
   | rtclosure'l_step : forall y x z,
@@ -1553,11 +1594,11 @@ Lemma rtclosure_ind_l : forall R (P : A -> A -> Prop),
   (forall x, P x x) ->
   (forall y x z, R x y -> rtclosure R y z -> P y z -> P x z) ->
   (forall x y, rtclosure R x y -> P x y).
-Proof.
+Proof using.
   introv H1 H2 M. rewrite rtclosure_eq_rtclosure'l in *. induction* M.
 Qed.
 
-Inductive rtclosure'r (A:Type) (R:binary A) : binary A :=
+Inductive rtclosure'r A (R:binary A) : binary A :=
   | rtclosure'r_refl : forall x,
       rtclosure'r R x x
   | rtclosure'r_step : forall y x z,
@@ -1585,7 +1626,7 @@ Lemma rtclosure_ind_r : forall R (P : A -> A -> Prop),
   (forall x, P x x) ->
   (forall y x z, rtclosure R x y -> P x y -> R y z -> P x z) ->
   (forall x y, rtclosure R x y -> P x y).
-Proof.
+Proof using.
   introv H1 H2 M. rewrite rtclosure_eq_rtclosure'r in *. induction* M.
 Qed.
 
@@ -1596,12 +1637,12 @@ End Ind.
 Lemma rtclosure_inv_l : forall R x z,
   rtclosure R x z ->
   (x = z) \/ (exists y, R x y /\ rtclosure R y z).
-Proof. intros R. applys* rtclosure_ind_l. Qed.
+Proof using. intros R. applys* rtclosure_ind_l. Qed.
 
 Lemma rtclosure_inv_r : forall R x z,
   rtclosure R x z ->
   (x = z) \/ (exists y, rtclosure R x y /\ R y z).
-Proof. intros R. applys* rtclosure_ind_r. Qed.
+Proof using. intros R. applys* rtclosure_ind_r. Qed.
 
 End Rtclosure.
 
@@ -1612,7 +1653,7 @@ Hint Resolve rtclosure_refl rtclosure_once
 (* ---------------------------------------------------------------------- *)
 (** ** Symmetric-transitive closure *)
 
-Inductive stclosure (A:Type) (R:binary A) : binary A :=
+Inductive stclosure A (R:binary A) : binary A :=
   | stclosure_once : forall x y,
       R x y -> 
       stclosure R x y
@@ -1705,7 +1746,7 @@ Hint Constructors stclosure : stclosure.
 (* ---------------------------------------------------------------------- *)
 (** ** Reflexive-symmetric-transitive closure *)
 
-Inductive rstclosure (A:Type) (R:binary A) : binary A :=
+Inductive rstclosure A (R:binary A) : binary A :=
   | rstclosure_once : forall x y,
       R x y -> 
       rstclosure R x y
@@ -2091,7 +2132,7 @@ Qed.
 (* LATER: many lemmas like the above? *) 
 
 (* TODO: rename this lemma *)
-Lemma rel_incl_tclosure_stclosure : forall R1 R2,
+Lemma rel_incl_tclosure_stclosure_l : forall R1 R2,
   rel_incl R1 (stclosure R2) ->
   rel_incl (tclosure R1) (stclosure R2).
 Proof using. introv H M. induction* M. Qed.
@@ -2241,10 +2282,10 @@ Definition rel_in_fun A B  (R:A->B->Prop) (f:A->B) :=
 (** The relation built from a function [f] is included in a relation  
     [R] iff the function [f] is included in [R] *)
 
-Lemma rel_incl_rel_fun_iff_fun_in_rel : forall A B (f:A->B) (R:A->B->Prop),
-  rel_incl (rel_fun f) R <-> fun_in_rel f R.
-Proof.
-  intros f R. unfold rel_fun, fun_in_rel. iff H; intros x; specializes H x.
+Lemma rel_incl_rel_fun_eq_fun_in_rel : forall A B (f:A->B) (R:A->B->Prop),
+  rel_incl (rel_fun f) R = fun_in_rel f R.
+Proof using.
+  extens. unfold rel_fun, fun_in_rel. iff H; intros x; specializes H x.
   { applys* H. }
   { intros y Hy. subst~. }
 Qed.

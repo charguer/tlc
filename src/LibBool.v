@@ -25,7 +25,7 @@ Require Import LibTactics LibLogic LibOperation.
 (** ** Inhabited *)
 
 Instance bool_inhab : Inhab bool.
-Proof using. constructor. apply (prove_Inhab true). Qed.
+Proof using. constructor. apply (Inhab_of_val true). Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -37,12 +37,9 @@ Proof using. constructor. apply (prove_Inhab true). Qed.
 (* ********************************************************************** *)
 (** * Boolean Operations *)
 
-Section Definitions.
-Implicit Types x y z : bool.
-
 (** ** Comparison *)
 
-Definition eqb x y :=
+Definition eqb (x y:bool) : bool :=
   match x, y with
   | true, true => true
   | false, false => true
@@ -51,7 +48,7 @@ Definition eqb x y :=
 
 (** Negation *)
 
-Definition neg x :=
+Definition neg (x:bool) : bool :=
   match x with
   | true => false
   | false => true
@@ -59,7 +56,7 @@ Definition neg x :=
 
 (** Conjunction *)
 
-Definition and x y :=
+Definition and (x y:bool) : bool :=
   match x, y with
   | true, true => true
   | _, _ => false
@@ -67,7 +64,7 @@ Definition and x y :=
 
 (** Disjunction *)
 
-Definition or x y :=
+Definition or (x y:bool) : bool :=
   match x, y with
   | false, false => false
   | _, _ => true
@@ -75,15 +72,14 @@ Definition or x y :=
 
 (** Implication *)
 
-Definition impl x y :=
+Definition impl (x y:bool) : bool :=
   or x (neg y).
 
 (** Exclusive or *)
 
-Definition xor x y :=
+Definition xor (x y:bool) : bool :=
   neg (eqb x y).
 
-End Definitions.
 
 (** Notations *)
 
@@ -138,7 +134,8 @@ Tactic Notation "tautob" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of [eqb] *)
 
-Lemma eqb_same : forall x, eqb x x = true.
+Lemma eqb_same : forall x, 
+  eqb x x = true.
 Proof using. tautob. Qed.
 
 Lemma eqb_true_l : neutral_l eqb true.
@@ -186,11 +183,11 @@ Proof using. tautob. Qed.
 
 Lemma and_or_l : distrib_r and or.
 (* forall x y z, (x ||| y) &&& z = x &&& z ||| y &&& z. *)
-Proof. tautob. Qed.
+Proof using. tautob. Qed.
 
 Lemma and_or_r : distrib_l and or.
 (* forall x y z, x &&& (y ||| z) = x &&& y ||| x &&& z. *)
-Proof. tautob. Qed.
+Proof using. tautob. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -219,11 +216,11 @@ Proof using. tautob. Qed.
 
 Lemma or_and_l : distrib_r or and.
 (* forall x y z, (x &&& y) ||| z = (x ||| z) &&& (y ||| z). *)
-Proof. tautob. Qed.
+Proof using. tautob. Qed.
 
 Lemma or_and_r : distrib_l or and.
 (* forall x y z, x ||| (y &&& z) = (x ||| y) &&& (x ||| z). *)
-Proof. tautob. Qed.
+Proof using. tautob. Qed.
 
 
 (* ---------------------------------------------------------------------- *)

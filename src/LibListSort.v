@@ -151,7 +151,7 @@ Lemma Forall_permut_inv : forall P l1 l2,
   permut l1 l2 -> 
   Forall P l2.
 Proof using.
-  introv F K. rewrite Forall_iff_forall_mem in *.
+  introv F K. rewrite Forall_eq_forall_mem in *.
   introv M. applys F. applys* mem_permut_inv_l M K.
 Qed.  (* COQBUG? why [applys* mem_permut_inv_l] does not work *)
 
@@ -160,7 +160,7 @@ Lemma Exists_permut_inv : forall P l1 l2,
   permut l1 l2 -> 
   Exists P l2.
 Proof using.
-  introv. do 2 rewrite Exists_iff_exists_mem. intros (x&M&Px) K.
+  introv. do 2 rewrite Exists_eq_exists_mem. intros (x&M&Px) K.
   hint mem_permut_inv_r. autos*.
 Qed.  (* COQBUG? why [applys* mem_permut_inv_l] does not work *)
 
@@ -179,7 +179,7 @@ Hint Resolve permut_refl permut_flip permut_app_lr permut_cons
     equal elements. *)
 
 Section PermutationTactic.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types l : list A.
 
 Lemma permut_get_1 : forall l1 l2,

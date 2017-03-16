@@ -140,7 +140,7 @@ Lemma int_index_succ : forall n i, n >= 0 ->
   index (n + 1) i = (index n i \/ i = n).
 Proof using.
   introv P. do 2 rewrite int_index_def. extens. iff H.
-  apply classic_left. math.
+  apply or_classic_l. math.
   destruct H; math.
 Qed.
 

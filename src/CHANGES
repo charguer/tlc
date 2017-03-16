@@ -1494,3 +1494,11 @@ EVERYWHERE: once -> one
 Definition nat_of_number := number_to_nat.
 
 EVERYWHERE: iff -> eq
+
+Definition prove_Inhab := Inhab_of_val.
+
+
+Ltac prove_wf := solve_wf.
+
+EVERYWHERE left => l
+EVERYWHERE right => r

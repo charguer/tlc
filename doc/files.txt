@@ -18,7 +18,7 @@ Stable files:
 
    LibRelation
    LibEpsilon
-
+   LibChoice
 
 
 Demo files:
@@ -30,8 +30,6 @@ Demo files:
 
 Under cleanup:
 
-TODO:
-   LibChoice.v
    LibContainer.v
    LibCore.v
    LibEnv.v

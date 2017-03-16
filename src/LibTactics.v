@@ -354,11 +354,14 @@ Ltac fast_rm_inside E :=
 (** When tactic takes a natural number as argument, it may be
     parsed either as a natural number or as a relative number.
     In order for tactics to convert their arguments into natural numbers,
-    we provide a conversion tactic. *)
+    we provide a conversion tactic. 
+    
+    Note: the tactic [number_to_nat] is extended in [LibInt] to 
+    take into account the [int] type, alias for [Z]. *)
 
 Require Coq.Numbers.BinNums Coq.ZArith.BinInt.
 
-Definition ltac_nat_of_int (x:BinInt.Z) : nat :=
+Definition ltac_int_to_nat (x:BinInt.Z) : nat :=
   match x with
   | BinInt.Z0 => 0%nat
   | BinInt.Zpos p => BinPos.nat_of_P p
@@ -368,7 +371,7 @@ Definition ltac_nat_of_int (x:BinInt.Z) : nat :=
 Ltac number_to_nat N :=
   match type of N with
   | nat => constr:(N)
-  | BinInt.Z => let N' := constr:(ltac_nat_of_int N) in eval compute in N'
+  | BinInt.Z => let N' := constr:(ltac_int_to_nat N) in eval compute in N'
   end.
 
 (** [ltac_pattern E at K] is the same as [pattern E at K] except that

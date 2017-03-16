@@ -51,17 +51,17 @@ Notation "'<>' x" := (fun y => y <> x)
     equality between two values of type [A] it suffices to prove that
     those two values are related by some binary relation. *)
 
-Class Extensionality (A:Type) := extensionality_make {
+Class Extensionality (A:Type) := Extensionality_make {
   extensionality_hyp : A -> A -> Prop;
   extensionality : forall (x y : A), extensionality_hyp x y -> x = y }.
 
 Arguments extensionality [A]. 
-Arguments extensionality_make [A] [extensionality_hyp].
+Arguments Extensionality_make [A] [extensionality_hyp].
 
 (** Instance for propositional extensionality *)
 
 Global Instance extensionatity_prop : Extensionality Prop.
-Proof using. intros. apply (extensionality_make prop_ext). Defined.
+Proof using. intros. apply (Extensionality_make prop_ext). Defined.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -96,8 +96,11 @@ Tactic Notation "extens" "*" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Equality as an equivalence relation *)
 
+(** See also sectin [Eq] from [LibRelation] for reformulation of theses
+    results using high-level definitions. *)
+
 Section EqualityProp.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types x y z : A.
 
 (** Reflexivity is captured by the constructor [eq_refl]. *)
@@ -150,7 +153,7 @@ Arguments eq_trans [A].
 (** ** Properties of disequality *)
 
 Section DisequalityProp.
-Variable A : Type.
+Variables (A : Type).
 Implicit Types x y : A.
 
 (** Symmetry *)
@@ -315,26 +318,26 @@ Lemma fun_ext_5 : forall (f g: forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   f = g.
 Proof using. repeat (intros; apply fun_ext_dep). auto. Qed.
 
-Global Instance fun_extensionality_1 : 
+Global Instance Extensionality_fun_1 : 
   Extensionality (forall (x1:A1), A2 x1).
-Proof using. intros. apply (extensionality_make fun_ext_1). Defined.
+Proof using. intros. apply (Extensionality_make fun_ext_1). Defined.
 
-Global Instance fun_extensionality_2 : 
+Global Instance Extensionality_fun_2 : 
   Extensionality (forall (x1:A1) (x2:A2 x1), A3 x2).
-Proof using. intros. apply (extensionality_make fun_ext_2). Defined.
+Proof using. intros. apply (Extensionality_make fun_ext_2). Defined.
 
-Global Instance fun_extensionality_3 : 
+Global Instance Extensionality_fun_3 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2), A4 x3).
-Proof using. intros. apply (extensionality_make fun_ext_3). Defined.
+Proof using. intros. apply (Extensionality_make fun_ext_3). Defined.
 
-Global Instance fun_extensionality_4 : 
+Global Instance Extensionality_fun_4 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2) (x4:A4 x3), A5 x4).
-Proof using. intros. apply (extensionality_make fun_ext_4). Defined.
+Proof using. intros. apply (Extensionality_make fun_ext_4). Defined.
 
-Global Instance fun_extensionality_5 : 
+Global Instance Extensionality_fun_5 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3) (x5:A5 x4), A6 x5).
-Proof using. intros. apply (extensionality_make fun_ext_5). Defined.
+Proof using. intros. apply (Extensionality_make fun_ext_5). Defined.
 
 End FuncExtDep.
 
@@ -449,31 +452,31 @@ Lemma pred_ext_6 : forall (P Q : forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   P = Q.
 Proof using. repeat (intros; apply fun_ext_dep). intros. apply~ prop_ext. Qed.
 
-Global Instance prop_extensionality_1 : 
+Global Instance Extensionality_pred_1 : 
   Extensionality (forall (x1:A1), Prop).
-Proof using. intros. apply (extensionality_make pred_ext_1). Defined.
+Proof using. intros. apply (Extensionality_make pred_ext_1). Defined.
 
-Global Instance prop_extensionality_2 : 
+Global Instance Extensionality_pred_2 : 
   Extensionality (forall (x1:A1) (x2:A2 x1), Prop).
-Proof using. intros. apply (extensionality_make pred_ext_2). Defined.
+Proof using. intros. apply (Extensionality_make pred_ext_2). Defined.
 
-Global Instance prop_extensionality_3 : 
+Global Instance Extensionality_pred_3 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2), Prop).
-Proof using. intros. apply (extensionality_make pred_ext_3). Defined.
+Proof using. intros. apply (Extensionality_make pred_ext_3). Defined.
 
-Global Instance prop_extensionality_4 : 
+Global Instance Extensionality_pred_4 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2) (x4:A4 x3), Prop).
-Proof using. intros. apply (extensionality_make pred_ext_4). Defined.
+Proof using. intros. apply (Extensionality_make pred_ext_4). Defined.
 
-Global Instance prop_extensionality_5 : 
+Global Instance Extensionality_pred_5 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3) (x5:A5 x4), Prop).
-Proof using. intros. apply (extensionality_make pred_ext_5). Defined.
+Proof using. intros. apply (Extensionality_make pred_ext_5). Defined.
 
-Global Instance prop_extensionality_6 : 
+Global Instance Extensionality_pred_6 : 
   Extensionality (forall (x1:A1) (x2:A2 x1) (x3:A3 x2)
   (x4:A4 x3) (x5:A5 x4) (x6:A6 x5), Prop).
-Proof using. intros. apply (extensionality_make pred_ext_6). Defined.
+Proof using. intros. apply (Extensionality_make pred_ext_6). Defined.
 
 End PropExt.
 
@@ -536,30 +539,30 @@ Proof using. intros. apply~ pred_ext_6. Qed.
 
 Module PIfromExt.
 
-Implicit Types A B : Prop.
+Implicit Types P : Prop.
 
 (** First, we prove that on an inhabited proposition type, 
     there exists a fixpoint combinator. *)
 
-Lemma prop_eq_self_impl_when_true : forall A, 
-  A -> 
-  A = (A -> A).
+Lemma prop_eq_self_impl_when_true : forall P, 
+  P -> 
+  P = (P -> P).
 Proof using. intros. apply* prop_ext. Qed.
 
-Record has_fixpoint (A:Prop) : Prop := has_fixpoint_make
-  { has_fixpoint_F : (A -> A) -> A;
+Record has_fixpoint (P:Prop) : Prop := has_fixpoint_make
+  { has_fixpoint_F : (P -> P) -> P;
     has_fixpoint_fix : forall f, has_fixpoint_F f = f (has_fixpoint_F f) }.
 
-Lemma prop_has_fixpoint_when_true : forall A,
-  A -> 
-  has_fixpoint A.
+Lemma prop_has_fixpoint_when_true : forall P,
+  P -> 
+  has_fixpoint P.
 Proof using.
-  intros A a. set (A' := A).
-  set (g1 := id : A' -> A). set (g2 := id : A -> A').
+  intros P a. set (P' := P).
+  set (g1 := id : P' -> P). set (g2 := id : P -> P').
   asserts~ Fix: (forall x, g1 (g2 x) = x).
   clearbody g1 g2. gen g1 g2.
   rewrite (prop_eq_self_impl_when_true a).
-  subst A'. intros.
+  subst P'. intros.
   set (Y := fun f => (fun x => f (g1 x x)) (g2 (fun x => f (g1 x x)))).
   applys (has_fixpoint_make Y). (* TODO: why [applys has_fixpoint_make Y] fails *)
   { intros f. unfold Y at 1. rewrite~ Fix. }
@@ -595,10 +598,10 @@ Qed.
 Lemma proof_irrelevance :
   forall (P : Prop) (p q : P), p = q.
 Proof using.
-  intros A a1 a2.
-  set (f := fun b => match b with | trueP => a1 | falseP => a2 end).
-  change a1 with (f trueP). 
-  change a2 with (f falseP).
+  intros P p q.
+  set (f := fun b => match b with | trueP => p | falseP => q end).
+  change p with (f trueP). 
+  change q with (f falseP).
   rewrite~ trueP_eq_falseP.
 Qed.
 
@@ -692,16 +695,14 @@ Proof using. intros. apply eq_dep_nd_eq. apply~ eq_sigT_eq_dep_nd. Qed.
 
 Scheme eq_indd := Induction for eq Sort Prop.
 
-Lemma exist_eq :
-  forall (A : Type) (P : A->Prop) (x y : A) (p : P x) (q : P y),
+Lemma exist_eq : forall (A:Type) (P : A->Prop) (x y : A) (p : P x) (q : P y),
   x = y -> 
   exist P x p = exist P y q.
 Proof using.
   intros. rewrite (proof_irrelevance q (eq_rect x P p y H)). subst*.
 Qed.
 
-Lemma existT_eq :
-  forall (U:Type) (P:U->Prop) (x y:U) (p:P x) (q:P y),
+Lemma existT_eq : forall (A:Type) (P:A->Prop) (x y:A) (p:P x) (q:P y),
   x = y -> 
   existT P x p = existT P y q.
 Proof using.
@@ -726,14 +727,17 @@ Arguments eq_dep [A] [P] [p] x [q].
 
 Lemma eq_dep_sym : forall (A : Type) (P : A -> Type)
  (p q : A) (x : P p) (y : P q),
-  eq_dep x y -> eq_dep y x.
+  eq_dep x y -> 
+  eq_dep y x.
 Proof using. introv E. destruct E. constructor. Qed.
 
 (** Transitivity of [eq_dep] *)
 
 Lemma eq_dep_trans : forall (A : Type) (P : A -> Type)
  (p q r : A) (y : P q) (x : P p) (z : P r),
-  eq_dep x y -> eq_dep y z -> eq_dep x z.
+  eq_dep x y -> 
+  eq_dep y z -> 
+  eq_dep x z.
 Proof using. introv E F. destruct~ E. Qed.
 
 (** Proof of equivalence between [eq_dep_nd] and [eq_dep] *)
@@ -742,7 +746,8 @@ Scheme eq_induction := Induction for eq Sort Prop.
 
 Lemma eq_dep_nd_to_eq_dep :
   forall (A : Type) (P : A -> Type) (p q : A) (x : P p) (y : P q),
-  eq_dep_nd x y -> eq_dep x y.
+  eq_dep_nd x y -> 
+  eq_dep x y.
 Proof using.
   introv E. destruct E as (h,H).
   destruct h using eq_induction. subst~. constructor.
@@ -750,21 +755,24 @@ Qed.
 
 Lemma eq_dep_to_eq_dep_nd :
   forall (A : Type) (P : A -> Type) (p q : A) (x : P p) (y : P q),
-  eq_dep x y -> eq_dep_nd x y.
+  eq_dep x y -> 
+  eq_dep_nd x y.
 Proof using. introv H. destruct H. apply (eq_dep_nd_intro (refl_equal p)); auto. Qed.
 
 (** Injectivity of dependent equality *)
 
 Lemma eq_dep_eq :
   forall (A : Type) (P : A -> Type) (p : A) (x y : P p),
-  eq_dep x y -> x = y.
+  eq_dep x y -> 
+  x = y.
 Proof using. introv R. inversion R. apply eq_dep_nd_eq. apply~ eq_dep_to_eq_dep_nd. Qed.
 
 (** Equality on dependent pairs implies dependent equality *)
 
 Lemma eq_sigT_eq_dep :
   forall (A : Type) (P : A -> Type) (p q : A) (x : P p) (y : P q),
-  existT P p x = existT P q y -> eq_dep x y.
+  existT P p x = existT P q y -> 
+  eq_dep x y.
 Proof using. introv E. dependent rewrite E. simple~. constructor. Qed.
 
 
@@ -785,11 +793,14 @@ Require Import JMeq.
 (** Symmetry, transitivity of [JMeq] *)
 
 Lemma JMeq_sym : forall (A B : Type) (x : A) (y : B),
-  JMeq x y -> JMeq y x.
+  JMeq x y -> 
+  JMeq y x.
 Proof using. introv E. destruct~ E. Qed.
 
 Lemma JMeq_trans : forall (A B C : Type) (y : B) (x : A) (z : C),
-  JMeq x y -> JMeq y z -> JMeq x z.
+  JMeq x y -> 
+  JMeq y z -> 
+  JMeq x z.
 Proof using. introv E F. destruct~ E. Qed.
 
 Local Hint Immediate JMeq_sym.

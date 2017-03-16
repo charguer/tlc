@@ -90,7 +90,7 @@ Notation "A --> B" := (partial A B) (right associativity, at level 55).
     return type is inhabited. *)
 
 Instance partial_inhab : forall A B {I:Inhab B}, Inhab (A-->B).
-Proof using. intros. apply (prove_Inhab (Build_partial arbitrary (fun _ => True))). Qed.
+Proof using. intros. apply (Inhab_of_val (Build_partial arbitrary (fun _ => True))). Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -642,7 +642,7 @@ Proof using.
   introv Loca Cohi. esplit. split. reflexivity.
   unfold local_limit_dep. spec_epsilon as l L.
   forwards~ [l L]: (Loca v i). exists l. intros k. destruct_if~.
-  intros j Rji. specializes L j. rewrite~ (classicT_left Rji) in L.
+  intros j Rji. specializes L j. rewrite~ (classicT_l Rji) in L.
 Qed.
 
 (** A corrolary of the above lemma used to prove similarity directly *)
@@ -1074,7 +1074,7 @@ Proof using.
    cuts Ind: (forall x, P x -> E (f x) (f'' x)).
      apply~ (trans_inv (f'' x)). unfold f''. destruct_if. apply~ refl_inv.
    clears x. intros x. induction_wf: Wf x. intros Px.
-   destruct (classic (P' x)) as [P'x|NP'x];
+   destruct (prop_inv (P' x)) as [P'x|NP'x];
      [| unfold f''; destruct_if; apply~ refl_inv ].
    apply~ (trans_sym_2 (F f'' x)). apply~ (trans_inv (F f x)).
      apply~ Fixf. apply~ equiv_refl.
@@ -1105,7 +1105,7 @@ Proof using.
    cuts Ind: (forall x, P x -> E (f x) (f'' x)).
      apply~ (trans_inv (f'' x)). unfold f''. destruct_if. apply~ refl_inv.
    clears x. intros x. induction_wf: Wf x. intros Px.
-   destruct (classic (P' x)) as [P'x|NP'x];
+   destruct (prop_inv (P' x)) as [P'x|NP'x];
      [| unfold f''; destruct_if; apply~ refl_inv ].
    apply~ (trans_sym_2 (F f'' x)). apply~ (trans_inv (F f x)).
      apply~ Fixf. apply~ equiv_refl.
@@ -1303,7 +1303,7 @@ Proof using.
        unfold f''. destruct_if. apply~ refl_inv.
    clears x. intros p. induction_wf: (lexico2_wf (ofe_wf Cofe) (tclosure_wf WfR)) p.
    destruct p as [i x]. intros Px.
-   destruct (classic (P' x)) as [P'x|NP'x];
+   destruct (prop_inv (P' x)) as [P'x|NP'x];
      [| unfold f''; destruct_if; apply~ refl_inv ].
    apply~ (trans_sym_2 (F f'' x)). apply~ (trans_inv (F f x)).
      apply~ Fixf. apply~ equiv_refl.
@@ -1481,8 +1481,8 @@ Definition Fix A {IA:Inhab A} (E C:binary A) (F:A->A) : A :=
 
 (** [Fix_prop E E F] is equivalent to [unique_fixed_point E F] *)
 
-Lemma Fix_prop_iff_unique_fixed_point : forall (A:Type) (E:binary A) (F:A->A) (x:A),
-  (Fix_prop E E F x <-> unique_fixed_point E F x).
+Lemma Fix_prop_eq_unique_fixed_point : forall (A:Type) (E:binary A) (F:A->A) (x:A),
+  Fix_prop E E F x = unique_fixed_point E F x.
 Proof using.
   intros. iff [Fx Ux].
   split; intros y Hy. apply~ Fx. apply~ Ux.
@@ -1625,7 +1625,7 @@ Proof using.
   introv Defx SimE Cofe Conti Contr.
   unfolds FixValMod, Fix. spec_epsilon as y [Fixy Uniy].
     forwards* (y&Fixy&Inv): cofe_fixed_point.
-    exists y. apply <- Fix_prop_iff_unique_fixed_point.
+    exists y. rewrite <- Fix_prop_eq_unique_fixed_point.
      rewrite~ SimE.
   subst x. logic (forall U V:Prop,U->(U->V)->U/\V).
   apply Fixy. rewrite SimE. apply~ refl_inv.
