@@ -12,167 +12,162 @@ Generalizable Variables A B.
 (** * Definition and specification of Hilbert's epsilon operator *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Construction of epsilon *)
+(** ** Definition of epsilon *)
 
 (** [epsilon P] where [P] is a predicate over an inhabited type [A],
     returns a value [x] of type [A] that satisfies [P], if there exists 
     one such value, else it returns an arbitrary value of type [A]. *)
 
-Lemma Inhab_witness : forall `{Inhab A},
-  { x : A | True }.
-Proof using. intros. destruct H as [H]. apply~ indefinite_description. Qed.
-
-Lemma epsilon_def : forall `{Inhab A} (P : A->Prop),
+Definition epsilon_def : forall A {IA:Inhab A} (P:A->Prop),
   { x : A | (exists y, P y) -> P x }.
 Proof using.
-  intros A I P. destruct (classicT (exists y, P y)) as [H|H].
-    apply indefinite_description. destruct H. exists~ x.
-    destruct (@Inhab_witness _ I) as [x _].
-     exists x. auto_false~.
+  intros A IA P. destruct (classicT (exists y, P y)) as [H|H].
+  { apply indefinite_description. destruct H as [x H].
+    exists x. intros _. apply H. }
+  { exists (@arbitrary A IA). intros N. false H. apply N. }
 Qed.
 
-Definition epsilon `{Inhab A} (P : A->Prop) : A := 
+Definition epsilon A {IA: Inhab A} (P:A->Prop) : A := 
   sig_val (epsilon_def P).
 
-
-(* ---------------------------------------------------------------------- *)
-(** ** Specification of epsilon *)
-
-Lemma epsilon_spec_exists : forall `{Inhab A} (P : A->Prop),
+Lemma pred_epsilon : forall A {IA:Inhab A} (P:A->Prop),
   (exists x, P x) -> 
   P (epsilon P).
 Proof using. intros. apply~ (sig_proof (epsilon_def P)). Qed.
 
-Lemma epsilon_inv_exists : forall `{Inhab A} (P Q : A->Prop),
-  (exists x, P x) -> 
-  (forall x, P x -> Q x) -> Q (epsilon P).
-Proof using. introv E M. apply M. apply~ epsilon_spec_exists. Qed.
+Opaque epsilon.
 
-Lemma epsilon_spec : forall `{Inhab A} (P : A->Prop) x,
+(* Remark: the proof term associated with the definition *)
+
+Definition epsilon_def' A {IA:Inhab A} (P:A->Prop) :
+  { x : A | (exists y, P y) -> P x } :=
+  match classicT (exists y, P y) with
+  | left H =>
+      indefinite_description
+        (let (x,H0) := H in
+         ex_intro (fun x0 => (exists y, P y) -> P x0) 
+                   x
+                  (fun N => H0))
+  | right H =>
+      exist (fun x => (exists y, P y) -> P x)
+            arbitrary
+            (fun N => False_ind (P arbitrary) (H N))
+  end.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Lemmas about epsilon *)
+
+Lemma pred_epsilon_weaken : forall A {IA:Inhab A} (P Q : A->Prop),
+  (exists x, P x) -> 
+  (forall x, P x -> Q x) -> 
+  Q (epsilon P).
+Proof using. introv E M. apply M. apply* pred_epsilon. Qed.
+
+Lemma pred_epsilon_of_val : forall A (x:A) (P:A->Prop) {IA:Inhab A},
   P x -> 
   P (epsilon P).
-Proof using. intros. apply* (epsilon_spec_exists). Qed.
+Proof using. intros. apply* pred_epsilon. Qed.
 
-Lemma epsilon_inv : forall `{Inhab A} (P Q : A->Prop) x,
+Lemma pred_epsilon_of_val_weaken : forall A (x:A) (P Q:A->Prop) {IA:Inhab A},
   P x -> 
   (forall x, P x -> Q x) -> 
   Q (epsilon P).
-Proof using. introv Px W. apply W. apply* epsilon_spec_exists. Qed.
+Proof using. introv Px W. apply W. apply* pred_epsilon. Qed.
 
-Lemma epsilon_eq : forall A {I:Inhab A} (P P':A->Prop),
-  (forall x, P x <-> P' x) ->
-  epsilon P = epsilon P'.
+Lemma epsilon_eq : forall A {IA:Inhab A} (P Q:A->Prop),
+  (forall x, P x <-> Q x) ->
+  epsilon P = epsilon Q.
 Proof using. introv H. fequals. extens*. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Tactics [sets_epsilon] *)
+(** ** (Private) tactic [epsilon_find] *)
 
-(** [sets_epsilon as X]
-    [sets_epsilon in H as X]
-      
-    assigns a name [X] to an expression of the form [epsilon E]. *)
+(** [epsilon_find cont] locates an expression of the form [epsilon P]
+    in the goal and invokes the continuation [cont] on [P]. 
 
-Lemma epsilon_spec' : forall A (P:A->Prop) (x:A) (H:P x) {IA:Inhab A}, 
-  P (epsilon P).
-Proof using. intros. applys* epsilon_spec. Qed.
+    [epsilon_find_in H cont] is similar but looks for the expression
+    only in the hypothesis named [H]. *)
 
-Lemma epsilon_spec_exists' : forall A (P : A->Prop) {IA:Inhab A},
-  (exists x, P x) -> 
-  P (epsilon P).
-Proof using. intros. applys* epsilon_spec_exists. Qed.
-
-Ltac find_epsilon cont :=
+Ltac epsilon_find cont :=
   match goal with
-  | |- context [epsilon ?E] => cont E
-  | H: context [epsilon ?E] |- _ => cont E
+  | |- context [epsilon ?P] => cont P
+  | H: context [epsilon ?P] |- _ => cont P
   end.
 
-Ltac find_epsilon_in H cont :=
-  match type of H with context [epsilon ?E] => cont E end.
+Ltac epsilon_find_in H cont :=
+  match type of H with context [epsilon ?P] => cont P end.
 
-Tactic Notation "sets_epsilon" "as" ident(X) :=
-  find_epsilon ltac:(fun E => sets X: (epsilon E)).
 
-Tactic Notation "sets_epsilon" "in" hyp(H) "as" ident(X) :=
-  find_epsilon_in H ltac:(fun E => sets X: (epsilon E)).
+(* ---------------------------------------------------------------------- *)
+(** ** Tactics [epsilon_name] *)
+
+(** [epsilon_name X] assigns a name [X] to an expression of the 
+    form [epsilon P] that appears in the goal or an hypothesis,
+    by calling [set (X := epsilon P)].
+
+    [epsilon_name X in H] assignes a name [X] to an expression of the 
+    form [epsilon P] that appears in hypothesis [H]. *)
+
+Ltac epsilon_name_core X :=
+  epsilon_find ltac:(fun P => sets X: (epsilon P)).
+
+Ltac epsilon_name_in_core X H :=
+  epsilon_find_in H ltac:(fun P => sets X: (epsilon P)).
+
+Tactic Notation "epsilon_name" ident(X) :=
+  epsilon_name_core X.
+
+Tactic Notation "epsilon_name" ident(X) "in" hyp(H)  :=
+  epsilon_name_in_core X H.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics to work with [epsilon] *)
 
-(* LATER: produce [I] in the goal *)
+(** [epsilon X] locates an expression of the form [epsilon P] in the goal,
+    names [X] this expression (like [epsilon_name X]), then produces 
+    a subgoal [exists x, P x], and leaves at the head of the main goal 
+    an hypothesis [P X].
+    
+    [epsilon X in H] is similar, but looks for [epsilon P] only in 
+    hypothesis [H]. *)
 
-(** [spec_epsilon as X I]
-      => finds an expression of the form [epsilon P] in the goal,
-         names [X] this expression, and adds an hypothesis [I]
-         of type [P X]. It produces the subgoal [exists a, P a].
+Lemma pred_epsilon' : forall A (P:A->Prop) (IA:Inhab A),
+  (exists x, P x) -> 
+  P (epsilon P).
+Proof using. intros. applys* pred_epsilon. Qed.
 
-    [spec_epsilon W as X I]
-      => same, but [W] is a witness, so the subgoal is only [P W].
-      => also works if [W] is a proof of [P a] for some [a].
+Ltac epsilon_cont X P :=
+  let I := fresh "H" X in
+  lets I: (>> (@pred_epsilon' _ P) __ __); 
+    [ | sets X: (epsilon P); revert I ].
 
-    [spec_epsilon as X] 
-      => same, with [I] automatically generated, of the form [HX].
+Ltac epsilon_core X :=
+  epsilon_find ltac:(fun P => epsilon_cont X P).
 
-    [spec_epsilon in H as X I] and variants 
-      => same, but looks for [epsilon E] in hypothesis [H]. *)
+Ltac epsilon_in_core X H :=
+  epsilon_find_in H ltac:(fun P => epsilon_cont X P).
 
-Ltac spec_epsilon_post E X W I :=
-   first [ lets I: (>> (@epsilon_spec' _ E W) __ __)
-         | lets I: (>> (@epsilon_spec' _ E _ W) __)  ];
-   [ | sets X: (epsilon E) ].
+Tactic Notation "epsilon" ident(X) :=
+  epsilon_core X.
+Tactic Notation "epsilon" ident(X) "in" hyp(H) :=
+  epsilon_in_core X H.
 
-Ltac spec_epsilon_exists_post E X I :=
-   lets I: (>> (@epsilon_spec_exists' _ E) __ __); [ | sets X: (epsilon E) ].
+Tactic Notation "epsilon" "~" ident(X) :=
+  epsilon X; auto_tilde.
+Tactic Notation "epsilon" "~" ident(X) "in" hyp(H) :=
+  epsilon X in H; auto_tilde.
 
-Tactic Notation "spec_epsilon" constr(W) "as" ident(X) simple_intropattern(I) :=
-  find_epsilon ltac:(fun E => spec_epsilon_post E X W I).
-
-Tactic Notation "spec_epsilon" constr(W) "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
-  find_epsilon_in H ltac:(fun E => spec_epsilon_post E X W I).
-
-(* LATER: missing some variants *)
-
-Tactic Notation "spec_epsilon" "as" ident(X) simple_intropattern(I) :=
-  find_epsilon ltac:(fun E => spec_epsilon_exists_post E X I).
-Tactic Notation "spec_epsilon" "as" ident(X) :=
-  let H := fresh "H" X in spec_epsilon as X H.
-
-Tactic Notation "spec_epsilon" "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
-  find_epsilon_in H ltac:(fun E => spec_epsilon_exists_post E X I).
-Tactic Notation "spec_epsilon" "in" hyp(H) "as" ident(X) :=
-  let H := fresh "H" X in spec_epsilon in H as X H.
-
-Tactic Notation "spec_epsilon" "~" constr(W) "as" ident(X) simple_intropattern(I) :=
-  spec_epsilon W as X I; auto_tilde.
-Tactic Notation "spec_epsilon" "~" constr(W) "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
-  spec_epsilon W in H as X I; auto_tilde.
-Tactic Notation "spec_epsilon" "~" "as" ident(X) simple_intropattern(I) :=
-  spec_epsilon as X I; auto_tilde.
-Tactic Notation "spec_epsilon" "~" "as" ident(X) :=
-  spec_epsilon as X; auto_tilde.
-Tactic Notation "spec_epsilon" "~" "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
-  spec_epsilon in H as X I; auto_tilde.
-Tactic Notation "spec_epsilon" "~" "in" hyp(H) "as" ident(X) :=
-  spec_epsilon in H as X; auto_tilde.
-
-Tactic Notation "spec_epsilon" "*" constr(W) "as" ident(X) simple_intropattern(I) :=
-  spec_epsilon W as X I; auto_star.
-Tactic Notation "spec_epsilon" "*" constr(W) "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
-  spec_epsilon W in H as X I; auto_star.
-Tactic Notation "spec_epsilon" "*" "as" ident(X) simple_intropattern(I) :=
-  spec_epsilon as X I; auto_star.
-Tactic Notation "spec_epsilon" "*" "as" ident(X) :=
-  spec_epsilon as X; auto_star.
-Tactic Notation "spec_epsilon" "*" "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
-  spec_epsilon in H as X I; auto_star.
-Tactic Notation "spec_epsilon" "*" "in" hyp(H) "as" ident(X) :=
-  spec_epsilon in H as X; auto_star.
+Tactic Notation "epsilon" "*" ident(X) :=
+  epsilon X; auto_star.
+Tactic Notation "epsilon" "*" ident(X) "in" hyp(H) :=
+  epsilon X in H; auto_star.
 
 
 (* ********************************************************************** *)
-(** * Conversion from relations to functions *)
+(** * Construction of a function from a relation, using [epsilon] *)
 
 (* Given a relation [R] of type [A->B->Prop], [rel_to_fun R] returns a 
    function [f] of type [A->B] that satisfies the relation [R], i.e.
@@ -190,7 +185,7 @@ Implicit Types R : A -> B -> Prop.
 Lemma rel_rel_to_fun_of_exists : forall R a,
   (exists b, R a b) ->
   R a (rel_to_fun R a).
-Proof using IB. introv [x H]. unfold rel_to_fun. applys* epsilon_spec. Qed.
+Proof using IB. introv [x H]. unfold rel_to_fun. epsilon* y. Qed.
 
 Lemma rel_rel_to_fun_of_rel : forall R a b,
   R a b ->
@@ -207,9 +202,7 @@ Qed.
 Lemma rel_in_fun_rel_to_fun : forall R,
   functional R ->
   rel_in_fun R (rel_to_fun R).
-Proof using IB.
-  unfold rel_in_fun, rel_to_fun. introv M H. spec_epsilon~ y as z I. applys* M.
-Qed.
+Proof using IB. unfold rel_in_fun, rel_to_fun. introv M H. epsilon* z. Qed.
   
 (** Reformulation of above *)
 

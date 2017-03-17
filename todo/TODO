@@ -1,2 +1,4 @@
 
 - destruct (prop_inv P) ==> should replace with the "test" tactic
+
+- prelude: right/left for classicT => rename

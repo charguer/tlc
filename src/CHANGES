@@ -1517,3 +1517,36 @@ Lemma rel_eq_inv : forall A (R1 R2:binary A),
   (forall x y, R1 x y <-> R2 x y).
 Proof using. intros. subst*. Qed.
 (* Note: see [pred_eq_2] from LibEqual *)
+
+
+=============
+
+
+
+Lemma epsilon_spec' : forall A (P:A->Prop) (x:A) (H:P x) {IA:Inhab A}, 
+  P (epsilon P).
+Proof using. intros. applys* epsilon_spec. Qed.
+
+Ltac spec_epsilon_post E X W I :=
+   first [ lets I: (>> (@epsilon_spec' _ E W) __ __)
+         | lets I: (>> (@epsilon_spec' _ E _ W) __)  ];
+   [ | sets X: (epsilon E) ].
+
+Tactic Notation "spec_epsilon" constr(W) "as" ident(X) simple_intropattern(I) :=
+  epsilon_find ltac:(fun E => spec_epsilon_post E X W I).
+
+Tactic Notation "spec_epsilon" constr(W) "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
+  epsilon_find_in H ltac:(fun E => spec_epsilon_post E X W I).
+
+Tactic Notation "spec_epsilon" "~" constr(W) "as" ident(X) simple_intropattern(I) :=
+  spec_epsilon W as X I; auto_tilde.
+Tactic Notation "spec_epsilon" "~" constr(W) "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
+  spec_epsilon W in H as X I; auto_tilde.
+Tactic Notation "spec_epsilon" "*" constr(W) "as" ident(X) simple_intropattern(I) :=
+  spec_epsilon W as X I; auto_star.
+Tactic Notation "spec_epsilon" "*" constr(W) "in" hyp(H) "as" ident(X) simple_intropattern(I) :=
+  spec_epsilon W in H as X I; auto_star.
+
+Ltac find_epsilon => epsilon_find
+
+
