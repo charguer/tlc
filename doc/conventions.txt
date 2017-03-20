@@ -44,7 +44,7 @@ can be quantified as section variables.
 
 A section thus contains mainly lemmas, with explicit quantification
 of all variables and hypotheses, except type variables.
-The use of "Implicit Types" is highly encouraged as it drastically 
+The use of "Implicit Types" is highly encouraged as it drastically
 reduces the number of type annotations required.
 
 Example:
@@ -77,7 +77,7 @@ but the modern version is "Context", which is more powerful:
 
 Note that all typeclass instances must be assigned a name explicitly.
 
-Remark: the syntax of "Variables" without parenthesis is accepted for 
+Remark: the syntax of "Variables" without parentheses is accepted for
 historical reasons, but is discouraged:
 
    Variables A : Type.
@@ -86,15 +86,15 @@ historical reasons, but is discouraged:
 ============================================================================
 Indentation and style
 
-Indentation should use two spaces. 
+Indentation should use two spaces.
 
 The name of the lemma should be followed by a ":" surounded with spaces.
 
 The arguments should follow on the same line (except if they don't fit on
-the line, in which case they may start on the next line). 
+the line, in which case they may start on the next line).
 
    The statement should be on the next line, indented with two spaces.
-There is an exception for the special case where there are not 
+There is an exception for the special case where there are no
 variables involved; then, the statement may be placed directly on the line.
 
 Proofs should always begin with "Proof using." and end with "Qed.",
@@ -112,8 +112,8 @@ Examples:
 There should be only one hypothesis per line.
 
    Lemma asym_inv : forall x y R,
-     asym R -> 
-     R x y -> 
+     asym R ->
+     R x y ->
      R y x ->
      False.
 
@@ -127,15 +127,15 @@ Multiline conclusions should be presented as follows:
 
    Lemma Exists_inv_middle_first : forall P l,
      Exists P l ->
-     exists l1 x l2, 
+     exists l1 x l2,
           l = l1++x::l2
        /\ Forall (fun x => ~ P x) l1
        /\ P x.
 
-Similar conventions apply to definitions. 
+Similar conventions apply to definitions.
 The body of the definition may be placed on the next line.
 
-   Definition epsilon `{Inhab A} (P : A->Prop) : A := 
+   Definition epsilon `{Inhab A} (P : A->Prop) : A :=
      sig_val (epsilon_def P).
 
    Definition env (A:Type) := list (var * A).
@@ -151,7 +151,7 @@ annotated with a type, should be enclosed in parentheses.
   good:     fun (a:A) => ...
   bad:      fun a:A => ...
   good:     forall (a b:A), ...
-  bad:      forall a b:A, ... 
+  bad:      forall a b:A, ...
 
 Variables of type "Type" may be written without annotation whenever
 there are followed by other arguments using that type variables.
@@ -191,19 +191,19 @@ Automatic generalization is allowed, but only for type variables.
 Typical pattern  [`{IA:Inhab A}] which quantifies [A] automatically.
 
 Instance variables should be named (because otherwise using "Arguments"
-for changing implicit arguments requires the "renaming" flag, whose use 
+for changing implicit arguments requires the "renaming" flag, whose use
 may cause harm upon code refactoring.)
 
   good:     forall `{Inhab A}, ...
-  bad:      forall `{IA:Inhab A}, ... 
+  bad:      forall `{IA:Inhab A}, ...
 
 Definitions should have an explicit return type:
 
-   Definition choose A `{IB:Inhab B} (R:A->B->Prop) : A->B := 
+   Definition choose A `{IB:Inhab B} (R:A->B->Prop) : A->B :=
      fun (a:A) => epsilon (fun b => R a b).
 
    Definition neg (x:bool) : bool := ...
-   
+
 with an exception for when the result type is [Prop] or [Type]:
 
    Definition map (A B : Type) := A -> option B.
@@ -219,7 +219,7 @@ with an exception for when the result type is [Prop] or [Type]:
 Rewriting databases
 
 A rewriting base, e.g. [rew_list] is intended to contain a set of
-equalities to normalize expressions (the set should be confluent 
+equalities to normalize expressions (the set should be confluent
 and terminating). Only lemmas which are obviously simplifying the
 goal should be added. Example:
 
@@ -227,11 +227,11 @@ goal should be added. Example:
      app_cons_one_r : rew_list.
 
 In particular, lemmas such as [n+0=n] should be added, as they simplify.
-However, lemmas such as distributivity [a*(b+c)=a*b+a*c] should not be 
+However, lemmas such as distributivity [a*(b+c)=a*b+a*c] should not be
 added to rewriting base, as it is sometimes not desirable to distribute.
 
 It is useful to declare a tactic to avoid the heavy syntax
-[autorewriting with rew_list].
+[autorewrite with rew_list].
 
    Tactic Notation "rew_list" :=
      autorewrite with rew_list.
@@ -282,11 +282,11 @@ Naming of definitions
      | Forall_nil :
          Forall P nil
      | Forall_cons : forall l x,
-         P x -> 
+         P x ->
          Forall P l ->
          Forall P (x::l).
 
-*) Records should have a constructor explicitly named with the 
+*) Records should have a constructor explicitly named with the
    suffix [_make]. (Coq uses the prefix [Build_] by default,
    but this does not match our conventions.)
 
@@ -296,7 +296,7 @@ Naming of definitions
       order_antisym : antisym R }.
 
 
-*) The suffix "_intro" should be used for an Inductive definition 
+*) The suffix "_intro" should be used for an Inductive definition
    with a single constructor, or a Record with a single field.
 
       Class Inhab (A:Type) : Prop :=
@@ -306,8 +306,8 @@ Naming of definitions
          | Acc_intro : (forall y:A, R y x -> Acc y) -> Acc x.
 
    Exception is for typeclass constructors with a single field,
-   where the typeclass name is capitalized, and the constructor 
-   may be the same name in lowercase, instead of using the "_intro" 
+   where the typeclass name is capitalized, and the constructor
+   may be the same name in lowercase, instead of using the "_intro"
    suffix.
 
       Class In_union_l :=
@@ -333,7 +333,7 @@ Naming of lemmas
         length (l1 ++ l2) = length l1 + length l2.
 
 *) With propositional extensionality, there is no need for [<->],
-   only [=] should be used. The suffix [eq] should always be used for 
+   only [=] should be used. The suffix [eq] should always be used for
    a lemma stating the equality between two propositions (but not be used
    for describing the behavior of a function with a result of kind [Type]).
    Examples:
@@ -352,14 +352,14 @@ Naming of lemmas
 
    Exception is when an argument is "forced". For example [nth_zero_cons]
    can be abbreviated as [nth_zero], because the case [nth_zero_nil] is
-   not interseting.
+   not interesting.
 
       Lemma nth_zero : forall x l,
         nth 0 (x::l) = x.
 
 *) Sometimes two equivalent versions of a lemma are useful. Typically,
    an argument could be either written [S n] or [n'] with [n'>0].
-   Thus, we have two versions: 
+   Thus, we have two versions:
 
       Lemma nth_succ : forall n x l,
         nth (S n) (x::l) = nth n l.
@@ -382,27 +382,27 @@ Naming of lemmas
    Another example, for making a step in a transitive closure:
 
       Lemma tclosure_l : forall R y x z,
-        R x y -> 
-        tclosure R y z -> 
+        R x y ->
+        tclosure R y z ->
         tclosure R x z.
 
       Lemma tclosure_r : forall R y x z,
-        tclosure R x y -> 
-        R y z -> 
+        tclosure R x y ->
+        R y z ->
         tclosure R x z.
 
 
 *) Interaction of a predicate and a constructor or function is more
    interesting. Consider "Forall" (all elements in a list satisfy
    a predicate) and "cons".
-   
+
    The introduction lemma is named [Forall_cons]:
 
        Lemma Forall_cons : forall l x,
-         P x -> 
+         P x ->
          Forall P l ->
          Forall P (x::l).
-   
+
    Other examples:
 
       Lemma trans_tclosure : forall R,
@@ -415,7 +415,7 @@ Naming of lemmas
    is written after the "of" separator.
 
       Lemma rstclosure_of_rsclosure : forall R x y,
-        rsclosure R x y -> 
+        rsclosure R x y ->
         rstclosure R x y.
 
       Lemma sclosure_eq_of_sym : forall R,
@@ -440,15 +440,15 @@ Naming of lemmas
          sym R ->
          trans R ->
          stclosure R = R.
-   
-   In the rare case of ambiguities, an "and" separator may be 
+
+   In the rare case of ambiguities, an "and" separator may be
    inserted between the name of the hypotheses. For example,
    when [comm], [assoc] and [comm_assoc] are three properties,
    we may state:
 
       Lemma comm_assoc_of_comm_and_assoc : forall f,
-        comm f -> 
-        assoc f -> 
+        comm f ->
+        assoc f ->
         comm_assoc f.
 
    An important exception is when the premise is a necessary requirement,
@@ -463,7 +463,7 @@ Naming of lemmas
 *) The order of variables/hypotheses is usually not so important, as long as
    some basic principles are followed:
    - variables that do not appear in the goal should be quantified first.
-   - if the goal is an equality, variables that do not appear in the LHS of 
+   - if the goal is an equality, variables that do not appear in the LHS of
      an equality should be quantified before the others.
    - hypotheses which involve the larger number of non-goal directed
      variables should appear first.
@@ -471,18 +471,18 @@ Naming of lemmas
    - hypotheses should be in the "natural reading order". Example:
 
        Lemma Forall_cons : forall l x,
-         P x -> 
+         P x ->
          Forall P l ->
          Forall P (x::l).
 
        Lemma Forall_last : forall l x,
          Forall P l ->
-         P x -> 
+         P x ->
          Forall P (l++(x::nil)).
 
 *) There is one exception when the name of the lemma does not reflect its
    statement, is when an auxiliary definition is used for stating the lemma,
-   but that the 
+   but that the
    Example, where [eqb] is a boolean function testing equality of two booleans:
 
       Lemma eqb_true_l : neutral_l eqb true.
@@ -502,7 +502,7 @@ Naming of lemmas
          Forall P (x::l) ->
          P x /\ Forall P l.
 
-   Often it is useful to have corolloralies to the inversion lemma,
+   Often it is useful to have corollaries to the inversion lemma,
    named [Forall_cons_inv_xxx], where the suffix [xxx] describes
    which projection is obtained:
 
@@ -534,11 +534,11 @@ Naming of lemmas
    that the n-th element of [l] exists and is equal to [x].
 
       Lemma Nth_inv_neq_nil : forall n l x,
-        Nth n l x -> 
+        Nth n l x ->
         l <> nil.
 
       Lemma Nth_nil_inv : forall n x,
-        Nth n nil x -> 
+        Nth n nil x ->
         False.
 
    Inversion lemmas that apply to an hypothesis which is not a
@@ -556,11 +556,11 @@ Naming of lemmas
         False.
 
       Lemma list_neq_nil_inv_cons : forall l,
-        l <> nil -> 
+        l <> nil ->
         exists x q, l = x :: q.
 
       Lemma list_neq_nil_inv_last : forall l,
-        l <> nil -> 
+        l <> nil ->
         exists x q, l = q ++ x::nil.
 
       Lemma apply_eq_none_inv : forall A B (f : A->option B) x,
@@ -572,14 +572,14 @@ Naming of lemmas
    an inversion lemma or not. For example, should it be:
 
       Lemma eq_of_eq_existT : forall ...
-        existT P p x = existT P p y -> 
+        existT P p x = existT P p y ->
         x = y.
 
       Lemma eq_existT_inv : forall ...
-        existT P p x = existT P p y -> 
+        existT P p x = existT P p y ->
         x = y.
 
-   [TOCHECK] The intuition is that when a lemma can apply both 
+   [TOCHECK] The intuition is that when a lemma can apply both
    as a forward-chaining lemma and a backward-chaining lemma,
    then it likely asserts an equivalence between the hypotheses
    and the conclusion, in which case it should have a version
@@ -592,7 +592,7 @@ Naming of lemmas
         (existT P p x = existT P p y) = (x = y).
 
       Lemma eq_existT_inv : forall ...
-        existT P p x = existT P p y -> 
+        existT P p x = existT P p y ->
         x = y.
 
 
@@ -615,9 +615,9 @@ Naming of lemmas
        tclosure (inverse R) = inverse (tclosure R)
 
    There is a priori no reason to favor one direction rather than the other.
-   We thus impose the following convention: we assign a (somewhat arbitrary) 
+   We thus impose the following convention: we assign a (somewhat arbitrary)
    order on definitions, which correspond to the order that definitions
-   appear in the files. Intuitively, we try to put the definitions that are 
+   appear in the files. Intuitively, we try to put the definitions that are
    more "basic" before the ones that are more "complex" (or less frequently
    used). Here, we have decided that "inverse" is more basic than "tclosure".
    Thus, we write:
@@ -635,6 +635,6 @@ Naming of lemmas
 
       bad:  Z_of_nat
       good: nat_to_Z
-   
-   This does not match the OCaml convention, unfortunately, but it 
+
+   This does not match the OCaml convention, unfortunately, but it
    is an arbitrary convention anyway.
