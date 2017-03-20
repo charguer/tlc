@@ -317,8 +317,10 @@ Naming of definitions
 ============================================================================
 Naming of lemmas
 
-*) Interaction of a function and a constructor are named by concatenating
-   the name of the function and the constructor. Examples:
+
+*) Interaction of a function and a constructor or a function
+   are named by concatenating the name of the function and the constructor. 
+   Examples:
 
       Lemma length_nil :
         length (@nil A) = 0.
@@ -326,23 +328,37 @@ Naming of lemmas
       Lemma length_cons : forall x l,
         length (x::l) = 1 + length l.
 
-*) Interaction of a function and another function is named similarly,
-   by concatenating the name of the two functions:
-
       Lemma length_app : forall l1 l2,
         length (l1 ++ l2) = length l1 + length l2.
 
-*) With propositional extensionality, there is no need for [<->],
-   only [=] should be used. The suffix [eq] should always be used for
-   a lemma stating the equality between two propositions (but not be used
-   for describing the behavior of a function with a result of kind [Type]).
-   Examples:
+   If there might be ambiguities, or several possible right hand sides,
+   then a longer named should be used. For example [length_app] is
+   short for [length_app_eq_sum_length].
+   
 
-      Lemma Forall_cons_eq : forall P l x,
-        Forall P (x::l) = (P x /\ Forall P l).
+
+*) With propositional extensionality, there is no need for [<->],
+   only [=] should be used. The string [eq] should always appear in the name
+   for a lemma stating the equality between two propositions (but not be used
+   for describing the behavior of a function with a result of kind [Type]).
+   The reason why the string [eq] should not be dropped is because we wish
+   to use the name without [eq] for the introduction lemma (see further.)
+   Example:
 
       Lemma Forall_eq_forall_mem : forall P l,
         (Forall P l) = (forall x, mem x l -> P x).
+
+   Examples, with abbreviated names in the cases where the right-and-side 
+   is obvious:
+
+      Lemma not_or_eq : forall P Q,
+        ~ (P \/ Q) = (~ P /\ ~ Q).
+        (* full name would have been [not_or_eq_and_not] *)
+
+      Lemma Forall_cons_eq : forall P l x,
+        Forall P (x::l) = (P x /\ Forall P l).
+        (* full name would have been [Forall_cons_eq_pred_and_Forall] *)
+
 
 *) When a function has several arguments, the name of the lemma should,
    in general, take into account all these arguments.
@@ -482,8 +498,9 @@ Naming of lemmas
 
 *) There is one exception when the name of the lemma does not reflect its
    statement, is when an auxiliary definition is used for stating the lemma,
-   but that the
-   Example, where [eqb] is a boolean function testing equality of two booleans:
+   but that the way the lemma is exploited in practice is the statement
+   after unfolding of the auxiliary definition. For example, where [eqb] 
+   is a boolean function testing equality of two booleans:
 
       Lemma eqb_true_l : neutral_l eqb true.
 
