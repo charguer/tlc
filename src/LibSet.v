@@ -483,7 +483,7 @@ Proof using.
   introv H. applys finite_remove_inv H. applys finite_single.
 Qed.
 
-(* LATER : finite_remove_inv
+(* --LATER : finite_remove_inv
    finite (E \- F) -> finite F -> finite E
 *)
 

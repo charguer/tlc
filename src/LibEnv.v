@@ -728,7 +728,7 @@ Proof using.
      simpl_dom. rewrite~ dom_singles. lets~: fresh_single_notin M.
 Qed.
 
-(* LATER: not used
+(* --LATER: not used
 Lemma singles_ok : forall xs vs E,
   ok E ->
   fresh (dom E) (length xs) xs ->
@@ -739,7 +739,7 @@ Proof using. ...
   rewrite iter_push_cons. rewrite* <- concat_assoc.
 *)
 
-(* LATER: not used;
+(* --LATER: not used;
    missing a precondition unless nil~*vs returns nil
 Lemma ok_concat_singles : forall n xs vs E,
   ok E ->
@@ -755,7 +755,7 @@ Proof using.
 Qed.
 *)
 
-(* LATER: not used
+(* --LATER: not used
   Lemma ok_concat : forall E F,
     ok E -> ok F -> disjoint (dom E) (dom F) ->
     ok (E & F).
@@ -1231,7 +1231,7 @@ Ltac binds_cases H :=
   binds_case H as B1 B2; (*fix_env;*) [ go B1 | go B2 ].
   (* TODO: add support for binds_empty_inv *)
 
-(* LATER: improve the above tactic using pattern matching
+(* --LATER: improve the above tactic using pattern matching
 Ltac binds_cases_base H :=
   match H with
   | binds _ _ empty => false (binds_empty_inv H)

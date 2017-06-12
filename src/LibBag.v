@@ -764,7 +764,7 @@ Proof using.
   constructor. intros. rewrite disjoint_eq. extens. iff M.
   { rew_logic in M. destruct M as [x M]. rew_logic* in M. }
   { destruct M as [x M]. rew_logic. exists x. rew_logic*. }  
-Qed. (* LATER: rew_logic below binder to simplify proof. *)
+Qed. (* --LATER: rew_logic below binder to simplify proof. *)
 
 Global Instance disjoint_prove_from_disjoint_eq :
   Disjoint_eq -> Disjoint_prove.

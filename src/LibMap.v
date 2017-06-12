@@ -201,7 +201,7 @@ Hint Extern 1 (None <> Some _) => congruence.
 (* ---------------------------------------------------------------------- *)
 (** extens *)
 
-(* later: state some extensionality *)
+(* --later: state some extensionality *)
 
 (* ---------------------------------------------------------------------- *)
 (** index *)
@@ -356,7 +356,7 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** binds *)
 
-(* LATER: {Inhab B} could probably be removed below in many places *)
+(* --LATER: {Inhab B} could probably be removed below in many places *)
 
 Lemma binds_prove : forall A `{Inhab B} (M:map A B) x v,
   x \indom M -> M[x] = v -> binds M x v.
@@ -382,7 +382,7 @@ Proof using.
   introv N K. asserts IB: (Inhab B). constructor. exists* v.
   rewrite (@binds_def A B IB) in *.
   rewrite~ indom_update. rewrite* update_read_neq.
-Qed. (* later: cleanup proof *)
+Qed. (* --later: cleanup proof *)
 
 Lemma binds_update_neq' : forall A i j `{Inhab B} v w (M:map A B), (* todo: needed? *)
   i <> j -> binds M i v -> binds (M[j:=w]) i v.
@@ -435,7 +435,7 @@ Proof.
   introv M D. rewrite set_disjoint_eq in D.
   simpl. unfold read_impl, union_impl. cases (m2 i).
   { false D M. applys~ binds_dom. simpl. unfolds* binds_impl. }
-    (* LATER: simplify line above *)
+    (* --LATER: simplify line above *)
   { cases~ (m1 i). }
 Qed.
 
@@ -449,13 +449,13 @@ Proof.
   { auto. } 
   { cases (m1 i) as C.
     { false D M. applys~ binds_dom. simpl. unfolds* binds_impl. }
-    (* LATER: simplify line above *)
+    (* --LATER: simplify line above *)
     { auto. } }
 Qed.
 
 (* ---------------------------------------------------------------------- *)
 
-(* LATER: cleanup the three lemmas below *)
+(* --LATER: cleanup the three lemmas below *)
 
 (* FALSE
 Lemma binds_update_neq_inv' : forall A B i j v w (M:map A B),
@@ -587,7 +587,7 @@ Qed.
 (* TODO
 Lemma fold_def_dom : forall A `{Inhab B} C (m:monoid_def C) (f:A->B->C) (M:map A B),
   fold m f M = LibBag.fold m (fun k => f k (M[k])) (dom M).
-Proof using. (* LATER *) Qed.
+Proof using. (* --LATER *) Qed.
   - E = dom M
   - repr L E
   - fold f (map i E) = fold (fun x => f (i x)) E
@@ -631,7 +631,7 @@ Lemma binds_impl_dom_impl : forall A `{Inhab B} (M:map A B) x v,
   binds_impl M x v -> x \in dom_impl M.
 Proof using. introv IB K. unfolds binds_impl, dom_impl. set_norm. congruence. Qed.
 
-(* LATER: avoid `{Inhab B}: if not empty, then inhab, else result true *)
+(* --LATER: avoid `{Inhab B}: if not empty, then inhab, else result true *)
 (* internal use *)
 Lemma finite_to_finite_fold_support : forall A `{Inhab B} (M:map A B),
   finite M ->
@@ -646,7 +646,7 @@ Proof using.
   simpl. unfold read_impl. hnf in R. rewrite~ R.
 Qed.
 
-(* LATER: avoid `{Inhab B} *)
+(* --LATER: avoid `{Inhab B} *)
 Lemma fold_union : forall A `{Inhab B} C (m:monoid_def C) (f:A->B->C) (M N : map A B),
   Monoid_commutative m ->
   finite M ->
@@ -788,7 +788,7 @@ End Instances.
 *)
 
 
-(* LATER: is this deprecated?
+(* --LATER: is this deprecated?
   Lemma binds_update_rem : forall A i j `{Inhab B} v w (M:map A B),
     j \notindom' M -> binds (M[j:=w]) i v -> binds M i v.
   Hint Resolve binds_update_rem.

@@ -94,7 +94,7 @@ Instance index_inst : forall A, BagIndex int (list A).
 
 Global Opaque card_inst read_inst update_inst index_inst.
 
-(* LATER
+(* --LATER
 Definition binds_impl A (l:list A) (i:int) (v:A) : Prop :=
   index_impl l i /\ nth i l = v.
   (* deprecated:  ZNth i l v. *)
@@ -524,7 +524,7 @@ Qed.
 
 
 (* ---------------------------------------------------------------------- *)
-(* LATER:
+(* --LATER:
 
 Lemma isTrue_eq_list : forall A {IA:Inhab A} (L1 L2:list A),
   len L1 = len L2 ->

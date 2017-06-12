@@ -1797,7 +1797,7 @@ Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2)
    Remark: instances of [Inhab] are treated as non-dependent and
    are introduced automatically. *)
 
-(* NOTE: this tactic is later redefined for supporting Inhab *)
+(* NOTE: this tactic is latter redefined for supporting Inhab *)
 Ltac intro_nondeps_aux_special_intro G :=
   fail.
 

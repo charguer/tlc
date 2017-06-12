@@ -317,7 +317,7 @@ Hint Extern 1 (_ <> _ :> var) => notin_solve.
 Hint Extern 1 ((_ \notin _) /\ _) => splits.
 
 (*
-LATER:
+--LATER:
   | |- ?x \notin ?E =>
 	progress (unfold x); notin_simpl
   | |- (var_gen ?x) \notin _ =>
@@ -470,7 +470,7 @@ Ltac fresh_solve :=
 
 Hint Extern 1 (fresh _ _ _) => fresh_solve.
 
-(* LATER: more automation of fresh_length properties *)
+(* --LATER: more automation of fresh_length properties *)
 
 
 

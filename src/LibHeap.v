@@ -27,7 +27,7 @@ Section HeapDef.
 Variables K V : Type.
 
 Parameter empty : heap K V.
-Parameter dom : heap K V -> set K. (* LATER: should be a finite set *)
+Parameter dom : heap K V -> set K. (* --LATER: should be a finite set *)
 Parameter binds : heap K V -> K -> V -> Prop.
 Parameter write : heap K V -> K -> V -> heap K V.
 Parameter to_list : heap K V -> list (K * V).
