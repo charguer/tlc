@@ -19,6 +19,52 @@ Stable files:
    LibRelation
    LibEpsilon
    LibChoice
+   LibOperation
+   LibOrder.v
+
+   LibList
+
+
+Remaining to clean up:
+
+   LibWf.v
+   LibFix.v
+
+   LibString.v
+   LibInt.v
+   LibNat.v
+
+   LibListExec.v
+   LibListSort.v
+   LibListSub.v
+   LibListZ.v
+
+   LibMonoid.v
+   LibMin.v
+
+   LibContainer.v
+   LibSet.v
+   LibMap.v
+   LibMultiset.v
+
+   LibCore.v [package]
+
+
+For later cleanup (not yet used so much)
+
+   LibPer.v
+   LibFun.v
+   LibStream.v
+   LibGraph.v
+   LibFset.v
+
+For later cleanup (specific to metatheory)
+
+   LibHeap.v
+   LibVar.v
+   LibEnv.v
+   LibLN.v
+
 
 
 Demo files:
@@ -26,37 +72,3 @@ Demo files:
    LibTacticsDemos.v
    LibFixDemos.v
    LibOtherDemos.v
-
-
-Under cleanup:
-
-   LibContainer.v
-   LibCore.v
-   LibEnv.v
-   LibFix.v
-   LibFset.v
-   LibFun.v
-   LibGraph.v
-   LibHeap.v
-   LibInt.v
-   LibListExec.v
-   LibListSort.v
-   LibListSub.v
-   LibList.v
-   LibListZ.v
-   LibLN.v
-   LibLogic.v
-   LibMap.v
-   LibMin.v
-   LibMonoid.v
-   LibMultiset.v
-   LibNat.v
-   LibOperation.v
-   LibOrder.v
-   LibPer.v
-   LibRelation.v
-   LibSet.v
-   LibStream.v
-   LibString.v
-   LibVar.v
-   LibWf.v
