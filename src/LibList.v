@@ -115,10 +115,10 @@ Tactic Notation "rew_listx" "*" "in" hyp(H) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Definitions of Fold-right and App *)
 
-Fixpoint fold_right A B (f : A -> B -> B) (acc : B) l :=
+Fixpoint fold_right A B (f:A->B->B) (i:B) (l:list A) :=
   match l with
-  | nil => acc
-  | x::L' => f x (fold_right f acc L')
+  | nil => i
+  | x::L' => f x (fold_right f i L')
   end.
 
 Definition app A (l1 l2 : list A) :=
