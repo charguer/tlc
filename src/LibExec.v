@@ -313,6 +313,16 @@ Qed.
 
 
 
+(* ---------------------------------------------------------------------- *)
+(** ** Comparison *)
+
+Fixpoint nat_compare (x y : nat) :=
+  match x, y with
+  | O, O => true
+  | S x', S y' => nat_compare x' y'
+  | _, _ => false
+  end.
+
 
 
 

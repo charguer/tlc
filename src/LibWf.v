@@ -225,12 +225,16 @@ Require Import LibInt.
 Definition downto (b : int) :=
   fun n m : int => (b <= n) /\ (n < m).
 
+(* TODO: rename to downto_eq *)
+
 Lemma downto_def : forall b n m,
   downto b n m = (b <= n /\ n < m).
 Proof using. auto. Qed.
 
 Lemma downto_intro : forall b n m,
-  b <= n -> n < m -> downto b n m.
+  b <= n ->
+  n < m -> 
+  downto b n m.
 Proof using. split~. Qed.
 
 Lemma downto_wf : forall n, wf (downto n).
@@ -258,10 +262,13 @@ Lemma upto_def : forall b n m,
 Proof using. auto. Qed.
 
 Lemma upto_intro : forall b n m,
-  n <= b -> m < n -> upto b n m.
+  n <= b -> 
+  m < n -> 
+  upto b n m.
 Proof using. split~. Qed.
 
-Lemma upto_wf : forall n, wf (upto n).
+Lemma upto_wf : forall n, 
+  wf (upto n).
 Proof using.
   intros b n.
   induction_wf: (measure_wf (fun n => Zabs_nat (b-n))) n.

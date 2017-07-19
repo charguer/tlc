@@ -1,12 +1,3 @@
-
-
-
-
-(** TODO: this file needs a bit of a cleanup *)
-
-
-
-
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Integers                                                                *
@@ -21,12 +12,13 @@ Require Export LibNat.
 
 
 (* ********************************************************************** *)
-(** * Notation for integers *)
+(** * Parsing of integers and operations *)
 
-(* Comparison operators are those of LibOrder, not ZArith *)
+(* ---------------------------------------------------------------------- *)
+(** ** Notation for type and operation *)
 
-Open Scope Z_scope.
-Open Scope comp_scope.
+(** Define [int] as an alias for [Z], the type of integers from Coq's stdlib.
+    Create a scope called [Int_scope] for notation on integers. *)
 
 Notation "'int'" := Z : Int_scope.
 
@@ -39,13 +31,24 @@ Bind Scope Int_scope with Z.
 Delimit Scope Int_scope with I.
 Open Scope Int_scope.
 
-(* todo: is all of this really necessary ? *)
 
-(* We can't use
-   Coercion Z_of_nat : nat >-> Z.
-   Because
-   Opaque Z_of_nat.
-   makes all proofs with omega to fail
+(* ---------------------------------------------------------------------- *)
+(** ** Inhabited type *)
+
+Instance Inhab_int : Inhab int.
+Proof using. intros. apply (Inhab_of_val 0). Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Coercion from nat *)
+
+(** Remark: we cannot simply use the coercion:
+      Coercion Z_of_nat : nat >-> Z.
+   because otherwise when we try to make the coercion opaque using:
+      Opaque Z_of_nat.
+   the omega fails to work. 
+   Thus, we introduce an alias, called [nat_to_Z] for [Z_of_nat],
+   and we register [nat_to_Z] as coercion.
 *)
 
 Definition nat_to_Z := Z_of_nat.
@@ -57,9 +60,30 @@ Global Opaque nat_to_Z.
 
 Coercion nat_to_Z : nat >-> Z.
 
+(* --TODO: check this coercion is actually the one in use *)
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Order relation *)
+
+(** The comparison operators on integers are those from [LibOrder],
+    not the ones from Coq's [ZArith]. *)
+
+Open Scope Z_scope.
+Open Scope comp_scope.
+
+(** The typeclass [le] on type [int] is bound to [Zle], from Coq's 
+    standard library *)
+
+Instance le_int_inst : Le int := Build_Le Zle.
+
+
 
 (* ********************************************************************** *)
 (** * Conversion to natural numbers, for tactic programming *)
+
+(** These tactics are helpful to convert a number passed to a Ltac tactic
+    into a [nat], regardless of whether it is a [nat] or an [int]. *)
 
 Definition ltac_int_to_nat (x:Z) : nat :=
   match x with
@@ -77,22 +101,14 @@ Ltac number_to_nat N ::=
   end.
 
 
-(* ********************************************************************** *)
-(** * Inhabited *)
-
-Instance Inhab_int : Inhab int.
-Proof using. intros. apply (Inhab_of_val 0). Qed.
-
-
 
 (* ********************************************************************** *)
-(** * Order on numbers *)
+(** * Decision procedure *)
 
-Instance le_int_inst : Le int := Build_Le Zle.
-
+(** A lot of hacks to allow calling the [omega] tactic *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Relation to Peano, for tactic [omega] *)
+(** ** Translation from typeclass order to ZArith, for using [omega] *)
 
 Lemma le_zarith : le = Zle.
 Proof using. extens*. Qed.
@@ -118,13 +134,13 @@ Proof using.
 Qed.
 
 Hint Rewrite le_zarith lt_zarith ge_zarith gt_zarith : rew_int_comp.
+
 Ltac int_comp_to_zarith :=
   autorewrite with rew_int_comp in *.
 
 
-
-(* ********************************************************************** *)
-(** * Decision procedure: calling [omega] *)
+(* ---------------------------------------------------------------------- *)
+(** ** Hypothesis selection *)
 
 (** [is_arity_type T] returns a boolean indicating whether
     [T] is equal to [nat] or [int] *)
@@ -199,6 +215,9 @@ Ltac split_if_eq_bool :=
   end.
 *)
 
+(* ---------------------------------------------------------------------- *)
+(** ** Normalization of arithmetic expressions *)
+
 (** Two lemmas to help omega out *)
 
 Lemma Z_of_nat_O :
@@ -220,6 +239,10 @@ Hint Rewrite nat_to_Z_def Z_of_nat_O Z_of_nat_S Z_of_nat_plus1 : rew_maths.
 
 Ltac rew_maths :=
   autorewrite with rew_maths in *.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Setting up the goal for [omega] *)
 
 (** [math_setup_goal] does introduction, splits, and replace
     the goal by [False] if it is not arithmetic. If the goal
@@ -259,7 +282,12 @@ Hint Rewrite int_nat_plus : int_nat_conv.
     selects all arithmetic hypotheses, and the call omega. *)
 (* todo: autorewrite with int_nat_conv in *. after int_comp_to_zarith *)
 
-(* TODO *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Main driver for the set up process to goal [omega] *)
+
+(* --TODO: this probably is no longer necessary, since 
+     LibTactic version seems equivalent *)
 Ltac check_noevar_goal ::=
   match goal with |- ?G => first [ has_evar G; fail 1 | idtac ] end.
 
@@ -289,10 +317,13 @@ Tactic Notation "maths" constr(E) :=
   let H := fresh "H" in asserts H: E; [ math | ].
 (* todo: parsing conflit *)
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** [math_lia], [math_nia], [math_dia] tactic *)
 
-(* Require CSDP to be installed *)
+(** --DISCLAIMER: WORK IN PROGRESS *) 
+
+(* Require the CSDP package to be installed *)
 
 (** [math_lia] supports linear arithmetic; it roughly provides the
     combined power of [ring_simplify] and [omega]. *)
@@ -352,79 +383,79 @@ Ltac math_dia_setup :=
 Tactic Notation "math_dia" :=
   math_dia_setup; math_nia.
 
-(*--in progress
+(*--WORK IN PROGRESS
 
-Lemma math_nia_demo_1 : forall (a b N : int),
-  N > 0 ->
-  a * N <= b * N ->
-  a <= b.
-Proof using. math_nia. Qed.
+  Lemma math_nia_demo_1 : forall (a b N : int),
+    N > 0 ->
+    a * N <= b * N ->
+    a <= b.
+  Proof using. math_nia. Qed.
 
-Lemma math_dia_demo_1 : forall (a b t : int),
-  t > 0 ->
-  a <= b ->
-  a / t <= b / t.
-Proof using. math_dia. Qed.
+  Lemma math_dia_demo_1 : forall (a b t : int),
+    t > 0 ->
+    a <= b ->
+    a / t <= b / t.
+  Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_2 : forall (a t : int),
-  t > 1 ->
-  a > 0 ->
-  a / t <= a.
-Proof using. math_dia. Qed.
+  Lemma math_dia_demo_2 : forall (a t : int),
+    t > 1 ->
+    a > 0 ->
+    a / t <= a.
+  Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_3 : forall (a b t : int),
-  t > 0 ->
-  0 <= a <= b ->
-  a / t <= b / t.
-Proof using. math_dia. Qed.
+  Lemma math_dia_demo_3 : forall (a b t : int),
+    t > 0 ->
+    0 <= a <= b ->
+    a / t <= b / t.
+  Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_4 : forall (a b N : int),
-  N > 0 ->
-  a > 0 ->
-  b > 0 ->
-  a * N <= b * N ->
-  a <= b.
-Proof using. math_dia. Qed.
+  Lemma math_dia_demo_4 : forall (a b N : int),
+    N > 0 ->
+    a > 0 ->
+    b > 0 ->
+    a * N <= b * N ->
+    a <= b.
+  Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_5 : forall (a b N t : int),
-  N > 0 ->
-  t > 1 ->
-  a > 0 ->
-  b > 0 ->
-  a * N <= b * N ->
-  a / t <= b.
-Proof using.
-  intros.
-  (* math_dia_setup. math_dia. *)
-  try math_dia.
-  assert (a / t <= a). math_dia.
-  assert (a <= b). math_dia.
-  math_dia.
-Qed.
+  Lemma math_dia_demo_5 : forall (a b N t : int),
+    N > 0 ->
+    t > 1 ->
+    a > 0 ->
+    b > 0 ->
+    a * N <= b * N ->
+    a / t <= b.
+  Proof using.
+    intros.
+    (* math_dia_setup. math_dia. *)
+    try math_dia.
+    assert (a / t <= a). math_dia.
+    assert (a <= b). math_dia.
+    math_dia.
+  Qed.
 
-Lemma math_dia_demo_span_1 : forall (a b t n N : int),
-  N > 0 ->
-  n > 0 ->
-  t > 0 ->
-  a >= 0 ->
-  b >= 0 ->
-  a <= b * (1 + N/t) + n * t/N ->
-  (   a <= b * (1 + N/t) + (n+1) * t/N
-  /\ (a+1) <= (b+1) * (1 + N/t) + (n+1) * t/N
-  /\ b * (1 + N/t) + N * t/N = b * (1 + t/N) + t
-  /\ (b + t) * (1 + N/t) + n * t/N = b * (1 + N/t) + t + N + n * t/N).
-Proof using.
-  intros. splits.
-  math_dia.
-  try math_dia. skip.
-  try math_dia. skip.
-  try math_dia. skip.
-Qed.
+  Lemma math_dia_demo_span_1 : forall (a b t n N : int),
+    N > 0 ->
+    n > 0 ->
+    t > 0 ->
+    a >= 0 ->
+    b >= 0 ->
+    a <= b * (1 + N/t) + n * t/N ->
+    (   a <= b * (1 + N/t) + (n+1) * t/N
+    /\ (a+1) <= (b+1) * (1 + N/t) + (n+1) * t/N
+    /\ b * (1 + N/t) + N * t/N = b * (1 + t/N) + t
+    /\ (b + t) * (1 + N/t) + n * t/N = b * (1 + N/t) + t + N + n * t/N).
+  Proof using.
+    intros. splits.
+    math_dia.
+    try math_dia. skip.
+    try math_dia. skip.
+    try math_dia. skip.
+  Qed.
 
-Lemma math_dia_demo : forall a b t n N,
-  a * N <= b * N + (b + n) * t  ->
-  a <= b * (1 + t / N) + n * t / N.
-Proof using. intros. math_dia. Qed.
+  Lemma math_dia_demo : forall a b t n N,
+    a * N <= b * N + (b + n) * t  ->
+    a <= b * (1 + t / N) + n * t / N.
+  Proof using. intros. math_dia. Qed.
 ---*)
 
 
@@ -446,51 +477,25 @@ Tactic Notation "math_only_if_arith" :=
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Calling [maths] after eliminating boolean reflection *)
+(** ** Elimination of multiplication, to call omega *)
 
-(** [maths] is a more powerful version of [math],
-    able to deconstruct conjunctions, disjunctions,
-    and negations, but as a consequence it might be slower. *)
+(* In order to use [math] with simple multiplications, add the command:
+     Hint Rewrite mult_2_eq_plus mult_3_eq_plus : rew_maths. 
+   TEMPORARY: these lemmas should go away as [omega] is able to inline
+   trivial multiplication by itself
+*)
 
-Hint Rewrite istrue_and istrue_or istrue_neg : rew_reflect_and_or_neg.
+Lemma mult_2_eq_plus : forall x, 2 * x = x + x.
+Proof using. intros. ring. Qed.
 
-Ltac maths_core tt :=
-  autorewrite with rew_reflect_and_or_neg in *; intuition math.
+Lemma mult_3_eq_plus : forall x, 3 * x = x + x + x.
+Proof using. intros. ring. Qed.
 
-Tactic Notation "maths" :=
-  maths_core tt.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Rewriting equalities provable by the [math] tactic *)
-
-(** [math_rewrite (E = F)] replaces all occurences of [E]
-    with the expression [F]. It produces the equality [E = F]
-    as subgoal, and tries to solve it using the tactic [math] *)
-
-Tactic Notation "math_rewrite" constr(E) :=
-  asserts_rewrite E; [ try math | ].
-Tactic Notation "math_rewrite" constr(E) "in" hyp(H) :=
-  asserts_rewrite E in H; [ try math | ].
-Tactic Notation "math_rewrite" constr(E) "in" "*" :=
-  asserts_rewrite E in *; [ try math | ].
-
-Tactic Notation "math_rewrite" "~" constr(E) :=
-  math_rewrite E; auto_tilde.
-Tactic Notation "math_rewrite" "~" constr(E) "in" hyp(H) :=
-  math_rewrite E in H; auto_tilde.
-Tactic Notation "math_rewrite" "~" constr(E) "in" "*" :=
-  math_rewrite E in *; auto_tilde.
-
-Tactic Notation "math_rewrite" "*" constr(E) :=
-  math_rewrite E; auto_star.
-Tactic Notation "math_rewrite" "*" constr(E) "in" hyp(H) :=
-  math_rewrite E in H; auto_star.
-Tactic Notation "math_rewrite" "*" constr(E) "in" "*" :=
-  math_rewrite E in *; auto_star.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Hint externs for calling math in the hint base [maths] *)
+
+(* TODO: rename [maths] database to [math] *)
 
 Ltac math_hint := math.
 
@@ -527,30 +532,50 @@ Hint Extern 3 (@le int _ _ _ -> False) => math_hint : maths.
 Hint Extern 3 (@lt int _ _ _ -> False) => math_hint : maths.
 Hint Extern 3 (@ge int _ _ _ -> False) => math_hint : maths.
 Hint Extern 3 (@gt int _ _ _ -> False) => math_hint : maths.
-
-(* ---------------------------------------------------------------------- *)
-(** ** Extend [zify] to handle [Z.to_nat]. *)
-
-Lemma Z_of_nat_zify : forall x, Z.of_nat (Z.to_nat x) = Z.max 0 x.
-Proof using.
-  intros x. destruct x.
-  - rewrite Z2Nat.id; reflexivity.
-  - rewrite Z2Nat.inj_pos. math_lia.
-  - rewrite Z2Nat.inj_neg. math_lia.
-Qed.
-
-Ltac zify_nat_op_extended :=
-  match goal with
-  | H : context [ Z.of_nat (Z.to_nat ?a) ] |- _ => rewrite (Z_of_nat_zify a) in H
-  | |- context [ Z.of_nat (Z.to_nat ?a) ] => rewrite (Z_of_nat_zify a)
-  | _ => zify_nat_op
-  end.
-
-Ltac zify_nat ::= repeat zify_nat_rel; repeat zify_nat_op_extended; unfold Z_of_nat' in *.
+Hint Extern 3 (@eq int _ _ -> False) => math_hint : maths.
+Hint Extern 3 (~ @le nat _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @lt nat _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @ge nat _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @gt nat _ _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (~ @eq nat _ _) => unfold not; math_hint : maths.
+Hint Extern 3 (@le nat _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@lt nat _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@ge nat _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@gt nat _ _ _ -> False) => math_hint : maths.
+Hint Extern 3 (@eq nat _ _ -> False) => math_hint : maths.
 
 
 (* ********************************************************************** *)
-(** * Simplification lemmas *)
+(** * Rewriting on arithmetic expressions *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Rewriting equalities provable by the [math] tactic *)
+
+(** [math_rewrite (E = F)] replaces all occurences of [E]
+    with the expression [F]. It produces the equality [E = F]
+    as subgoal, and tries to solve it using the tactic [math] *)
+
+Tactic Notation "math_rewrite" constr(E) :=
+  asserts_rewrite E; [ try math | ].
+Tactic Notation "math_rewrite" constr(E) "in" hyp(H) :=
+  asserts_rewrite E in H; [ try math | ].
+Tactic Notation "math_rewrite" constr(E) "in" "*" :=
+  asserts_rewrite E in *; [ try math | ].
+
+Tactic Notation "math_rewrite" "~" constr(E) :=
+  math_rewrite E; auto_tilde.
+Tactic Notation "math_rewrite" "~" constr(E) "in" hyp(H) :=
+  math_rewrite E in H; auto_tilde.
+Tactic Notation "math_rewrite" "~" constr(E) "in" "*" :=
+  math_rewrite E in *; auto_tilde.
+
+Tactic Notation "math_rewrite" "*" constr(E) :=
+  math_rewrite E; auto_star.
+Tactic Notation "math_rewrite" "*" constr(E) "in" hyp(H) :=
+  math_rewrite E in H; auto_star.
+Tactic Notation "math_rewrite" "*" constr(E) "in" "*" :=
+  math_rewrite E in *; auto_star.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Addition and substraction *)
@@ -558,15 +583,18 @@ Ltac zify_nat ::= repeat zify_nat_rel; repeat zify_nat_op_extended; unfold Z_of_
 Lemma plus_zero_r : forall n,
   n + 0 = n.
 Proof using. math. Qed.
+
 Lemma plus_zero_l : forall n,
   0 + n = n.
 Proof using. math. Qed.
+
 Lemma minus_zero : forall n,
   n - 0 = n.
 Proof using. math. Qed.
 
+
 (* ---------------------------------------------------------------------- *)
-(** ** Comparison *)
+(** ** Comparison --- DEPRECATED? *)
 
 Lemma plus_le_l : forall a b c,
   (a + b <= a + c) = (b <= c).
@@ -593,6 +621,7 @@ Proof using. math. Qed.
 Lemma plus_gt_r : forall a b c,
   (b + a > c + a) = (b > c).
 Proof using. math. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Simplification tactic *)
@@ -623,6 +652,78 @@ Tactic Notation "rew_int" "~" "in" hyp(H) :=
   rew_int in H; auto_tilde.
 Tactic Notation "rew_int" "*" "in" hyp(H) :=
   rew_int in H; auto_star.
+
+
+
+(* ********************************************************************** *)
+(** * Advanced induction *)
+
+(* --TODO: move to LibNat *)
+(* --TODO: document and explain when this is needed *)
+
+Definition eq_gt_implies (P : (nat->Prop) -> Prop) :=
+  forall n, 
+  (forall m, n > m -> P (eq m)) -> 
+  P (gt n).
+
+Definition eq_lt_implies (P : (nat->Prop) -> Prop) :=
+  forall n, 
+  (forall m, n < m -> P (eq m)) -> 
+  P (gt n).
+
+Hint Unfold eq_lt_implies eq_gt_implies. (* --TODO: rename *)
+
+Lemma eq_lt_induction : forall (P : (nat->Prop) -> Prop),
+  (forall n, (forall m, n > m -> P (eq m)) -> P (lt n)) ->
+  (forall n, P (lt n) -> P (eq n)) ->
+  (forall n, P (eq n)).
+Proof using. intros. induction n using peano_induction. auto. Qed.
+
+Lemma eq_gt_induction : forall (P : (nat->Prop) -> Prop),
+  (forall n, (forall m, n > m -> P (eq m)) -> P (gt n)) ->
+  (forall n, P (gt n) -> P (eq n)) ->
+  (forall n, P (eq n)).
+Proof using. intros. induction n using peano_induction. auto. Qed.
+
+Lemma eq_gt_induction_2 : forall (P1 P2 : (nat->Prop) -> Prop),
+  eq_gt_implies P1 -> 
+  eq_gt_implies P2 ->
+  (forall n, P1 (gt n) -> P2 (gt n) -> P1 (eq n) /\ P2 (eq n)) ->
+     (forall n, P1 (eq n)) 
+  /\ (forall n, P2 (eq n)).
+Proof using.
+  introv H1 H2 R.
+  cuts M: (forall n, P1 (eq n) /\ P2 (eq n)).
+    split; intros n; specializes M n; autos*.
+  induction n using peano_induction. apply R;
+    match goal with K: eq_gt_implies ?Pi |- ?Pi _ =>
+      apply K; intros; forwards*: H; try math end.
+Qed.
+
+(* --TODO add missing arities *)
+
+Lemma eq_gt_induction_5 : forall (P1 P2 P3 P4 P5 : (nat->Prop) -> Prop),
+  eq_gt_implies P1 -> 
+  eq_gt_implies P2 -> 
+  eq_gt_implies P3 ->
+  eq_gt_implies P4 -> 
+  eq_gt_implies P5 ->
+  (forall n, P1 (gt n) -> P2 (gt n) -> P3 (gt n) -> P4 (gt n) -> P5 (gt n) ->
+    P1 (eq n) /\ P2 (eq n) /\ P3 (eq n) /\ P4 (eq n) /\ P5 (eq n)) ->
+     (forall n, P1 (eq n))
+  /\ (forall n, P2 (eq n)) 
+  /\ (forall n, P3 (eq n))
+  /\ (forall n, P4 (eq n))  
+  /\ (forall n, P5 (eq n)).
+Proof using.
+  introv H1 H2 H3 H4 H5 R.
+  cuts M: (forall n, P1 (eq n) /\ P2 (eq n) /\ P3 (eq n) /\ P4 (eq n) /\ P5 (eq n)).
+    splits; intros n; specializes M n; autos*.
+  induction n using peano_induction. apply R;
+    match goal with K: eq_gt_implies ?Pi |- ?Pi _ =>
+      apply K; intros; forwards*: H; try math end.
+Qed.
+
 
 
 (************************************************************)
@@ -776,224 +877,9 @@ Qed.
 
 Implicit Arguments div2_bounds [m n].
 
+
+
 Hint Rewrite mod2_zero mod2_odd mod2_even div2_odd div2_even : rew_parity.
 
 Ltac rew_parity :=
   autorewrite with rew_parity.
-
-
-(************************************************************)
-(* * Elimination of multiplication, to call omega *)
-
-Lemma double : forall x, 2 * x = x + x.
-Proof using. intros. ring. Qed.
-
-Lemma triple : forall x, 3 * x = x + x + x.
-Proof using. intros. ring. Qed.
-
-Lemma quadruple : forall x, 3 * x = x + x + x.
-Proof using. intros. ring. Qed.
-
-(* To use [math] with simple multiplications, add the command:
-   Hint Rewrite double triple : rew_maths.
-*)
-
-
-(************************************************************)
-(* * Min function *)
-
-Require Import LibEpsilon.
-
-Instance int_le_total_order : Le_total_order (A:=int).
-Proof using.
-  constructor. constructor. constructor; unfolds.
-  math. math. unfolds. math. unfolds.
-  intros. tests: (x <= y). left~. right. math.
-Qed.
-
-(* todo: make polymorphic with classes *)
-
-Section Min.
-Implicit Types x y : int.
-
-Definition min x y :=
-  If x <= y then x else y.
-
-Lemma min_self : forall x,
-  min x x = x.
-Proof using. intros. unfolds min. case_if~. Qed.
-Lemma min_left : forall x y,
-  x <= y -> min x y = x.
-Proof using. intros. unfolds min. case_if~. false*. Qed.
-Lemma min_right : forall x y,
-  y <= x -> min x y = y.
-Proof using. intros. unfolds min. case_if~. apply~ le_antisym. Qed.
-Lemma min_trans_inv : forall a b x y : int,
-  min a b <= x -> y < a -> y < b -> y < x.
-Proof using. intros. unfolds min. case_if; math. Qed.
-
-End Min.
-
-
-(************************************************************)
-(* * Pow function *)
-
-Require Import Zpow_facts.
-
-Lemma power_pos:
-  forall k n,
-  0 < n ->
-  0 <= k ->
-  1 <= n^k.
-Proof using.
-  intros. math_rewrite (1 = n^0). reflexivity.
-  apply Zpower_le_monotone; math.
-Qed.
-
-Lemma pow2_pos : forall n, n >= 0 -> 2^n >= 1.
-Proof using.
-  intros. forwards: power_pos n 2; math.
-Qed.
-
-Lemma pow2_succ : forall n, n >= 0 -> 2^(n+1) = 2*2^n.
-Proof using.
-  intros. math_rewrite (n+1 = Zsucc n).
-  rewrite Zpower_Zsucc; math.
-Qed.
-
-(* A tactic that helps dealing with goals containing "b^m" for multiple m *)
-Require Import List.
-
-Ltac subst_eq_boxer_list l rewrite_tac :=
-  match l with
-  | nil => idtac
-  | (@boxer _ ?p) :: ?Hs =>
-    match p with
-      (?tm, ?Htm) =>
-      rewrite_tac Htm; clear Htm; clear tm;
-      subst_eq_boxer_list Hs rewrite_tac
-    end
-  end.
-
-(* Develop occurences of (b ^ m) in H into (b ^ (m - min_e) * b ^ min_e).
-   (and try to simplify/compute b^(m - min_e)).
- *)
-Ltac rew_pow_develop b m min_e H :=
-  let m_eq_plusminus := fresh in
-  assert (m = min_e + (m - min_e)) as m_eq_plusminus
-      by (rewrite Zplus_minus; reflexivity);
-  rewrite m_eq_plusminus in H; clear m_eq_plusminus;
-  rewrite (Z.pow_add_r b min_e (m - min_e)) in H; [
-    rewrite Z.mul_comm in H;
-    let tm' := fresh "tm'" in
-    let H' := fresh "H'" in
-    remember (b ^ (m - min_e)) as tm' eqn:H' in H;
-    let e := fresh "e" in
-    evar (e: int);
-    let Heqe := fresh in
-    assert (e = m - min_e) as Heqe
-        by (ring_simplify; subst e; reflexivity);
-    rewrite <-Heqe in H'; clear Heqe; unfold e in H'; ring_simplify in H';
-    rewrite H' in H; clear H'; clear tm'; clear e;
-    try rewrite Z.mul_1_l in H
-  | ring_simplify; auto with zarith ..].
-
-Ltac rew_pow_aux_goal b min_e normalized_acc :=
-  match goal with
-  | |- context [ b ^ ?m ] =>
-    let tm := fresh "tm" in
-    let Heqtm := fresh "Heqtm" in
-    remember (b ^ m) as tm eqn:Heqtm in |- *;
-    rew_pow_develop b m min_e Heqtm; [
-      rew_pow_aux_goal b min_e ((boxer (tm, Heqtm)) :: normalized_acc)
-    | ..]
-  | _ => subst_eq_boxer_list normalized_acc ltac:(fun E => rewrite E)
-  end.
-
-Ltac rew_pow_aux_in b min_e H normalized_acc :=
-  match type of H with
-  | context [ b ^ ?m ] =>
-    let tm := fresh "tm" in
-    let Heqtm := fresh "Heqtm" in
-    remember (b ^ m) as tm eqn:Heqtm in H;
-    rew_pow_develop b m min_e Heqtm; [
-      rew_pow_aux_in b min_e H ((boxer (tm, Heqtm)) :: normalized_acc)
-    | ..]
-  | _ => subst_eq_boxer_list normalized_acc ltac:(fun E => rewrite E in H)
-  end.
-
-Tactic Notation "rew_pow" constr(b) constr(min_e) :=
-  rew_pow_aux_goal b min_e (@nil Boxer).
-Tactic Notation "rew_pow" "~" constr(b) constr(min_e) :=
-  rew_pow_aux_goal b min_e (@nil Boxer); auto_tilde.
-Tactic Notation "rew_pow" "*" constr(b) constr(min_e) :=
-  rew_pow_aux_goal b min_e (@nil Boxer); auto_star.
-Tactic Notation "rew_pow" constr(b) constr(min_e) "in" hyp(H) :=
-  rew_pow_aux_in b min_e H (@nil Boxer).
-Tactic Notation "rew_pow" "~" constr(b) constr(min_e) "in" hyp(H) :=
-  rew_pow_aux_in b min_e H (@nil Boxer); auto_tilde.
-Tactic Notation "rew_pow" "*" constr(b) constr(min_e) "in" hyp(H) :=
-  rew_pow_aux_in b min_e H (@nil Boxer); auto_star.
-
-(* Test  -- TODO: move *)
-(* Axiom P : int -> Prop.  *)
-(* Goal forall n, P (1 + 2 ^ (n + 3) + 2 ^ n + 2 ^ (n+1)). *)
-(* Proof. *)
-(*   intros. *)
-(*   skip_asserts: (3 = 2 ^ (n+3)). rew_pow 2 n in H. *)
-(*   rew_pow 2 n. *)
-(* Admitted. *)
-
-(* ********************************************************************** *)
-(** * Advanced induction *)
-
-Definition eq_gt_implies (P : (nat->Prop) -> Prop) :=
-  forall n, (forall m, n > m -> P (eq m)) -> P (gt n).
-
-Definition eq_lt_implies (P : (nat->Prop) -> Prop) :=
-  forall n, (forall m, n < m -> P (eq m)) -> P (gt n).
-
-Hint Unfold eq_lt_implies eq_gt_implies.
-
-Lemma eq_lt_induction : forall (P : (nat->Prop) -> Prop),
-  (forall n, (forall m, n > m -> P (eq m)) -> P (lt n)) ->
-  (forall n, P (lt n) -> P (eq n)) ->
-  (forall n, P (eq n)).
-Proof using. intros. induction n using peano_induction. auto. Qed.
-
-Lemma eq_gt_induction : forall (P : (nat->Prop) -> Prop),
-  (forall n, (forall m, n > m -> P (eq m)) -> P (gt n)) ->
-  (forall n, P (gt n) -> P (eq n)) ->
-  (forall n, P (eq n)).
-Proof using. intros. induction n using peano_induction. auto. Qed.
-
-Lemma eq_gt_induction_2 : forall (P1 P2 : (nat->Prop) -> Prop),
-  eq_gt_implies P1 -> eq_gt_implies P2 ->
-  (forall n, P1 (gt n) -> P2 (gt n) -> P1 (eq n) /\ P2 (eq n)) ->
-  (forall n, P1 (eq n)) /\ (forall n, P2 (eq n)).
-Proof using.
-  introv H1 H2 R.
-  cuts M: (forall n, P1 (eq n) /\ P2 (eq n)).
-    split; intros n; specializes M n; autos*.
-  induction n using peano_induction. apply R;
-    match goal with K: eq_gt_implies ?Pi |- ?Pi _ =>
-      apply K; intros; forwards*: H; try math end.
-Qed.
-
-(* todo: other arities *)
-
-Lemma eq_gt_induction_5 : forall (P1 P2 P3 P4 P5 : (nat->Prop) -> Prop),
-  eq_gt_implies P1 -> eq_gt_implies P2 -> eq_gt_implies P3 ->
-  eq_gt_implies P4 -> eq_gt_implies P5 ->
-  (forall n, P1 (gt n) -> P2 (gt n) -> P3 (gt n) -> P4 (gt n) -> P5 (gt n) ->
-    P1 (eq n) /\ P2 (eq n) /\ P3 (eq n) /\ P4 (eq n) /\ P5 (eq n)) ->
-  (forall n, P1 (eq n)) /\ (forall n, P2 (eq n)) /\ (forall n, P3 (eq n))
-    /\ (forall n, P4 (eq n))  /\ (forall n, P5 (eq n)).
-Proof using.
-  introv H1 H2 H3 H4 H5 R.
-  cuts M: (forall n, P1 (eq n) /\ P2 (eq n) /\ P3 (eq n) /\ P4 (eq n) /\ P5 (eq n)).
-    splits; intros n; specializes M n; autos*.
-  induction n using peano_induction. apply R;
-    match goal with K: eq_gt_implies ?Pi |- ?Pi _ =>
-      apply K; intros; forwards*: H; try math end.
-Qed.

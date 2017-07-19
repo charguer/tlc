@@ -73,7 +73,7 @@ Definition lub A (le:binary A) (P:A->Prop) (x:A) :=
    for the set [P] with respect to the ordering [le]. *)
 
 Definition glb A (le:binary A) (P:A->Prop) (x:A) :=
-  min_element le (lower_bound le P) x.
+  max_element le (lower_bound le P) x.
 
 
 (**************************************************************************)

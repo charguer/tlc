@@ -449,9 +449,10 @@ Ltac is_not_evar E :=
 Ltac check_noevar M :=
   first [ has_evar M; fail 2 | idtac ].
 
-Ltac check_noevar_hyp H := (* todo: imlement using check_noevar *)
+Ltac check_noevar_hyp H :=
   let T := type of H in check_noevar T.
-Ltac check_noevar_goal := (* todo: imlement using check_noevar *)
+
+Ltac check_noevar_goal :=
   match goal with |- ?G => check_noevar G end.
 
 

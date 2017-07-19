@@ -1550,3 +1550,8 @@ Tactic Notation "spec_epsilon" "*" constr(W) "in" hyp(H) "as" ident(X) simple_in
 Ltac find_epsilon => epsilon_find
 
 
+
+
+LibInt
+ double => mult_2_eq_plus
+ triple => mult_3_eq_plus

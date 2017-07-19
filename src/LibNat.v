@@ -38,24 +38,24 @@ Instance Inhab_nat : Inhab nat.
 Proof using. intros. apply (Inhab_of_val 0). Qed.
 
 
-(* ---------------------------------------------------------------------- *)
-(** ** Comparison *)
-
-Fixpoint nat_compare (x y : nat) :=
-  match x, y with
-  | O, O => true
-  | S x', S y' => nat_compare x' y'
-  | _, _ => false
-  end.
-
 
 (* ********************************************************************** *)
 (** * Order on natural numbers *)
 
+(* ---------------------------------------------------------------------- *)
+(** ** Definition *)
+
+(** The typeclass instance of [le] on [nat] is defined to be the [le]
+    relation on Peano numbers from Coq's standard library. *)
+
 Instance le_nat_inst : Le nat := Build_Le Peano.le.
 
+
 (* ---------------------------------------------------------------------- *)
-(** ** Relation to Peano, for tactic [omega] *)
+(** ** Translating typeclass instances to Peano relations *)
+
+(** These lemmas and tactics are useful to transform arithmetic goals 
+    into a form on which the [omega] decision procedure may apply. *)
 
 Lemma le_peano : le = Peano.le.
 Proof using. extens*. Qed.
@@ -81,6 +81,7 @@ Proof using.
 Qed.
 
 Hint Rewrite le_peano lt_peano ge_peano gt_peano : rew_nat_comp.
+
 Ltac nat_comp_to_peano :=
   autorewrite with rew_nat_comp in *.
 
@@ -103,9 +104,12 @@ Ltac nat_math_lia :=
 Ltac nat_math_nia :=
   nat_math_setup; nia.
 
+
 (* ---------------------------------------------------------------------- *)
-(** ** Hint externs for calling nat_math{_lia,_nia} in the hint base
-       [nat_maths]. *)
+(** ** The [nat_maths] database is used for registering automation
+       on mathematical goals. *)
+
+(* TODO: rename [nat_maths] database to [nat_math] *)
 
 Ltac nat_math_hint := nat_math.
 
@@ -113,36 +117,26 @@ Hint Extern 3 (_ = _ :> nat) => nat_math_hint : nat_maths.
 Hint Extern 3 (_ <> _ :> nat) => nat_math_hint : nat_maths.
 Hint Extern 3 (istrue (isTrue (_ = _ :> nat))) => nat_math_hint : nat_maths.
 Hint Extern 3 (istrue (isTrue (_ <> _ :> nat))) => nat_math_hint : nat_maths.
-Hint Extern 3 (_ <= _) => nat_math_hint : nat_maths.
-Hint Extern 3 (_ >= _) => nat_math_hint : nat_maths.
-Hint Extern 3 (_ < _) => nat_math_hint : nat_maths.
-Hint Extern 3 (_ > _) => nat_math_hint : nat_maths.
+Hint Extern 3 ((_ <= _)%nat) => nat_math_hint : nat_maths.
+Hint Extern 3 ((_ >= _)%nat) => nat_math_hint : nat_maths.
+Hint Extern 3 ((_ < _)%nat) => nat_math_hint : nat_maths.
+Hint Extern 3 ((_ > _)%nat) => nat_math_hint : nat_maths.
 Hint Extern 3 (@le nat _ _ _) => nat_math_hint : nat_maths.
 Hint Extern 3 (@lt nat _ _ _) => nat_math_hint : nat_maths.
 Hint Extern 3 (@ge nat _ _ _) => nat_math_hint : nat_maths.
 Hint Extern 3 (@gt nat _ _ _) => nat_math_hint : nat_maths.
 
-(* ********************************************************************** *)
-(** * Operations *)
 
-Definition div (n q : nat) :=
-  match q with
-  | 0 => 0
-  | S predq =>
-  let aux := fix aux (m r : nat) {struct m} :=
-    match m,r with
-    | 0, _ => 0
-    | S m',0 => (1 + aux m' predq)%nat
-    | S m', S r' => aux m' r'
-    end in
-  aux n predq
-  end.
+(* ---------------------------------------------------------------------- *)
+(* Total order instance *)
 
-Fixpoint factorial (n:nat) : nat :=
-  match n with
-  | 0 => 1
-  | S n' => n * (factorial n')
-  end.
+Instance nat_le_total_order : Le_total_order (A:=nat).
+Proof using.
+  constructor. constructor. constructor; unfolds.
+  nat_math. nat_math. unfolds. nat_math. unfolds.
+  intros. tests: (x <= y). left~. right. nat_math.
+Qed.
+
 
 
 (* ********************************************************************** *)
@@ -188,17 +182,20 @@ Qed.
 Lemma plus_zero_r : forall n,
   n + 0 = n.
 Proof using. nat_math. Qed.
+
 Lemma plus_zero_l : forall n,
   0 + n = n.
 Proof using. nat_math. Qed.
+
 Lemma minus_zero : forall n,
   n - 0 = n.
 Proof using. nat_math. Qed.
 
 Hint Rewrite plus_zero_r plus_zero_l minus_zero : rew_nat.
 
+
 (* ---------------------------------------------------------------------- *)
-(** ** Comparison *)
+(** ** Comparison -- DEPRECATED? *)
 
 Section CompProp.
 Implicit Types a b c n m : nat.
@@ -240,7 +237,6 @@ Proof using. nat_math. Qed.
 
 End CompProp.
 
-(* todo: negation *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** Simplification tactic *)
@@ -261,7 +257,6 @@ Tactic Notation "rew_nat" "*" :=
 Tactic Notation "rew_nat" "in" "*" :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_nat).
   (* autorewrite with rew_nat in *. *)
-
 Tactic Notation "rew_nat" "~" "in" "*" :=
   rew_nat in *; auto_tilde.
 Tactic Notation "rew_nat" "*" "in" "*" :=
@@ -274,18 +269,27 @@ Tactic Notation "rew_nat" "*" "in" hyp(H) :=
   rew_nat in H; auto_star.
 
 
-(* ---------------------------------------------------------------------- *)
-(* Total order instance *)
 
-Instance nat_le_total_order : Le_total_order (A:=nat).
-Proof using.
-  constructor. constructor. constructor; unfolds.
-  nat_math. nat_math. unfolds. nat_math. unfolds.
-  intros. tests: (x <= y). left~. right. nat_math.
-Qed.
 
 (* ********************************************************************** *)
-(** * Other lemmas *)
+(** * -- TODO: Other operations and lemmas (not stable) *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Div *)
+
+Definition div (n q : nat) :=
+  match q with
+  | 0 => 0
+  | S predq =>
+  let aux := fix aux (m r : nat) {struct m} :=
+    match m,r with
+    | 0, _ => 0
+    | S m',0 => (1 + aux m' predq)%nat
+    | S m', S r' => aux m' r'
+    end in
+  aux n predq
+  end.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Div2 *)
@@ -306,3 +310,14 @@ Proof using.
   destruct~ n. simpl. omega.
   simpl. rew_nat. apply~ H. nat_math. nat_math.
 Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Factorial *)
+
+Fixpoint factorial (n:nat) : nat :=
+  match n with
+  | 0 => 1
+  | S n' => n * (factorial n')
+  end.
+
