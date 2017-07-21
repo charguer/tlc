@@ -1410,8 +1410,8 @@ Definition incl := rel_le.
 
 Definition sym_flip := flip_sym.
 
-Definition trans_sym_2 := trans_elim_lr.
-Definition trans_sym_1 := trans_elim_rl.
+Definition trans_sym_2 := trans_sym_lr.
+Definition trans_sym_1 := trans_sym_rl.
 
 Definition use_idempotent := idempotent_inv.
 
@@ -1426,7 +1426,7 @@ AND SIMILAR
 
 Definition irrefl_neq := irrefl_inv_neq.
 Definition sym_to_eq := sym_inv_eq.
-
+pr
 Definition trans_strict := trans_strict_of_antisym.
 
 
@@ -1507,7 +1507,7 @@ EVERYWHERE: pred_le => pred_incl
 
 Definition not_inj := injective_not.
 
-Definition proj_lemma := forall_conj_inv_1.
+Definition proj_lemma_1 := forall_conj_inv_1.
 
 
 

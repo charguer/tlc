@@ -130,6 +130,48 @@ Qed.
 (** Properties *)
 
 
+(* ********************************************************************** *)
+(** * Order relation upto an equivalence relation *)
+
+(** Note: this is used in LibFix *)
+
+Record order_wrt (A:Type) (E:binary A) (R:binary A) : Prop := {
+   order_wrt_refl : refl R;
+   order_wrt_trans : trans R;
+   order_wrt_antisym : antisym_wrt E R }.
+
+Arguments order_wrt_trans [A] [E] [R] [o] y [x] [z].
+Arguments order_wrt_antisym [A] [E] [R] [o] [x] [y].
+
+(** Conversion to preorder *)
+
+Coercion order_wrt_to_preorder A (E:binary A) (R:binary A)
+  (O:order_wrt E R) : preorder R.
+Proof using. destruct* O. constructors*. Qed.
+
+Hint Resolve order_wrt_to_preorder.
+
+(** Transformations *)
+
+Lemma order_wrt_inverse : forall A (E:binary A) (R:binary A),
+  order_wrt E R -> 
+  order_wrt E (inverse R).
+Proof using.
+  hint trans_inverse, antisym_wrt_inverse.
+  introv [Re Tr An]. constructor~. 
+Qed.
+
+Lemma order_wrt_rclosure : forall A (E:binary A) (R:binary A),
+  order_wrt E R -> 
+  order_wrt (rclosure E) (rclosure R).
+Proof using.
+  hint refl_rclosure, trans_rclosure, antisym_wrt_rclosure.
+  introv [Re Tr An]. constructor~.
+Qed.
+
+(** Properties *)
+
+
 (**************************************************************************)
 (* * Total Order *)
 
@@ -1067,3 +1109,4 @@ Proof using.
   hint refl_rel_incl, antisym_rel_incl, trans_rel_incl.
   constructors*.
 Qed.
+

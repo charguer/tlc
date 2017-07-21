@@ -702,10 +702,6 @@ Ltac math_nia := math_setup; nia.
 
 (* TODO: deprecate this *)
 
-Record order_wrt (A:Type) (E:binary A) (R:binary A) : Prop := {
-   order_wrt_refl : refl R;
-   order_wrt_trans : trans R;
-   order_wrt_antisym : antisym_wrt E R }.
 
 
 

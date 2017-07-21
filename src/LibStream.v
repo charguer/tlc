@@ -107,8 +107,9 @@ Notation "x === y" := (bisimilar x y) (at level 68).
 
 (** Bisimilarity is an equivalence *)
 
-Lemma bisimilar_mod_equiv : forall A (E:binary A),
-  equiv E -> equiv (bisimilar_mod E).
+Lemma equiv_bisimilar_mod : forall A (E:binary A),
+  equiv E -> 
+  equiv (bisimilar_mod E).
 Proof using.
   introv Equiv. constructor.
   unfolds. cofix IH. destruct x. constructor; dauto.
@@ -118,9 +119,9 @@ Proof using.
    inversions M1. inversions M2. constructor; dauto.
 Qed.
 
-Lemma bisimilar_equiv : forall A,
+Lemma equiv_bisimilar : forall A,
   equiv (@bisimilar A).
-Proof using. intros. apply~ bisimilar_mod_equiv. Qed.
+Proof using. intros. apply~ equiv_bisimilar_mod. applys equiv_eq. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -135,8 +136,9 @@ Definition list_equiv (A:Type) (E:binary A) : binary (list A) :=
 Section ListEquiv.
 Hint Constructors Forall2.
 
-Lemma list_equiv_equiv : forall A (E:binary A),
-  equiv E -> equiv (list_equiv E).
+Lemma equiv_list_equiv : forall A (E:binary A),
+  equiv E -> 
+  equiv (list_equiv E).
 Proof using.
   introv Equiv. unfold list_equiv. constructor.
   unfolds. induction x. auto. constructor; dauto.
@@ -162,11 +164,12 @@ Hint Constructors Forall2.
 
 (** This relation is an equivalence *)
 
-Lemma bisimilar_mod_upto_equiv : forall A (E:binary A) n,
-  equiv E -> equiv (bisimilar_mod_upto E n).
+Lemma equiv_bisimilar_mod_upto : forall A (E:binary A) n,
+  equiv E -> 
+  equiv (bisimilar_mod_upto E n).
 Proof using.
   introv Equiv. unfold bisimilar_mod_upto.
-  lets: (list_equiv_equiv Equiv). constructor; unfolds; dauto.
+  lets: (equiv_list_equiv Equiv). constructor; unfolds; dauto.
 Qed.
 
 (** Bisimilarity implies bisimilarity at any index *)
@@ -215,7 +218,7 @@ Qed.
 
 End Bisimilar.
 
-Hint Resolve bisimilar_mod_upto_equiv.
+Hint Resolve equiv_bisimilar_mod_upto.
 Hint Resolve bisimilar_mod_upto_zero.
 
 
@@ -255,14 +258,16 @@ Fixpoint first_st_at A (P:A->Prop) (s:stream A) (n:nat) :=
 (** [first_st] is a functional relation; there is at most
     one index [n] such that [first_st_at P s n] holds *)
 
-Lemma first_st_at_unique : forall n1 n2 A (P:A->Prop) s,
-  first_st_at P s n1 -> first_st_at P s n2 -> n1 = n2.
+Lemma first_st_at_inj : forall n1 n2 A (P:A->Prop) s,
+  first_st_at P s n1 -> 
+  first_st_at P s n2 -> 
+  n1 = n2.
 Proof using.
   induction n1; destruct n2; destruct s; simpl; introv H1 H2.
   auto. destruct H2. false. destruct H1. false.
   destruct H1. destruct H2. fequals. apply* IHn1.
 Qed.
 
-Implicit Arguments first_st_at_unique [n1 n2 A P s].
+Arguments first_st_at_inj [n1] [n2] [A] [P] [s].
 
 

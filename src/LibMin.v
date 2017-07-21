@@ -1,3 +1,7 @@
+(* -- DISCLAIMER: definitions in this file remain to be renamed, 
+      e.g. mmin and mmax. *)
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Minimum/Maximum w.r.t. an order relation                                *
@@ -10,8 +14,6 @@ Generalizable Variables A.
 
 (* This module offers the functions [mmin] and [mmax] which produce
    the minimum and maximum elements of a non-empty, bounded set. *)
-
-(* TODO: rename mmin to min and mmax to max *)
 
 
 (**************************************************************************)

@@ -18,6 +18,8 @@ Stable files:
    LibOrder
    LibWf
    LibMonoid
+   LibMin (incomplete)
+   LibFix 
 
    LibProd
    LibSum
@@ -34,7 +36,6 @@ Stable files:
 
 Remaining to clean up:
 
-   LibFix 
 
    LibListZ
 
@@ -53,7 +54,6 @@ For later executability
 
 For later cleanup (not yet used so much)
 
-   LibMin
    LibListSort
    LibListSub
    LibPer

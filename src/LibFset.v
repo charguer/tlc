@@ -1,10 +1,6 @@
 
-
-
-
 (** DISCLAIMER: file under construction *)
-
-
+(* should be reimplemented using the finite property from LibSet *)
 
 
 (**************************************************************************
@@ -120,9 +116,6 @@ End FsetSig.
 (** * Implementation of finite sets *)
 
 Module Export FsetImpl : FsetSig.
-
-(** Note: most of the material contained in this module will ultimately
-    be moved into the TLC library in a file called LibFset. *)
 
 Close Scope container_scope.
 
@@ -478,11 +471,4 @@ Proof using.
 Qed.
 
 End Properties.
-
-
-
-
-
-
-
 

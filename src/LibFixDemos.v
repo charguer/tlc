@@ -18,7 +18,7 @@ Hint Resolve lt_wf : wf.
 Ltac auto_tilde ::= auto with wf.
 Ltac auto_star ::= try solve [ auto | false | math | intuition eauto ].
 
-Hint Resolve list_equiv_equiv.
+Hint Resolve equiv_list_equiv.
 
 
 
@@ -124,7 +124,7 @@ Lemma stream_mod_cofe : forall A {IA:Inhab A} (E:binary A),
   equiv E -> COFE (stream_mod_family E).
 Proof using.
   introv IA Equiv. apply nat_cofe. typeclass.
-  intros. apply~ bisimilar_mod_upto_equiv.
+  intros. apply~ equiv_bisimilar_mod_upto.
   introv H. exists (diagonal (fun i => u (S i)) 0).
   induction i; unfolds.
     simple~.

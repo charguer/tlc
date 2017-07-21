@@ -3,7 +3,7 @@
 * Fixed-point combinator                                                  *
 **************************************************************************)
 
-Set Arguments.
+Set Implicit Arguments.
 Require Import LibTactics LibLogic LibReflect LibEpsilon LibInt
   LibProd LibSum LibOperation LibRelation LibWf LibOrder LibMin.
 
@@ -20,10 +20,10 @@ Ltac auto_tilde ::=
   try solve [ auto | eauto | intros_all; subst_local; simpls; eauto ].
 
 Hint Unfold pred_incl pred_and.
-Hint Unfold rclosure empty.
-Hint Resolve empty_wf.
+Hint Resolve rclosure_refl rclosure_of_rel.
+Hint Resolve wf_empty.
 Hint Resolve equiv_refl equiv_sym equiv_trans.
-
+Hint Resolve refl_rel_incl' rel_incl_tclosure.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Post-conditions for functions *)
@@ -65,7 +65,8 @@ Hint Unfold pfun_equal.
 (** [pfun_equiv] is an equivalence relation. *)
 
 Lemma pfun_equiv_equiv : forall A B (E:binary B) (P:A->Prop),
-  equiv E -> equiv (@pfun_equiv A B E P).
+  equiv E -> 
+  equiv (@pfun_equiv A B E P).
 Proof using.
   introv [RE SE TE]. unfold pfun_equiv. constructor; intros_all*.
 Qed.
@@ -133,8 +134,7 @@ Proof using.
   unfold extends. constructor.
    intros_all. dauto.
    introv [D1 H1] [D2 H2]. unfolds pfun_equiv. dauto.
-   introv [D1 H1] [D2 H2]. split. apply* prop_ext_1. dauto.
-     (* TODO: use extens *)
+   introv [D1 H1] [D2 H2]. split. extens*. dauto.
 Qed.
 
 (** Two partial functions [f] and [f'] are consistent if
@@ -206,7 +206,7 @@ Definition partial_fixed_point
 Lemma partial_fixed_point_definitions :
   partial_fixed_point = partial_fixed_point'.
 Proof using.
-  applys prop_ext_5. intros A B E F f.
+  extens. intros A B E F f.
   unfold partial_fixed_point, partial_fixed_point'.
   destruct f as [f P]. simpl. iff H.
     intros [f' P'] [Eff' Pff']. simpls. subst.
@@ -253,21 +253,21 @@ Proof using.
   sets D: (fun x => exists fi, covers x fi).
   sets f: (fun x => if classicT (D x) then epsilon (covers x) x else arbitrary).
   exists (Build_partial f D). split. split.
-  (* proof that f is an upper bound *)
-  intros f' Sf'. split; simpl.
-  intros x Dx. exists~ f'.
-  intros x D'x. unfold f. destruct_if as Dx.
-  spec_epsilon~ f' as fi [Si Domi]. apply~ Cons.
-  (* proof that f is the smallest upper bound *)
-  intros f' Upper'. split; simpl.
-  intros x (fi&Ci&Di). apply~ (Upper' fi Ci).
-  intros x Dx. unfold f. destruct_if.
-   spec_epsilon~ as fi [Si Domi]. apply~ (Upper' fi).
-  (* proof that f is a fixed point *)
-  intros f' Eq'. simpls. intros x Dx. lets (fi&Ci&Di): Dx.
-  apply~ (Fixi _ Ci). intros y Diy. asserts~ Dy: (D y).
-  apply~ (trans_inv (f y)). unfold f. destruct_if.
-  spec_epsilon~ as fj [Sj Domj]. apply~ Cons.
+  { (* proof that f is an upper bound *)
+    intros f' Sf'. split; simpl.
+    intros x Dx. exists~ f'.
+    intros x D'x. unfold f. destruct_if as Dx.
+    epsilon fi. exists~ f'. intros [Si Domi]. apply~ Cons. }
+  { (* proof that f is the smallest upper bound *)
+    intros f' Upper'. split; simpl.
+    intros x (fi&Ci&Di). apply~ (Upper' fi Ci).
+    intros x Dx. unfold f. destruct_if.
+    epsilon~ fi. intros [Si Domi]. apply~ (Upper' fi). }
+  { (* proof that f is a fixed point *)
+    intros f' Eq'. simpls. intros x Dx. lets (fi&Ci&Di): Dx.
+    apply~ (Fixi _ Ci). intros y Diy. asserts~ Dy: (D y).
+    apply~ (trans_inv (f y)). unfold f. destruct_if.
+    epsilon~ fj. intros [Sj Domj]. apply~ Cons. }
 Qed.
 
 
@@ -302,7 +302,7 @@ Lemma optimal_fixed_point_unique : forall A B (E:binary B) (F:(A->B)->(A->B)),
   at_most_one_upto (partial_equiv E) (optimal_fixed_point E F).
 Proof using.
   introv Equi [Fix1 Ge1] [Fix2 Ge2].
-  apply~ (order_wrt_antisym (extends_order A Equi)).
+  applys~ order_wrt_antisym (extends_order A Equi).
 Qed.
 
 (** The following proofs shows that there exists an optimal fixed point. *)
@@ -328,7 +328,7 @@ Proof using.
     intros f1 [[Pf1 Cf1]|G1]; subst~.
   asserts Dfh Efh: (extends E f h). apply Lubf. intros f' Sf'. apply~ Uph.
   asserts Dgh Egh: (extends E g h). apply~ Uph.
-  intros x [Dfx Dgx]. apply~ (trans_sym_2 (h x)).
+  intros x [Dfx Dgx]. apply~ (trans_sym_lr (h x)).
 Qed.
 
 (* ---------------------------------------------------------------------- *)
@@ -366,12 +366,11 @@ Lemma inclusion_optimal_gonthier :
   extends E optimal gonthier.
 Proof using HE.
   split; simpl. auto. introv Dx. unfold optimal in *.
-  spec_epsilon in Dx as g ((Gp&Gc)&Gu).
+  epsilon g in Dx.
     apply~ optimal_fixed_point_exists. clearbody g.
-  match goal with |- context [epsilon ?P _] =>
-    lets (D'&D'x&Gp'): (>> (@epsilon_spec_exists' _ P) __ __);
-    [| sets g': (epsilon P) ] end. exists~ g (dom g). clearbody g'.
-  applys~ (Gc (Build_partial g' D')).
+  intros ((Gp&Gc)&Gu).
+  epsilon g'. exists~ g (dom g). intros (D'&D'x&Gp').
+  clearbody g'. applys~ (Gc (Build_partial g' D')).
 Qed.
 
 End Another.
@@ -641,9 +640,9 @@ Lemma local_limit_dep_name : forall I A {IA:Inhab A}
   /\ (forall j, family_r M j i -> family_sim M j (v j) l).
 Proof using.
   introv Loca Cohi. esplit. split. reflexivity.
-  unfold local_limit_dep. spec_epsilon as l L.
+  unfold local_limit_dep. epsilon l.
   forwards~ [l L]: (Loca v i). exists l. intros k. destruct_if~.
-  intros j Rji. specializes L j. rewrite~ (classicT_l Rji) in L.
+  intros L. intros j Rji. specializes L j. rewrite~ (classicT_l Rji) in L.
 Qed.
 
 (** A corrolary of the above lemma used to prove similarity directly *)
@@ -698,7 +697,7 @@ Proof using.
       forwards~ Kj: (>> Down i j). rewrite Fixv. unfold V. destruct_if~.
       apply~ local_limit_dep_inv.
   (* the global limit of [v] is also a limit for [u] *)
-  spec_epsilon as l L. apply~ Glob.
+  epsilon l. apply~ Glob. intros L.
   introv Ki. applys~ equiv_trans. rewrite Fixv. unfold V.
   destruct_if~. apply~ equiv_refl.
 Qed.
@@ -709,7 +708,7 @@ Lemma complete_eq_complete' : forall I A {IA:Inhab A} (M:family I A),
   OFE M -> 
   (complete M = complete' M).
 Proof using.
-  split. split.
+  intros. extens. split. split.
     apply~ complete_to_locally_complete.
     apply~ complete_to_globally_complete.
   intros [H1 H2]. apply~ complete_of_locally_and_globally_complete.
@@ -862,16 +861,16 @@ Proof using.
     forwards* (l1&El1&L1): (>> (@local_limit_dep_name I) j).
     forwards* (l2&El2&L2): (>> (@local_limit_dep_name I) i).
     rewrite El1. rewrite El2. clear El1 El2.
-    apply (proj1 (proj_lemma_4 Contr)). intros k Rkj.
+    apply (proj1 (forall_conj_inv_4 Contr)). intros k Rkj.
     asserts Rkj': (family_r M k i). apply* ofe_trans. splits.
-     applys~ (trans_sym_1 (v k)).
+     applys~ (trans_sym_rl (v k)).
      applys~ (Conti (predecessor j) v).
       intros. apply Qk. applys* trans_inv.
      applys~ (Conti (predecessor i) v).
   (* prove of local-coherence, together with the invariant *)
   asserts LocCohQv: (forall i, locally_coherent M i v /\ Q i (v i)).
     intros i. induction_wf: (ofe_wf Cofe) i.
-    lets [IH1 IH2]: (proj_lemma_2 IH). clear IH.
+    lets [IH1 IH2]: (forall_conj_inv_2 IH). clear IH.
     logic (forall (U V : Prop), U -> (U -> V) -> U /\ V).
     (* locally coherent *)
     intros j' j Rij' Rij Rjj'. unfolds inverse.
@@ -882,19 +881,19 @@ Proof using.
     rewrite El. clear El. (* todo: limitation of forward *)
     applys~ (contractive_to_invariant Cofe Contr).
     introv Rji. applys~ (Conti (predecessor i) v).
-  lets LocCohv Qv: (proj_lemma_1 LocCohQv). clear LocCohQv.
+  lets LocCohv Qv: (forall_conj_inv_1 LocCohQv). clear LocCohQv.
   (* global coherence of [v] *)
   asserts Cohv: (globally_coherent M v). intros_all. apply~ Coh.
   (* prove the three conclusions *)
-  spec_epsilon as l L. apply~ cofe_complete.
+  epsilon l. apply~ cofe_complete. intros L.
   split. unfolds. logic (forall P Q : Prop,
     P -> (P -> Q) -> P /\ Q).
   (* 1- fixed point *)
   intros l' Sim' i.
-  applys~ (trans_sym l). applys~ (trans_sym_1 (v i)).
+  applys~ (trans_sym_rl l). applys~ (trans_sym_rl (v i)).
   rewrite Fixv. unfold V.
-  applys (proj1 (proj_lemma_4 Contr)). intros j Rji. splits.
-    applys~ (trans_sym_1 l). applys~ (trans_sym_1 (v j)).
+  applys (proj1 (forall_conj_inv_4 Contr)). intros j Rji. splits.
+    applys~ (trans_sym_rl l). applys~ (trans_sym_rl (v j)).
      applys~ local_limit_dep_inv.
     forwards* (l1&El1&L1): (>> (@local_limit_dep_name I) i).
      rewrite El1. clear El1. applys~ (Conti (predecessor i) v).
@@ -904,8 +903,8 @@ Proof using.
   specializes Fixl l __. intros j. apply~ refl_inv. apply~ sym_inv.
   intros i. induction_wf: (ofe_wf Cofe) i.
   applys~ (@trans_inv _ (F l)). apply~ sym_inv.
-  applys~ (@trans_sym_2 _ (F l')). apply Fixl'. intros j. apply* refl_inv.
-  apply (proj1 (proj_lemma_4 Contr)). intros j Rji. splits.
+  applys~ (@trans_sym_lr _ (F l')). apply Fixl'. intros j. apply* refl_inv.
+  apply (proj1 (forall_conj_inv_4 Contr)). intros j Rji. splits.
     apply~ IH.
     applys~ (Conti pred_true v).
     applys~ (Conti (predecessor i) v).
@@ -956,12 +955,12 @@ Lemma rec_cofe :
 Proof using.
   introv IB Equiv WfR. apply make_COFE; simpl.
   typeclass.
-  apply~ tclosure_wf.
-  apply tclosure_trans.
+  apply~ wf_tclosure.
+  apply trans_tclosure.
   destruct Equiv. constructor; intros_all*.
   intros K u Downk Cohu. hnf in Downk. hnf in Cohu. simpls.
    exists (fun x => u x x). intros x Kx. simpl.
-   intros x' Px' [Ex'x|x'x].
+   intros x' Px'. rewrite rclosure_eq. intros [Ex'x|x'x].
      apply equiv_sym; auto. apply* Cohu.
      subst. apply~ equiv_refl.
 Qed.
@@ -1016,8 +1015,10 @@ Proof using.
   sets Q: (fun x f => P x -> S x (f x)).
   intros x f1 f2. simpl. intros H. split.
     intros x' Px' Rx'x. apply~ Cont. intros y Py Ryx'.
-    forwards~ (M1&M2&M3): (H y). destruct Rx'x as [Rx'x|Ex'x].
-      apply* tclosure_trans. apply~ tclosure_once. subst~.
+     forwards~ (M1&M2&M3): (H y). rewrite rclosure_eq in Rx'x.
+      destruct Rx'x as [Rx'x|Ex'x].
+        applys* tclosure_l.
+        subst. apply~ tclosure_once.
     intros Px. forwards [M1 M2]: Cont f1 f1 Px.
       introv Py Ryx. forwards (M1&M2&M3): H y. apply~ tclosure_once.
        splits~. apply~ equiv_refl.
@@ -1077,9 +1078,9 @@ Proof using.
    clears x. intros x. induction_wf: Wf x. intros Px.
    destruct (prop_inv (P' x)) as [P'x|NP'x];
      [| unfold f''; destruct_if; apply~ refl_inv ].
-   apply~ (trans_sym_2 (F f'' x)). apply~ (trans_inv (F f x)).
+   apply~ (trans_sym_lr (F f'' x)). apply~ (trans_inv (F f x)).
      apply~ Fixf. apply~ equiv_refl.
-     apply~ (proj1 (proj_lemma_5 Cont)).
+     apply~ (proj1 (forall_conj_inv_5 Cont)).
      apply~ (Fixf' (Build_partial f'' P')). simpl.
       intros y P'y. unfold f''. destruct_if~. apply~ refl_inv.
 Qed.
@@ -1108,7 +1109,7 @@ Proof using.
    clears x. intros x. induction_wf: Wf x. intros Px.
    destruct (prop_inv (P' x)) as [P'x|NP'x];
      [| unfold f''; destruct_if; apply~ refl_inv ].
-   apply~ (trans_sym_2 (F f'' x)). apply~ (trans_inv (F f x)).
+   apply~ (trans_sym_lr (F f'' x)). apply~ (trans_inv (F f x)).
      apply~ Fixf. apply~ equiv_refl.
      apply~ (Fixf' (Build_partial f'' P')). simpl.
       intros y P'y. unfold f''. destruct_if~. apply~ refl_inv.
@@ -1151,8 +1152,8 @@ Lemma corec_rec_cofe :
 Proof using.
   introv IB Cofe WfR. apply make_COFE; simpl.
   typeclass.
-  apply~ @lexico2_wf. apply~ tclosure_wf.
-  apply~ lexico2_trans. apply tclosure_trans.
+  apply~ @wf_lexico2. apply~ wf_tclosure.
+  apply~ trans_lexico2. apply trans_tclosure.
   intros [i x]. constructor.
     intros_all. destruct~ (ofe_equiv Cofe i').
     intros_all. destruct~ (ofe_equiv Cofe i').
@@ -1160,13 +1161,14 @@ Proof using.
   intros K u Downk Cohu. hnf in Downk. hnf in Cohu. simpls.
    exists (fun x => epsilon (limit M (fun i => K (i,x)) (fun i => u (i,x) x))).
    intros [i x] Kix. simpl. intros j x' LR' Px'.
-   spec_epsilon as l L.
+   rewrite rclosure_eq_fun in *.
+   epsilon l.
      apply (cofe_complete Cofe).
        introv H H'. hnf. applys~ Downk H.
        introv H H' H''. applys~ (>> Cohu H H').
-   hnf in L. simpl in L. destruct LR' as [LR'|Ex'x].
+    intros L. hnf in L. simpl in L. destruct LR' as [LR'|Ex'x].
      asserts Kjx': (K (j,x')). apply* Downk.
-      apply~ trans_sym_1. applys~ (>> Cohu Kix Kjx' LR').
+      apply~ trans_sym_rl. applys~ (>> Cohu Kix Kjx' LR').
      inversion Ex'x. subst x. apply~ L.
 Qed.
 
@@ -1208,20 +1210,20 @@ Lemma mixed_contractive_as_contractive :
 Proof using.
   introv Ofe WfR Cont.
   sets Q: (fun p f => let (i,x) :=p:I*A in P x -> S i x (f x)).
-  intros p f1 f2. induction_wf: (lexico2_wf (ofe_wf Ofe) (tclosure_wf WfR)) p.
+  intros p f1 f2. induction_wf: (wf_lexico2 (ofe_wf Ofe) (wf_tclosure WfR)) p.
   destruct p as [i x]. intros H.
   split.
-  intros j y Le Px. destruct Le as [Le|Eq].
+  intros j y Le Px. rewrite rclosure_eq in Le. destruct Le as [Le|Eq].
     destruct (IH (j,y)) as [K _]; autos~. (* TODO: bug forwards *)
-      intros [k z] Le'. apply H. apply~ lexico2_trans. apply tclosure_trans. apply Le'.
+      intros [k z] Le'. apply H. apply~ trans_lexico2. apply trans_tclosure. apply Le'.
    inversions Eq.
    forwards~ [K _]: (>> Cont i x f1 f2). intros y j Py Lt.
    forwards* (K1&K2&K3): (H (j,y)).
-     forwards*: (>> lexico2_incl I A (family_r M) (family_r M) R (tclosure R) (j,y) (i,x)).
+     forwards*: (>> rel_incl_lexico2 I A (family_r M) (family_r M) R (tclosure R) (j,y) (i,x)).
   introv Px. forwards~ [_ K]: (>> Cont i x f1 f2).
    intros y j Py Lt. forwards* (K1&K2&K3): (H (j,y)).
-     forwards*: (>> lexico2_incl I A (family_r M) (family_r M) R (tclosure R) (j,y) (i,x)).
-Qed. (* TODO: clean up the lexico2_incl *)
+     forwards*: (>> rel_incl_lexico2 I A (family_r M) (family_r M) R (tclosure R) (j,y) (i,x)).
+Qed. 
 
 (** The simple version of contraction *)
 
@@ -1302,15 +1304,15 @@ Proof using.
      intros i. apply~ (trans_inv (f'' x)).
        apply~ (Ind (i,x)).
        unfold f''. destruct_if. apply~ refl_inv.
-   clears x. intros p. induction_wf: (lexico2_wf (ofe_wf Cofe) (tclosure_wf WfR)) p.
+   clears x. intros p. induction_wf: (wf_lexico2 (ofe_wf Cofe) (wf_tclosure WfR)) p.
    destruct p as [i x]. intros Px.
    destruct (prop_inv (P' x)) as [P'x|NP'x];
      [| unfold f''; destruct_if; apply~ refl_inv ].
-   apply~ (trans_sym_2 (F f'' x)). apply~ (trans_inv (F f x)).
+   apply~ (trans_sym_lr (F f'' x)). apply~ (trans_inv (F f x)).
      apply~ Fixf. apply~ equiv_refl.
-     applys (proj1 (proj_lemma_6 Contr)) Px. intros y j Py Lt. splits.
+     applys (proj1 (forall_conj_inv_6 Contr)) Px. intros y j Py Lt. splits.
        apply~ (IH (j,y)).
-         forwards*: (>> lexico2_incl I A (family_r M) (family_r M) R (tclosure R) (j,y) (i,x)).
+         forwards*: (>> rel_incl_lexico2 I A (family_r M) (family_r M) R (tclosure R) (j,y) (i,x)).
        auto.
        applys~ Conti. intros k Rkj. applys (IH (k,y)) Py.
         destruct Lt as [|[? ?]].
@@ -1332,7 +1334,7 @@ Qed.
     equiv relations. *)
 
 Definition nat_family A (sim:nat->binary A) : family nat A :=
-  Build_family lt sim.
+  Build_family Peano.lt sim.
 
 (** A sufficient condition for completeness is that for any
     nat-indexed sequence [u], if forall [i], [u i] is similar
@@ -1355,7 +1357,7 @@ Lemma nat_cofe : forall A {IA:Inhab A} (sim:nat->binary A),
 Proof using.
   introv IA Equiv Comp.
   asserts Ofe: (OFE (nat_family sim)). constructor; simpl.
-    apply lt_wf.
+    apply wf_lt.
     intros_all~. nat_math.
     apply Equiv.
   constructor~. apply~ complete_of_locally_and_globally_complete.
@@ -1367,10 +1369,10 @@ Proof using.
       math_rewrite ((i - 1)%nat = j). apply~ equiv_refl.
       apply~ equiv_refl.
   exists l. intros j Rji. unfolds inverse. simpls.
-  specializes L j. unfold v in L. case_if~; try false.
+  specializes L j. unfold v in L. case_if~; try false. math.
   (* global completeness *)
   introv Cohu. forwards [l L]: (Comp u). intros i.
-  induction_wf: lt_wf i. apply~ Cohu. simpl. math.
+  induction_wf: lt_wf i. apply~ Cohu.
   exists l. introv _. apply L.
 Qed.
 
@@ -1393,7 +1395,7 @@ Lemma nat_cofe' : forall A {IA:Inhab A} (sim:nat->binary A),
 Proof using.
   introv IA Equiv Comp.
   asserts Ofe: (OFE (nat_family sim)). constructor; simpl.
-    apply lt_wf.
+    apply wf_lt.
     intros_all~. math.
     apply Equiv.
   constructor~. apply~ complete_of_locally_and_globally_complete.
@@ -1409,10 +1411,10 @@ Proof using.
           apply Cohu; hnf; try math.
         apply~ equiv_refl.
   exists l. intros j Rji. unfolds inverse. simpls.
-  specializes L j. unfold v in L. case_if~; try false.
+  specializes L j. unfold v in L. case_if~; try false. math.
   (* global completeness *)
   introv Cohu. forwards [l L]: (Comp u). intros i.
-  induction_wf: lt_wf i. intros. apply~ Cohu.
+  induction_wf: lt_wf i. intros. apply~ Cohu. hnf; math. 
   exists l. introv _. apply L.
 Qed.
 
@@ -1485,7 +1487,7 @@ Definition Fix A {IA:Inhab A} (E C:binary A) (F:A->A) : A :=
 Lemma Fix_prop_eq_unique_fixed_point : forall (A:Type) (E:binary A) (F:A->A) (x:A),
   Fix_prop E E F x = unique_fixed_point E F x.
 Proof using.
-  intros. iff [Fx Ux].
+  intros. extens. iff [Fx Ux].
   split; intros y Hy. apply~ Fx. apply~ Ux.
   split; intros y Hy. apply~ Fx. apply~ Ux.
 Qed.
@@ -1624,11 +1626,11 @@ Lemma FixValMod_fix_inv : forall I A {IA:Inhab A} (M:family I A)
   E x (F x) /\ forall i, (Q i x).
 Proof using.
   introv Defx SimE Cofe Conti Contr.
-  unfolds FixValMod, Fix. spec_epsilon as y [Fixy Uniy].
+  unfolds FixValMod, Fix. epsilon y.
     forwards* (y&Fixy&Inv): cofe_fixed_point.
-    exists y. rewrite <- Fix_prop_eq_unique_fixed_point.
+    exists y. rewrite Fix_prop_eq_unique_fixed_point.
      rewrite~ SimE.
-  subst x. logic (forall U V:Prop,U->(U->V)->U/\V).
+  intros [Fixy Uniy]. subst x. logic (forall U V:Prop,U->(U->V)->U/\V).
   apply Fixy. rewrite SimE. apply~ refl_inv.
   intros Ey. applys~ (>> invariant_on_fixed_point I A M F).
     apply~ contractive_to_invariant.
@@ -1648,7 +1650,7 @@ Proof using.
   intros_all~. apply~ contractive_noinv_to_contractive.
 Qed.
 
-Arguments FixValMod_fix [I] [A] {IA} [E] [F] [x].
+Arguments FixValMod_fix [I] [A] M {IA} [E] [F] [x].
 
 (** Same for Leibnitz equality *)
 
@@ -1726,7 +1728,7 @@ Proof using.
    intros_all. forwards~ Z: Contr. intros. forwards*: H.
 Qed.
 
-Arguments FixValModMut2_fix [I] [A1] [A2] {IA1} {IA2} [F1] [F2] i [x1] [x2].
+Arguments FixValModMut2_fix [I] [A1] [A2] {IA1} {IA2} M E1 E2 [F1] [F2] [x1] [x2].
 
 (* todo: express continuity with two invariants *)
 
@@ -1742,10 +1744,10 @@ Lemma FixFunMod_inv :
   pfun_equiv E P f' f.
 Proof using.
   introv Deff Equiv Gcf'.
-  unfolds FixFunMod, Fix. spec_epsilon as g [Fixg Bestg].
+  unfolds FixFunMod, Fix. epsilon g.
     forwards* [g Opt]: (@optimal_fixed_point_exists _ _ _ E F).
     exists g. apply~ Fix_prop_of_optimal.
-  subst f.
+  intros [Fixg Bestg]. subst f.
   lets Fixf: (proj1 Gcf'). lets Fixf': (partial_fixed_point_inv Fixf).
   rewrite partial_fixed_point_definitions in Fixf.
   lets [ED MG]: (Bestg _ Fixf). forwards~ [Dom Equ]: ED.
@@ -1767,10 +1769,10 @@ Lemma FixFunMod_fix_partial_inv : forall A (R:binary A) (P:A->Prop)
   (forall x, P x -> S x (f x)).
 Proof using.
   introv Deff Equiv Comp Wfr Contr.
-  unfolds FixFunMod, Fix. spec_epsilon as g [Fixg Bestg].
+  unfolds FixFunMod, Fix. epsilon g.
     forwards* [g Opt]: (@optimal_fixed_point_exists _ _ _ E F).
     exists g. apply~ Fix_prop_of_optimal.
-  subst f.
+  intros [Fixg Bestg]. subst f.
   forwards~ (f&Fixf&Inv): (@rec_fixed_point _ _ _ F R P S E).
   lets Fixf': Fixf. rewrite partial_fixed_point_definitions in Fixf'.
   lets Fixf'': (partial_fixed_point_inv Fixf).
@@ -1798,6 +1800,8 @@ Qed.
 
 (** Same for Leibnitz' equality *)
 
+Local Hint Resolve equiv_eq.
+
 Lemma FixFun_fix_partial_inv : forall A (R:binary A) (P:A->Prop) B
   (S:A->B->Prop) {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
   f = FixFun F -> 
@@ -1807,7 +1811,7 @@ Lemma FixFun_fix_partial_inv : forall A (R:binary A) (P:A->Prop) B
   (forall x, P x -> S x (f x)).
 Proof using. intros. applys* (@FixFunMod_fix_partial_inv A R). intros_all. subst~. Qed.
 
-Arguments FixFun_fix_partial_inv [A] [B] R P {IB} [F] [f].
+Arguments FixFun_fix_partial_inv [A] R P [B] S {IB} [F] [f].
 
 Lemma FixFun_fix_inv : forall A (R:binary A) B
   (S:A->B->Prop) {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
@@ -1820,7 +1824,7 @@ Lemma FixFun_fix_inv : forall A (R:binary A) B
   (forall x, S x (f x)).
 Proof using. intros. forwards~ [K1 K2]: (FixFun_fix_partial_inv R pred_true S). subst~. Qed.
 
-Arguments FixFun_fix_inv [A] [B] R P {IB} [F] [f].
+Arguments FixFun_fix_inv [A] R [B] S {IB} [F] [f].
 
 Lemma FixFun_fix_partial : forall A (R:binary A) (P:A->Prop)
    B {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
@@ -1833,7 +1837,7 @@ Proof using.
   apply~ rec_contractive_noinv_to_rec_contractive. subst~.
 Qed.
 
-Arguments FixFun_fix_partial [A] [B] R P {IB} [F] [f].
+Arguments FixFun_fix_partial [A] R P [B] {IB} [F] [f].
 
 Lemma FixFun_fix : forall A (R:binary A) B {IB:Inhab B} (F:(A->B)->(A->B))
    (f:A->B),
@@ -1886,10 +1890,10 @@ Lemma FixFunMod_mixed_partial_inv : forall I A B
 Proof using.
   introv Deff SimE Cofe Wrr Conti Contr.
   asserts Equiv: (equiv E). rewrite~ SimE.
-  unfolds FixFunMod, Fix. spec_epsilon as g [Fixg Bestg].
+  unfolds FixFunMod, Fix. epsilon g.
     forwards* [g Opt]: (@optimal_fixed_point_exists _ _ _ E F).
     exists g. apply~ Fix_prop_of_optimal.
-  subst f.
+  intros [Fixg Bestg]. subst f.
   forwards~ (f&Fixf&Inv): (@mixed_fixed_point _ _ _ _ M E P F R S).
   lets Fixf': Fixf. rewrite partial_fixed_point_definitions in Fixf'.
   lets Fixf'': (partial_fixed_point_inv Fixf).
@@ -2084,7 +2088,7 @@ Lemma FixFun2_fix : forall A1 A2 (R:binary (A1*A2))
   (forall x1 x2, f x1 x2 = F f x1 x2).
 Proof using. intros. applys* (FixFun2_fix_partial R (fun _ _ => True)). Qed.
 
-Arguments FixFun2_fix [A1] [A2] [B] {IB} [F] [f].
+Arguments FixFun2_fix [A1] [A2] R [B] {IB} [F] [f].
 
 Lemma FixFun2Mod_corec : forall I A1 A2 B (M:family I B) {IB:Inhab B}
   (E:binary B) F (f:A1->A2->B),
@@ -2197,7 +2201,8 @@ Proof using.
   apply~ (Conti (rclosure (inverse (family_r M)) i) (fun _ => F x)).
     intros_all. apply~ equiv_sym.
     intros j Rji. apply Red. intros k Rkj.
-     apply IH. destruct Rji as [Rji|Eq]. apply* (trans_inv j). subst~.
+     apply IH. destruct (rclosure_inv Rji) as [Rji'|Eq].
+       apply* (trans_inv j). subst~.
 Qed.
 
 (** Induction principle for mixed fixed points *)
@@ -2212,13 +2217,13 @@ Lemma mixed_ind : forall I A B (E:binary B)
   (forall i x, (forall j y, P y -> lexico2 (family_r M) R (j,y) (i,x) -> S j y (f y)) -> S i x (F f x)) ->
   (forall i x, P x -> S i x (f x)).
 Proof using.
-  introv Eqf Equiv Cofe Wfr Cont Inv. intros i x.
+  introv Eqf Equiv Cofe Wfr Cont Inv. intros  i x.
   sets_eq p: (i, x). gen i x.
-  induction_wf: (lexico2_wf (ofe_wf Cofe) (tclosure_wf Wfr)) p.
+  induction_wf: (wf_lexico2 (ofe_wf Cofe) (wf_tclosure Wfr)) p.
   intros i x Eix. destruct p. inversions Eix. intros Px.
   eapply Cont with (y1 := F f x). apply Inv. intros.
     apply* IH.
-     forwards*: (>> lexico2_incl I A (family_r M) (family_r M) R (tclosure R) (j,y) (i,x)).
+     forwards*: (>> rel_incl_lexico2 I A (family_r M) (family_r M) R (tclosure R) (j,y) (i,x)).
     intros. apply~ equiv_sym. apply~ Eqf.
 Qed.
 
@@ -2233,7 +2238,7 @@ Lemma cofe_similar_modulo : forall I A (M:family I A) x y x' y' i,
   family_sim M i x' y' ->
   family_sim M i x y.
 Proof using.
-  intros. apply* (trans_inv x'). apply* (trans_sym_2 y').
+  intros. apply* (trans_inv x'). apply* (trans_sym_lr y').
 Qed.
 
 
@@ -2245,3 +2250,12 @@ Ltac auto_tilde ::= auto_tilde_default.
 Ltac destruct_if_post ::= tryfalse.
 
 
+
+(*-- LATER:
+   cleanup file by:
+   - structuring the proofs
+   - using improved lemmas on closures
+   - replace pattern [rewrite rclosure_eq in Le. destruct Le as [Le|Eq].]
+     with use of lemma [rclosure_inv]
+   - check whether Peano.lt or lt should be used.
+ *)

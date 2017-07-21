@@ -141,11 +141,11 @@ Ltac induction_wf_core_then IH E X cont ::=
 (* ---------------------------------------------------------------------- *)
 (** ** Empty relation *)
 
-Lemma empty_wf : forall A,
+Lemma wf_empty : forall A,
   wf (@empty A).
 Proof using. intros_all. constructor. introv H. false. Qed.
 
-Hint Resolve empty_wf : wf.
+Hint Resolve wf_empty : wf.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -172,13 +172,13 @@ Qed.
 
 (** The relation "less than" on natural numbers is well_founded. *)
 
-Lemma lt_wf : wf Peano.lt.
+Lemma wf_lt : wf Peano.lt.
 Proof using.
   intros x.
   induction x using peano_induction. apply~ Acc_intro.
 Qed.
 
-Hint Resolve lt_wf : wf.
+Hint Resolve wf_lt : wf.
 
 
 (* ---------------------------------------------------------------------- *)

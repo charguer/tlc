@@ -1,3 +1,5 @@
+(* -- TODO
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Variable names, and freshness properties                                *
@@ -22,8 +24,10 @@ Parameter var : Set.
 Parameter Inhab_var : Inhab var.
 
 (** This type is comparable. *)
+(* DEPRECATED
 Parameter var_comp : Comparable var.
 Instance var_comparable : Comparable var := var_comp.
+*)
 
 (** We can build sets of variables. *)
 
@@ -48,10 +52,12 @@ Definition var := nat.
 Lemma Inhav_var : Inhab var.
 Proof using. apply (Inhab_of_val 0). Qed.
 
+(* DEPRECATED
 Lemma var_comp : Comparable var.
 Proof using. apply nat_comparable. Qed.
 
 Instance var_comparable : Comparable var := var_comp.
+*)
 
 Definition vars := fset var.
 
@@ -470,3 +476,5 @@ Hint Extern 1 (fresh _ _ _) => fresh_solve.
 
 (* LATER: more automation of fresh_length properties *)
 
+
+*)

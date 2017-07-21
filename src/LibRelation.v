@@ -287,7 +287,11 @@ Lemma refl_rel_incl :
   (* forall (R:A->B->Prop), rel_incl R R *)
 Proof using. unfolds refl, rel_incl. autos*. Qed.
 
-Hint Resolve refl_rel_incl.
+Lemma refl_rel_incl' : forall R,
+  rel_incl R R.
+Proof using. intros. applys refl_rel_incl. Qed.
+
+Hint Resolve refl_rel_incl refl_rel_incl'.
 
 Lemma antisym_rel_incl : 
   antisym (@rel_incl A B).
@@ -715,6 +719,11 @@ Lemma antisym_inverse : forall R,
   antisym (inverse R).
 Proof using. intros_all. unfolds inverse. auto. Qed.
 
+Lemma antisym_wrt_inverse : forall E R,
+  antisym_wrt E R -> 
+  antisym_wrt E (inverse R).
+Proof using. intros_all. unfolds inverse. auto. Qed.
+
 Lemma asym_inverse : forall R,
   asym R -> 
   asym (inverse R).
@@ -1028,6 +1037,14 @@ Proof using.
   destruct N1; destruct N2; subst*.
 Qed.
 
+Lemma antisym_wrt_rclosure : forall E R,
+  antisym_wrt E R -> 
+  antisym_wrt (rclosure E) (rclosure R).
+Proof using. 
+  unfolds antisym_wrt. introv M N1 N2. 
+  destruct N1; destruct N2; subst*.
+Qed.
+
 Lemma trans_rclosure : forall R,
   trans R ->
   trans (rclosure R).
@@ -1107,6 +1124,11 @@ Proof using. introv M. rewrite* rclosure_eq in M. Qed.
 Lemma rel_incl_rclosure : forall R,
   rel_incl R (rclosure R).
 Proof using. unfolds* rel_incl. Qed.
+
+Lemma rclosure_of_rel : forall R x y,
+  R x y ->
+  rclosure R x y.
+Proof using. intros. applys* rel_incl_rclosure. Qed.
 
 Lemma covariant_rclosure : forall R1 R2,
   rel_incl R1 R2 ->

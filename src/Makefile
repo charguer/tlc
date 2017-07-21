@@ -28,13 +28,13 @@ SRC :=\
    LibBool \
    LibReflect \
 	\
+   LibNat \
    LibRelation \
    LibEpsilon \
    LibChoice \
    LibOperation \
    LibOrder \
    LibWf \
-   LibMonoid \
 	\
    LibProd \
    LibSum \
@@ -42,13 +42,16 @@ SRC :=\
    LibOption \
    LibString \
    LibInt \
-   LibNat \
+   LibMonoid \
    LibList \
+	\
+	LibMin \
+	LibFix \
 	\
    LibContainer \
    LibSet
 
-V := $(addsuffix .v,$(SRC))
+# V := $(addsuffix .v,$(SRC))
 
 
 ############################################################################
@@ -66,8 +69,10 @@ export COQFLAGS
 
 .PHONY: all clean
 
-all clean _CoqProject:
-	$(MAKE) V="$(V)" -f Makefile.coq $@
+all depend clean _CoqProject:
+	$(MAKE) -f Makefile.coq $@
+
+#  V="$(V)" 
 
 ############################################################################
 # Installation.
