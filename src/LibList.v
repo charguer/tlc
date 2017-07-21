@@ -24,8 +24,8 @@ Inductive list (A : Type) : Type :=
   | cons : A -> list A -> list A.
 *)
 
-Implicit Arguments nil [[A]].
-Implicit Arguments cons [[A]].
+Arguments nil {A}.
+Arguments cons {A}.
 
 Inductive create_liblist_scope.
 Notation "'create_liblist_scope'" := create_liblist_scope : liblist_scope.
@@ -364,7 +364,7 @@ Qed.
 Lemma length_zero_eq_eq_nil : forall l,
   (length l = 0) = (l = nil).
 Proof using.
-  intros. iff M. destruct l; rew_list; auto_false*. { subst*. }
+  extens. iff M. destruct l; rew_list; auto_false*. { subst*. }
 Qed.
 
 Lemma length_neq_inv : forall l1 l2,
@@ -485,9 +485,9 @@ Lemma app_cancel_r : forall l1 l2 l3,
   l1 = l2.
 Proof using.
   intros l1. induction l1; introv E; rew_list in *.   
-  { rewrites~ (>> app_eq_self_inv_r E). }
+  { rewrites~ (>> self_eq_app_r_inv E). }
   { destruct l2; rew_list in *.
-    { rewrite <- app_cons_l in E. rewrites~ (>> app_eq_self_inv_r (eq_sym E)). }
+    { rewrite <- app_cons_l in E. rewrites~ (>> self_eq_app_r_inv (eq_sym E)). }
     { inverts E. fequals. applys* IHl1. } }
 Qed.
   (* Alternative proof using [rev]:
@@ -560,12 +560,12 @@ Qed.
 
 End AppInversion.
 
-Implicit Arguments last_eq_nil_inv [A a l].
-Implicit Arguments nil_eq_last_inv [A a l].
-Implicit Arguments app_eq_nil_inv [A l1 l2].
-Implicit Arguments nil_eq_app_inv [A l1 l2].
-Implicit Arguments nil_eq_middle_inv [A x l1 l2].
-Implicit Arguments cons_eq_middle_inv [A x y l1 l2 l].
+Arguments last_eq_nil_inv [A] [a] [l].
+Arguments nil_eq_last_inv [A] [a] [l].
+Arguments app_eq_nil_inv [A] [l1] [l2].
+Arguments nil_eq_app_inv [A] [l1] [l2].
+Arguments nil_eq_middle_inv [A] [x] [l1] [l2].
+Arguments cons_eq_middle_inv [A] [x] [y] [l1] [l2] [l].
 
 
 (* ---------------------------------------------------------------------- *)
@@ -743,10 +743,10 @@ Lemma mem_inv_middle : forall l x,
   exists l1 l2, l = l1++x::l2.
 Proof using. introv E. forwards* (?&?&?&?): mem_inv_middle_first E. Qed.
 
-Lemma list_no_mem : forall l,
+Lemma eq_list_of_not_mem : forall l,
   (forall x, ~ mem x l) ->
   l = nil.
-Proof using. introv P. destruct~ l. false P. simpl. rew_refl*. Qed.
+Proof using. introv P. destruct~ l. false P. applys mem_here. Qed.
 
 End Mem.
 
@@ -794,7 +794,7 @@ Proof using. introv H1. induction H1; intro H2; inverts~ H2. Qed.
 Lemma Nth_mem : forall l x n,
   Nth n l x -> 
   mem x l.
-Proof using. introv N. induction N; simpl; rew_refl* in *. Qed.
+Proof using. introv N. induction N; autos*. Qed.
 
 Lemma mem_Nth : forall l x,
   mem x l -> 
@@ -821,7 +821,7 @@ Lemma Nth_inbound_inv : forall n l,
 Proof using.
   induction n; introv N; destruct l as [|a l']; rew_list in N; try solve [math].
   { eauto. }
-  { simpls. rewrite lt_SS in N. forwards (x&Hx): IHn N. exists x. apply* Nth_succ. }
+  { simpls. forwards (x&Hx): IHn l'. math. exists x. apply* Nth_succ. }
 Qed.
 
 Lemma Nth_app_l : forall n x l1 l2,
@@ -1082,9 +1082,9 @@ Qed.
 Lemma mem_rev_eq : forall l x,
   mem x (rev l) = mem x l.
 Proof using.
-  iff M.
-  { apply~ mem_rev. }
+  extens. iff M.
   { lets H: mem_rev M. rewrite~ rev_rev in H. }
+  { apply* mem_rev. }
 Qed.
 
 Lemma length_rev : forall l,
@@ -1146,10 +1146,10 @@ Proof using. intros. apply* app_rev_eq_nil_inv. Qed.
 
 End RevInversion.
 
-Implicit Arguments rev_eq_nil_inv [A l].
-Implicit Arguments nil_eq_rev_inv [A l].
-Implicit Arguments app_rev_eq_nil_inv [A l1 l2].
-Implicit Arguments nil_eq_app_rev_inv [A l1 l2].
+Arguments rev_eq_nil_inv [A] [l].
+Arguments nil_eq_rev_inv [A] [l].
+Arguments app_rev_eq_nil_inv [A] [l1] [l2].
+Arguments nil_eq_app_rev_inv [A] [l1] [l2].
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1265,7 +1265,7 @@ Qed.
 Lemma update_app_l : forall l1 l2 n v,
   n < length l1 ->
   update n v (l1 ++ l2) = update n v l1 ++ l2.
-Proof using.
+Proof using IA.
   intros l1. induction l1 as [| x l1' ]; introv E; rew_list in *.
   { fequals. math. }
   { destruct n as [|n'].
@@ -1277,7 +1277,7 @@ Qed.
 Lemma update_app_r : forall l1 l2 n v,
   n >= length l1 ->
   update n v (l1 ++ l2) = l1 ++ update (n - length l1) v l2.
-Proof using.
+Proof using IA.
   intros l1. induction l1 as [| x l1' ]; introv E; rew_list in *.
   { fequals. math. }
   { destruct n as [|n']. { false. math. }
@@ -3083,12 +3083,12 @@ Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
 
 (** WARNING: EXPERIMENTAL SECTION *)
 
-Definition fold A B (m:monoid_def B) (f:A->B) (L:list A) : B :=
+Definition fold A B (m:monoid_op B) (f:A->B) (L:list A) : B :=
   fold_right (fun x acc => monoid_oper m (f x) acc) (monoid_neutral m) L.
 
 Section Fold.
 Variables (A B:Type).
-Implicit Types m : monoid_def B.
+Implicit Types m : monoid_op B.
 Implicit Types l : list A.
 Implicit Types f g : A->B.
 
@@ -3138,7 +3138,7 @@ Qed.
 
 (* TODO: reformulate using a definition of list permutation, *)
 Lemma fold_equiv_step : forall m f l a,
-  Monoid_commutative m ->
+  Comm_monoid m ->
   noduplicates l ->
   mem a l ->
   exists l',
@@ -3164,7 +3164,7 @@ Qed.
 (* TODO: reformulate using a definition of list permutation,
    which is entailed by the premises 2,3 and 4. *)
 Lemma fold_equiv : forall m f l1 l2,
-  Monoid_commutative m ->
+  Comm_monoid m ->
   noduplicates l1 ->
   noduplicates l2 ->
   (forall x, mem x l1 <-> mem x l2) ->

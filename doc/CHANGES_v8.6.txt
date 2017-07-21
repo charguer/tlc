@@ -1610,3 +1610,10 @@ binary_map => rel_preimage
 
 LibMonoid
 
+
+---
+
+List
+
+list_no_mem => eq_list_not_mem
+ 

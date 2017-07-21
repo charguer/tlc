@@ -54,18 +54,18 @@ Class Comm_monoid A (m:monoid_op A) : Prop := Comm_monoid_make {
 (** * Properties *)
 
 Section MonoidProp.
-Variables (A:Type).
+Context {A:Type}.
 
-Class Monoid_assoc (m:monoid_op A) := {
+Class Monoid_assoc {m:monoid_op A} := {
   monoid_assoc : assoc (monoid_oper m) }.
 
-Class Monoid_neutral_l (m:monoid_op A) := {
+Class Monoid_neutral_l {m:monoid_op A} := {
   monoid_neutral_l : neutral_l (monoid_oper m) (monoid_neutral m) }.
 
-Class Monoid_neutral_r (m:monoid_op A) := {
+Class Monoid_neutral_r {m:monoid_op A} := {
   monoid_neutral_r : neutral_r (monoid_oper m) (monoid_neutral m) }.
 
-Class Monoid_comm (m:monoid_op A) := {
+Class Monoid_comm {m:monoid_op A} := {
   monoid_comm : comm (monoid_oper m) }.
 
 End MonoidProp.
@@ -79,19 +79,19 @@ Variables (A:Type).
 Implicit Types m : monoid_op A.
 
 Global Instance Monoid_assoc_of_Monoid : forall m (M:Monoid m),
-  Monoid_assoc m.
+  Monoid_assoc (m:=m).
 Proof using.
   introv M. constructor. destruct M as [U ? ?]. destruct m. simpl. apply U.
 Qed.
 
 Global Instance Monoid_neutral_l_of_Monoid : forall m (M:Monoid m),
-  Monoid_neutral_l m.
+  Monoid_neutral_l (m:=m).
 Proof using.
   introv M. constructor. destruct M as [? U ?]. destruct m. simpl. apply U.
 Qed.
 
 Global Instance Monoid_neutral_r_of_Monoid : forall m (M:Monoid m),
-  Monoid_neutral_r m.
+  Monoid_neutral_r (m:=m).
 Proof using.
   introv M. constructor. destruct M as [? ? U]. destruct m. simpl. apply U.
 Qed.
@@ -103,7 +103,7 @@ Proof using.
 Qed.
 
 Global Instance Monoid_comm_of_Comm_Monoid : forall m (M:Comm_monoid m),
-  Monoid_comm m.
+  Monoid_comm (m:=m).
 Proof using.
   introv M. constructor. destruct M as [? U]. destruct m. simpl. apply U.
 Qed.
