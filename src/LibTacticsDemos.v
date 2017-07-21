@@ -1232,7 +1232,7 @@ Inductive bigredh : nat -> trm -> trm -> Prop :=
       bigredh n (subst x v2 t3) v ->
       bigredh (S n) (trm_app t1 t2) v.
 
-Require Import Omega.
+Require Import Coq.omega.Omega.
 
 Hint Extern 1 ((_ < _)%nat) => omega.
 

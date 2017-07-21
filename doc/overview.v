@@ -288,6 +288,27 @@ Tactic Notation "rew_list" "in" hyp(H) :=
 
 
 (************************************************************************)
+(** * Overloading *)
+
+(** Overloading of operators is implemented using typeclasses, 
+    in particular for:
+    - comparison operators (e.g. le, gt, etc...)
+    - container operations (e.g. union, read in a map, etc..)
+
+    and typeclasses are also used for all lemmas about these operations.
+
+    In the long run, we plan to also use typeclasses for base types
+    such as [nat] and [int]. However, due to inefficiencies in the
+    current support for typeclasses, it would be too slow to use
+    typeclasses in the current version of Coq for describing all basic
+    arithmetic expressions. Thus, we stick to the traditional Coq 
+    approach, which is to rely on the scope mechanism to overload 
+    arithmetic operators.
+
+*)
+
+
+(************************************************************************)
 (** * Order relations *)
 
 (** See [LibOrder.v] and [LibSet.v] *)

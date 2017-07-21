@@ -338,6 +338,28 @@ End Total.
 
 
 (* ---------------------------------------------------------------------- *)
+(** ** Trichotomy *)
+
+Inductive trichotomy A (R:binary A) : binary A :=
+  | trichotomy_left : forall x y,
+      R x y -> 
+      x <> y -> 
+      ~ R y x -> 
+      trichotomy R x y
+  | trichotomy_eq : forall x,
+      ~ R x x -> 
+      trichotomy R x x
+  | trichotomy_right : forall x y,
+      ~ R x y -> 
+      x <> y -> 
+      R y x -> 
+      trichotomy R x y.
+
+Definition trichotomous A (R:binary A) :=
+  forall x y, trichotomy R x y.
+
+
+(* ---------------------------------------------------------------------- *)
 (** ** Definedness *)
 
 Definition defined A B (R:A->B->Prop) :=
@@ -644,6 +666,14 @@ Section Inverse.
 Variables (A : Type).
 Implicit Types R : binary A.
 
+Lemma inverse_eq_fun : forall R,  
+  inverse R = (fun x y => R y x).
+Proof using. auto. Qed.
+
+Lemma inverse_eq : forall R x y,  
+  inverse R x y = R y x.
+Proof using. auto. Qed.
+
 Lemma injective_inverse : 
   injective (@inverse A).
 Proof using.
@@ -694,6 +724,16 @@ Lemma total_inverse : forall R,
   total R -> 
   total (inverse R).
 Proof using. intros_all. unfolds inverse. auto. Qed.
+
+Lemma trichotomous_inverse : forall R,
+  trichotomous R -> 
+  trichotomous (inverse R).
+Proof using.
+  introv H. intros x y. destruct (H x y).
+  apply~ trichotomy_right.
+  apply~ trichotomy_eq.
+  apply~ trichotomy_left.
+Qed.
 
 Lemma inverse_equiv : forall A (E:binary A),
   equiv E -> 
@@ -955,6 +995,10 @@ Implicit Types R : binary A.
 Hint Constructors rclosure.
 
 (** Equivalent definition *)
+
+Lemma rclosure_eq_fun : forall R,  
+  rclosure R = (fun x y => R x y \/ x = y).
+Proof using. extens. iff M; destruct M; subst*. Qed.
 
 Lemma rclosure_eq : forall R x y,  
   rclosure R x y = (R x y \/ x = y).
@@ -2217,6 +2261,14 @@ Section Strict.
 Variables (A : Type).
 Implicit Types R : binary A.
 Hint Unfold strict.
+ 
+Lemma strict_eq_fun : forall R,  
+  strict R = (fun x y => R x y /\ x <> y).
+Proof using. auto. Qed.
+
+Lemma strict_eq : forall R x y,  
+  strict R x y = (R x y /\ x <> y).
+Proof using. auto. Qed.
 
 Lemma inverse_strict : forall R,
   inverse (strict R) = strict (inverse R).

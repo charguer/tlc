@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibOperation Omega.
+Require Import LibTactics LibLogic LibOperation.
 Generalizable Variables A B.
 
 

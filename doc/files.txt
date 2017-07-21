@@ -16,30 +16,23 @@ Stable files:
    LibUnit
    LibOption
    LibString
-
    LibRelation
    LibEpsilon
    LibChoice
    LibOperation
-   LibOrder
 
    LibList
 
 
 Remaining to clean up:
 
+   LibOrder
    LibInt
    LibNat
 
    LibWf
    LibFix
 
-   LibBoolX
-   LibNatX
-   LibListX
-
-   LibListSort
-   LibListSub
    LibListZ
 
    LibMonoid
@@ -53,8 +46,17 @@ Remaining to clean up:
    LibCore [package]
 
 
+For later executability
+
+   LibBoolX
+   LibNatX
+   LibListX
+
+
 For later cleanup (not yet used so much)
 
+   LibListSort
+   LibListSub
    LibPer
    LibFun
    LibStream

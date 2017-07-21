@@ -45,7 +45,7 @@
 
 Set Implicit Arguments.
 
-Require Import List.
+Require Import Coq.Lists.List.
 
 
 (* ********************************************************************** *)
@@ -2477,7 +2477,7 @@ Tactic Notation "subst_eq" constr(E) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics to work with proof irrelevance *)
 
-Require Import ProofIrrelevance.
+Require Import Coq.Logic.ProofIrrelevance.
 
 (** [pi_rewrite E] replaces [E] of type [Prop] with a fresh
     unification variable, and is thus a practical way to
@@ -3147,7 +3147,8 @@ Tactic Notation "induction_wf" ":" constr(E) ident(X) :=
     judgment that includes a counter for the maximal height
     (see LibTacticsDemos for an example) *)
 
-Require Import Compare_dec Omega.
+Require Import Coq.Arith.Compare_dec.
+Require Import Coq.omega.Omega.
 
 Lemma induct_height_max2 : forall n1 n2 : nat,
   exists n, n1 < n /\ n2 < n.

@@ -1519,8 +1519,7 @@ Proof using. intros. subst*. Qed.
 (* Note: see [pred_eq_2] from LibEqual *)
 
 
-=============
-
+-----------
 
 
 Lemma epsilon_spec' : forall A (P:A->Prop) (x:A) (H:P x) {IA:Inhab A}, 
@@ -1555,3 +1554,34 @@ Ltac find_epsilon => epsilon_find
 LibInt
  double => mult_2_eq_plus
  triple => mult_3_eq_plus
+
+
+-----------
+
+Many lemmas from LibNat and LibInt now in LibOld
+
+
+
+abs_pos_nat => abs_nat
+
+abs_spos => abs_eq_succ_abs_minus_one
+
+succ_abs => succ_abs_eq_abs_one_plus
+
+
+int_nat_eq => eq_nat_of_eq_int
+eq_int_nat => eq_nat_of_eq_int
+nat_int_lt => lt_nat_of_lt_int
+int_nat_lt => lt_int_of_lt_nat
+
+Zabs_nat_lt => lt_abs_abs
+
+-----------
+
+total_order_le_or_gt => changed order or arguments
+
+order_of_strict => order_large_of_strict_order
+
+flip_trichotomous => trichotomous_inverse
+
+removed: Arguments nle_to_sle {A} {H} {NLe_to_SLe} [x] [y].

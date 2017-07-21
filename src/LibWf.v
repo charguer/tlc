@@ -242,7 +242,7 @@ Proof using.
   intros b n.
   induction_wf: (measure_wf (fun n => Zabs_nat (n-b))) n.
   apply Acc_intro. introv [H1 H2]. apply IH.
-  unfolds. applys Zabs_nat_lt; math.
+  unfolds. applys lt_abs_abs; math.
 Qed.
 
 Hint Resolve downto_wf : wf.
@@ -273,7 +273,7 @@ Proof using.
   intros b n.
   induction_wf: (measure_wf (fun n => Zabs_nat (b-n))) n.
   apply Acc_intro. introv [H1 H2]. apply IH.
-  applys Zabs_nat_lt; math.
+  applys lt_abs_abs; math.
 Qed.
 
 Hint Resolve upto_wf : wf.

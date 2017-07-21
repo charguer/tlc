@@ -2,6 +2,153 @@
 (************************************************************)
 (************************************************************)
 (************************************************************)
+(* LibNat *)
+
+
+(* ********************************************************************** *)
+(** * Simplification lemmas *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Addition and substraction *)
+
+
+Hint Rewrite plus_zero_r plus_zero_l minus_zero : rew_nat.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Comparison -- DEPRECATED? *)
+
+Section CompProp.
+Implicit Types a b c n m : nat.
+
+Lemma le_SS : forall n m, (S n <= S m) = (n <= m).
+Proof using. nat_math. Qed.
+Lemma ge_SS : forall n m, (S n >= S m) = (n >= m).
+Proof using. nat_math. Qed.
+Lemma lt_SS : forall n m, (S n < S m) = (n < m).
+Proof using. nat_math. Qed.
+Lemma gt_SS : forall n m, (S n > S m) = (n > m).
+Proof using. nat_math. Qed.
+
+Lemma plus_le_l : forall a b c,
+  (a + b <= a + c) = (b <= c).
+Proof using. nat_math. Qed.
+Lemma plus_ge_l : forall a b c,
+  (a + b >= a + c) = (b >= c).
+Proof using. nat_math. Qed.
+Lemma plus_lt_l : forall a b c,
+  (a + b < a + c) = (b < c).
+Proof using. nat_math. Qed.
+Lemma plus_gt_l : forall a b c,
+  (a + b > a + c) = (b > c).
+Proof using. nat_math. Qed.
+
+Lemma plus_le_r : forall a b c,
+  (b + a <= c + a) = (b <= c).
+Proof using. nat_math. Qed.
+Lemma plus_ge_r : forall a b c,
+  (b + a >= c + a) = (b >= c).
+Proof using. nat_math. Qed.
+Lemma plus_lt_r : forall a b c,
+  (b + a < c + a) = (b < c).
+Proof using. nat_math. Qed.
+Lemma plus_gt_r : forall a b c,
+  (b + a > c + a) = (b > c).
+Proof using. nat_math. Qed.
+
+End CompProp.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Simplification tactic *)
+
+(** [rew_nat] performs some basic simplification on
+    expressions involving natural numbers *)
+
+Hint Rewrite le_SS ge_SS lt_SS gt_SS : rew_nat.
+Hint Rewrite plus_le_l plus_ge_l plus_lt_l plus_gt_l : rew_nat.
+Hint Rewrite plus_le_r plus_ge_r plus_lt_r plus_gt_r : rew_nat.
+
+Tactic Notation "rew_nat" :=
+  autorewrite with rew_nat.
+Tactic Notation "rew_nat" "~" :=
+  rew_nat; auto_tilde.
+Tactic Notation "rew_nat" "*" :=
+  rew_nat; auto_star.
+Tactic Notation "rew_nat" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_nat).
+  (* autorewrite with rew_nat in *. *)
+Tactic Notation "rew_nat" "~" "in" "*" :=
+  rew_nat in *; auto_tilde.
+Tactic Notation "rew_nat" "*" "in" "*" :=
+  rew_nat in *; auto_star.
+Tactic Notation "rew_nat" "in" hyp(H) :=
+  autorewrite with rew_nat in H.
+Tactic Notation "rew_nat" "~" "in" hyp(H) :=
+  rew_nat in H; auto_tilde.
+Tactic Notation "rew_nat" "*" "in" hyp(H) :=
+  rew_nat in H; auto_star.
+
+
+
+
+(* ********************************************************************** *)
+(** * -- TODO: Other operations and lemmas (not stable) *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Div *)
+
+Definition div (n q : nat) :=
+  match q with
+  | 0 => 0
+  | S predq =>
+  let aux := fix aux (m r : nat) {struct m} :=
+    match m,r with
+    | 0, _ => 0
+    | S m',0 => (1 + aux m' predq)%nat
+    | S m', S r' => aux m' r'
+    end in
+  aux n predq
+  end.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Div2 *)
+
+Lemma div2_lt : forall n m, m <= n -> n > 0 -> div2 m < n.
+Proof using. (* using stdlib *)
+  nat_comp_to_peano. introv Le Gt.
+  forwards: Nat.div2_decr m (n-1). omega. omega.
+Qed.
+
+Lemma div2_grows : forall n m, m <= n -> div2 m <= div2 n.
+Proof using.
+  nat_comp_to_peano.
+  induction n using peano_induction. introv Le.
+  destruct~ m. simpl. omega.
+  destruct~ n. simpl. omega.
+  destruct~ m. simpl. omega.
+  destruct~ n. simpl. omega.
+  simpl. rew_nat. apply~ H. nat_math. nat_math.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Factorial *)
+
+Fixpoint factorial (n:nat) : nat :=
+  match n with
+  | 0 => 1
+  | S n' => n * (factorial n')
+  end.
+
+
+
+
+
+(************************************************************)
+(************************************************************)
+(************************************************************)
 (* LibInt *)
 
 (* ---------------------------------------------------------------------- *)
@@ -200,6 +347,360 @@ End Min.
 
 
 (************************************************************)
-(* * Parity function *)
+(* ---------------------------------------------------------------------- *)
+(** ** Comparison *)
+
+Lemma plus_le_l : forall a b c,
+  (a + b <= a + c) = (b <= c).
+Proof using. math. Qed.
+Lemma plus_ge_l : forall a b c,
+  (a + b >= a + c) = (b >= c).
+Proof using. math. Qed.
+Lemma plus_lt_l : forall a b c,
+  (a + b < a + c) = (b < c).
+Proof using. math. Qed.
+Lemma plus_gt_l : forall a b c,
+  (a + b > a + c) = (b > c).
+Proof using. math. Qed.
+
+Lemma plus_le_r : forall a b c,
+  (b + a <= c + a) = (b <= c).
+Proof using. math. Qed.
+Lemma plus_ge_r : forall a b c,
+  (b + a >= c + a) = (b >= c).
+Proof using. math. Qed.
+Lemma plus_lt_r : forall a b c,
+  (b + a < c + a) = (b < c).
+Proof using. math. Qed.
+Lemma plus_gt_r : forall a b c,
+  (b + a > c + a) = (b > c).
+Proof using. math. Qed.
+
+Hint Rewrite plus_le_l plus_ge_l plus_lt_l plus_gt_l : rew_int.
+Hint Rewrite plus_le_r plus_ge_r plus_lt_r plus_gt_r : rew_int.
 
 
+
+(* ********************************************************************** *)
+(** * Advanced induction *)
+
+(* --TODO: move to LibNat *)
+(* --TODO: document and explain when this is needed *)
+
+Definition eq_gt_implies (P : (nat->Prop) -> Prop) :=
+  forall n, 
+  (forall m, n > m -> P (eq m)) -> 
+  P (gt n).
+
+Definition eq_lt_implies (P : (nat->Prop) -> Prop) :=
+  forall n, 
+  (forall m, n < m -> P (eq m)) -> 
+  P (gt n).
+
+Hint Unfold eq_lt_implies eq_gt_implies. (* --TODO: rename *)
+
+Lemma eq_lt_induction : forall (P : (nat->Prop) -> Prop),
+  (forall n, (forall m, n > m -> P (eq m)) -> P (lt n)) ->
+  (forall n, P (lt n) -> P (eq n)) ->
+  (forall n, P (eq n)).
+Proof using. intros. induction n using peano_induction. auto. Qed.
+
+Lemma eq_gt_induction : forall (P : (nat->Prop) -> Prop),
+  (forall n, (forall m, n > m -> P (eq m)) -> P (gt n)) ->
+  (forall n, P (gt n) -> P (eq n)) ->
+  (forall n, P (eq n)).
+Proof using. intros. induction n using peano_induction. auto. Qed.
+
+Lemma eq_gt_induction_2 : forall (P1 P2 : (nat->Prop) -> Prop),
+  eq_gt_implies P1 -> 
+  eq_gt_implies P2 ->
+  (forall n, P1 (gt n) -> P2 (gt n) -> P1 (eq n) /\ P2 (eq n)) ->
+     (forall n, P1 (eq n)) 
+  /\ (forall n, P2 (eq n)).
+Proof using.
+  introv H1 H2 R.
+  cuts M: (forall n, P1 (eq n) /\ P2 (eq n)).
+    split; intros n; specializes M n; autos*.
+  induction n using peano_induction. apply R;
+    match goal with K: eq_gt_implies ?Pi |- ?Pi _ =>
+      apply K; intros; forwards*: H; try math end.
+Qed.
+
+(* --TODO add missing arities *)
+
+Lemma eq_gt_induction_5 : forall (P1 P2 P3 P4 P5 : (nat->Prop) -> Prop),
+  eq_gt_implies P1 -> 
+  eq_gt_implies P2 -> 
+  eq_gt_implies P3 ->
+  eq_gt_implies P4 -> 
+  eq_gt_implies P5 ->
+  (forall n, P1 (gt n) -> P2 (gt n) -> P3 (gt n) -> P4 (gt n) -> P5 (gt n) ->
+    P1 (eq n) /\ P2 (eq n) /\ P3 (eq n) /\ P4 (eq n) /\ P5 (eq n)) ->
+     (forall n, P1 (eq n))
+  /\ (forall n, P2 (eq n)) 
+  /\ (forall n, P3 (eq n))
+  /\ (forall n, P4 (eq n))  
+  /\ (forall n, P5 (eq n)).
+Proof using.
+  introv H1 H2 H3 H4 H5 R.
+  cuts M: (forall n, P1 (eq n) /\ P2 (eq n) /\ P3 (eq n) /\ P4 (eq n) /\ P5 (eq n)).
+    splits; intros n; specializes M n; autos*.
+  induction n using peano_induction. apply R;
+    match goal with K: eq_gt_implies ?Pi |- ?Pi _ =>
+      apply K; intros; forwards*: H; try math end.
+Qed.
+
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Modulo function *)
+
+Lemma mod_eq_prove : forall k a b n,
+  a = b + k * n -> a mod n = b mod n.
+Proof using. intros. subst. rewrite~ Z_mod_plus_full. Qed.
+
+Lemma mod_prove : forall k a b n,
+  a = b + k * n -> 0 <= b -> b < n -> a mod n = b.
+Proof using.
+  intros. rewrite <- (@Zmod_small b n).
+  apply* mod_eq_prove. math.
+Qed.
+
+Lemma mod2_zero :
+  0 mod 2 = 0.
+Proof using. reflexivity. Qed.
+
+Lemma mod2_odd : forall k,
+  (2 * k) mod 2 = 0.
+Proof using. intros. apply (mod_prove k); math. Qed.
+
+Lemma mod2_even : forall k,
+  (2 * k + 1) mod 2 = 1.
+Proof using. intros. apply (mod_prove k); math. Qed.
+
+Lemma div2_odd : forall k,
+  (2 * k) / 2 = k.
+Proof using.
+  intros. math_rewrite (2*k=k*2).
+  apply Z_div_mult_full. math.
+Qed.
+
+Lemma div2_even : forall k,
+  k >= 0 -> (2 * k + 1) / 2 = k.
+Proof using. intros. symmetry. eapply Zdiv_unique with (r:=1); math. Qed.
+
+Lemma mod2_bound : forall n,
+  0 <= n mod 2 < 2.
+Proof using. (* using stdlib *)
+  intros. forwards: (Z_mod_remainder n 2). math.
+  destruct H as [[? ?]|[? ?]]; math.
+Qed.
+
+Lemma div2_bounds : forall m n,
+  m = n / 2 -> 2 * m <= n /\ n <= 2 * m + 1.
+Proof using. (* using stdlib *)
+  intros. lets K: (Z_div_mod_eq n 2) __. math. (* TODO: forwards shouldn't do simpl *)
+  rewrite <- H in K.
+  lets [E1 E2]: (mod2_bound n). math.
+Qed.
+
+Implicit Arguments div2_bounds [m n].
+
+
+Hint Rewrite mod2_zero mod2_odd mod2_even div2_odd div2_even : rew_parity.
+
+Ltac rew_parity :=
+  autorewrite with rew_parity.
+
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Comparison lifted *)
+
+Lemma nat_int_lt : forall (n m:nat),
+  n < m -> 
+  (n:int) < (m:int).
+Proof using. math. Qed.
+
+Lemma nat_int_le : forall (x y:nat),
+  x <= y -> 
+  ((x:int) <= (y:int)).
+Proof using. math. Qed.
+
+Lemma nat_int_ge : forall (x y:nat),
+  x >= y -> 
+  (x:int) >= (y:int).
+Proof using. math. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Lia/Nia *)
+
+
+Ltac nat_math_lia :=
+  nat_math_setup; lia.
+
+Ltac nat_math_nia :=
+  nat_math_setup; nia.
+
+Require Import Psatz.
+
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** [math_lia], [math_nia], [math_dia] tactic *)
+
+(** --DISCLAIMER: WORK IN PROGRESS *) 
+
+(* Require the CSDP package to be installed *)
+
+(** [math_lia] supports linear arithmetic; it roughly provides the
+    combined power of [ring_simplify] and [omega]. *)
+
+Tactic Notation "math_lia" := math_debug; lia.
+
+(** [math_nia] supports non-linear integer arithmetic.
+    It performs a limited amount of non-linear reasoning
+    before running [lia]. *)
+
+Tactic Notation "math_nia" := math_debug; nia.
+
+(** [math_dia] extends [math_nia] with support for divisions.
+    Division are encoded using multiplications, via Euclidian
+    division and remainder. *)
+
+Definition Zdiv_hyp (P:Prop) := P.
+
+Lemma Z_div_mod' : forall a b : int,
+  Zdiv_hyp ((b > 0)%Z) ->
+  let (q, r) := Z.div_eucl a b in
+  a = (b * q)%I + r /\ (0 <= r < b)%Z.
+Proof using. applys Z_div_mod. Qed.
+
+Ltac Zdiv_eliminate_step tt :=
+  match goal with |- context[ Z.div_eucl ?X ?Y ] =>
+     generalize (@Z_div_mod' X Y);
+     destruct (Z.div_eucl X Y)
+  end.
+
+Ltac math_dia_generalize_all_prop tt :=
+  repeat match goal with H: ?T |- _ =>
+    match type of T with Prop => gen H end end.
+
+Ltac Zdiv_eliminate tt :=
+  math_dia_generalize_all_prop tt;
+  unfold Z.div;
+  repeat (Zdiv_eliminate_step tt).
+
+(* todo: deal differently with iterated divisions,
+   in order to avoid blow up *)
+
+Ltac Zdiv_instantiate_hyp_steps tt :=
+  match goal with H: Zdiv_hyp ?P -> _ |- _ =>
+    specializes H __;
+    [ idtac
+    | try Zdiv_instantiate_hyp_steps tt ]
+  end.
+
+Ltac Zdiv_instantiate_hyp tt :=
+  Zdiv_instantiate_hyp_steps tt.
+
+Ltac math_dia_setup :=
+  math_0; math_1; math_2; math_3; Zdiv_eliminate tt;
+  intros; try Zdiv_instantiate_hyp_steps tt; unfolds Zdiv_hyp.
+
+Tactic Notation "math_dia" :=
+  math_dia_setup; math_nia.
+
+(*--WORK IN PROGRESS
+
+  Lemma math_nia_demo_1 : forall (a b N : int),
+    N > 0 ->
+    a * N <= b * N ->
+    a <= b.
+  Proof using. math_nia. Qed.
+
+  Lemma math_dia_demo_1 : forall (a b t : int),
+    t > 0 ->
+    a <= b ->
+    a / t <= b / t.
+  Proof using. math_dia. Qed.
+
+  Lemma math_dia_demo_2 : forall (a t : int),
+    t > 1 ->
+    a > 0 ->
+    a / t <= a.
+  Proof using. math_dia. Qed.
+
+  Lemma math_dia_demo_3 : forall (a b t : int),
+    t > 0 ->
+    0 <= a <= b ->
+    a / t <= b / t.
+  Proof using. math_dia. Qed.
+
+  Lemma math_dia_demo_4 : forall (a b N : int),
+    N > 0 ->
+    a > 0 ->
+    b > 0 ->
+    a * N <= b * N ->
+    a <= b.
+  Proof using. math_dia. Qed.
+
+  Lemma math_dia_demo_5 : forall (a b N t : int),
+    N > 0 ->
+    t > 1 ->
+    a > 0 ->
+    b > 0 ->
+    a * N <= b * N ->
+    a / t <= b.
+  Proof using.
+    intros.
+    (* math_dia_setup. math_dia. *)
+    try math_dia.
+    assert (a / t <= a). math_dia.
+    assert (a <= b). math_dia.
+    math_dia.
+  Qed.
+
+  Lemma math_dia_demo_span_1 : forall (a b t n N : int),
+    N > 0 ->
+    n > 0 ->
+    t > 0 ->
+    a >= 0 ->
+    b >= 0 ->
+    a <= b * (1 + N/t) + n * t/N ->
+    (   a <= b * (1 + N/t) + (n+1) * t/N
+    /\ (a+1) <= (b+1) * (1 + N/t) + (n+1) * t/N
+    /\ b * (1 + N/t) + N * t/N = b * (1 + t/N) + t
+    /\ (b + t) * (1 + N/t) + n * t/N = b * (1 + N/t) + t + N + n * t/N).
+  Proof using.
+    intros. splits.
+    math_dia.
+    try math_dia. skip.
+    try math_dia. skip.
+    try math_dia. skip.
+  Qed.
+
+  Lemma math_dia_demo : forall a b t n N,
+    a * N <= b * N + (b + n) * t  ->
+    a <= b * (1 + t / N) + n * t / N.
+  Proof using. intros. math_dia. Qed.
+---*)
+
+
+
+
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* * LibOrder *)
+
+(* ********************************************************************** *)
+(* * Order modulo *)
+
+(* TODO: deprecate this *)
+
+Record order_wrt (A:Type) (E:binary A) (R:binary A) : Prop := {
+   order_wrt_refl : refl R;
+   order_wrt_trans : trans R;
+   order_wrt_antisym : antisym_wrt E R }.

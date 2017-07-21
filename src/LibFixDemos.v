@@ -7,7 +7,6 @@ Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import LibTactics LibLogic LibReflect LibFun LibEpsilon LibList
   LibInt LibNat LibProd LibSum LibRelation LibWf LibFix LibStream.
-Require Import Div2.
 Open Scope nat_scope.
 Open Scope comp_scope.
 Open Scope fun_scope.
@@ -354,8 +353,6 @@ Extraction log.
     It does not actually loop, since when a recursive
     call is not made on a smaller argument, the recursion
     is stopped and a dummy value is returned. *)
-
-Require Import Even.
 
 Definition Only_even only_even n :=
   If n = 0 then 1 else

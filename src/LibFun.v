@@ -78,6 +78,7 @@ Proof using. intros. subst~. Qed.
 (** Composition of [LibList.map] behaves well. **)
 (* Could not be put in [LibList] because of circular dependencies. *)
 Require Import LibList.
+
 Lemma list_map_compose : forall A B C (f : A -> B) (g : B -> C) l,
   LibList.map g (LibList.map f l) = LibList.map (g \o f) l.
 Proof using.

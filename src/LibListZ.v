@@ -172,7 +172,7 @@ Lemma read_make : forall `{Inhab A} (i n:int) (v:A),
 Proof using.
   introv N. rewrite int_index_def in N. unfold make, read_inst, read_impl, nth.
   case_if. math. simpl. case_if. math.
-  applys nth_make. forwards: Zabs_nat_lt i n; try math.
+  applys nth_make. forwards: lt_abs_abs i n; try math.
 Qed.
 
 Lemma length_make : forall A (n:int) (v:A),
@@ -193,7 +193,7 @@ Proof using.
   change (abs 1) with 1%nat.
   assert (0 < abs n)%nat.
   { change 0%nat with (abs 0%Z).
-    eapply Zabs.Zabs_nat_lt.
+    eapply Zabs.lt_abs_abs.
     math. }
   eapply LibList.cons_make.
   math.
@@ -299,9 +299,9 @@ Proof using.
     read_inst, read_impl, nth. simpl. introv N. rewrite int_index_def in N.
   case_if. math.
   case_if. case_if. auto. case_if.
-    rewrite~ nth_update_eq. apply nat_int_lt. rewrite abs_pos; try math.
-    rewrite~ nth_update_neq. apply nat_int_lt. rewrite abs_pos; try math.
-      apply nat_int_neq. rewrite abs_pos; try math. rewrite abs_pos; try math.
+    rewrite~ nth_update_eq. apply lt_nat_of_lt_int. rewrite abs_pos; try math.
+    rewrite~ nth_update_neq. apply lt_nat_of_lt_int. rewrite abs_pos; try math.
+      apply neq_nat_of_neq_int. rewrite abs_pos; try math. rewrite abs_pos; try math.
 Qed.
 
 Lemma read_update_eq : forall `{Inhab A} (l:list A) (i:int) (v:A),
@@ -369,7 +369,7 @@ Proof using.
   introv. simpl. unfold read_impl, nth.
   case_if.
   - case_if. math. case_if~. math.
-  - case_if~. case_if. math. rewrite~ abs_spos. math.
+  - case_if~. case_if. math. rewrite~ abs_to_succ_abs_minus_one. math.
 Qed.
 
 Lemma read_last_case : forall `{IA:Inhab A} (l:list A) (i:int) (v:A),
@@ -616,8 +616,8 @@ Proof using.
     forwards~: (@abs_pos i); destruct l; rew_length in U; try math.
   math_rewrite (i = 0). exists __. split~. constructor.
   forwards~ [x [M P']]: (>> IHn (i-1) l).
-    forwards~: (@abs_spos i).
-    exists x. split~. rewrite~ (@abs_spos i). constructor~.
+    forwards~: (@abs_to_succ_abs_minus_one i).
+    exists x. split~. rewrite~ (@abs_to_succ_abs_minus_one i). constructor~.
 Qed.
 
 
@@ -795,7 +795,7 @@ Lemma take_cons_pred_int : forall x l (n:int),
 Proof using. (* using stdlib *)
   introv Pos. rewrite take_cons_pred.
   rewrite abs_minus; try math. auto.
-  forwards: Zabs_nat_lt 0 n; math.
+  forwards: lt_abs_abs 0 n; math.
 Qed.
 
 Lemma take_cons_int : forall x l (n:int),
