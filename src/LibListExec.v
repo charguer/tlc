@@ -1,3 +1,6 @@
+(* ---under construction
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Executable functions over lists                                         *
@@ -565,3 +568,6 @@ Arguments remove_assoc : simpl never.
 (* DEPRECATED *)
 Definition count (f : A->bool) :=
   fold_right (fun x acc => (if f x then 1 else 0) + acc) 0.
+
+
+*)

@@ -1,6 +1,6 @@
 
-(** DISCLAIMER: file under construction *)
-(* should be reimplemented using the finite property from LibSet *)
+(** DISCLAIMER: contents of this file is mainly deprecated
+   it should be reimplemented using the finite property from LibSet *)
 
 
 (**************************************************************************
@@ -47,7 +47,7 @@ Definition from_list L :=
 
 End Operations.
 
-Implicit Arguments empty [[A]].
+Arguments empty {A}.
 
 (** Notations *)
 
@@ -120,7 +120,7 @@ Module Export FsetImpl : FsetSig.
 Close Scope container_scope.
 
 Definition finite A (U:set A) :=
-  exists L, forall x, is_in x U -> Mem x L.
+  exists L, forall x, is_in x U -> mem x L.
 
 Definition fset A := sig (@finite A).
 
@@ -153,7 +153,7 @@ Lemma union_finite : forall U V : set A,
   finite U -> finite V -> finite (union U V).
 Proof using.
   introv [L1 E1] [L2 E2]. exists (L1 ++ L2). intros x.
-  rewrite in_union_eq. rewrite Mem_app_or_eq. introv [H|H]; auto.
+  rewrite in_union_eq. rewrite mem_app_eq. introv [H|H]; auto.
 Qed.
 
 Definition union (E F : fset A) :=
@@ -163,7 +163,7 @@ Lemma inter_finite : forall U V : set A,
   finite U -> finite V -> finite (inter U V).
 Proof using.
   introv [L1 E1] [L2 E2]. exists (L1 ++ L2). intros x.
-  rewrite in_inter_eq. rewrite Mem_app_or_eq. autos*.
+  rewrite in_inter_eq. rewrite mem_app_eq. autos*.
 Qed.
 
 Definition inter (E F : fset A) :=
@@ -193,7 +193,7 @@ Definition from_list L :=
 
 End Operations.
 
-Implicit Arguments empty [[A]].
+Arguments empty {A}.
 
 (** Notations *)
 
@@ -230,7 +230,7 @@ Lemma fset_extens_eq : forall E F,
   (forall x, x \in E = x \in F) -> E = F.
 Proof using.
   unfold mem. intros [U FU] [V FV] H. simpls.
-  apply exist_eq. apply in_extens. intros. rewrite* H.
+  apply exist_eq_exist. apply in_extens. intros. rewrite* H.
 Qed.
 
 Lemma fset_extens : forall E F,
@@ -258,14 +258,14 @@ Lemma in_remove : forall x E F,
 Proof using. unfold mem, remove. simpl. intros. rewrite in_remove_eq. autos*. Qed.
 
 Lemma from_list_spec : forall x L,
-  x \in from_list L = Mem x L.
+  x \in from_list L = LibList.mem x L.
 Proof using.
-  unfold from_list. induction L; rew_list.
-  rewrite in_empty. rewrite~ Mem_nil_eq.
-  rewrite in_union, in_singleton. rewrite~ Mem_cons_eq. congruence.
+  unfold from_list. induction L; rew_listx.
+  rewrite in_empty. auto.
+  rewrite in_union, in_singleton. congruence.
 Qed.
 
-Hint Constructors Mem.
+Local Hint Constructors LibList.mem.
 
 Lemma fset_finite : forall E,
   exists L, E = from_list L.
@@ -276,13 +276,13 @@ Proof using.
   { specializes H M. induction L'.
     { inverts H. }
     { rewrite filter_cons. inverts H.
-      { rewrite (prop_eq_True M). rewrite~ isTrue_True. } 
-      { case_if; fold_bool; fold_prop; auto. } } }
+      { rewrite (prop_eq_True M). rewrite~ isTrue_True.
+        case_if; tryfalse*. auto. }
+      { case_if*. } } }
   { clear H. induction L'.
     { rewrite filter_nil in M. inverts M. }
-    { rewrite filter_cons in M. cases_if; fold_bool; fold_prop.
-      { inverts~ M. }
-      { apply~ IHL'. } } } 
+    { rewrite filter_cons in M. cases_if~. 
+      { inverts~ M. } } }
 Qed.
 
 End Properties.

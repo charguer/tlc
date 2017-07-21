@@ -1,4 +1,4 @@
-
+(* -- TODO DEPRECATED
 
 
 
@@ -442,3 +442,5 @@ Proof using. introv. rewrite not_indom_equiv_read_option. autos*. Qed.
 
 End HeapFacts.
 
+
+*)

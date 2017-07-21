@@ -11,47 +11,6 @@ Open Scope nat_scope.
 Open Scope comp_scope.
 Open Scope fun_scope.
 
-(* ---------------------------------------------------------------------- *)
-(* ** Induction principle on lists -- TODO move *)
-
-Section ListSub.
-Variable (A:Type).
-
-(** Immediate sub-list well-founded order *)
-
-Inductive list_sub : list A -> list A -> Prop :=
-  | list_sub_cons : forall x l,
-      list_sub l (x::l).
-
-Hint Constructors list_sub.
-Lemma list_sub_wf : wf list_sub.
-Proof using.
-  intros l. induction l;
-  apply Acc_intro; introv H; inverts~ H.
-Qed.
-
-End ListSub.
-
-Implicit Arguments list_sub [[A]].
-Hint Constructors list_sub.
-Hint Resolve list_sub_wf : wf.
-
-(** Induction on all but last item *)
-
-Lemma list_ind_last : forall (A : Type) (P : list A -> Prop),
-  P nil ->
-  (forall (a : A) (l : list A), P l -> P (l & a)) ->
-  forall l : list A, P l.
-Proof using.
-  introv H1 H2. intros. induction_wf IH: (wf_measure (@length A)) l.
-  lets [E|(x&l'&E)]: (last_case l); subst. auto.
-  unfolds measure. rewrite length_last in IH. auto with maths.
-Qed.
-
-
-
-
-
 (** Setting up of automation *)
 
 Hint Resolve wf_lt : wf.
@@ -469,12 +428,10 @@ Definition Zero zero n :=
 
 Definition zero := FixFun Zero.
 
-Implicit Arguments FixFun_fix_partial_inv [A B F f].
-
 Lemma zero_fix : forall x, zero x = Zero zero x
               /\ forall x, zero x = 0.
 Proof using.
-  forwards~ [H1 H2]: (FixFun_fix_partial_inv lt pred_true (fun (x y : nat) => y = 0) _ (F:=Zero)).
+  forwards~ [H1 H2]: (FixFun_fix_partial_inv lt pred_true (fun (x y : nat) => y = 0) (F:=Zero)).
   introv _ H. unfold Zero. case_if~.
   forwards* [H1 H2]: (H (x-1)). rewrite <- H1. rewrite H2. apply* H.
 Qed.

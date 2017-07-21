@@ -3224,5 +3224,42 @@ Qed.
 Opaque fold.
 
 
+(* ---------------------------------------------------------------------- *)
+(* ** Induction principle on lists 
+     -- TODO cleanup and move to a different file *)
 
- 
+Section ListSub.
+Variable (A:Type).
+
+(** Immediate sub-list well-founded order *)
+
+Inductive list_sub : list A -> list A -> Prop :=
+  | list_sub_cons : forall x l,
+      list_sub l (x::l).
+
+Hint Constructors list_sub.
+
+Lemma list_sub_wf : wf list_sub.
+Proof using.
+  intros l. induction l;
+  apply Acc_intro; introv H; inverts~ H.
+Qed.
+
+End ListSub.
+
+Arguments list_sub {A}.
+Hint Constructors list_sub.
+Hint Resolve list_sub_wf : wf.
+
+(** Induction on all but last item *)
+
+Lemma list_ind_last : forall (A : Type) (P : list A -> Prop),
+  P nil ->
+  (forall (a : A) (l : list A), P l -> P (l & a)) ->
+  forall l : list A, P l.
+Proof using.
+  introv H1 H2. intros. induction_wf IH: (wf_measure (@length A)) l.
+  lets [E|(x&l'&E)]: (last_case l); subst. auto.
+  unfolds measure. rewrite length_last in IH. auto with maths.
+Qed.
+
