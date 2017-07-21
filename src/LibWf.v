@@ -54,7 +54,7 @@ Tactic Notation "solve_wf" :=
     relates [x] to [y] when [f x < f y], at type [nat]. *)
 
 Definition measure A (f:A->nat) : binary A :=
-  fun x1 x2 => (f x1 < f x2)%nat.
+  fun x1 x2 => (f x1 < f x2).
 
 
 (* ---------------------------------------------------------------------- *)
@@ -90,7 +90,7 @@ Hint Resolve wf_measure : wf.
 Definition measure2 A1 A2 (f : A1 -> A2 -> nat) : binary (A1*A2) :=
   fun p1 p2 => let (x1,y1) := p1 in 
                let (x2,y2) := p2 in 
-               (f x1 y1 < f x2 y2)%nat.
+               (f x1 y1 < f x2 y2).
 
 Lemma wf_measure2 : forall A1 A2 (f:A1->A2->nat), 
   wf (measure2 f).
@@ -168,11 +168,26 @@ Qed.
 (* * Classic well-founded relations on [nat] *)
 
 (* ---------------------------------------------------------------------- *)
+(** ** [Peano.lt] on [nat] *)
+
+(** The relation "less than" on natural numbers is well_founded. *)
+
+Lemma wf_peano_lt : wf Peano.lt.
+Proof using.
+  intros x.
+  induction x using peano_induction. apply~ Acc_intro.
+    intros. applys H. math.
+Qed.
+
+Hint Resolve wf_peano_lt : wf.
+
+
+(* ---------------------------------------------------------------------- *)
 (** ** [lt] on [nat] *)
 
 (** The relation "less than" on natural numbers is well_founded. *)
 
-Lemma wf_lt : wf Peano.lt.
+Lemma wf_lt : @wf nat lt.
 Proof using.
   intros x.
   induction x using peano_induction. apply~ Acc_intro.

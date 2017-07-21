@@ -11,14 +11,55 @@ Open Scope nat_scope.
 Open Scope comp_scope.
 Open Scope fun_scope.
 
+(* ---------------------------------------------------------------------- *)
+(* ** Induction principle on lists -- TODO move *)
+
+Section ListSub.
+Variable (A:Type).
+
+(** Immediate sub-list well-founded order *)
+
+Inductive list_sub : list A -> list A -> Prop :=
+  | list_sub_cons : forall x l,
+      list_sub l (x::l).
+
+Hint Constructors list_sub.
+Lemma list_sub_wf : wf list_sub.
+Proof using.
+  intros l. induction l;
+  apply Acc_intro; introv H; inverts~ H.
+Qed.
+
+End ListSub.
+
+Implicit Arguments list_sub [[A]].
+Hint Constructors list_sub.
+Hint Resolve list_sub_wf : wf.
+
+(** Induction on all but last item *)
+
+Lemma list_ind_last : forall (A : Type) (P : list A -> Prop),
+  P nil ->
+  (forall (a : A) (l : list A), P l -> P (l & a)) ->
+  forall l : list A, P l.
+Proof using.
+  introv H1 H2. intros. induction_wf IH: (wf_measure (@length A)) l.
+  lets [E|(x&l'&E)]: (last_case l); subst. auto.
+  unfolds measure. rewrite length_last in IH. auto with maths.
+Qed.
+
+
+
+
+
 (** Setting up of automation *)
 
-Hint Resolve lt_wf : wf.
+Hint Resolve wf_lt : wf.
 
 Ltac auto_tilde ::= auto with wf.
 Ltac auto_star ::= try solve [ auto | false | math | intuition eauto ].
 
-Hint Resolve equiv_list_equiv.
+Hint Resolve equiv_eq equiv_list_equiv.
 
 
 
@@ -28,7 +69,7 @@ Hint Resolve equiv_list_equiv.
 Module DFS.
 
 Parameter marks : Type.
-Parameter Inhab_marks : Inhab marks.
+Parameter marks_inhab : Inhab marks.
 Existing Instance marks_inhab.
 Implicit Type i : nat.
 
@@ -128,7 +169,7 @@ Proof using.
   introv H. exists (diagonal (fun i => u (S i)) 0).
   induction i; unfolds.
     simple~.
-    apply~ bisimilar_mod_upto_succ. apply~ (trans_sym_1 (u i)).
+    apply~ bisimilar_mod_upto_succ. apply~ (trans_sym_rl (u i)).
     rewrite stream_diagonal_nth. math_rewrite~ (i + 0 = i).
 Qed.
 
@@ -191,7 +232,7 @@ Lemma pconst_spec : forall A {IA:Inhab A} (x:A),
 Proof using.
   intros.
   apply bisimilar_mod_take. induction i. simple~.
-  apply* sym_inv. apply* trans_sym_2.
+  apply* sym_inv. apply* trans_sym_lr.
    apply bisimilar_mod_to_upto. apply pconst_fix.
    simpl. constructor~.
 Qed.
@@ -211,7 +252,7 @@ Lemma uv_fix : mu === MU mu mv /\ mv === MV mu mv.
 Proof using.
   applys (FixValModMut2_fix
     (prod_family (stream_family nat) (stream_family nat))).
-  rewrite <- prod2_eq_tuple_proj.
+  rewrite~ prod2_eq_tuple_proj.
   unfold bisimilar. rewrite stream_mod_similarity. apply prod_similar.
   apply prod_cofe; typeclass.
   intros i u1 v1 u2 v2 H. simpls. destruct~ i. split.
@@ -258,11 +299,10 @@ Lemma eventually_dist_cons : forall A (P:A->Prop) s x,
   dist_to_next P s < dist_to_next P (x:::s).
 Proof using.
   introv H Nx. unfold dist_to_next.
-  spec_epsilon as n Pn. apply~ eventually_to_dist.
-  spec_epsilon as n' Pn'. apply~ eventually_to_dist.
-   apply~ eventually_tail.
-  clearbody n n'. destruct n'; simpl in Pn'; tryfalse.
-  rewrite* (@first_st_at_unique n n' A P s).
+  epsilon n. apply~ eventually_to_dist. intros Pn.
+  epsilon n'. apply~ eventually_to_dist. apply~ eventually_tail.
+  intros Pn'. clearbody n n'. destruct n'; simpl in Pn'; tryfalse.
+  rewrite* (@first_st_at_inj n n' A P s).
 Qed.
 
 Section MyFilters.
@@ -270,7 +310,7 @@ Context (A:Type) {IA:Inhab A}.
 Variable (P:A->Prop).
 
 Definition Filter filter s :=
-  let '(x::ps') := s in
+  let '(x:::s') := s in
   let s'' := filter s' in
   If P x then x:::s'' else s''.
 
@@ -291,7 +331,8 @@ Proof using.
      simpl. constructor~. apply~ H. left*.
      inverts Ev as Ev.
        false.
-       apply~ H. right. split~. apply~ eventually_dist_cons.
+       apply~ H. right. split~. 
+         forwards~: eventually_dist_cons Ev C.
 Qed.
 
 
@@ -301,10 +342,30 @@ End MyFilters.
 (* ********************************************************************** *)
 (** * The log function -- basic recursion *)
 
+(** Properties of div2 *)
+
+Lemma div2_lt : forall n m, m <= n -> n > 0 -> Nat.div2 m < n.
+Proof using. (* using stdlib *)
+  nat_comp_to_peano. introv Le Gt.
+  forwards: Nat.div2_decr m (n-1). omega. omega.
+Qed.
+
+Lemma div2_grows : forall n m, m <= n -> Nat.div2 m <= Nat.div2 n.
+Proof using.
+  nat_comp_to_peano.
+  induction n using peano_induction. introv Le.
+  destruct~ m. simpl. omega.
+  destruct~ n. simpl. omega.
+  destruct~ m. simpl. omega.
+  destruct~ n. simpl. omega.
+  simpl. forwards~: H n m. nat_math. nat_math. nat_math.
+Qed.
+
+
 (** Definition of the functional *)
 
 Definition Log log n :=
- If n <= 1 then 0 else 1 + log (div2 n).
+ If n <= 1 then 0 else 1 + log (Nat.div2 n).
 
 (** Construction of the fixed point *)
 
@@ -324,7 +385,7 @@ Lemma log_double : forall n, n > 0 ->
   log(2*n) = 1 + log n.
 Proof using.
   introv Pos. rewrite fix_log. unfold Log.
-  case_if*. fequals. rewrite~ div2_double.
+  case_if*. fequals. rewrite~ Nat.div2_double.
 Qed.
 
 (** Example of reasoning by induction *)
@@ -335,7 +396,9 @@ Proof using.
   induction n using peano_induction. introv Le.
   do 2 rewrite fix_log. unfolds Log.
   (do 2 case_if); autos*.
-  rew_nat. apply H. apply* div2_lt. apply~ div2_grows.
+  forwards: H (Nat.div2 n) (Nat.div2 m).
+    apply* div2_lt. apply~ div2_grows.
+  math.
 Qed.
 
 (*
@@ -361,13 +424,17 @@ Definition Only_even only_even n :=
 
 Definition only_even := FixFun Only_even.
 
-Lemma only_even_fix : forall n, even n ->
+Lemma only_even_fix : forall n, Nat.even n ->
   only_even n = Only_even only_even n.
 Proof using.
   applys~ (FixFun_fix_partial (@lt nat _)).
   intros f1 f2 n Pn IH. unfolds. case_if~. case_if as C'.
-  subst. inverts Pn as Pn'. inverts Pn'.
-  apply* IH. inverts Pn as Pn'; tryfalse. inverts Pn'. simpl. rew_nat~.
+  subst. inverts Pn as Pn'.
+  apply* IH. math_rewrite (n = S (S (n - 2))) in Pn.
+  rewrite Nat.even_succ_succ in Pn. auto.
+  (* TODO: revive the TLC definition of even to avoid dependency
+     on stdlib
+     inverts Pn as Pn'; tryfalse. inverts Pn'. simpl. rew_nat~. *)
 Qed.
 
 
@@ -522,7 +589,7 @@ Lemma map_congr : forall A B (f1 f2 : A->B) l,
   (forall x, Mem x l -> f1 x = f2 x) ->
   LibList.map f1 l = LibList.map f2 l.
 Proof using. Hint Constructors Exists. Hint Unfold Mem.
-  introv H. induction l. auto. rew_map. fequals~.
+  introv H. induction l. auto. rew_listx. fequals~.
 Qed.
 
 (** Definition of trees *)
@@ -951,7 +1018,7 @@ Hint Resolve regexp_sub_wf : wf.
 Definition text_sub : binary text := tclosure (@list_sub _).
 
 Lemma text_sub_wf : wf text_sub.
-Proof using. lets: tclosure_wf. unfold text_sub. solve_wf. Qed.
+Proof using. lets: wf_tclosure. unfold text_sub. solve_wf. Qed.
 
 Hint Resolve text_sub_wf : wf.
 
@@ -959,15 +1026,17 @@ Lemma text_sub_once : forall s c,
   text_sub s (c::s).
 Proof using. intros. apply~ tclosure_once. Qed.
 
-Lemma text_sub_trans : trans text_sub.
-Proof using. apply tclosure_trans. Qed.
+Lemma trans_text_sub : trans text_sub.
+Proof using. apply trans_tclosure. Qed.
 
-Hint Resolve text_sub_trans text_sub_once.
+Hint Resolve trans_text_sub text_sub_once.
 
 Lemma text_sub_app : forall s s1 s2,
-  s = s1 ++ s2 -> large text_sub s2 s.
+  s = s1 ++ s2 -> 
+  rclosure text_sub s2 s.
 Proof using.
-  intros. subst. induction s1; rew_list. auto.
+  intros. rewrite rclosure_eq.
+  subst. induction s1; rew_list. auto.
   inverts IHs1.
     left. applys~ (@trans_inv text) (s1++s2).
     rewrite <- H. left. apply text_sub_once.
@@ -1059,7 +1128,7 @@ Qed.
     the large sub-text relation. *)
 
 Definition select_sub (r:regexp) : binary text :=
-  If productive r then text_sub else large text_sub.
+  If productive r then text_sub else rclosure text_sub.
 
 (** The key result consists in showing that, when [r] is is normal form,
     the computation of [parse' (r,s,k)] is not affected by the evaluations
@@ -1086,9 +1155,9 @@ Proof using.
     intros s'' S''. apply E. hnf in S',S''|-*. simpl.
     tests: (productive r1); tests: (productive r2).
       rewrite~ If_l. applys* (@trans_inv text) s'.
-      rewrite~ If_l. applys* (@large_strict_trans text) s'.
-      rewrite~ If_l. applys* (@strict_large_trans text) s'.
-      rewrite If_r; [|rew_logic;auto]. applys~ (@large_trans text) s'.
+      rewrite~ If_l. applys* trans_rclosure_l s'.
+      rewrite~ If_l. applys* trans_rclosure_r s'.
+      rewrite If_r; [|rew_logic;auto]. applys~ trans_rclosure s'.
   fequals.
     apply E. unfold select_sub. simpl. rewrite~ If_r.
   inverts N. applys~ IH. auto 7. intros s' S'. case_asserts~.
@@ -1257,7 +1326,10 @@ Definition is_nil (s:text) :=
     then the [parse] function applied to [r] and [s] returns true. *)
 
 Lemma sem_to_parse_ind : forall r s s' k,
-  sem r s -> normal r -> k s' = true -> parse (r, s ++ s', k) = true.
+  sem r s -> 
+  normal r -> 
+  k s' = true -> 
+  parse (r, s ++ s', k) = true.
 Proof using.
   introv S N K. gen s' k N. induction S; intros;
    (rewrite parse_fix; [ | apply N ]); unfold Parse at 1; simpl in N;
@@ -1272,14 +1344,17 @@ Proof using.
 Qed.
 
 Corollary sem_to_parse : forall r s,
-  sem r s -> normal r -> parse (r,s,is_nil) = true.
+  sem r s ->
+  normal r -> 
+  parse (r,s,is_nil) = true.
 Proof using. intros. forwards~ M: (@sem_to_parse_ind r s nil is_nil). rew_list~ in M. Qed.
 
 (** The second result asserts the reciprocal: if the parse function
     applied to [r] and [s] returns true, then [s] matches [r] semantically. *)
 
 Lemma parse_to_sem_ind : forall r s k,
-  normal r -> parse (r,s,k) = true ->
+  normal r -> 
+  parse (r,s,k) = true ->
   exists s1 s2, s = s1 ++ s2 /\ sem r s1 /\ k s2 = true.
 Proof using.
   introv N P. sets_eq p: (r,s). gen r s k.
@@ -1289,7 +1364,7 @@ Proof using.
   false.
   exists (nil:text) s. splits~.
   destruct s; tryfalse. case_if; tryfalse.
-   exists (n0::nil) s. splits~.
+   exists (n0::nil) s. subst. splits~.
   case_eq (parse (r1,s,k)); intros P1.
     forwards~ (s1&s2&E&S&P'): IH P1. auto 7. exists~ s1 s2.
     rewrite P1 in P. rew_bool in P.
@@ -1303,12 +1378,14 @@ Proof using.
     forwards~ (s1&s2&E&S&P'): IH P. auto.
     forwards~ (s3&s4&E'&S'&K'): IH P'; try solve [hnfs~].
       forwards M: text_sub_app E. inverts M. auto. false.
-       applys~ sem_productive S. apply* app_eq_self_inv_r.
+       applys~ sem_productive S. apply* self_eq_app_r_inv.
     subst s s2. exists (s1++s3) s4. rew_list~.
 Qed.
 
 Corollary parse_to_sem : forall r s,
-  normal r -> parse (r,s,is_nil) = true -> sem r s.
+  normal r ->
+  parse (r,s,is_nil) = true -> 
+  sem r s.
 Proof using.
   intros. forwards~ (s1&s2&E&S&K): (@parse_to_sem_ind r s is_nil).
   subst. destruct s2; tryfalse. rew_list~ in *.
@@ -1320,7 +1397,9 @@ Qed.
 Theorem parse_eq_sem : forall r s, normal r ->
     (parse (r,s,is_nil) = true) 
   = (sem r s).
-Proof using. extens. apply~ parse_to_sem. intros. apply~ sem_to_parse. Qed.
+Proof using.
+  extens. iff. apply~ parse_to_sem. apply~ sem_to_parse.
+Qed.
 
 (** A similar, more general, result *)
 
@@ -1328,8 +1407,9 @@ Theorem parse_eq_sem_ind : forall r s k, normal r ->
     (parse (r,s,k) = true)
   = (exists s1 s2, s = s1 ++ s2 /\ sem r s1 /\ k s2 = true).
 Proof using.
-  extens. intros. apply~ parse_to_sem_ind.
-  intros (s1&s2&?&?&?). subst. apply~ sem_to_parse_ind.
+  extens. iff M.
+  apply~ parse_to_sem_ind.
+  destruct M as (s1&s2&?&?&?). subst. apply~ sem_to_parse_ind.
 Qed.
 
 

@@ -115,22 +115,6 @@ Definition div (n q : nat) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Div2 *)
 
-Lemma div2_lt : forall n m, m <= n -> n > 0 -> div2 m < n.
-Proof using. (* using stdlib *)
-  nat_comp_to_peano. introv Le Gt.
-  forwards: Nat.div2_decr m (n-1). omega. omega.
-Qed.
-
-Lemma div2_grows : forall n m, m <= n -> div2 m <= div2 n.
-Proof using.
-  nat_comp_to_peano.
-  induction n using peano_induction. introv Le.
-  destruct~ m. simpl. omega.
-  destruct~ n. simpl. omega.
-  destruct~ m. simpl. omega.
-  destruct~ n. simpl. omega.
-  simpl. rew_nat. apply~ H. nat_math. nat_math.
-Qed.
 
 
 (* ---------------------------------------------------------------------- *)

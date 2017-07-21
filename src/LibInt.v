@@ -597,7 +597,7 @@ Qed.
 Lemma lt_abs_abs : forall (n m : int),
   (0 <= n) -> 
   (n < m) -> 
-  (abs n < abs m)%nat.
+  (abs n < abs m).
 Proof using.
   intros. nat_comp_to_peano. apply Zabs_nat_lt. math.
 Qed.

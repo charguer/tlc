@@ -1334,7 +1334,7 @@ Qed.
     equiv relations. *)
 
 Definition nat_family A (sim:nat->binary A) : family nat A :=
-  Build_family Peano.lt sim.
+  Build_family lt sim.
 
 (** A sufficient condition for completeness is that for any
     nat-indexed sequence [u], if forall [i], [u i] is similar
@@ -1369,10 +1369,10 @@ Proof using.
       math_rewrite ((i - 1)%nat = j). apply~ equiv_refl.
       apply~ equiv_refl.
   exists l. intros j Rji. unfolds inverse. simpls.
-  specializes L j. unfold v in L. case_if~; try false. math.
+  specializes L j. unfold v in L. case_if~; try false.
   (* global completeness *)
   introv Cohu. forwards [l L]: (Comp u). intros i.
-  induction_wf: lt_wf i. apply~ Cohu.
+  induction_wf: wf_lt i. apply~ Cohu. simpl; math.
   exists l. introv _. apply L.
 Qed.
 
@@ -1411,10 +1411,10 @@ Proof using.
           apply Cohu; hnf; try math.
         apply~ equiv_refl.
   exists l. intros j Rji. unfolds inverse. simpls.
-  specializes L j. unfold v in L. case_if~; try false. math.
+  specializes L j. unfold v in L. case_if~; try false.
   (* global completeness *)
   introv Cohu. forwards [l L]: (Comp u). intros i.
-  induction_wf: lt_wf i. intros. apply~ Cohu. hnf; math. 
+  induction_wf: lt_wf i. intros. apply~ Cohu. 
   exists l. introv _. apply L.
 Qed.
 

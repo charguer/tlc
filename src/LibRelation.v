@@ -1074,6 +1074,12 @@ Proof using. unfold inverse. extens. iff M; destruct* M. Qed.
 
 (** Constructors *)
 
+(** -- TODO: rename to
+   rclosure_of_rclosure_step 
+   rclosure_of_step_rclosure
+   trans_inv_rclosure_step
+   trans_inv_step_rclosure *)
+
 Lemma rclosure_trans_l : forall y x z R,
   trans R -> 
   rclosure R x y -> 

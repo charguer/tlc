@@ -1,4 +1,6 @@
-(* -- TODO DEPRECATED?
+(** DEPRECATED?  
+    \o notation for composition is used in LibFixDemos
+*)
 
 (**************************************************************************
 * TLC: A library for Coq                                                  *
@@ -86,7 +88,7 @@ Lemma list_map_compose : forall A B C (f : A -> B) (g : B -> C) l,
 Proof using.
   introv. induction l.
    reflexivity.
-   rew_list. fequals~.
+   rew_listx. fequals~.
 Qed.
 
 End Combinators.
@@ -156,7 +158,7 @@ Lemma finite_image : forall A B (f : A -> B) (E : set A),
 Proof using.
   introv M. lets (L&H): finite_inv_list_covers M.
   applys finite_of_list_covers (LibList.map f L). introv N.
-  lets (y&Hy&Ey): in_image_inv (rm N). subst x. applys* Mem_map.
+  lets (y&Hy&Ey): in_image_inv (rm N). subst x. applys* mem_map.
 Qed.
 
 Lemma image_covariant : forall A B (f : A -> B) (E F : set A),
@@ -248,5 +250,3 @@ Proof using. introv I. induction n; introv Hx; autos*. Qed.
 (* TODO: rename applyn to iter *)
 (* TODO: migrate iteration of functionals from LibFix to here *)
 
-
-*)

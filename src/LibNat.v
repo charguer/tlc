@@ -136,10 +136,10 @@ Qed.
 
 Lemma peano_induction :
   forall (P:nat->Prop),
-    (forall n, (forall m, (m < n)%nat -> P m) -> P n) ->
+    (forall n, (forall m, m < n -> P m) -> P n) ->
     (forall n, P n).
 Proof using.
-  introv H. cuts* K: (forall n m, (m < n)%nat -> P m).
+  introv H. cuts* K: (forall n m, m < n -> P m).
   nat_comp_to_peano.
   induction n; introv Le. inversion Le. apply H.
   intros. apply IHn. nat_math.
@@ -147,7 +147,7 @@ Qed.
 
 Lemma measure_induction :
   forall (A:Type) (mu:A->nat) (P:A->Prop),
-    (forall x, (forall y, (mu y < mu x)%nat -> P y) -> P x) ->
+    (forall x, (forall y, mu y < mu x -> P y) -> P x) ->
     (forall x, P x).
 Proof using.
   introv IH. intros x. gen_eq n: (mu x). gen x.
