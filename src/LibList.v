@@ -618,7 +618,7 @@ Proof using.
   { iff H. { inverts~ H. } { destruct H as [|(?&?)]; subst*. } }
 Qed.
 
-Lemma mem_one_eq : forall x y l,
+Lemma mem_one_eq : forall x y,
   mem x (y::nil) = (x = y).
 Proof using. intros. extens. iff H; inverts~ H. false_invert. Qed.
 
@@ -1286,7 +1286,7 @@ Qed.
 
 Lemma update_prefix_length : forall l1 l2 x v,
   update (length l1) v (l1 ++ x :: l2) = l1 & v ++ l2.
-Proof using.
+Proof using IA.
   intros. rew_list. rewrites update_app_r.
   { math_rewrite (length l1 - length l1 = 0). rew_list~. }
   { math. }
@@ -1443,7 +1443,7 @@ Lemma nth_map : forall `{IA:Inhab A} `{IB:Inhab B} (f:A->B) (l:list A) n,
   n < length l -> 
   nth n (map f l) = f (nth n l).
 Proof using.
-  introv N. applys nth_of_Nth. applys Nth_map. applys~ nth_to_Nth.
+  introv N. applys nth_of_Nth. applys Nth_map. applys~ Nth_of_nth.
 Qed.
 
 
@@ -1490,7 +1490,7 @@ Lemma mem_concat_eq : forall m x,
   = exists l, mem l m /\ mem x l.
 Proof using.
   Hint Constructors mem.
-  introv. induction m.
+  introv. extens. induction m.
   { simpl. iff I. { inverts I. } { destruct I as (?&H&?). inverts H. } }
   { rewrite concat_cons. rewrite mem_app_eq. iff I (l&M&N).
     { destruct I as [I|I].
@@ -1708,6 +1708,22 @@ Section Noduplicates.
 Variables (A : Type).
 Implicit Types l : list A.
 Hint Constructors noduplicates.
+
+Lemma noduplicates_one : forall (x:A),
+  noduplicates (x::nil).
+Proof using.
+  intros. applys noduplicates_cons. { intros M. false* mem_nil_inv. }
+  applys noduplicates_nil.
+Qed.
+
+Lemma noduplicates_two : forall (x y:A),
+  x <> y ->
+  noduplicates (x::y::nil).
+Proof using.
+  intros. applys noduplicates_cons.
+  { intros M. rewrite mem_one_eq in M. false. }
+  applys noduplicates_one.
+Qed.
 
 Lemma noduplicates_app : forall l1 l2,
   noduplicates l1 ->
@@ -2499,7 +2515,7 @@ Proof using. introv H. rewrite* Forall_last_eq in H. Qed.
 Lemma Forall_eq_forall_mem : forall P l,
   Forall P l = (forall x, mem x l -> P x).
 Proof using.
-  introv. induction l; iff I.
+  extens. introv. induction l; iff I.
   { introv IN. inverts IN. }
   { auto. }
   { introv IN. rew_listx in IN. inverts I. destruct IN; subst*. }
@@ -2734,10 +2750,10 @@ Qed.
 
 Lemma Forall2_rel_le : forall P Q r s,
   Forall2 P r s ->
-  rel_le P Q -> 
+  rel_incl P Q -> 
   Forall2 Q r s.
 Proof using.
-  introv F W. unfolds rel_le, pred_incl. induction F; constructors~.
+  introv F W. unfolds rel_incl, pred_incl. induction F; constructors~.
 Qed.
 
 Lemma Forall2_rev : forall P r s,

@@ -17,6 +17,8 @@ Stable files:
    LibOperation
    LibOrder
    LibWf
+   LibFix
+   LibMonoid
 
    LibProd
    LibSum
@@ -27,22 +29,18 @@ Stable files:
    LibNat
    LibList
 
+   LibContainer
+
+   LibCore
 
 Remaining to clean up:
 
-   LibFix
-
    LibListZ
 
-   LibMonoid
-   LibMin
-
-   LibContainer
    LibSet
    LibMap
    LibMultiset
 
-   LibCore [package]
 
 
 For later executability
@@ -54,6 +52,7 @@ For later executability
 
 For later cleanup (not yet used so much)
 
+   LibMin
    LibListSort
    LibListSub
    LibPer

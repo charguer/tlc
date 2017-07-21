@@ -152,8 +152,8 @@ Lemma finite_image : forall A B (f : A -> B) (E : set A),
   finite E ->
   finite (image f E).
 Proof using.
-  introv M. lets (L&H): finite_covers_basic M.
-  applys finite_prove_covers (LibList.map f L). introv N.
+  introv M. lets (L&H): finite_inv_list_covers M.
+  applys finite_of_list_covers (LibList.map f L). introv N.
   lets (y&Hy&Ey): in_image_inv (rm N). subst x. applys* Mem_map.
 Qed.
 

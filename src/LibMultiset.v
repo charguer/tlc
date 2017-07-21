@@ -1,15 +1,9 @@
-
-
-
-
-(** DISCLAIMER: file under construction *)
-
-
-
+(** DISCLAIMER: this file is under construction and still contains a 
+    couple admits.a *)
 
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* MultiSets                                                               *
+* Multisets                                                               *
 **************************************************************************)
 
 Set Implicit Arguments.
@@ -34,20 +28,30 @@ Implicit Types x : A.
 Implicit Types E F G : multiset A.
 
 Definition empty_impl : multiset A := fun _ => 0.
+
 Definition single_impl x := fun y => If x = y then 1 else 0.
+
 Definition in_impl x E := E x > 0.
+
 Definition union_impl E F := fun x => (E x + F x)%nat.
+
 Definition incl_impl E F := forall x, E x <= F x.
+
 Definition dom_impl E := set_st (fun x => E x > 0).
-(* TODO: update these definitions to match those of finite sets *)
+
+(* -- TODO: update these definitions to match those of finite sets *)
 Definition list_repr_impl (E:multiset A) (l:list (A*nat)) :=
      No_duplicates (LibList.map (@fst _ _) l)
   /\ forall n x, Mem (x,n) l <-> (n = E x /\ n > 0).
+
 Definition to_list_impl (E:multiset A) := epsilon (list_repr_impl E).
+
 Definition fold_impl (m:monoid_def B) (f:A->nat->B) (E:multiset A) :=
   LibList.fold_right (fun p acc => let (x,n) := p : A*nat in monoid_oper m (f x n) acc)
     (monoid_neutral m) (to_list_impl E).
+
 End Operations.
+
 Definition card_impl A (E:multiset A) :=
   fold_impl (monoid_make plus 0) (fun _ n => n) E.
 
@@ -57,19 +61,25 @@ Definition card_impl A (E:multiset A) :=
 
 Lemma in_inst : forall A, BagIn A (multiset A).
 Proof using. constructor. exact (@in_impl A). Defined.
+
 Hint Extern 1 (BagIn _ (multiset _)) => apply in_inst
   : typeclass_instances.
 
 Instance empty_inst : forall A, BagEmpty (multiset A).
   constructor. rapply (@empty_impl A). Defined.
+
 Instance single_inst : forall A, BagSingle A (multiset A) .
   constructor. rapply (@single_impl A). Defined.
+
 Instance union_inst : forall A, BagUnion (multiset A).
   constructor. rapply (@union_impl A). Defined.
+
 Instance incl_inst : forall A, BagIncl (multiset A).
   constructor. rapply (@incl_impl A). Defined.
+
 Instance fold_inst : forall A B, BagFold B (A->nat->B) (multiset A).
   constructor. rapply (@fold_impl A B). Defined.
+
 Instance card_inst : forall A, BagCard (multiset A).
   constructor. rapply (@card_impl A). Defined.
 
@@ -156,17 +166,15 @@ Proof using.
 Qed.
 
 Global Instance card_empty_inst : Card_empty (T:=multiset A).
-Proof using. admit. (*TODO: under construction *) Qed.
+Proof using. admit. (*-- TODO: under construction *) Qed.
 
 Global Instance card_single_inst : Card_single (A:=A) (T:=multiset A).
-Proof using. admit. (*TODO: under construction *) Qed.
+Proof using. admit. (*-- TODO: under construction *) Qed.
 
-Global Instance card_union_le_inst : Card_union_le (T:=multiset A).
-Proof using. admit. (*TODO: under construction *) Qed.
+Global Instance card_union_inst : Card_union (T:=multiset A).
+Proof using. admit. (*-- TODO: under construction *) Qed.
 
 End Instances.
-
-
 
 
 (* ********************************************************************** *)
@@ -185,7 +193,8 @@ Lemma foreach_empty : forall P,
 Proof using. intros_all. rewrite in_empty_eq in H. false. Qed.
 
 Lemma foreach_single : forall P X,
-  P X -> @foreach A (multiset A) _ P (\{ X }).
+  P X -> 
+  @foreach A (multiset A) _ P (\{ X }).
 Proof using. intros_all. rewrite in_single_eq in H0. subst*. Qed.
 
 Lemma foreach_union : forall P E F,
@@ -195,7 +204,8 @@ Proof using. intros_all. destruct~ (in_union_inv H1). Qed.
 Hint Resolve foreach_empty foreach_single foreach_union.
 
 Lemma foreach_union_inv : forall P E F,
-  foreach P (E \u F) -> foreach P E /\ foreach P F.
+  foreach P (E \u F) -> 
+  foreach P E /\ foreach P F.
 Proof using.
   introv H. split; introv K.
   apply H. rewrite~ @in_union_eq. typeclass.
@@ -224,18 +234,6 @@ Lemma foreach_weaken : forall P Q E,
 Proof using. introv H L K. apply~ L. Qed.
 
 End ForeachProp.
-
-Hint Resolve foreach_empty foreach_single foreach_union.
-
-Hint Rewrite foreach_union_eq : rew_foreach.
-Tactic Notation "rew_foreach" hyp(H) := autorewrite with rew_foreach in H.
-Tactic Notation "rew_foreach" := autorewrite with rew_foreach.
-
-Tactic Notation "rew_foreach" "~" constr(H) :=
-  rew_foreach H; auto_tilde.
-Tactic Notation "rew_foreach" "*" constr(H) :=
-  rew_foreach H; auto_star.
-
 
 
 (* ********************************************************************** *)
@@ -420,7 +418,7 @@ Proof using. intros. subst. apply permut_get_2. Qed.
 Lemma permut_tactic_simpl_incl : forall A (l1 l2 l3 l4:multiset A),
   (l1 \u l3) \c l4 ->
   (l1 \u (l2 \u l3)) \c (l2 \u l4).
-Admitted. (* todo: reason on this tedious inclusion... *)
+Admitted. (* TODO URGENT: reason on this tedious inclusion... *)
 
 
 Ltac get_premut_tactic_simpl tt :=
@@ -552,10 +550,8 @@ Ltac in_union_get :=
           go tt ]
   end end.
 
-
-(* todo: remove hint
-Hint Extern 3 (_ \in _ \u _) => in_union_get.
-*)
+(* -- DEPRECATED Removed hint:
+      Hint Extern 3 (_\in _ \u _) => in_union_get. *)
 
 Section InUnionExtract.
 Variables (A:Type).
@@ -612,15 +608,19 @@ Section InversionsTactic.
 Context (A:Type).
 Implicit Types l : multiset A.
 Implicit Types x : A.
+
 Lemma empty_eq_single_inv_1 : forall x l1 l2,
   l1 = l2 -> x \notin l1 -> x \in l2 -> False.
 Proof using. intros. subst*. Qed.
+
 Lemma empty_eq_single_inv_2 : forall x l1 l2,
   l1 = l2 -> x \notin l2 -> x \in l1 -> False.
 Proof using. intros. subst*. Qed.
+
 Lemma notin_empty : forall x,
   x \notin (\{}:multiset A).
 Proof using. intros. unfold notin. rewrite in_empty_eq. auto. Qed.
+
 End InversionsTactic.
 Hint Resolve notin_empty.
 

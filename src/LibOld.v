@@ -795,3 +795,25 @@ Extraction Language Haskell.
 
 Extract Constant Fix =>
   "(fun bigf => let x = bigf x in x)".
+
+
+
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* * LibMultiset *)
+
+Hint Resolve foreach_empty foreach_single foreach_union.
+
+Hint Rewrite foreach_union_eq : rew_foreach.
+
+Tactic Notation "rew_foreach" := 
+  autorewrite with rew_foreach.
+Tactic Notation "rew_foreach" "~" constr(H) :=
+  rew_foreach H; auto_tilde.
+Tactic Notation "rew_foreach" "*" constr(H) :=
+  rew_foreach H; auto_star.
+Tactic Notation "rew_foreach" hyp(H) := 
+  autorewrite with rew_foreach in H.
+
+(* -- TODO: share [rew_foreach] tactics in LibContainer *)

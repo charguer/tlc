@@ -645,8 +645,8 @@ Lemma finite_to_finite_fold_support : forall A `{Inhab B} (M:map A B),
   LibSet.finite
     \set{ p | exists k x, p = (k, x) /\ binds_impl M k x}.
 Proof using.
-  introv IB HM. lets (L&E): finite_covers_basic HM.
-  applys finite_prove_covers (LibList.map (fun x => (x, M[x])) L).
+  introv IB HM. lets (L&E): finite_inv_list_covers HM.
+  applys finite_of_list_covers (LibList.map (fun x => (x, M[x])) L).
   intros (k',x') Hk. set_norm. destruct Hk as (k&x&EQ&R). inverts EQ.
   forwards~: binds_impl_dom_impl R. forwards~ V: E k.
   lets U: LibList.Mem_map (fun x => (x, M[x])) V. applys_eq U 2.

@@ -79,22 +79,22 @@ Definition glb A (le:binary A) (P:A->Prop) (x:A) :=
 (**************************************************************************)
 (* * Connexion between lower and bounds *)
 
-Lemma upper_bound_flip : forall A (le:binary A),
-  upper_bound le = lower_bound (flip le).
+Lemma upper_bound_inverse : forall A (le:binary A),
+  upper_bound le = lower_bound (inverse le).
 Proof using.
   extens. intros P x. unfolds lower_bound, upper_bound. iff*.
 Qed.
 
-Lemma max_element_flip : forall A (le:binary A) (P:A->Prop) (x:A),
-  max_element le P x = min_element (flip le) P x.
+Lemma max_element_inverse : forall A (le:binary A) (P:A->Prop) (x:A),
+  max_element le P x = min_element (inverse le) P x.
 Proof using.
-  extens. unfold max_element, min_element. rewrite* upper_bound_flip.
+  extens. unfold max_element, min_element. rewrite* upper_bound_inverse.
 Qed.
 
-Lemma mmax_flip : forall `{Inhab A} (le:binary A) (P:A->Prop),
-  mmax le P = mmin (flip le) P.
+Lemma mmax_inverse : forall `{Inhab A} (le:binary A) (P:A->Prop),
+  mmax le P = mmin (inverse le) P.
 Proof using.
-  intros. applys epsilon_eq. intros x. rewrite* max_element_flip.
+  intros. applys epsilon_eq. intros x. rewrite* max_element_inverse.
 Qed.
 
 
@@ -125,7 +125,7 @@ Lemma mmin_spec : forall `{Inhab A} (le:binary A) (P:A->Prop) m,
   bounded_has_minimal le ->
   min_element le P m.
 Proof using.
-  intros. subst. unfold mmin. spec_epsilon* as m.
+  intros. subst. unfold mmin. epsilon* m.
 Qed.
 
 
@@ -195,7 +195,7 @@ Hint Resolve admits_lower_bound_nat : admits_lower_bound.
    has a maximal element. *)
 
 Lemma bounded_has_maximal_nat :
-  @bounded_has_minimal nat (flip le).
+  @bounded_has_minimal nat (inverse le).
 Proof using.
   (* Assume a set [P], such that [y] is an inhabitant of [P]
      and [x] is an upper bound for [P]. *)
@@ -220,7 +220,7 @@ Proof using.
     { forwards: h. eauto. eauto. }
   forwards: hz (x - y)%nat.
     { rewrite self_inverse by eauto. eauto. }
-  unfold flip. nat_math.
+  unfold inverse. nat_math.
 Qed.
 
 Hint Resolve bounded_has_maximal_nat : bounded_has_minimal.

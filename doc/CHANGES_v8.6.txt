@@ -1617,3 +1617,7 @@ List
 
 list_no_mem => eq_list_not_mem
  
+
+finite_prove_covers => finite_of_list_covers
+finite_prove_repr => finite_of_list_repr
+finite_prove_exists => finite_of_ex_list_covers

@@ -1,3 +1,14 @@
+(*
+
+
+FUTURE WORK
+
+
+
+
+
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Computation inside Coq                                                  *
@@ -472,3 +483,5 @@ Proof using.
    rewrite~ eqb_self.
    do 2 rewrite~ eqb_neq.
 Qed.
+
+*)
