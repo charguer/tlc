@@ -655,7 +655,7 @@ Qed.
 
 (* LATER: avoid `{Inhab B} *)
 Lemma fold_union : forall A `{Inhab B} C (m:monoid_def C) (f:A->B->C) (M N : map A B),
-  Monoid_commutative m ->
+  Monoid_comm m ->
   finite M ->
   finite N ->
   M \# N ->

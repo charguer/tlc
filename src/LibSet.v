@@ -816,7 +816,7 @@ Lemma fold_def : forall A B (m:monoid_def B) (f:A->B) (E: set A),
 Proof using. reflexivity. Qed.
 
 Lemma fold_eq : forall A B (m:monoid_def B) (f:A->B) (E: set A) L,
-  Monoid_commutative m ->
+  Monoid_comm m ->
   list_repr E L ->
   fold m f E = LibList.fold m f L.
 Proof using.
@@ -828,7 +828,7 @@ Qed.
 
 Lemma fold_induction:
   forall A B (m : monoid_def B) (f : A -> B) (P : B -> Prop),
-  Monoid_commutative m ->
+  Monoid_comm m ->
   P (monoid_neutral m) ->
   (forall x a, P x -> P (monoid_oper m (f a) x)) ->
   forall E,
@@ -844,7 +844,7 @@ Proof using.
 Qed.
 
 Lemma fold_congruence : forall A B (m : monoid_def B) (f g : A -> B) (E : set A),
-  Monoid_commutative m ->
+  Monoid_comm m ->
   finite E ->
   (forall x, x \in E -> f x = g x) ->
   fold m f E = fold m g E.
@@ -871,7 +871,7 @@ Proof using.
 Qed.
 
 Lemma fold_union : forall A B (m:monoid_def B) (f:A->B) (E F : set A),
-  Monoid_commutative m ->
+  Monoid_comm m ->
   finite E ->
   finite F ->
   E \# F ->
@@ -890,7 +890,7 @@ Lemma fold_isolate :
   finite E ->
   x \in E ->
   forall B (m : monoid_def B),
-  Monoid_commutative m ->
+  Monoid_comm m ->
   forall (f : A -> B),
   fold m f E = monoid_oper m (f x) (fold m f (E \- \{x})).
 Proof using.

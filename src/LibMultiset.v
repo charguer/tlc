@@ -49,7 +49,7 @@ Definition fold_impl (m:monoid_def B) (f:A->nat->B) (E:multiset A) :=
     (monoid_neutral m) (to_list_impl E).
 End Operations.
 Definition card_impl A (E:multiset A) :=
-  fold_impl (monoid_ plus 0) (fun _ n => n) E.
+  fold_impl (monoid_make plus 0) (fun _ n => n) E.
 
 
 (* ---------------------------------------------------------------------- *)

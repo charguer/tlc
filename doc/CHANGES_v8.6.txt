@@ -1605,3 +1605,8 @@ measure_wf => wf_measure
 
 binary_map => rel_preimage
 
+
+---
+
+LibMonoid
+

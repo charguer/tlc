@@ -46,7 +46,7 @@ Definition comm_assoc f := forall x y z,
 Definition distrib i f := forall x y,
   i (f x y) = f (i x) (i y).
 
-(** Commutative distributivity of unary operator *)
+(** comm distributivity of unary operator *)
 
 Definition distrib_comm i f := forall x y,
   i (f x y) = f (i y) (i x).
@@ -172,7 +172,7 @@ Lemma idempotent_inv : forall h x y,
   h y = y.
 Proof using. intros. subst*. Qed.
 
-(** For commutative operators, right-properties can be derived from
+(** For comm operators, right-properties can be derived from
     corresponding left-properties *)
 
 Lemma neutral_r_of_comm_neutral_l : forall f e,

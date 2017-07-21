@@ -754,3 +754,44 @@ Tactic Notation "unfolds_wf" "~" :=
   unfolds_wf; auto_tilde.
 Tactic Notation "unfolds_wf" "*" :=
   unfolds_wf; auto_star.
+
+
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* * LibFix *)
+
+
+(* ********************************************************************** *)
+(** * Extraction product *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Extraction for Caml *)
+
+Extraction Language Ocaml.
+
+Extract Constant FixFunMod =>
+  "(fun bigf -> let rec f x = bigf f x in f)".
+
+Extract Constant FixValMod =>
+  "(fun bigf -> let rec x = lazy (Lazy.force (bigf x)) in x)".
+
+Extract Constant FixValModMut2 =>
+ "(fun f1 f2 ->
+  let rec x1 = lazy (Lazy.force (f1 x1 x2))
+      and x2 = lazy (Lazy.force (f2 x1 x2)) in
+  Pair (x1,x2))".
+
+(* optional
+Extraction Inline FixFunMod.
+Extraction Inline FixValMod.
+Extraction Inline FixValModMut2.
+*)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Extraction for Haskell *)
+
+Extraction Language Haskell.
+
+Extract Constant Fix =>
+  "(fun bigf => let x = bigf x in x)".

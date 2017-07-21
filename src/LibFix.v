@@ -3,7 +3,7 @@
 * Fixed-point combinator                                                  *
 **************************************************************************)
 
-Set Implicit Arguments.
+Set Arguments.
 Require Import LibTactics LibLogic LibReflect LibEpsilon LibInt
   LibProd LibSum LibOperation LibRelation LibWf LibOrder LibMin.
 
@@ -16,13 +16,13 @@ Require Import LibTactics LibLogic LibReflect LibEpsilon LibInt
 
 Ltac destruct_if_post ::= tryfalse~.
 
-Hint Unfold pred_incl pred_and.
-Hint Unfold large empty.
-Hint Resolve empty_wf.
-Hint Resolve equiv_refl equiv_sym equiv_trans.
-
 Ltac auto_tilde ::=
   try solve [ auto | eauto | intros_all; subst_local; simpls; eauto ].
+
+Hint Unfold pred_incl pred_and.
+Hint Unfold rclosure empty.
+Hint Resolve empty_wf.
+Hint Resolve equiv_refl equiv_sym equiv_trans.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -106,7 +106,8 @@ Definition partial_equiv A B (E:binary B) (f f': A-->B) :=
 (** [partial_equiv] is an equivalence relation. *)
 
 Lemma partial_equiv_equiv : forall A B (E:binary B),
-  equiv E -> equiv (@partial_equiv A B E).
+  equiv E -> 
+  equiv (@partial_equiv A B E).
 Proof using.
   introv Equi. unfold partial_equiv. constructor.
   intros_all. dauto.
@@ -510,13 +511,13 @@ Record COFE I A (M:family I A) := {
     it is coherent on the set of indices [j] smaller than [i]. *)
 
 Definition locally_coherent I A (M:family I A) (i:I) (u:I->A) :=
-  coherent M (flip (family_r M) i) u.
+  coherent M (inverse (family_r M) i) u.
 
 (** A sequence [u] admits [l] as limit up-to index [i] iff
     for any [j] smaller than [i], [u j] is similar to [l] at level [j]. *)
 
 Definition local_limit I A (M:family I A) (i:I) (u:I->A) (l:A) :=
-  limit M (flip (family_r M) i) u l.
+  limit M (inverse (family_r M) i) u l.
 
 (** An ordered family of equiv is locally-complete iff
     for every [i], every sequence locally coherent upto index [i]
@@ -591,7 +592,7 @@ Lemma complete_to_locally_complete : forall I A (M:family I A),
   locally_complete M.
 Proof using.
   introv Ofem Comp Cohu. apply~ Comp. intros j' j. introv Rij' Rjj'.
-  unfolds flip. applys* trans_inv.
+  unfolds inverse. applys* trans_inv.
 Qed.
 
 (** Completness implies global completeness *)
@@ -685,7 +686,7 @@ Proof using.
   (* the sequence [v] is locally-coherent up to any index *)
   asserts LocCohv: (forall i, locally_coherent M i v).
     intros i. induction_wf: (ofe_wf Ofem) i.
-    intros j' j Rij' Rij Rjj'. unfolds flip.
+    intros j' j Rij' Rij Rjj'. unfolds inverse.
     destruct (classicT (K j')) as [Kj'|NKj'].
       forwards~ Kj: (>> Down j' j).
       do 2 rewrite Fixv. unfold V. do 2 destruct_if~.
@@ -799,7 +800,7 @@ Lemma invariant_on_fixed_point :
   similar M x (F x) -> forall i, Q i x.
 Proof using.
   introv Cofe Cont Inv Fixx. intros i. induction_wf: (ofe_wf Cofe) i.
-  applys~ (Cont (large (flip (family_r M)) i) (fun _:I => (F x))).
+  applys~ (Cont (rclosure (inverse (family_r M)) i) (fun _:I => (F x))).
     intros_all. apply~ sym_inv.
     intros j Le. apply Inv. intros k Rkj.
      apply IH. destruct Le. apply~ trans_inv. subst~.
@@ -842,7 +843,7 @@ Theorem cofe_explicit_fixed_point :
   /\ (forall i, Q i x).
 Proof using.
   introv Conti Contr.
-  sets predecessor: (flip (family_r M)).
+  sets predecessor: (inverse (family_r M)).
   (* definition of the sequence [v] and of its limit *)
   unfold build_fixed_point.
   sets V: (fun i v' => F (local_limit_dep M i v')).
@@ -873,7 +874,7 @@ Proof using.
     lets [IH1 IH2]: (proj_lemma_2 IH). clear IH.
     logic (forall (U V : Prop), U -> (U -> V) -> U /\ V).
     (* locally coherent *)
-    intros j' j Rij' Rij Rjj'. unfolds flip.
+    intros j' j Rij' Rij Rjj'. unfolds inverse.
     apply~ Coh. intros k Rkj'. apply IH2. apply* trans_inv.
     (* step the invariant *)
     introv Cohi. rewrite Fixv. unfold V.
@@ -943,7 +944,7 @@ Definition rec_family A B (E:binary B) (P:A->Prop) (R:binary A)
   Build_family
     (tclosure R)
     (fun x f1 f2 =>
-       forall x', P x' -> large (tclosure R) x' x -> E (f1 x') (f2 x')).
+       forall x', P x' -> rclosure (tclosure R) x' x -> E (f1 x') (f2 x')).
 
 (** We show that the family for partial recursive functions is a COFE *)
 
@@ -1137,7 +1138,7 @@ Definition corec_rec_family I A B
   let R' := lexico2 (family_r M) (tclosure R) in
   Build_family R'
     (fun p f1 f2 => let (i,x) := p : I*A in
-      forall i' x', large R' (i',x') (i,x) -> P x' ->
+      forall i' x', rclosure R' (i',x') (i,x) -> P x' ->
       family_sim M i' (f1 x') (f2 x')).
 
 (** We show that this structure is a COFE *)
@@ -1365,7 +1366,7 @@ Proof using.
     unfold v. do 2 case_if; try math.
       math_rewrite ((i - 1)%nat = j). apply~ equiv_refl.
       apply~ equiv_refl.
-  exists l. intros j Rji. unfolds flip. simpls.
+  exists l. intros j Rji. unfolds inverse. simpls.
   specializes L j. unfold v in L. case_if~; try false.
   (* global completeness *)
   introv Cohu. forwards [l L]: (Comp u). intros i.
@@ -1407,7 +1408,7 @@ Proof using.
           apply~ equiv_refl.
           apply Cohu; hnf; try math.
         apply~ equiv_refl.
-  exists l. intros j Rji. unfolds flip. simpls.
+  exists l. intros j Rji. unfolds inverse. simpls.
   specializes L j. unfold v in L. case_if~; try false.
   (* global completeness *)
   introv Cohu. forwards [l L]: (Comp u). intros i.
@@ -1647,7 +1648,7 @@ Proof using.
   intros_all~. apply~ contractive_noinv_to_contractive.
 Qed.
 
-Implicit Arguments FixValMod_fix [I A [IA] E F x].
+Arguments FixValMod_fix [I] [A] {IA} [E] [F] [x].
 
 (** Same for Leibnitz equality *)
 
@@ -1725,7 +1726,7 @@ Proof using.
    intros_all. forwards~ Z: Contr. intros. forwards*: H.
 Qed.
 
-Implicit Arguments FixValModMut2_fix [I A1 A2 [IA1] [IA2] F1 F2 x1 x2].
+Arguments FixValModMut2_fix [I] [A1] [A2] {IA1} {IA2} [F1] [F2] i [x1] [x2].
 
 (* todo: express continuity with two invariants *)
 
@@ -1806,7 +1807,7 @@ Lemma FixFun_fix_partial_inv : forall A (R:binary A) (P:A->Prop) B
   (forall x, P x -> S x (f x)).
 Proof using. intros. applys* (@FixFunMod_fix_partial_inv A R). intros_all. subst~. Qed.
 
-Implicit Arguments FixFun_fix_partial_inv [A B [IB] F f].
+Arguments FixFun_fix_partial_inv [A] [B] R P {IB} [F] [f].
 
 Lemma FixFun_fix_inv : forall A (R:binary A) B
   (S:A->B->Prop) {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
@@ -1819,7 +1820,7 @@ Lemma FixFun_fix_inv : forall A (R:binary A) B
   (forall x, S x (f x)).
 Proof using. intros. forwards~ [K1 K2]: (FixFun_fix_partial_inv R pred_true S). subst~. Qed.
 
-Implicit Arguments FixFun_fix_inv [A B [IB] F f].
+Arguments FixFun_fix_inv [A] [B] R P {IB} [F] [f].
 
 Lemma FixFun_fix_partial : forall A (R:binary A) (P:A->Prop)
    B {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
@@ -1832,7 +1833,7 @@ Proof using.
   apply~ rec_contractive_noinv_to_rec_contractive. subst~.
 Qed.
 
-Implicit Arguments FixFun_fix_partial [A B [IB] F f].
+Arguments FixFun_fix_partial [A] [B] R P {IB} [F] [f].
 
 Lemma FixFun_fix : forall A (R:binary A) B {IB:Inhab B} (F:(A->B)->(A->B))
    (f:A->B),
@@ -1846,9 +1847,9 @@ Proof using.
   hnf; autos*.
 Qed.
 
-Implicit Arguments FixFun_fix [A B [IB] F f].
+Arguments FixFun_fix [A] R [B] {IB} [F] [f].
 
-(* todo: comment *)
+(* --TODO: add comment to explain this one *)
 
 Lemma FixFun_fix_partial' : forall A (R:binary A) (P:A->Prop)
   B {IB:Inhab B} (F:(A->B)->(A->B)) (f' f:A->B),
@@ -1900,7 +1901,7 @@ Proof using.
    introv Rji. rewrite SimE in Equ. apply~ Equ.
 Qed.
 
-Implicit Arguments FixFunMod_mixed_partial_inv [I A B [IB] F f].
+Arguments FixFunMod_mixed_partial_inv [I] [A] [B] M R P S E {IB} [F] [f].
 
 Lemma FixFunMod_mixed_partial : forall I A B
   (M:family I B) (R:binary A) (P:A->Prop)
@@ -1917,7 +1918,7 @@ Proof using.
   apply~ mixed_contractive_noinv_to_mixed_contractive.
 Qed.
 
-Implicit Arguments FixFunMod_mixed_partial [I A B [IB] F f].
+Arguments FixFunMod_mixed_partial [I] [A] [B] M R P E {IB} [F] [f].
 
 
 (** -------- Corecursive functions --------- *)
@@ -1972,7 +1973,7 @@ Proof using.
   subst~.
 Qed.
 
-Implicit Arguments FixFunMod_corec [I A B [IB] E F f].
+Arguments FixFunMod_corec [I] [A] [B] M P {IB} [E] [F] [f].
 
 Lemma FixFunMod_corec_total : forall I A B (M:family I B)
   {IB:Inhab B} (E:B->B->Prop)
@@ -1989,7 +1990,7 @@ Proof using.
   intros_all~.
 Qed.
 
-Implicit Arguments FixFunMod_corec_total [I A B [IB] E F f].
+Arguments FixFunMod_corec_total [I] [A] [B] M {IB} [E] [F] [f].
 
 
 (** -------- Recursive functions of arity 2 --------- *)
@@ -2071,7 +2072,7 @@ Proof using.
   subst~.
 Qed.
 
-Implicit Arguments FixFun2_fix_partial [A1 A2 B [IB] F f].
+Arguments FixFun2_fix_partial [A1] [A2] R P [B] {IB} [F] [f].
 
 Lemma FixFun2_fix : forall A1 A2 (R:binary (A1*A2))
   B {IB:Inhab B} F (f:A1->A2->B),
@@ -2083,7 +2084,7 @@ Lemma FixFun2_fix : forall A1 A2 (R:binary (A1*A2))
   (forall x1 x2, f x1 x2 = F f x1 x2).
 Proof using. intros. applys* (FixFun2_fix_partial R (fun _ _ => True)). Qed.
 
-Implicit Arguments FixFun2_fix [A1 A2 B IB F f].
+Arguments FixFun2_fix [A1] [A2] [B] {IB} [F] [f].
 
 Lemma FixFun2Mod_corec : forall I A1 A2 B (M:family I B) {IB:Inhab B}
   (E:binary B) F (f:A1->A2->B),
@@ -2105,11 +2106,9 @@ Proof using.
   subst f. intros x1 x2. apply~ (H1 (x1,x2)).
 Qed.
 
-Implicit Arguments FixFun2Mod_corec [I A1 A2 B [IB] E F f].
+Arguments FixFun2Mod_corec [I] [A1] [A2] [B] M {IB} [E] [F] [f].
 
 (** -------- Recursive functions of arity 3 --------- *)
-
-(* TODO: complete *)
 
 Lemma FixFun3_fix_partial : forall A1 A2 A3 (R:binary (A1*A2*A3)) (P:A1->A2->A3->Prop)
   B {IB:Inhab B} F (f:A1->A2->A3->B),
@@ -2120,11 +2119,9 @@ Lemma FixFun3_fix_partial : forall A1 A2 A3 (R:binary (A1*A2*A3)) (P:A1->A2->A3-
   (forall x1 x2 x3, P x1 x2 x3 -> f x1 x2 x3 = F f x1 x2 x3).
 Admitted. (* symmetric to the above, only the arity changes *)
 
-Implicit Arguments FixFun3_fix_partial [A1 A2 A3 B IB F f].
+Arguments FixFun3_fix_partial [A1] [A2] [A3] R P [B] {IB} [F] [f].
 
 (** -------- Recursive functions of arity 4 --------- *)
-
-(* TODO: complete *)
 
 Lemma FixFun4_fix_partial : forall A1 A2 A3 A4 (R:binary (A1*A2*A3*A4)) (P:A1->A2->A3->A4->Prop)
   B {IB:Inhab B} F (f:A1->A2->A3->A4->B),
@@ -2135,11 +2132,9 @@ Lemma FixFun4_fix_partial : forall A1 A2 A3 A4 (R:binary (A1*A2*A3*A4)) (P:A1->A
   (forall x1 x2 x3 x4, P x1 x2 x3 x4 -> f x1 x2 x3 x4 = F f x1 x2 x3 x4).
 Admitted. (* symmetric to the above, only the arity changes *)
 
-Implicit Arguments FixFun4_fix_partial [A1 A2 A3 A4 B IB F f].
+Arguments FixFun4_fix_partial [A1] [A2] [A3] [A4] R P [B] {IB} [F] [f].
 
 (** -------- Recursive functions of arity 5 --------- *)
-
-(* TODO: complete *)
 
 Lemma FixFun5_fix_partial : forall A1 A2 A3 A4 A5 (R:binary (A1*A2*A3*A4*A5)) (P:A1->A2->A3->A4->A5->Prop)
   B {IB:Inhab B} F (f:A1->A2->A3->A4->A5->B),
@@ -2150,8 +2145,9 @@ Lemma FixFun5_fix_partial : forall A1 A2 A3 A4 A5 (R:binary (A1*A2*A3*A4*A5)) (P
   (forall x1 x2 x3 x4 x5, P x1 x2 x3 x4 x5 -> f x1 x2 x3 x4 x5 = F f x1 x2 x3 x4 x5).
 Admitted. (* symmetric to the above, only the arity changes *)
 
-Implicit Arguments FixFun5_fix_partial [A1 A2 A3 A4 A5 B IB F f].
+Arguments FixFun5_fix_partial [A1] [A2] [A3] [A4] [A5] R P [B] {IB} [F] [f].
 
+(* --LATER: complete proofs for higher arities *)
 
 
 (** -------- Induction principles --------- *)
@@ -2198,7 +2194,7 @@ Lemma corec_ind : forall I A {IA:Inhab A} (E:binary A)
 Proof using.
   introv IA Cofe Conti Eqf SimE Red. subst E.
   intros i. induction_wf IH: (ofe_wf Cofe) i.
-  apply~ (Conti (large (flip (family_r M)) i) (fun _ => F x)).
+  apply~ (Conti (rclosure (inverse (family_r M)) i) (fun _ => F x)).
     intros_all. apply~ equiv_sym.
     intros j Rji. apply Red. intros k Rkj.
      apply IH. destruct Rji as [Rji|Eq]. apply* (trans_inv j). subst~.
@@ -2241,39 +2237,11 @@ Proof using.
 Qed.
 
 
-(* ---------------------------------------------------------------------- *)
-(** ** Extraction for Caml *)
-
-Extraction Language Ocaml.
-
-Extract Constant FixFunMod =>
-  "(fun bigf -> let rec f x = bigf f x in f)".
-
-Extract Constant FixValMod =>
-  "(fun bigf -> let rec x = lazy (Lazy.force (bigf x)) in x)".
-
-Extract Constant FixValModMut2 =>
- "(fun f1 f2 ->
-  let rec x1 = lazy (Lazy.force (f1 x1 x2))
-      and x2 = lazy (Lazy.force (f2 x1 x2)) in
-  Pair (x1,x2))".
-
-(* optional
-Extraction Inline FixFunMod.
-Extraction Inline FixValMod.
-Extraction Inline FixValModMut2.
-*)
-
-(* ---------------------------------------------------------------------- *)
-(** ** Extraction for Haskell *)
-
-Extraction Language Haskell.
-
-Extract Constant Fix =>
-  "(fun bigf => let x = bigf x in x)".
-
-
-(* ---------------------------------------------------------------------- *)
+(* ********************************************************************** *)
 (** ** Re-establish automation *)
 
 Ltac auto_tilde ::= auto_tilde_default.
+
+Ltac destruct_if_post ::= tryfalse.
+
+

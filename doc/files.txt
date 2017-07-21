@@ -16,6 +16,7 @@ Stable files:
    LibChoice
    LibOperation
    LibOrder
+   LibWf
 
    LibProd
    LibSum
@@ -29,8 +30,6 @@ Stable files:
 
 Remaining to clean up:
 
-
-   LibWf
    LibFix
 
    LibListZ
