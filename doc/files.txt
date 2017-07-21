@@ -17,7 +17,6 @@ Stable files:
    LibOperation
    LibOrder
    LibWf
-   LibFix
    LibMonoid
 
    LibProd
@@ -30,17 +29,19 @@ Stable files:
    LibList
 
    LibContainer
+   LibSet
 
-   LibCore
 
 Remaining to clean up:
 
+   LibFix 
+
    LibListZ
 
-   LibSet
    LibMap
    LibMultiset
 
+   LibCore
 
 
 For later executability
