@@ -689,6 +689,8 @@ Tactic Notation "math_dia" :=
 
 
 
+Ltac math_lia := math_setup; lia.
+Ltac math_nia := math_setup; nia.
 
 (* ********************************************************************** *)
 (* ********************************************************************** *)
@@ -704,3 +706,51 @@ Record order_wrt (A:Type) (E:binary A) (R:binary A) : Prop := {
    order_wrt_refl : refl R;
    order_wrt_trans : trans R;
    order_wrt_antisym : antisym_wrt E R }.
+
+
+
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* * LibWf *)
+
+
+Lemma measure_2_induction : forall A B (mu : A -> B -> nat) (P : A -> B -> Prop),
+  (forall x1 x2, (forall y1 y2, mu y1 y2 < mu x1 x2 -> P y1 y2) -> P x1 x2) ->
+  (forall x1 x2, P x1 x2).
+Proof using.
+  introv H. intros x1 x2. gen_eq p: (x1,x2). gen x1 x2.
+  induction_wf IH: (wf_measure (fun p => mu (fst p) (snd p))) p.
+  introv E. destruct p. inverts E. apply H.
+  introv L. apply* IH. simpl. auto.
+Qed.
+
+
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* ********************************************************************** *)
+(* * LibWf *)
+
+(** [unfold_wf] and [unfolds_wf] are shorthands for unfolding
+    combinators used in definitions related to well-foundedness. *)
+
+Ltac unfold_wf_base :=
+  unfold_unproj; unfold_uncurryp; 
+  unfold lexico4, lexico3, lexico2.
+
+Ltac unfolds_wf_base :=
+  unfolds_unproj; unfolds_uncurryp; unfolds_lexico.
+
+Tactic Notation "unfold_wf" :=
+  unfold_wf_base.
+Tactic Notation "unfold_wf" "~" :=
+  unfold_wf; auto_tilde.
+Tactic Notation "unfold_wf" "*" :=
+  unfold_wf; auto_star.
+
+Tactic Notation "unfolds_wf" :=
+  unfolds_wf_base.
+Tactic Notation "unfolds_wf" "~" :=
+  unfolds_wf; auto_tilde.
+Tactic Notation "unfolds_wf" "*" :=
+  unfolds_wf; auto_star.

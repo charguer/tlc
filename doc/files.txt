@@ -11,24 +11,24 @@ Stable files:
    LibBool
    LibReflect
 
+   LibRelation
+   LibEpsilon
+   LibChoice
+   LibOperation
+   LibOrder
+
    LibProd
    LibSum
    LibUnit
    LibOption
    LibString
-   LibRelation
-   LibEpsilon
-   LibChoice
-   LibOperation
-
+   LibInt
+   LibNat
    LibList
 
 
 Remaining to clean up:
 
-   LibOrder
-   LibInt
-   LibNat
 
    LibWf
    LibFix

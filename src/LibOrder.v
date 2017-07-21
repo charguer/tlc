@@ -17,7 +17,7 @@ Record preorder A (R:binary A) : Prop := {
    preorder_refl : refl R;
    preorder_trans : trans R }.
 
-Implicit Arguments preorder_trans [A R p x z].
+Arguments preorder_trans [A] [R] [p] y [x] [z].
 
 (** Transformations *)
 
@@ -41,7 +41,7 @@ Record total_preorder A (R:binary A) : Prop := {
    total_preorder_trans : trans R;
    total_preorder_total : total R }.
 
-Implicit Arguments total_preorder_trans [A R x z].
+Arguments total_preorder_trans [A] [R] t y [x] [z].
 
 (** Conversion to preorder *)
 
@@ -98,8 +98,8 @@ Record order A (R:binary A) : Prop := {
    order_trans : trans R;
    order_antisym : antisym R }.
 
-Implicit Arguments order_trans [A R o x z].
-Implicit Arguments order_antisym [A R o x y].
+Arguments order_trans [A] [R] [o] y [x] [z].
+Arguments order_antisym [A] [R] [o] [x] [y].
 
 (** Conversion to preorder *)
 
@@ -145,8 +145,8 @@ Definition total_order_refl := order_refl.
 Definition total_order_trans := order_trans.
 Definition total_order_antisym := order_antisym.
 
-Implicit Arguments total_order_trans [A R o x z].
-Implicit Arguments total_order_antisym [A R o x y].
+Arguments total_order_trans [A] [R] [o] y [x] [z].
+Arguments total_order_antisym [A] [R] [o] [x] [y].
 
 (** Construction *)
 
@@ -279,7 +279,7 @@ Record strict_order A (R:binary A) : Prop := {
    strict_order_asym : asym R;
    strict_order_trans : trans R }.
 
-Implicit Arguments strict_order_trans [A R s x z].
+Arguments strict_order_trans [A] [R] [s] y [x] [z].
 
 (** Transformations *)
 
@@ -323,7 +323,7 @@ Record strict_total_order A (R:binary A) : Prop := {
    strict_total_order_trans : trans R;
    strict_total_order_trichotomous : trichotomous R }.
 
-Implicit Arguments strict_total_order_trans [A R s x z].
+Arguments strict_total_order_trans [A] [R] [s] y [x] [z].
 
 (** Conversion to strict order and back *)
 
@@ -559,11 +559,11 @@ Class Gt_ge_trans `{Le A} :=
 Class Ge_gt_trans `{Le A} :=
   { ge_gt_trans : forall y x z, x >= y -> y > z -> x > z }.
 
-Implicit Arguments lt_irrefl [A H Lt_irrefl].
-Implicit Arguments le_trans [[A] [H] [Le_trans] x z].
-Implicit Arguments ge_trans [[A] [H] [Ge_trans] x z].
-Implicit Arguments lt_trans [[A] [H] [Lt_trans] x z].
-Implicit Arguments gt_trans [[A] [H] [Gt_trans] x z].
+Arguments lt_irrefl [A] [H] [Lt_irrefl].
+Arguments le_trans {A} {H} {Le_trans} y [x] [z].
+Arguments ge_trans {A} {H} {Ge_trans} y [x] [z].
+Arguments lt_trans {A} {H} {Lt_trans} y [x] [z].
+Arguments gt_trans {A} {H} {Gt_trans} y [x] [z].
 
 (** conversion between operators *)
 

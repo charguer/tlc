@@ -47,7 +47,7 @@ Lemma list_ind_last : forall (A : Type) (P : list A -> Prop),
   (forall (a : A) (l : list A), P l -> P (l & a)) ->
   forall l : list A, P l.
 Proof using.
-  introv H1 H2. intros. induction_wf IH: (measure_wf (@length A)) l.
+  introv H1 H2. intros. induction_wf IH: (wf_measure (@length A)) l.
   lets [E|(x&l'&E)]: (last_case l); subst. auto.
   unfolds measure. rewrite length_last in IH. auto with maths.
 Qed.

@@ -70,13 +70,13 @@ Qed.
 Lemma ge_peano : ge = Peano.ge.
 Proof using.
   extens. rew_to_le. rewrite le_peano.
-  unfold flip. intros. omega.
+  unfold inverse. intros. omega.
 Qed.
 
 Lemma gt_peano : gt = Peano.gt.
 Proof using.
   extens. rew_to_le. rewrite le_peano.
-  unfold strict, flip. intros. omega.
+  unfold strict, inverse. intros. omega.
 Qed.
 
 Hint Rewrite le_peano lt_peano ge_peano gt_peano : rew_nat_comp.
@@ -126,10 +126,9 @@ Hint Extern 3 (@gt nat _ _ _) => nat_math_hint : nat_maths.
 Instance nat_le_total_order : Le_total_order (A:=nat).
 Proof using.
   constructor. constructor. constructor; unfolds.
-  nat_math. nat_math. unfolds. nat_math. unfolds.
-  intros. tests: (x <= y). left~. right. nat_math.
+  nat_math. nat_math. nat_math.
+  unfolds. intros. tests: (x <= y). left~. right. nat_math.
 Qed.
-
 
 
 (* ********************************************************************** *)
@@ -137,10 +136,10 @@ Qed.
 
 Lemma peano_induction :
   forall (P:nat->Prop),
-    (forall n, (forall m, m < n -> P m) -> P n) ->
+    (forall n, (forall m, (m < n)%nat -> P m) -> P n) ->
     (forall n, P n).
 Proof using.
-  introv H. cuts* K: (forall n m, m < n -> P m).
+  introv H. cuts* K: (forall n m, (m < n)%nat -> P m).
   nat_comp_to_peano.
   induction n; introv Le. inversion Le. apply H.
   intros. apply IHn. nat_math.
@@ -148,21 +147,11 @@ Qed.
 
 Lemma measure_induction :
   forall (A:Type) (mu:A->nat) (P:A->Prop),
-    (forall x, (forall y, mu y < mu x -> P y) -> P x) ->
+    (forall x, (forall y, (mu y < mu x)%nat -> P y) -> P x) ->
     (forall x, P x).
 Proof using.
   introv IH. intros x. gen_eq n: (mu x). gen x.
   induction n using peano_induction. introv Eq. subst*.
-Qed.
-
-Lemma measure_2_induction : forall A B (mu : A -> B -> nat) (P : A -> B -> Prop),
-  (forall x1 x2, (forall y1 y2, mu y1 y2 < mu x1 x2 -> P y1 y2) -> P x1 x2) ->
-  (forall x1 x2, P x1 x2).
-Proof using.
-  introv H. intros x1 x2. gen_eq p: (x1,x2). gen x1 x2.
-  induction_wf IH: (measure_wf (fun p => mu (fst p) (snd p))) p.
-  introv E. destruct p. inverts E. apply H.
-  introv L. apply* IH. simpl. auto.
 Qed.
 
 

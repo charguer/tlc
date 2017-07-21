@@ -1585,3 +1585,23 @@ order_of_strict => order_large_of_strict_order
 flip_trichotomous => trichotomous_inverse
 
 removed: Arguments nle_to_sle {A} {H} {NLe_to_SLe} [x] [y].
+
+
+
+--
+
+Ltac  math_debug => math_setup 
+
+
+---
+
+LibWf
+
+incl_wf => wf_of_rel_incl
+
+measure_trans => trans_measure 
+
+measure_wf => wf_measure 
+
+binary_map => rel_preimage
+

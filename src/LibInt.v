@@ -35,7 +35,7 @@ Open Scope Int_scope.
 (** ** Inhabited type *)
 
 Instance Inhab_int : Inhab int.
-Proof using. intros. apply (Inhab_of_val 0). Qed.
+Proof using. intros. apply (Inhab_of_val 0%Z). Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -94,8 +94,8 @@ Definition ltac_int_to_nat (x:Z) : nat :=
 Ltac number_to_nat N ::=
   match type of N with
   | nat => constr:(N)
-  | int => let N' := constr:(ltac_nat_of_int N) in eval compute in N'
-  | Z => let N' := constr:(ltac_nat_of_int N) in eval compute in N'
+  | int => let N' := constr:(ltac_int_to_nat N) in eval compute in N'
+  | Z => let N' := constr:(ltac_int_to_nat N) in eval compute in N'
   (*todo: last case not needed*)
   end.
 
@@ -123,13 +123,13 @@ Qed.
 Lemma ge_zarith : ge = Zge.
 Proof using.
   extens. rew_to_le. rewrite le_zarith.
-  unfold flip. intros. omega.
+  unfold inverse. intros. omega.
 Qed.
 
 Lemma gt_zarith : gt = Zgt.
 Proof using.
   extens. rew_to_le. rewrite le_zarith.
-  unfold strict, flip. intros. omega.
+  unfold strict, inverse. intros. omega.
 Qed.
 
 Hint Rewrite le_zarith lt_zarith ge_zarith gt_zarith : rew_int_comp.
@@ -188,6 +188,11 @@ Ltac arith_goal_or_false :=
 
 (** [generalize_arith] generalizes all hypotheses which correspond
     to some arithmetic goal. It destructs conjunctions on the fly. *)
+
+Lemma istrue_isTrue_forw : forall (P:Prop),
+  istrue (isTrue P) -> 
+  P.
+Proof using. introv H. rew_istrue~ in H. Qed.
 
 Ltac generalize_arith :=
   repeat match goal with
@@ -302,11 +307,8 @@ Ltac math_3 := rew_maths; nat_comp_to_peano; int_comp_to_zarith.
 Ltac math_4 := math_setup_goal.
 Ltac math_5 := omega.
 
-Ltac math_debug := math_0; math_1; math_2; math_3; math_4.
-Ltac math_base := math_debug; math_5.
-
-Ltac math_lia := math_debug; lia.
-Ltac math_nia := math_debug; nia.
+Ltac math_setup := math_0; math_1; math_2; math_3; math_4.
+Ltac math_base := math_setup; math_5.
 
 Tactic Notation "math" := math_base.
 
@@ -595,9 +597,9 @@ Qed.
 Lemma lt_abs_abs : forall (n m : int),
   (0 <= n) -> 
   (n < m) -> 
-  (abs n < abs m).
+  (abs n < abs m)%nat.
 Proof using.
-  intros. nat_comp_to_peano. apply lt_abs_abs. math.
+  intros. nat_comp_to_peano. apply Zabs_nat_lt. math.
 Qed.
 
 
@@ -626,8 +628,8 @@ Lemma succ_abs_eq_abs_one_plus : forall (x:int),
   x >= 0 -> 
   S (abs x) = abs (1 + x) :> nat.
 Proof using.
-  intros n. pattern n. applys (@measure_induction _ abs). clear x.
-  intros n IH Pos. rewrite <- Zabs_nat_Zsucc. fequals. math. math.
+  intros x. pattern x. applys (@measure_induction _ abs). clear x.
+  intros x IH Pos. rewrite <- Zabs_nat_Zsucc. fequals. math. math.
 Qed.
 
 Lemma abs_eq_succ_abs_minus_one : forall (x:int),
@@ -636,7 +638,7 @@ Lemma abs_eq_succ_abs_minus_one : forall (x:int),
 Proof using.
   intros. apply eq_nat_of_eq_int.
   rewrite abs_nonneg; try math.
-  rewrite succ_abs_to_abs_one_plus; try math.
+  rewrite succ_abs_eq_abs_one_plus; try math.
   rewrite abs_nonneg; math.
 Qed.
 

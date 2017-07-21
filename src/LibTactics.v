@@ -3113,7 +3113,7 @@ Ltac induction_wf_core_then IH E X cont :=
   match T with
   (* Support for measures from LibWf, add this:
   | ?A -> nat =>
-     induction_wf_core_then IH (measure_wf E) X cont
+     induction_wf_core_then IH (wf_measure E) X cont
   *)
   | ?A -> ?A -> Prop =>
      pattern X;
