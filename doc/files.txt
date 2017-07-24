@@ -76,3 +76,8 @@ Demo files:
    LibTacticsDemos
    LibFixDemos
    LibOtherDemos
+
+
+
+
++++todo: "extens" tactic should not call simpl.

@@ -1388,3 +1388,81 @@ Proof using. intros. subst. rewrite~ dom_update_at_index. Qed.
 
 (* Hint Resolve index_of_indom. *)
 
+
+
+
+(*-- TODO: this statement is temporary; we probably shouldn't use [Proper]. *)
+Lemma fold_pointwise :
+  forall B (m : monoid_op B) (leB : B -> B -> Prop),
+  Monoid m ->
+  refl leB ->
+  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
+  forall A (E : set A),
+  finite E ->
+  forall (f f' : A -> B),
+  (forall x, x \in E -> leB (f x) (f' x)) ->
+  leB (fold m f E) (fold m f' E).
+Proof using.
+  intros. do 2 rewrite fold_eq_fold_to_list.
+  applys~ LibList.fold_pointwise.
+  intros x. forwards~ (_&EQ): finite_list_repr E. rewrite (EQ x). auto.
+Qed.
+
+
+
+Lemma foreach_remove_of_foreach_pred_incl : forall P Q E F,
+  foreach P E -> 
+  pred_incl P (fun (x:A) => x \notin F -> Q x) ->
+  foreach Q (E \- F).
+Proof using. introv M H Px. rewrite in_remove_eq in Px. applys* H. Qed.
+
+
+
+(* ---------------------------------------------------------------------- *)
+(** [to_set] *)
+
+Lemma list_repr_to_set:
+  forall A (xs : list A),
+  noduplicates xs ->
+  list_repr (to_set xs) xs.
+Proof using.
+  unfold list_repr, to_set. induction 1; split.
+  { econstructor. }
+  { tauto. }
+  { econstructor; eauto. }
+  { tauto. }
+Qed.
+
+Lemma list_repr_to_set_inverse:
+  forall A (E : set A) (xs : list A),
+  list_repr E xs ->
+  E = to_set xs.
+Proof using.
+  unfold list_repr, to_set. introv (_ & ?).
+  generalize dependent E. generalize dependent xs.
+  induction xs; introv H; rewrite set_ext_eq; intros x;
+  rewrite in_set_st_eq; rewrite H; tauto.
+Qed.
+
+Lemma to_set_nil:
+  forall A,
+  to_set (@nil A) = \{}.
+Proof using.
+  intros.
+  erewrite <- list_repr_to_set_inverse by eapply list_repr_nil.
+  eauto.
+Qed.
+
+(* -- TODO, fix using Prefix library
+
+Lemma prefix_to_set:
+  forall A (xs ys : list A),
+  prefix xs ys ->
+  to_set xs \c to_set ys.
+Proof using.
+  unfold to_set. introv (zs&?). subst.
+  rewrite set_incl_in_eq. intros. rewrite in_set_st_eq in *.
+  rewrite Mem_app_or_eq. tauto.
+Qed.
+
+*)

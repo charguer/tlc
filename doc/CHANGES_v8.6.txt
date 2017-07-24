@@ -1635,6 +1635,31 @@ disjoint_def => disjoint_eq_inter_empty
 fold_def => fold_eq_fold_to_list
 fold_eq => fold_eq_fold_list_repr
 
+Mem_to_list => mem_to_list [changed]
+
+foreach_pred_incl => foreach_of_pred_incl
+
+foreach_remove_simple => foreach_remove_of_foreach_all
+foreach_remove_pred_incl => foreach_remove
+
+foreach_notin_prove => notin_of_foreach_not
+
+card_incl_le => card_incl_le
+
+card_inter_left => card_inter_le_l
+card_inter_right => card_inter_le_r
+
+
+card_nonempty => card_ge_one
+
+set_isolate => eq_union_single_remove_one
+set_add_remove => set_remove_one_add_same
+
+list_repr_covers => list_covers_of_list_repr
+list_repr_no_duplicates => noduplicates_of_list_repr
+finite_list_repr => list_repr_to_list_of_finite
+to_list_spec => eq_to_list_inv
+
 ==================================
 
 dom_update_index => dom_update_at_index
@@ -1673,3 +1698,4 @@ fold_def_binds => fold_eq_fold_pairs
 update_def_union => update_eq_union_single
 
 set_norm => rew_set in *
+

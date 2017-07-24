@@ -83,7 +83,6 @@ Definition fold_impl (m:monoid_op B) (f:A->B) (E:set A) :=
 End Operations.
 
 
-
 (* ---------------------------------------------------------------------- *)
 (** ** Notations to help the typechecker *)
 
@@ -108,7 +107,7 @@ Lemma in_inst : forall A, BagIn A (set A).
 Proof using. constructor. exact (@in_impl A). Defined.
 
 Hint Extern 1 (BagIn _ (set _)) => apply in_inst : typeclass_instances.
-(* -- TODO: why is this not an instance like others ? *)
+(* -- LATER: could this be an instance like all others ? *)
 
 Instance empty_inst : forall A, BagEmpty (set A).
   constructor. apply (@empty_impl A). Defined.
@@ -144,10 +143,16 @@ Global Opaque set finite in_inst empty_inst single_inst union_inst inter_inst
 (* ---------------------------------------------------------------------- *)
 (** Exposed definitions for list coverage *)
 
-Definition list_repr A (E:set A) L :=
+(** [list_repr E L] asserts that elements of [E] are exactly
+    the elements from the list [L]. *)
+
+Definition list_repr A (E:set A) (L:list A) :=
   noduplicates L /\ (forall x, mem x L <-> x \in E).
 
-Definition list_covers A (E:set A) L :=
+(** [list_covers E L] asserts that all elements of [E] all
+    belong to the list [L]. *)
+
+Definition list_covers A (E:set A) (L:list A) :=
   forall x, x \in E -> mem x L.
 
 
@@ -174,31 +179,13 @@ Notation "\set{= e | x y '\in' E }" :=
  (at level 0, x ident, y ident, E at level 200) : set_scope.
 
 
-(* ---------------------------------------------------------------------- *)
-(** Additional definitions *)
-
-(* TODO
-
-   map f E = \set{= f x | x in E }
-
-   bij E F f g =
-      forall x \in E, f x \in F
-      forall y \in F, g x \in E
-      forall x \in E, g (f x) = x
-      forall y \in F, f (g y) = y
-
-   F m i E = fold m j F
-     when  bij E F f g
-      and  forall x \in E,  i x = j (f x)
-       or  forall y \in E,  j y = i (g y)
-*)
-
-
 (* ********************************************************************** *)
 (** * Properties of sets *)
 
 Section Instances.
 Variables (A:Type).
+Implicit Types E F : set A.
+
 Transparent set finite empty_inst single_inst single_impl in_inst
   incl_inst inter_inst union_inst card_inst fold_inst remove_inst
   disjoint_inst.
@@ -225,8 +212,8 @@ Ltac set_unf := unfold finite,
 (* ---------------------------------------------------------------------- *)
 (** Reformulation *)
 
-Lemma disjoint_eq_inter_empty : forall (E F : set A),
-  E \# F = (E \n F = \{}).
+Lemma disjoint_eq_inter_empty : forall E F,
+  (E \# F) = (E \n F = \{}).
 Proof using. auto. Qed.
 
 
@@ -237,13 +224,13 @@ Lemma in_set_st_eq : forall (P:A->Prop) x,
   x \in set_st P = P x.
 Proof using. intros. apply* prop_ext. Qed.
 
-Lemma set_ext_eq : forall (E F : set A),
+Lemma set_ext_eq : forall E F,
   (E = F) = (forall (x:A), x \in E <-> x \in F).
 Proof using.
   intros. apply prop_ext. iff H. subst*. extens*.
 Qed.
 
-Lemma set_ext : forall (E F : set A),
+Lemma set_ext : forall E F,
   (forall (x:A), x \in E <-> x \in F) -> 
   E = F.
 Proof using. intros. rewrite~ set_ext_eq. Qed.
@@ -286,18 +273,28 @@ Proof using.
     extens*.
 Qed.
 
-Lemma set_isolate : forall A (E : set A) x,
+(* -- LATER: fix naming conventions below *)
+
+(* -- TODO
+Lemma nonempty_eq_exists_one : forall E,
+  finite E ->
+  (E <> \{}) = (exists x, x \in E).
+Proof using.
+Qed.
+*)
+
+Lemma eq_union_single_remove_one : forall E x,
   x \in E ->
-  E = \{x} \u (E \- \{x}).
+  E = \{x} \u (E \-- x).
 Proof using.
   introv H. set_unf. extens. intros y. iff M.
     simpls. tests*: (y = x).
     destruct M. subst*. autos*.
 Qed.
 
-Lemma set_add_remove : forall A (E : set A) x,
+Lemma set_remove_one_add_same : forall E x,
   x \notin E ->
-  E = (E \u \{x}) \- \{x}.
+  E = (E \u \{x}) \-- x.
 Proof using.
   introv Hx. set_unf. extens. iff.
   { split. eauto. intro. subst*. }
@@ -307,12 +304,12 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** repr and covers *)
 
-Lemma list_repr_covers : forall (E:set A) L,
+Lemma list_covers_of_list_repr : forall E L,
   list_repr E L -> 
   list_covers E L.
 Proof using. introv (ND&EQ). introv Hx. rewrite~ EQ. Qed.
 
-Lemma list_repr_disjoint_union : forall (E F : set A) LE LF,
+Lemma list_repr_disjoint_union : forall E F LE LF,
   E \# F ->
   list_repr E LE ->
   list_repr F LF ->
@@ -326,13 +323,10 @@ Proof using.
       rewrite <- QE. rewrite* <- QF.
 Qed.
 
-Lemma list_repr_no_duplicates:
-  forall (E : set A) xs,
+Lemma noduplicates_of_list_repr : forall E xs,
   list_repr E xs ->
   noduplicates xs.
-Proof using.
-  unfold list_repr. tauto.
-Qed.
+Proof using. unfold list_repr. tauto. Qed.
 
 (* see also [list_repr_nil] further on *)
 
@@ -340,7 +334,7 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** to_list *)
 
-Lemma list_covers_impl_to_list_repr_impl : forall A (E:set A),
+Lemma ex_list_repr_impl_of_ex_list_covers_impl : forall E,
   ex (list_covers_impl E) -> 
   ex (list_repr_impl E).
 Proof using.
@@ -355,30 +349,30 @@ Proof using.
       applys* mem_filter.
 Qed.
 
-Lemma finite_list_repr : forall A (E:set A),
+Lemma list_repr_to_list_of_finite : forall E,
   finite E -> 
   list_repr E (to_list E).
 Proof using.
   introv FE. unfolds to_list, finite, list_repr_impl.
   epsilon~ L'.
-  applys~ list_covers_impl_to_list_repr_impl.
+  applys~ ex_list_repr_impl_of_ex_list_covers_impl.
 Qed.
 
-Lemma to_list_spec : forall (E:set A) L,
+(* corrolary of above, presented as an inversion lemma *)
+Lemma eq_to_list_inv : forall E L,
   L = to_list E -> 
   finite E ->
   list_repr E L.
 Proof.
-  introv EQ HE. unfolds. subst. forwards* (?&?): finite_list_repr HE.
+  introv EQ HE. unfolds. subst. forwards* (?&?): list_repr_to_list_of_finite HE.
 Qed.
 
-Lemma Mem_to_list:
-  forall (xs : set A),
-  finite xs ->
-  forall x,
-  mem x (to_list xs) <-> x \in xs.
+Lemma finite_eq_in_iff_mem_to_list : forall E,
+  finite E = (forall x, x \in E <-> mem x (to_list E)).
 Proof.
-  intros. forwards [ ? ? ]: to_list_spec xs; eauto.
+  intros. applys prop_ext. iff M.
+  { forwards* (N1&N2): eq_to_list_inv E. intros x. specializes N2 x. autos*. }
+  { exists (to_list E). intros x Ex. rewrite~ <- M. }
 Qed.
 
 Lemma to_list_empty :
@@ -406,6 +400,8 @@ Proof using.
       subst. inverts H as M1 M2. false* M1. }
     { inverts H2. false. forwards~: (proj1 (H0 a)). false. } }
 Qed.
+
+(* See also [finite_eq_mem_to_list] *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -459,7 +455,7 @@ Proof using.
   exists (a::nil). introv M. hnf in M. subst*.
 Qed.
 
-Lemma finite_union : forall (E F : set A),
+Lemma finite_union : forall E F,
   finite E ->
   finite F ->
   finite (E \u F).
@@ -473,7 +469,7 @@ Proof using.
   rewrite* mem_app_eq.
 Qed.
 
-Lemma finite_inter : forall (E F : set A),
+Lemma finite_inter : forall E F,
   finite E \/ finite F ->
   finite (E \n F).
 Proof using.
@@ -482,7 +478,7 @@ Proof using.
   lets (L&EQ): finite_inv_list_covers H. exists L. unfold list_covers. set_unf. autos*.
 Qed.
 
-Lemma finite_incl : forall (E F : set A),
+Lemma finite_incl : forall E F,
   E \c F ->
   finite F ->
   finite E.
@@ -492,7 +488,7 @@ Proof using.
   set_unf. exists* L. introv Ex. applys EQ. applys~ HI.
 Qed.
 
-Lemma finite_remove : forall (E F : set A),
+Lemma finite_remove : forall E F,
   finite E ->
   finite (E \- F).
 Proof using.
@@ -503,7 +499,7 @@ Qed.
 Section Finite_remove_inv.
 Local Opaque remove_inst single_inst.
 
-Lemma finite_remove_inv : forall (E F : set A),
+Lemma finite_remove_inv : forall E F,
   finite (E \- F) -> 
   finite F -> 
   finite E.
@@ -518,7 +514,7 @@ Qed.
 
 End Finite_remove_inv.
 
-Lemma finite_remove_one_inv : forall (E : set A) x,
+Lemma finite_remove_one_inv : forall E x,
   finite (E \-- x) -> 
   finite E.
 Proof using.
@@ -535,7 +531,7 @@ Lemma list_repr_nil:
   list_repr \{} (@nil A).
 Proof using.
   rewrite <- to_list_empty.
-  eapply to_list_spec; eauto using finite_empty.
+  eapply eq_to_list_inv; eauto using finite_empty.
 Qed.
 
 
@@ -568,7 +564,7 @@ Proof.
       intros x. iff M.
         unfold L3 in M. lets~ (_&?): mem_filter_inv M.
         applys~ mem_filter. rewrite~ EQ.
-  forwards C3: list_repr_covers R3.
+  forwards C3: list_covers_of_list_repr R3.
   exists L3. splits*.
   forwards: list_covers_inv_card C3. math.
 Qed.
@@ -613,7 +609,7 @@ Lemma card_eq_length_to_list : forall (E:set A),
   finite E -> 
   card E = length (to_list E).
 Proof using.
-  introv FE. applys list_repr_inv_card. applys~ to_list_spec.
+  introv FE. applys list_repr_inv_card. applys~ eq_to_list_inv.
 Qed.
 
 (* operations *)
@@ -743,7 +739,7 @@ Ltac set_prove_classic :=
 (* ---------------------------------------------------------------------- *)
 (** Card *)
 
-Lemma card_incl_le : forall A (E F:set A),
+Lemma card_le_of_incl : forall A (E F:set A),
   finite F ->
   E \c F ->
   (card E <= card F)%nat.
@@ -768,7 +764,7 @@ Proof using.
   rew_list in H. math.
 Qed.
 
-Lemma card_disjoint_union : forall A (E F : set A),
+Lemma card_disjoint_union : forall A (E F:set A),
   finite E ->
   finite F ->
   E \# F ->
@@ -790,32 +786,41 @@ Proof using.
   subst LE LF. math.
 Qed.
 
-Lemma card_inter_left : forall A (E F : set A),
+Lemma card_inter_le_l : forall A (E F:set A),
   finite E ->
   card (E \n F) <= card E.
 Proof using.
-  intros. applys~ card_incl_le. set_prove.
+  intros. applys~ card_le_of_incl. set_prove.
 Qed.
 
-Lemma card_inter_right : forall A (E F : set A),
+Lemma card_inter_le_r : forall A (E F:set A),
   finite F ->
   card (E \n F) <= card F.
 Proof using.
-  intros. rewrite inter_comm. apply~ card_inter_left.
+  intros. rewrite inter_comm. apply~ card_inter_le_l.
 Qed.
 
-Lemma card_nonempty : forall A (E : set A) x,
+Lemma card_ge_one : forall A (E:set A) x,
   x \in E ->
   finite E ->
   1 <= card E.
 Proof using.
   intros.
   rewrite <- (card_single x).
-  applys~ card_incl_le.
+  applys~ card_le_of_incl.
   set_prove.
 Qed.
 
-Lemma card_disjoint_union_single : forall A (E : set A) x,
+(* -- LATER
+Lemma card_nonempty : forall A (E:set A),
+  E <> \{} ->
+  finite E ->
+  card E > 0.
+Proof using.
+Qed.
+*)
+
+Lemma card_disjoint_union_single : forall A (E:set A) x,
   finite E ->
   x \notin E ->
   (card (E \u \{x}) = card E + 1)%nat.
@@ -826,15 +831,14 @@ Proof using.
   rewrite disjoint_single_r_eq. auto.
 Qed.
 
-Lemma card_diff_single:
-  forall A (E : set A) x,
+Lemma card_diff_single : forall A (E:set A) x,
   finite E ->
   x \in E ->
   (card (E \-- x) = card E - 1)%nat.
 Proof using.
   intros.
   assert (h1: (E \-- x) \u \{x} = E).
-  { rewrite union_comm. erewrite set_isolate by eauto. reflexivity. }
+  { rewrite union_comm. erewrite eq_union_single_remove_one by eauto. reflexivity. }
   forwards h2: card_disjoint_union_single (E \-- x) x.
   { eauto with finite. }
   { unfold notin. rewrite set_in_remove_eq.
@@ -858,7 +862,7 @@ Lemma fold_eq_fold_list_repr : forall A B (m:monoid_op B) (f:A->B) (E: set A) L,
   fold m f E = LibList.fold m f L.
 Proof using.
   introv HM EL. rewrite fold_eq_fold_to_list.
-  forwards~ (N&EQ2): to_list_spec E. applys* finite_of_list_repr.
+  forwards~ (N&EQ2): eq_to_list_inv E. applys* finite_of_list_repr.
   destruct EL as (ND&EQ1).
   applys~ LibList.fold_equiv. intros. rewrite EQ2. rewrite* EQ1.
 Qed.
@@ -871,24 +875,24 @@ Lemma fold_induction:
   forall E,
   finite E ->
   P (fold m f E).
-Proof using.
-  introv ? Hbase Hstep Hfinite.
+Proof using. (* --todo: cleanup proof *)
+  introv Hm Hbase Hstep Hfinite.
   assert (forall xs, P (LibList.fold m f xs)).
   { induction xs; unfold LibList.fold; simpl; eauto. }
-  forwards: finite_list_repr Hfinite.
+  forwards: list_repr_to_list_of_finite Hfinite.
   erewrite fold_eq_fold_list_repr by eauto.
   eauto.
 Qed.
 
-Lemma fold_congruence : forall A B (m : monoid_op B) (f g : A -> B) (E : set A),
+Lemma fold_congruence : forall A B (m:monoid_op B) (f g:A -> B) (E:set A),
   Comm_monoid m ->
   finite E ->
   (forall x, x \in E -> f x = g x) ->
   fold m f E = fold m g E.
-Proof using.
-  introv ? ? h. do 2 rewrite fold_eq_fold_to_list.
+Proof using. (* --todo: cleanup proof *)
+  introv Hm HE h. do 2 rewrite fold_eq_fold_to_list.
   eapply LibList.fold_congruence. intros.
-  eapply h. eapply Mem_to_list; eauto.
+  eapply h. rewrite finite_eq_in_iff_mem_to_list in HE. rewrite* HE.
 Qed.
 
 Lemma fold_empty : forall A B (m:monoid_op B) (f:A->B),
@@ -907,7 +911,7 @@ Proof using.
   rewrite fold_nil. rewrite~ monoid_neutral_r.
 Qed.
 
-Lemma fold_union : forall A B (m:monoid_op B) (f:A->B) (E F : set A),
+Lemma fold_union : forall A B (m:monoid_op B) (f:A->B) (E F:set A),
   Comm_monoid m ->
   finite E ->
   finite F ->
@@ -917,103 +921,37 @@ Proof using.
   introv HM HE HF HD.
   rewrites (>> fold_eq_fold_to_list E).
   rewrites (>> fold_eq_fold_to_list F).
-  hint finite_list_repr. forwards~ HR: list_repr_disjoint_union HD.
+  hint list_repr_to_list_of_finite.
+  forwards~ HR: list_repr_disjoint_union HD.
   rewrites~ (>> fold_eq_fold_list_repr HR).
   rewrite~ LibList.fold_app. typeclass.
 Qed.
 
-Lemma fold_isolate :
-  forall A (E : set A) x,
+Lemma fold_isolate : forall A (E:set A) x,
   finite E ->
   x \in E ->
   forall B (m : monoid_op B),
   Comm_monoid m ->
   forall (f : A -> B),
   fold m f E = monoid_oper m (f x) (fold m f (E \- \{x})).
-Proof using.
+Proof using. (* --todo: cleanup proof *)
   intros.
   (* Separate [E] into the singleton [\{x}] union the rest. *)
-  rewrite (set_isolate E x) at 1 by eauto.
+  rewrite (eq_union_single_remove_one E x) at 1 by eauto.
   (* Note that [f x] is the result of folding [f] over the singleton [\{x}]. *)
   erewrite <- (fold_single f x) by typeclass.
   (* Conclude. *)
   eapply fold_union; eauto using remove_disjoint with finite.
 Qed.
 
-(*-- TODO: this statement is temporary; we probably shouldn't use [Proper]. *)
-Lemma fold_pointwise:
-  forall B (m : monoid_op B) (leB : B -> B -> Prop),
-  Monoid m ->
-  refl leB ->
-  Proper (leB ++> leB ++> leB) (monoid_oper m) ->
-  forall A (E : set A),
-  finite E ->
-  forall (f f' : A -> B),
-  (forall x, x \in E -> leB (f x) (f' x)) ->
-  leB (fold m f E) (fold m f' E).
-Proof using.
-  intros. do 2 rewrite fold_eq_fold_to_list.
-  applys~ LibList.fold_pointwise.
-  intros x. forwards~ (_&EQ): finite_list_repr E. rewrite (EQ x). auto.
-Qed.
-
-
-(* ---------------------------------------------------------------------- *)
-(** [to_set] *)
-
-Lemma list_repr_to_set:
-  forall A (xs : list A),
-  noduplicates xs ->
-  list_repr (to_set xs) xs.
-Proof using.
-  unfold list_repr, to_set. induction 1; split.
-  { econstructor. }
-  { tauto. }
-  { econstructor; eauto. }
-  { tauto. }
-Qed.
-
-Lemma list_repr_to_set_inverse:
-  forall A (E : set A) (xs : list A),
-  list_repr E xs ->
-  E = to_set xs.
-Proof using.
-  unfold list_repr, to_set. introv (_ & ?).
-  generalize dependent E. generalize dependent xs.
-  induction xs; introv H; rewrite set_ext_eq; intros x;
-  rewrite in_set_st_eq; rewrite H; tauto.
-Qed.
-
-Lemma to_set_nil:
-  forall A,
-  to_set (@nil A) = \{}.
-Proof using.
-  intros.
-  erewrite <- list_repr_to_set_inverse by eapply list_repr_nil.
-  eauto.
-Qed.
-
-(* -- TODO, fix using Prefix library
-
-Lemma prefix_to_set:
-  forall A (xs ys : list A),
-  prefix xs ys ->
-  to_set xs \c to_set ys.
-Proof using.
-  unfold to_set. introv (zs&?). subst.
-  rewrite set_incl_in_eq. intros. rewrite in_set_st_eq in *.
-  rewrite Mem_app_or_eq. tauto.
-Qed.
-
-*)
-
 
 (* ---------------------------------------------------------------------- *)
 (** ** Structural properties *)
 
-(** Rewriting tactics *)
+(** Rewriting tactics [rew_set] *)
 
 Hint Rewrite in_set_st_eq : rew_set.
+
 Tactic Notation "rew_set" :=
   autorewrite with rew_set.
 Tactic Notation "rew_set" "in" hyp(H) :=
@@ -1024,13 +962,16 @@ Tactic Notation "rew_set" "in" "*" :=
 
 
 (* ********************************************************************** *)
-(** * Additional predicates on sets *)
+(** * MORE *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** TEMPORARY Foreach *)
 
 (** -- TODO: these lemmas should be instead derived as typeclasses   
        in a generic way, in LibContainer. *)
+
+(** -- TODO: add a paragraphe of the definition:
+             foreach P E = (forall x, x \in E -> P x) *)
 
 Section ForeachProp.
 Variables (A : Type).
@@ -1078,24 +1019,23 @@ Proof using.
   apply~ foreach_single.
 Qed.
 
-Lemma foreach_pred_incl: forall P Q E,
+Lemma foreach_of_pred_incl: forall P Q E,
   foreach P E -> 
   pred_incl P Q -> 
   foreach Q E.
 Proof using. introv H L K. apply~ L. Qed.
 
-Lemma foreach_remove_simple : forall P E F,
+Lemma foreach_remove_of_foreach_all : forall P E F,
   foreach P E -> 
   foreach P (E \- F).
 Proof using. introv M H. applys M. rewrite in_remove_eq in H. autos*. Qed.
 
-Lemma foreach_remove : forall P Q E F,
-  foreach P E -> 
-  pred_incl P (fun (x:A) => x \notin F -> Q x) -> 
-  foreach Q (E \- F).
-Proof using. introv M H Px. rewrite in_remove_eq in Px. applys* H. Qed.
+Lemma foreach_remove : forall P E F,
+  (forall x, x \in E -> x \notin F -> P x) ->
+  foreach P (E \- F).
+Proof using. introv M Px. rewrite in_remove_eq in Px. applys* M. Qed.
 
-Lemma foreach_notin_prove : forall P x E,
+Lemma notin_of_foreach_not : forall P x E,
   foreach P E -> 
   ~ P x -> 
   x \notin E.
@@ -1125,4 +1065,25 @@ Tactic Notation "rew_foreach" "~" "in" "*" :=
   rew_foreach in *; auto_tilde.
 Tactic Notation "rew_foreach" "*" "in" "*" :=
   rew_foreach in *; auto_star.
+
+
+(* ---------------------------------------------------------------------- *)
+(** FUTURE WORK *)
+
+(* -- TODO
+
+   map f E = \set{= f x | x in E }
+
+   bij E F f g =
+      forall x \in E, f x \in F
+      forall y \in F, g x \in E
+      forall x \in E, g (f x) = x
+      forall y \in F, f (g y) = y
+
+   F m i E = fold m j F
+     when  bij E F f g
+      and  forall x \in E,  i x = j (f x)
+       or  forall y \in E,  j y = i (g y)
+*)
+
 
