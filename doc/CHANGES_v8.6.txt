@@ -1621,3 +1621,55 @@ list_no_mem => eq_list_not_mem
 finite_prove_covers => finite_of_list_covers
 finite_prove_repr => finite_of_list_repr
 finite_prove_exists => finite_of_ex_list_covers
+
+
+==================================
+
+fupdate_def => fupdate_eq
+fupdate_eq => fupdate_same (changed)
+
+==================================
+
+disjoint_def => disjoint_eq_inter_empty
+
+fold_def => fold_eq_fold_to_list
+fold_eq => fold_eq_fold_list_repr
+
+==================================
+
+dom_update_index => dom_update_at_index
+in_dom_empty => indom_empty_inv
+no_binds_empty => eq_empty_of_not_binds
+indom_update => indom_update_eq
+indom_update_already_inv => indom_of_indom_update_at_indom
+indom_update_already => indom_update_of_indom
+update_read_if => read_update
+update_read_eq => read_update_same
+update_read_neq => read_update_neq
+update_update_eq => update_update
+binds_prove => binds_of_indom_read
+binds_indom => indom_of_binds
+binds_index => index_of_binds
+binds_read => read_of_binds
+
+
+update_remove_one_eq => remove_one_update
+remove_one_read_neq => read_remove_one_neq
+remove_one_update_neq => update_remove_one_neq
+split_restrict_remove => eq_union_restrict_remove
+split_restrict_remove_single => eq_union_restrict_remove_one
+binds_update_analysis => binds_update_inv[updated]
+binds_update_indom_eq => [same as above]
+binds_update_eq => binds_update_same
+binds_update_eq_inv => binds_update_same_inv
+indom_update_self => indom_update_same
+
+dom_def_binds => dom_eq_set_of_binds
+binds_def => binds_eq_indom_read
+
+unsome_def => unsome_default
+disjoint_def => disjoint_eq_disjoint_dom
+fold_def_binds => fold_eq_fold_pairs
+update_def_union => update_eq_union_single
+
+set_norm => rew_set in *

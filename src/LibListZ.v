@@ -170,7 +170,7 @@ Transparent read_inst.
 Lemma read_make : forall `{Inhab A} (i n:int) (v:A),
   index n i -> (make n v)[i] = v.
 Proof using.
-  introv N. rewrite int_index_def in N. unfold make, read_inst, read_impl, nth.
+  introv N. rewrite int_index_eq in N. unfold make, read_inst, read_impl, nth.
   case_if. math. simpl. case_if. math.
   applys nth_make. forwards: lt_abs_abs i n; try math.
 Qed.
@@ -296,7 +296,7 @@ Lemma read_update_case : forall `{Inhab A} (l:list A) (i j:int) (v:A),
   index l j -> l[i:=v][j] = (If i = j then v else l[j]).
 Proof using.
   introv. unfold index_inst, index_impl, update_inst, update_impl, update,
-    read_inst, read_impl, nth. simpl. introv N. rewrite int_index_def in N.
+    read_inst, read_impl, nth. simpl. introv N. rewrite int_index_eq in N.
   case_if. math.
   case_if. case_if. auto. case_if.
     rewrite~ nth_update_eq. apply lt_nat_of_lt_int. rewrite abs_pos; try math.
@@ -469,7 +469,7 @@ Proof using. intros. rewrite~ index_bounds. Qed.
 Lemma index_zmake : forall A n i (v:A),
   index n i -> index (make n v) i.
 Proof using.
-  introv H. rewrite index_def. rewrite int_index_def in H.
+  introv H. rewrite index_def. rewrite int_index_eq in H.
   rewrite~ length_make. math.
 Qed.
 

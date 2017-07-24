@@ -36,6 +36,8 @@ Class BagIndex A T := { index : T -> A -> Prop }.
 Definition notin `{BagIn A T} x m :=
   ~ (is_in x m).
 
+(*-- LATER: make [finite] a typeclass *)
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Notation *)
@@ -83,6 +85,7 @@ Notation "''{' x '}'" := (single x) (format "''{' x '}'")
 
 Notation "M \-- i" := (M \- \{i}) (at level 35) : container_scope.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** [forall x \in E, P x] notation *)
 
@@ -95,6 +98,7 @@ Notation "'forall_' x y '\in' E ',' P" :=
 Notation "'forall_' x y z '\in' E ',' P" :=
   (forall x y z, x \in E -> y \in E -> z \in E -> P)
   (at level 200, x ident, y ident, z ident) : container_scope.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** [exists x \in E st P x] notation *)
@@ -109,20 +113,21 @@ Notation "'exists_' x y z '\in' E ',' P" :=
   (exists x, x \in E /\ y \in E /\ z \in E /\ P)
   (at level 200, x ident, y ident, z ident) : container_scope.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** Foreach *)
 
 Definition foreach `{BagIn A T} (P:A->Prop) (E:T) :=
   forall x, x \in E -> P x.
 
+
 (* ---------------------------------------------------------------------- *)
 (** ** [index] for natural numbers *)
-
 
 Instance int_index : BagIndex int int.
 Proof using. intros. constructor. exact (fun n (i:int) => 0 <= i < n). Defined.
 
-Lemma int_index_def : forall (n i : int),
+Lemma int_index_eq : forall (n i : int),
   index n i = (0 <= i < n).
 Proof using. auto. Qed.
 
@@ -130,16 +135,16 @@ Global Opaque int_index.
 
 Lemma int_index_le : forall i n m : int,
   index n i -> n <= m -> index m i.
-Proof using. introv. do 2 rewrite @int_index_def. math. Qed.
+Proof using. introv. do 2 rewrite @int_index_eq. math. Qed.
 
 Lemma int_index_prove : forall (n i : int),
   0 <= i -> i < n -> index n i.
-Proof using. intros. rewrite~ int_index_def. Qed.
+Proof using. intros. rewrite~ int_index_eq. Qed.
 
 Lemma int_index_succ : forall n i, n >= 0 ->
   index (n + 1) i = (index n i \/ i = n).
 Proof using.
-  introv P. do 2 rewrite int_index_def. extens. iff H.
+  introv P. do 2 rewrite int_index_eq. extens. iff H.
   apply or_classic_l. math.
   destruct H; math.
 Qed.

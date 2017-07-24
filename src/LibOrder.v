@@ -497,14 +497,15 @@ Global Opaque ge_of_le lt_of_le gt_of_le.
 
 (** Local tactic [rew_to_le] *)
 
-Hint Rewrite @gt_is_inverse_strict_le @ge_is_inverse_le @lt_is_strict_le : rew_to_le_def.
+Hint Rewrite @gt_is_inverse_strict_le @ge_is_inverse_le @lt_is_strict_le : rew_to_le.
 
 Tactic Notation "rew_to_le" :=
-  autorewrite with rew_to_le_def in *.
+  autorewrite with rew_to_le in *.
 
-Hint Rewrite @ge_is_inverse_le @gt_is_inverse_lt : rew_to_le_lt_def.
+Hint Rewrite @ge_is_inverse_le @gt_is_inverse_lt : rew_to_le_lt.
+
 Tactic Notation "rew_to_le_lt" :=
-  autorewrite with rew_to_le_lt_def in *.
+  autorewrite with rew_to_le_lt in *.
 
 Lemma gt_is_strict_inverse_le : forall `{Le A}, 
   gt = strict (inverse le).

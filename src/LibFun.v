@@ -113,13 +113,12 @@ Tactic Notation "rew_compose" "in" hyp(H) :=
 Definition fupdate A B (f : A -> B) (a : A) (b : B) : A -> B :=
   fun x => If (x = a) then b else f x.
 
-Lemma fupdate_def : forall A B (f:A->B) a b x,
+Lemma fupdate_eq : forall A B (f:A->B) a b x,
   fupdate f a b x = If (x = a) then b else f x.
 Proof using. auto. Qed.
 
-Lemma fupdate_eq : forall A B (f:A->B) a b x,
-  x = a ->
-  fupdate f a b x = b.
+Lemma fupdate_same : forall A B (f:A->B) a b,
+  fupdate f a b a = b.
 Proof using. intros. unfold fupdate. case_if*. Qed.
 
 Lemma fupdate_neq : forall A B (f:A->B) a b x,
@@ -186,9 +185,9 @@ Qed.
 Lemma image_singleton : forall A B (f : A -> B) (x : A),
   image f \{x} = \{f x}.
 Proof using.
-  intros. apply in_extens. intros z. iff N.
+  intros. apply in_extens. intros z. rewrite in_single_eq. iff N.
     lets (y&Hy&Ey): in_image_inv (rm N). rewrite in_single_eq in Hy. subst~.
-    rewrite in_single_eq in N. applys* in_image_prove.
+    applys* in_image_prove. rewrite~ @in_single_eq. typeclass.
 Qed.
 
 End FunctionImage.

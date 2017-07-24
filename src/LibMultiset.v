@@ -46,7 +46,7 @@ Definition list_repr_impl (E:multiset A) (l:list (A*nat)) :=
 
 Definition to_list_impl (E:multiset A) := epsilon (list_repr_impl E).
 
-Definition fold_impl (m:monoid_def B) (f:A->nat->B) (E:multiset A) :=
+Definition fold_impl (m:monoid_op B) (f:A->nat->B) (E:multiset A) :=
   LibList.fold_right (fun p acc => let (x,n) := p : A*nat in monoid_oper m (f x n) acc)
     (monoid_neutral m) (to_list_impl E).
 

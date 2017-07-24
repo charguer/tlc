@@ -52,7 +52,7 @@ Proof using. intros. apply (Inhab_of_val 0%Z). Qed.
 
 Definition nat_to_Z := Z_of_nat.
 
-Lemma nat_to_Z_def : nat_to_Z = Z_of_nat.
+Lemma nat_to_Z_eq_Z_of_nat : nat_to_Z = Z_of_nat.
 Proof using. reflexivity. Qed.
 
 Global Opaque nat_to_Z.
@@ -239,7 +239,7 @@ Proof using. intros. rewrite <- Z_of_nat_S. fequals~. Qed.
 (** [rew_maths] rewrite any lemma in the base [rew_maths].
     The goal should not contain any evar, otherwise tactic might loop. *)
 
-Hint Rewrite nat_to_Z_def Z_of_nat_O Z_of_nat_S Z_of_nat_plus1 : rew_maths.
+Hint Rewrite nat_to_Z_eq_Z_of_nat Z_of_nat_O Z_of_nat_S Z_of_nat_plus1 : rew_maths.
 
 Ltac rew_maths :=
   autorewrite with rew_maths in *.

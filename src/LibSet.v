@@ -83,6 +83,17 @@ Definition fold_impl (m:monoid_op B) (f:A->B) (E:set A) :=
 End Operations.
 
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Notations to help the typechecker *)
+
+Notation "x \indom E" := (x \in (dom E : set _))
+  (at level 39) : container_scope.
+
+Notation "x \notindom E" := (x \notin ((dom E) : set _))
+  (at level 39) : container_scope.
+
+
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
@@ -134,7 +145,7 @@ Global Opaque set finite in_inst empty_inst single_inst union_inst inter_inst
 (** Exposed definitions for list coverage *)
 
 Definition list_repr A (E:set A) L :=
-  noduplicates L /\ forall x, mem x L <-> x \in E.
+  noduplicates L /\ (forall x, mem x L <-> x \in E).
 
 Definition list_covers A (E:set A) L :=
   forall x, x \in E -> mem x L.
@@ -142,6 +153,8 @@ Definition list_covers A (E:set A) L :=
 
 (* ---------------------------------------------------------------------- *)
 (** ** Notations for building sets *)
+
+(** DISCLAIMER: these definitions are experimental, they'll probably change *)
 
 Notation "\set{ x | P }" := (@set_st _ (fun x => P))
  (at level 0, x ident, P at level 200) : set_scope.
@@ -180,6 +193,7 @@ Notation "\set{= e | x y '\in' E }" :=
        or  forall y \in E,  j y = i (g y)
 *)
 
+
 (* ********************************************************************** *)
 (** * Properties of sets *)
 
@@ -189,6 +203,8 @@ Transparent set finite empty_inst single_inst single_impl in_inst
   incl_inst inter_inst union_inst card_inst fold_inst remove_inst
   disjoint_inst.
 Hint Constructors mem.
+
+(** Local tactic to help unfolding all intermediate definitions *)
 
 Ltac set_unf := unfold finite,
   card_inst, card_impl, card,
@@ -205,12 +221,14 @@ Ltac set_unf := unfold finite,
   remove_inst, remove_impl, remove,
   fold_inst, fold_impl, fold in *.
 
+
 (* ---------------------------------------------------------------------- *)
 (** Reformulation *)
 
-Lemma disjoint_def : forall (E F : set A),
+Lemma disjoint_eq_inter_empty : forall (E F : set A),
   E \# F = (E \n F = \{}).
 Proof using. auto. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** set_st and double inclusion *)
@@ -262,7 +280,7 @@ Proof using. constructor. intros. set_unf. autos*. Qed.
 
 Global Instance disjoint_eq_inst : Disjoint_eq (T:=set A).
 Proof using.
-  constructor. intros. rewrite disjoint_def.
+  constructor. intros. rewrite disjoint_eq_inter_empty.
   set_unf. applys prop_ext. iff M.
     intros x. rewrite* <- (@fun_eq_1 _ _ x _ _ M).
     extens*.
@@ -318,6 +336,7 @@ Qed.
 
 (* see also [list_repr_nil] further on *)
 
+
 (* ---------------------------------------------------------------------- *)
 (** to_list *)
 
@@ -346,7 +365,9 @@ Proof using.
 Qed.
 
 Lemma to_list_spec : forall (E:set A) L,
-  L = to_list E -> finite E -> list_repr E L.
+  L = to_list E -> 
+  finite E ->
+  list_repr E L.
 Proof.
   introv EQ HE. unfolds. subst. forwards* (?&?): finite_list_repr HE.
 Qed.
@@ -498,7 +519,8 @@ Qed.
 End Finite_remove_inv.
 
 Lemma finite_remove_one_inv : forall (E : set A) x,
-  finite (E \-- x) -> finite E.
+  finite (E \-- x) -> 
+  finite E.
 Proof using.
   introv H. applys finite_remove_inv H. applys finite_single.
 Qed.
@@ -618,6 +640,9 @@ Hint Resolve finite_empty finite_single finite_union
 
 (* ********************************************************************** *)
 (** * Tactics for proving set equalities and set inclusions *)
+
+(** The tactic [set_prove] aims at proving set equality by testing
+    double inclusion using a boolean tautology decision procedure. *)
 
 (* lemmas *)
 
@@ -823,16 +848,16 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** fold *)
 
-Lemma fold_def : forall A B (m:monoid_op B) (f:A->B) (E: set A),
+Lemma fold_eq_fold_to_list : forall A B (m:monoid_op B) (f:A->B) (E: set A),
   fold m f E = LibList.fold m f (to_list E).
 Proof using. reflexivity. Qed.
 
-Lemma fold_eq : forall A B (m:monoid_op B) (f:A->B) (E: set A) L,
+Lemma fold_eq_fold_list_repr : forall A B (m:monoid_op B) (f:A->B) (E: set A) L,
   Comm_monoid m ->
   list_repr E L ->
   fold m f E = LibList.fold m f L.
 Proof using.
-  introv HM EL. rewrite fold_def.
+  introv HM EL. rewrite fold_eq_fold_to_list.
   forwards~ (N&EQ2): to_list_spec E. applys* finite_of_list_repr.
   destruct EL as (ND&EQ1).
   applys~ LibList.fold_equiv. intros. rewrite EQ2. rewrite* EQ1.
@@ -851,7 +876,7 @@ Proof using.
   assert (forall xs, P (LibList.fold m f xs)).
   { induction xs; unfold LibList.fold; simpl; eauto. }
   forwards: finite_list_repr Hfinite.
-  erewrite fold_eq by eauto.
+  erewrite fold_eq_fold_list_repr by eauto.
   eauto.
 Qed.
 
@@ -861,7 +886,7 @@ Lemma fold_congruence : forall A B (m : monoid_op B) (f g : A -> B) (E : set A),
   (forall x, x \in E -> f x = g x) ->
   fold m f E = fold m g E.
 Proof using.
-  introv ? ? h. do 2 rewrite fold_def.
+  introv ? ? h. do 2 rewrite fold_eq_fold_to_list.
   eapply LibList.fold_congruence. intros.
   eapply h. eapply Mem_to_list; eauto.
 Qed.
@@ -869,7 +894,7 @@ Qed.
 Lemma fold_empty : forall A B (m:monoid_op B) (f:A->B),
   fold m f (\{}:set A) = monoid_neutral m.
 Proof using.
-  intros. rewrite fold_def.
+  intros. rewrite fold_eq_fold_to_list.
   rewrite to_list_empty. rewrite~ LibList.fold_nil.
 Qed.
 
@@ -877,7 +902,7 @@ Lemma fold_single : forall A B (m:monoid_op B) (f:A->B) (x:A),
   Monoid m ->
   fold m f \{x} = f x.
 Proof using.
-  intros. rewrite fold_def.
+  intros. rewrite fold_eq_fold_to_list.
   rewrite to_list_single. rewrite~ fold_cons.
   rewrite fold_nil. rewrite~ monoid_neutral_r.
 Qed.
@@ -890,10 +915,10 @@ Lemma fold_union : forall A B (m:monoid_op B) (f:A->B) (E F : set A),
   fold m f (E \u F) = monoid_oper m (fold m f E) (fold m f F).
 Proof using.
   introv HM HE HF HD.
-  rewrites (>> fold_def E).
-  rewrites (>> fold_def F).
+  rewrites (>> fold_eq_fold_to_list E).
+  rewrites (>> fold_eq_fold_to_list F).
   hint finite_list_repr. forwards~ HR: list_repr_disjoint_union HD.
-  rewrites~ (>> fold_eq HR).
+  rewrites~ (>> fold_eq_fold_list_repr HR).
   rewrite~ LibList.fold_app. typeclass.
 Qed.
 
@@ -915,7 +940,7 @@ Proof using.
   eapply fold_union; eauto using remove_disjoint with finite.
 Qed.
 
-(*-- LATER: should we use proper? *)
+(*-- TODO: this statement is temporary; we probably shouldn't use [Proper]. *)
 Lemma fold_pointwise:
   forall B (m : monoid_op B) (leB : B -> B -> Prop),
   Monoid m ->
@@ -927,7 +952,7 @@ Lemma fold_pointwise:
   (forall x, x \in E -> leB (f x) (f' x)) ->
   leB (fold m f E) (fold m f' E).
 Proof using.
-  intros. do 2 rewrite fold_def.
+  intros. do 2 rewrite fold_eq_fold_to_list.
   applys~ LibList.fold_pointwise.
   intros x. forwards~ (_&EQ): finite_list_repr E. rewrite (EQ x). auto.
 Qed.
@@ -1002,9 +1027,10 @@ Tactic Notation "rew_set" "in" "*" :=
 (** * Additional predicates on sets *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Foreach *)
+(** ** TEMPORARY Foreach *)
 
-(** TODO: derive these lemmas as typeclasses in a generic way in LibContainer *)
+(** -- TODO: these lemmas should be instead derived as typeclasses   
+       in a generic way, in LibContainer. *)
 
 Section ForeachProp.
 Variables (A : Type).
@@ -1100,478 +1126,3 @@ Tactic Notation "rew_foreach" "~" "in" "*" :=
 Tactic Notation "rew_foreach" "*" "in" "*" :=
   rew_foreach in *; auto_star.
 
-
-(* ********************************************************************** *)
-(** * Tactics *)
-
-(* DEPRECATED, use "set_prove" when possible *)
-
-(* ---------------------------------------------------------------------- *)
-(** ** Tactics to prove equalities on unions *)
-
-(* Documentation appears further on *)
-
-Lemma for_set_union_assoc : forall A, 
-  assoc (union (T:=set A)).
-Proof using. intros. apply union_assoc. Qed.
-
-Lemma for_set_union_comm : forall A,  
-  comm (union (T:=set A)).
-Proof using. intros. apply union_comm. Qed.
-
-Lemma for_set_union_empty_l : forall A (E:set A), 
-  \{} \u E = E.
-Proof using. intros. apply union_empty_l. Qed.
-
-Lemma for_set_union_empty_r : forall A (E:set A), 
-  E \u \{} = E.
-Proof using. intros. apply union_empty_r. Qed.
-
-Hint Rewrite <- for_set_union_assoc : rew_permut_simpl.
-Hint Rewrite for_set_union_empty_l for_set_union_empty_r : rew_permut_simpl.
-Ltac rew_permut_simpl :=
-  autorewrite with rew_permut_simpl; try typeclass.
-Ltac rews_permut_simpl :=
-  autorewrite with rew_permut_simpl in *; try typeclass.
-
-Section PermutationTactic.
-Context (A:Type).
-Implicit Types l : set A.
-
-Lemma permut_get_1 : forall l1 l2,
-  (l1 \u l2) = (l1 \u l2).
-Proof using. intros. auto. Qed.
-
-Lemma permut_get_2 : forall l1 l2 l3,
-  (l1 \u l2 \u l3) = (l2 \u l1 \u l3).
-Proof using. intros. apply union_comm_assoc. Qed.
-
-Lemma permut_get_3 : forall l1 l2 l3 l4,
-  (l1 \u l2 \u l3 \u l4) = (l2 \u l3 \u l1 \u l4).
-Proof using.
-  intros. do 2 rewrite (union_assoc l2). apply permut_get_2.
-Qed.
-
-Lemma permut_get_4 : forall l1 l2 l3 l4 l5,
-    (l1 \u l2 \u l3 \u l4 \u l5)
-  = (l2 \u l3 \u l4 \u l1 \u l5).
-Proof using.
-  intros. do 2 rewrite (union_assoc l2). apply permut_get_3.
-Qed.
-
-Lemma permut_get_5 : forall l1 l2 l3 l4 l5 l6,
-    (l1 \u l2 \u l3 \u l4 \u l5 \u l6)
-  = (l2 \u l3 \u l4 \u l5 \u l1 \u l6).
-Proof using.
-  intros. do 2 rewrite (union_assoc l2). apply permut_get_4.
-Qed.
-
-Lemma permut_get_6 : forall l1 l2 l3 l4 l5 l6 l7,
-    (l1 \u l2 \u l3 \u l4 \u l5 \u l6 \u l7)
-  = (l2 \u l3 \u l4 \u l5 \u l6 \u l1 \u l7).
-Proof using.
-  intros. do 2 rewrite (union_assoc l2). apply permut_get_5.
-Qed.
-
-Lemma permut_get_7 : forall l1 l2 l3 l4 l5 l6 l7 l8,
-    (l1 \u l2 \u l3 \u l4 \u l5 \u l6 \u l7 \u l8)
-  = (l2 \u l3 \u l4 \u l5 \u l6 \u l7 \u l1 \u l8).
-Proof using.
-  intros. do 2 rewrite (union_assoc l2). apply permut_get_6.
-Qed.
-
-Lemma permut_get_8 : forall l1 l2 l3 l4 l5 l6 l7 l8 l9,
-    (l1 \u l2 \u l3 \u l4 \u l5 \u l6 \u l7 \u l8 \u l9)
-  = (l2 \u l3 \u l4 \u l5 \u l6 \u l7 \u l8 \u l1 \u l9).
-Proof using.
-  intros. do 2 rewrite (union_assoc l2). apply permut_get_7.
-Qed.
-
-Lemma permut_cancel_1 : forall l1 l2,
-  (l1 \u l1 \u l2) = l1 \u l2.
-Proof using. intros. rewrite union_assoc. rewrite union_self. auto. Qed.
-
-Lemma permut_cancel_2 : forall l1 l2 l3,
-  (l1 \u l2 \u l1 \u l3) = (l1 \u l2 \u l3).
-Proof using.
-  intros. rewrite <- (@permut_get_2 l1). apply permut_cancel_1.
-Qed.
-
-Lemma permut_cancel_3 : forall l1 l2 l3 l4,
-  (l1 \u l2 \u l3 \u l1 \u l4) = (l1 \u l2 \u l3 \u l4).
-Proof using.
-  intros. rewrite <- (@permut_get_3 l1). apply permut_cancel_1.
-Qed.
-
-Lemma permut_cancel_4 : forall l1 l2 l3 l4 l5,
-    (l1 \u l2 \u l3 \u l4 \u l1 \u l5)
-  = (l1 \u l2 \u l3 \u l4 \u l5).
-Proof using.
-  intros. rewrite <- (@permut_get_4 l1). apply permut_cancel_1.
-Qed.
-
-Lemma permut_cancel_5 : forall l1 l2 l3 l4 l5 l6,
-    (l1 \u l2 \u l3 \u l4 \u l5 \u l1 \u l6)
-  = (l1 \u l2 \u l3 \u l4 \u l5 \u l6).
-Proof using.
-  intros. rewrite <- (@permut_get_5 l1). apply permut_cancel_1.
-Qed.
-
-Lemma permut_tactic_setup : forall l1 l2,
-   (\{} \u l1 \u \{}) = (l2 \u \{}) -> l1 = l2.
-Proof using. intros. rews_permut_simpl. Qed.
-
-Lemma permut_tactic_keep : forall l1 l2 l3 l4,
-  ((l1 \u l2) \u l3) = l4 ->
-  (l1 \u (l2 \u l3)) = l4.
-Proof using. intros. rews_permut_simpl. Qed.
-
-Lemma permut_tactic_simpl : forall l1 l2 l3 l4,
-  (l1 \u l3) = l4 ->
-  (l1 \u (l2 \u l3)) = (l2 \u l4).
-Proof using. intros. subst. apply permut_get_2. Qed.
-
-Lemma permut_tactic_trans : forall l1 l2 l3,
-  l3 = l2 -> l1 = l3 -> l1 = l2.
-Proof using. intros. subst~. Qed.
-
-End PermutationTactic.
-
-(** [permut_lemma_get n] returns the lemma [permut_get_n]
-    for the given value of [n] *)
-
-Ltac permut_lemma_get n :=
-  match number_to_nat n with
-  | 1%nat => constr:(permut_get_1)
-  | 2%nat => constr:(permut_get_2)
-  | 3%nat => constr:(permut_get_3)
-  | 4%nat => constr:(permut_get_4)
-  | 5%nat => constr:(permut_get_5)
-  end.
-
-(** [permut_prepare] applies to a goal of the form [permut l l']
-    and sets [l] and [l'] in the form [l1 \u l2 \u .. \u \{}],
-    (some of the lists [li] are put in the form [x::\{}]). *)
-
-Ltac permut_simpl_prepare :=
-   rew_permut_simpl;
-   apply permut_tactic_setup;
-   repeat rewrite <- union_assoc.
-
-(* todo : doc *)
-
-Ltac cancel_all_dup l :=
-  repeat first
-    [ rewrite (permut_cancel_1 l)
-    | rewrite (permut_cancel_2 l)
-    | rewrite (permut_cancel_3 l)
-    | rewrite (permut_cancel_4 l)
-    | rewrite (permut_cancel_5 l) ].
-
-Ltac permut_index_of l lcontainer :=
-  match constr:(lcontainer) with
-  | l \u _ => constr:(1)
-  | _ \u l \u _ => constr:(2)
-  | _ \u _ \u l \u _ => constr:(3)
-  | _ \u _ \u _ \u l \u _ => constr:(4)
-  | _ \u _ \u _ \u _ \u l \u _ => constr:(5)
-  | _ \u _ \u _ \u _ \u _ \u l \u _ => constr:(6)
-  | _ \u _ \u _ \u _ \u _ \u _ \u l \u _ => constr:(7)
-  | _ \u _ \u _ \u _ \u _ \u _ \u _ \u l \u _ => constr:(8)
-  | _ => constr:(0) (* not found *)
-  end.
-
-(** [permut_simplify] simplifies a goal of the form
-    [permut l l'] where [l] and [l'] are lists built with
-    concatenation and consing, by cancelling syntactically
-    equal elements *)
-
-Ltac permut_simpl_once :=
-  match goal with
-  | |- (_ \u \{}) = _ => fail 1
-  | |- (_ \u (?l \u ?lr)) = ?l' =>
-     cancel_all_dup l;
-     match permut_index_of l l' with
-     | 0 => apply permut_tactic_keep
-     | ?n => let F := permut_lemma_get n in
-            eapply permut_tactic_trans;
-            [ eapply F; try typeclass
-            | apply permut_tactic_simpl ]
-     end
-  end.
-
-Ltac permut_simpl :=
-  permut_simpl_prepare;
-  repeat permut_simpl_once;
-  rew_permut_simpl;
-  try apply refl_equal.
-
-(* TODO: move demos somewhere else *)
-
-Section DemoSetUnion.
-Variables (A:Type).
-
-Lemma demo_set_union_permut_simpl_1 :
-  forall l1 l2 l3 : set A,
-  (l1 \u l2 \u l3 \u l1) = (l3 \u l2 \u l1).
-Proof using.
-  intros.
-  permut_simpl_prepare.
-  permut_simpl_once.
-  permut_simpl_once.
-  permut_simpl_once.
-  rew_permut_simpl.
-Qed.
-
-
-Lemma demo_set_union_permut_simpl_2 :
-  forall
-  (x:A) l1 l2 l3,
-  (l1 \u \{x} \u l3 \u l2) = (l1 \u l2 \u (\{x} \u l3)).
-Proof using.
-  intros.
-  permut_simpl_prepare.
-  permut_simpl_once.
-  permut_simpl_once.
-  permut_simpl_once.
-  permut_simpl_once.
-  rew_permut_simpl.
-Qed.
-
-Lemma demo_set_union_permut_simpl_3 : forall (x y:A) l1 l1' l2 l3,
-  l1 = l1' ->
-    (l1 \u (\{x} \u l2) \u \{x} \u (\{y} \u l3)) 
-  = (\{y} \u (l1' \u l2) \u (\{x} \u l3)).
-Proof using.
-  intros.
-  permut_simpl_prepare.
-  permut_simpl_once.
-  permut_simpl_once.
-  permut_simpl_once.
-  permut_simpl_once.
-  permut_simpl_once.
-  try permut_simpl_once.
-  rew_permut_simpl.
-Qed.
-
-End DemoSetUnion.
-
-(* ---------------------------------------------------------------------- *)
-(** ** Tactics to prove membership *)
-
-(* DEPRECATED: use "set_prove" when possible *)
-
-Section InUnionGet.
-Variables (A:Type).
-Implicit Types l : set A.
-
-Lemma in_union_get_1 : forall x l1 l2,
-  x \in l1 -> x \in (l1 \u l2).
-Proof using. intros. apply in_union_l. auto. Qed.
-
-Lemma in_union_get_2 : forall x l1 l2 l3,
-  x \in l2 -> x \in (l1 \u l2 \u l3).
-Proof using. intros. apply in_union_r. apply~ in_union_get_1. Qed.
-
-Lemma in_union_get_3 : forall x l1 l2 l3 l4,
-  x \in l3 -> x \in (l1 \u l2 \u l3 \u l4).
-Proof using. intros. apply in_union_r. apply~ in_union_get_2. Qed.
-
-Lemma in_union_get_4 : forall x l1 l2 l3 l4 l5,
-  x \in l4 -> x \in (l1 \u l2 \u l3 \u l4 \u l5).
-Proof using. intros. apply in_union_r. apply~ in_union_get_3. Qed.
-
-Lemma in_union_get_5 : forall x l1 l2 l3 l4 l5 l6,
-  x \in l5 -> x \in (l1 \u l2 \u l3 \u l4 \u l5 \u l6).
-Proof using. intros. apply in_union_r. apply~ in_union_get_4. Qed.
-
-End InUnionGet.
-
-Arguments in_union_get_1 [A] [x] [l1] [l2].
-Arguments in_union_get_2 [A] [x] [l1] [l2] [l3].
-Arguments in_union_get_3 [A] [x] [l1] [l2] [l3] [l4].
-Arguments in_union_get_4 [A] [x] [l1] [l2] [l3] [l4] [l5].
-Arguments in_union_get_5 [A] [x] [l1] [l2] [l3] [l4] [l5] [l6].
-
-Ltac in_union_get :=
-  match goal with H: ?x \in ?A |- ?x \in ?B =>
-  match B with context [A] =>
-  let go tt := first
-        [ apply (in_union_get_1 H)
-        | apply (in_union_get_2 H)
-        | apply (in_union_get_3 H)
-        | apply (in_union_get_4 H)
-        | apply (in_union_get_5 H) ] in
-  first [ go tt
-        | rewrite <- (for_set_union_empty_r B);
-          repeat rewrite <- for_set_union_assoc;
-          go tt ]
-  end end.
-
-Hint Extern 3 (_ \in _ \u _) => in_union_get.
-
-Section InUnionExtract.
-Variables (A:Type).
-Implicit Types l : set A.
-
-Lemma in_union_extract_1 : forall x l1,
-  x \in (\{x} \u l1).
-Proof using. intros. apply in_union_get_1. apply in_single_self. Qed.
-
-Lemma in_union_extract_2 : forall x l1 l2,
-  x \in (l1 \u \{x} \u l2).
-Proof using. intros. apply in_union_get_2. apply in_single_self. Qed.
-
-Lemma in_union_extract_3 : forall x l1 l2 l3,
-  x \in (l1 \u l2 \u \{x} \u l3).
-Proof using. intros. apply in_union_get_3. apply in_single_self. Qed.
-
-Lemma in_union_extract_4 : forall x l1 l2 l3 l4,
-  x \in (l1 \u l2 \u l3 \u \{x} \u l4).
-Proof using. intros. apply in_union_get_4. apply in_single_self. Qed.
-
-Lemma in_union_extract_5 : forall x l1 l2 l3 l4 l5,
-  x \in (l1 \u l2 \u l3 \u l4 \u \{x} \u l5).
-Proof using. intros. apply in_union_get_5. apply in_single_self. Qed.
-
-End InUnionExtract.
-
-Ltac in_union_extract :=
-  match goal with |- ?x \in ?A =>
-  match A with context [\{x}] =>
-  let go tt := first
-        [ apply (in_union_extract_1)
-        | apply (in_union_extract_2)
-        | apply (in_union_extract_3)
-        | apply (in_union_extract_4)
-        | apply (in_union_extract_5) ] in
-  first [ go tt
-        | rewrite <- (for_set_union_empty_r A);
-          repeat rewrite <- for_set_union_assoc;
-          go tt ]
-  end end.
-
-Hint Extern 3 (_ \in _) => in_union_extract.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Tactics to invert a membership hypothesis *)
-
-(* TODO: document and clean up *)
-
-Section InversionsTactic.
-Context (A:Type).
-Implicit Types l : set A.
-Implicit Types x : A.
-Lemma empty_eq_single_inv_1 : forall x l1 l2,
-  l1 = l2 -> x \notin l1 -> x \in l2 -> False.
-Proof using. intros. subst*. Qed.
-Lemma empty_eq_single_inv_2 : forall x l1 l2,
-  l1 = l2 -> x \notin l2 -> x \in l1 -> False.
-Proof using. intros. subst*. Qed.
-Lemma notin_empty : forall x,
-  x \notin (\{}:set A).
-Proof using. intros. unfold notin. rewrite in_empty_eq. auto. Qed.
-End InversionsTactic.
-Hint Resolve notin_empty.
-
-Ltac in_union_meta :=
-  match goal with
-  | |- _ \in \{_} => apply in_single_self
-  | |- _ \in \{_} \u _ => apply in_union_l; apply in_single_self
-  | |- _ \in _ \u _ => apply in_union_r; in_union_meta
-  end.
-
-Ltac fset_inv_core_for H :=
-  let go L :=
-     false L; [ apply H
-              | try apply notin_empty
-              | instantiate; try in_union_meta ] in
-  match type of H with
-  | \{} = _ => go empty_eq_single_inv_1
-  | _ = \{} => go empty_eq_single_inv_2
-  | _ = _ => go empty_eq_single_inv_1
-  end.
-
-Tactic Notation "fset_inv" constr(H) :=
-  fset_inv_core_for H.
-
-Ltac fset_inv_core :=
-  match goal with
-  | |- \{} <> _ => let H := fresh in intro H; fset_inv H
-  | |- _ <> \{} => let H := fresh in intro H; fset_inv H
-  | H: \{} = _ |- _ => fset_inv H
-  | H: _ = \{} |- _ => fset_inv H
-  end.
-
-Tactic Notation "fset_inv" :=
-  fset_inv_core.
-
-Section InUnionInv.
-Variables (A:Type).
-Implicit Types l : set A.
-
-Lemma set_in_empty_inv : forall x,
-  x \in (\{}:set A) -> False.
-Proof using. introv. apply notin_empty. Qed.
-Lemma set_in_single_inv : forall x y : A,
-  x \in (\{y}:set A) -> x = y.
-Proof using. intros. rewrite @in_single_eq in H. auto. typeclass. Qed.
-Lemma set_in_union_inv : forall x l1 l2,
-  x \in (l1 \u l2) -> x \in l1 \/ x \in l2.
-Proof using. introv H. rewrite @in_union_eq in H. auto. typeclass. Qed.
-
-End InUnionInv.
-
-Arguments set_in_single_inv [A] [x] [y].
-Arguments set_in_union_inv [A] [x] [l1] [l2].
-
-
-Ltac set_in_inv_base H M :=
-  match type of H with
-  | _ \in \{} => false; apply (@set_in_empty_inv _ _ H)
-  | _ \in \{_} =>
-    generalize (set_in_single_inv H); try clear H; intro_subst
-  | _ \in _ \u _ =>
-    let H' := fresh "TEMP" in
-    destruct (set_in_union_inv H) as [H'|H'];
-    try clear H; set_in_inv_base H' M
-  | _ => rename H into M
-  end.
-
-Tactic Notation "set_in" constr(H) "as" ident(M) :=
-  set_in_inv_base H M.
-Tactic Notation "set_in" constr(H) :=
-  let M := fresh "H" in set_in H as M.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Tactic to prove two sets equal by double-inclusion *)
-
-(* DEPRECATED: use "set_prove" instead when possible *)
-
-Tactic Notation "eq_set" :=
-  let H := fresh "TEMP" in
-  apply set_ext; iff H; set_in H; in_union_get.
-Tactic Notation "eq_set" "*" :=
-  eq_set; auto_star.
-
-
-
-
-(* ---------------------------------------------------------------------- *)
-(* ---------------------------------------------------------------------- *)
-
-(* FUTURE
-
-  (** Sets of sets *)
-
-  (* todo: typeclass for bigunion and bigintersection *)
-
-  Definition bigunion_impl A (E : set (set A)) : set A :=
-    \set{ x | exists_ F \in E, x \in (F:set A) }.
-
-  Definition biguinter_impl A (E : set (set A)) : set A :=
-    \set{ x | forall_ F \in E, x \in (F:set A) }.
-
-*)

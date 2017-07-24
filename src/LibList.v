@@ -885,15 +885,15 @@ End Nth.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** [nth] as a partial function with a default *)
+(** ** [nth_default] as a partial function with a default *)
 
-Fixpoint nth_def A (d:A) (n:nat) (l:list A) : A :=
+Fixpoint nth_default A (d:A) (n:nat) (l:list A) : A :=
   match l with
   | nil => d
   | x::l' =>
      match n with
      | 0 => x
-     | S n' => nth_def d n' l'
+     | S n' => nth_default d n' l'
      end
   end.
 
@@ -904,27 +904,27 @@ Implicit Types d x : A.
 Implicit Types l : list A.
 Hint Constructors Nth.
 
-Lemma nth_def_nil : forall n d,
-  nth_def d n nil = d.
+Lemma nth_default_nil : forall n d,
+  nth_default d n nil = d.
 Proof using. introv. destruct~ n. Qed.
 
-Lemma nth_def_zero : forall x l d,
-  nth_def d 0 (x::l) = x.
+Lemma nth_default_zero : forall x l d,
+  nth_default d 0 (x::l) = x.
 Proof using. introv. reflexivity. Qed.
 
-Lemma nth_def_succ : forall n x l d,
-  nth_def d (S n) (x::l) = nth_def d n l.
+Lemma nth_default_succ : forall n x l d,
+  nth_default d (S n) (x::l) = nth_default d n l.
 Proof using. introv. reflexivity. Qed.
 
-Definition nth_def_cons := nth_def_succ.
+Definition nth_default_cons := nth_default_succ.
 
-Lemma nth_def_of_Nth : forall n l x dummy,
+Lemma nth_default_of_Nth : forall n l x dummy,
   Nth n l x -> 
-  nth_def dummy n l = x.
+  nth_default dummy n l = x.
 Proof using. introv H. induction~ H. Qed.
 
-Lemma Nth_of_nth_def : forall l d n x,
-  nth_def d n l = x ->
+Lemma Nth_of_nth_default : forall l d n x,
+  nth_default d n l = x ->
   n < length l ->
   Nth n l x.
 Proof using.
@@ -937,16 +937,16 @@ Qed.
 
 End NthDef.
 
-Arguments nth_def [A] : simpl never.
+Arguments nth_default [A] : simpl never.
 
-Hint Rewrite nth_def_nil nth_def_zero nth_def_succ : rew_listx.
+Hint Rewrite nth_default_nil nth_default_zero nth_default_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** [nth] as a partial function *)
 
 Definition nth `{IA:Inhab A} := 
-  nth_def arbitrary.
+  nth_default arbitrary.
 
 Section NthFunc.
 Context (A:Type) {IA: Inhab A}.
@@ -956,11 +956,11 @@ Implicit Types l : list A.
 
 Lemma nth_zero : forall x l,
   nth 0 (x::l) = x.
-Proof using. intros. apply nth_def_zero. Qed.
+Proof using. intros. apply nth_default_zero. Qed.
 
 Lemma nth_succ : forall n x l,
   nth (S n) (x::l) = nth n l.
-Proof using. intros. apply nth_def_succ. Qed.
+Proof using. intros. apply nth_default_succ. Qed.
 
 Definition nth_cons := nth_succ.
 
@@ -976,13 +976,13 @@ Qed.
 Lemma nth_of_Nth : forall n l x,
   Nth n l x -> 
   nth n l = x.
-Proof using. introv H. apply~ nth_def_of_Nth. Qed.
+Proof using. introv H. apply~ nth_default_of_Nth. Qed.
 
 Lemma Nth_of_nth : forall l n x,
   nth n l = x ->
   n < length l ->
   Nth n l x.
-Proof using. intros. applys* Nth_of_nth_def. Qed.
+Proof using. intros. applys* Nth_of_nth_default. Qed.
 
 Lemma Nth_nth : forall l n,
   n < length l ->

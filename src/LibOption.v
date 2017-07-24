@@ -51,12 +51,12 @@ Definition is_some A (o:option A) :=
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** [unsome_def] *)
+(** ** [unsome_default] *)
 
-(** [unsome_def d o] returns the content of the option, and returns [d]
+(** [unsome_default d o] returns the content of the option, and returns [d]
     in case the option in [None]. *)
 
-Definition unsome_def A d (o:option A) :=
+Definition unsome_default A d (o:option A) :=
   match o with
   | None => d
   | Some x => x
@@ -70,7 +70,7 @@ Definition unsome_def A d (o:option A) :=
     value in case the option in [None]. *)
 
 Definition unsome `{Inhab A} :=
-  unsome_def arbitrary.
+  unsome_default arbitrary.
 
 
 (* ---------------------------------------------------------------------- *)
