@@ -57,6 +57,12 @@ Work-in-progess files (compile, but with material remaining to be polished)
    LibOtherDemos
 
 
+Future work:
+
+   LibListSub (for subsequences, in particular prefix/suffix of lists)
+   LibListSort
+   LibListExec (to be renamed to LibListX)
+
 
 Deprecated (contents commented out):
 

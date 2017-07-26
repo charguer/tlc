@@ -523,41 +523,41 @@ Proof using. math. Qed.
 
 Lemma le_nat_of_le_int : forall (n m:nat),
   (n:int) <= (m:int) -> 
-  (n <= m)%nat.
+  (n <= m).
 Proof using. math. Qed.
 
 Lemma le_int_of_le_nat : forall (n m:nat),
-  (n <= m)%nat -> 
+  (n <= m) -> 
   (n:int) <= (m:int).
 Proof using. math. Qed.
 
 Lemma lt_nat_of_lt_int : forall (n m:nat),
   (n:int) < (m:int) -> 
-  (n < m)%nat.
+  (n < m).
 Proof using. math. Qed.
 
 Lemma lt_int_of_lt_nat : forall (n m:nat),
-  (n < m)%nat -> 
+  (n < m) -> 
   (n:int) < (m:int).
 Proof using. math. Qed.
 
 Lemma ge_nat_of_ge_int : forall (n m:nat),
   (n:int) >= (m:int) -> 
-  (n >= m)%nat.
+  (n >= m).
 Proof using. math. Qed.
 
 Lemma ge_int_of_ge_nat : forall (n m:nat),
-  (n >= m)%nat -> 
+  (n >= m) -> 
   (n:int) >= (m:int).
 Proof using. math. Qed.
 
 Lemma gt_nat_of_gt_int : forall (n m:nat),
   (n:int) > (m:int) -> 
-  (n > m)%nat.
+  (n > m).
 Proof using. math. Qed.
 
 Lemma gt_int_of_gt_nat : forall (n m:nat),
-  (n > m)%nat -> 
+  (n > m) -> 
   (n:int) > (m:int).
 Proof using. math. Qed.
 
@@ -594,6 +594,15 @@ Proof using.
   rewrite Zabs_eq. math. math.
 Qed.
 
+Lemma abs_eq_nat_eq : forall (x:int) (y:nat),
+  x >= 0 ->
+  (abs x = y :> nat) = (x = Z_of_nat y :> int).
+Proof using.
+  introv M. extens. iff E.
+  { subst. rewrite Zabs2Nat.id_abs, Z.abs_eq; math. } 
+  { subst. rewrite~ Zabs2Nat.id. }
+Qed.
+
 Lemma lt_abs_abs : forall (n m : int),
   (0 <= n) -> 
   (n < m) -> 
@@ -601,6 +610,8 @@ Lemma lt_abs_abs : forall (n m : int),
 Proof using.
   intros. nat_comp_to_peano. apply Zabs_nat_lt. math.
 Qed.
+
+(** -- TODO: many useful lemmas missing *)
 
 
 (* ---------------------------------------------------------------------- *)

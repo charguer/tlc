@@ -385,6 +385,10 @@ Definition append := app.
 Definition app_eq_self_inv_r := self_eq_app_r_inv.
 Definition app_eq_self_inv_l := self_eq_app_l_inv.
 
+nth_update_same => nth_update_same
+
+Nth_app_r => Nth_app_r'
+
 (* ********************************************************************** *)
 (** too specific *)
 
@@ -1699,3 +1703,24 @@ update_def_union => update_eq_union_single
 
 set_norm => rew_set in *
 
+
+===================
+
+rew_arr => rew_array_nocase 
+LibListZ_length_def => length_eq
+length_singleton => length_one
+length_le_1_implies_nil_tail => length_le_1_inv_tail_eq_nil
+index_def => index_eq_index_length
+index_length_unfold => index_of_index_length
+index_bounds => index_eq_inbound
+index_bounds_impl => index_of_inbound
+index_length_eq => index_of_index_length'
+read_zero => read_cons_zero
+read_succ => read_cons_succ
+ext_eq => extens_eq
+read_update_eq => read_update_same
+update_update_eq => update_update_same
+update_app_right => update_app_r
+update_app_right_here => update_app_middle
+index_zmake => index_make
+cons_make => cons_make_pred_same

@@ -19,7 +19,6 @@ Global Close Scope list_scope.
 
 
 
-
 (* -------------------------------------------------------------------------- *)
 
 (* The [prefix] ordering on lists. *)
@@ -326,6 +325,72 @@ Qed.
 
 End PrefixClosed.
 
+
+(* -------------------------------------------------------------------------- *)
+
+(* The [prefix] ordering on lists has been defined in [LibList]. Here, we
+   provide an alternate definition, as well as more properties. *)
+
+(* TEMPORARY characterize [prefix] as pointwise equality *)
+
+Section Prefix.
+
+Variables (A : Type).
+Implicit Types xs ys : list A.
+
+Lemma le_implies_ge: forall x y, x <= y -> y >= x.
+Proof using. math. Qed.
+
+Local Hint Resolve le_implies_ge length_nonneg.
+
+(* [prefix], [snoc], and read access. *)
+
+Lemma prefix_read:
+  forall `{Inhab A} ys xs y,
+  prefix (ys & y) xs ->
+  y = xs[length ys].
+Proof using.
+  intros.
+  change (xs[length ys]) with (nth (length ys) xs).
+  unfold nth. case_if as Hop; [ | clear Hop ].
+  { false. forwards: length_nonneg ys. math. }
+  unfold LibList.nth.
+  generalize dependent xs.
+  generalize dependent ys. unfold prefix.
+  induction ys; intros xs [ zs ? ]; rew_list in *.
+  (* Base case. *)
+  { change (abs 0) with (0%nat).
+    subst xs. reflexivity. }
+  (* Inductive case. *)
+  { rewrite abs_plus by first [ math | eauto ].
+    change (abs 1) with (1%nat).
+    destruct xs as [ | x xs ]; [ congruence | ].
+    simpl. eapply IHys. exists zs. rew_list. congruence. }
+Qed.
+
+(* [prefix] and [length]. *)
+
+Lemma prefix_length:
+  forall ys xs,
+  prefix ys xs ->
+  length ys <= length xs.
+Proof using.
+  intros ys xs [ zs ? ]. subst xs. rew_list.
+  assert (length zs >= 0). { eauto. }
+  math.
+Qed.
+
+Lemma prefix_snoc_length:
+  forall ys y xs,
+  prefix (ys & y) xs ->
+  length ys < length xs.
+Proof using.
+  intros ys y xs [ zs ? ]. subst xs. rew_list.
+  assert (length zs >= 0). { eauto. }
+  math.
+Qed.
+
+End Prefix.
 
 
 *)

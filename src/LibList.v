@@ -354,6 +354,9 @@ Implicit Types l : list A.
 
 (**------- Length -------- *)
 
+(* -- TODO: should this be length_eq_zero? or length_zero can be
+      read as "having the length-zero property"? *)
+
 Lemma length_zero_inv : forall l,
   length l = 0%nat ->
   l = nil.
@@ -785,6 +788,8 @@ Proof using.
   { iff M. inverts~ M. subst~. }
 Qed.
 
+(** --LATER: add [nth_last] lemma *)
+
 Lemma Nth_functional : forall n l x1 x2,
   Nth n l x1 ->
   Nth n l x2 -> 
@@ -831,13 +836,18 @@ Proof using. intros n. induction n; introv H; inverts H; rew_list*. Qed.
 
 Lemma Nth_app_r : forall n m x l1 l2,
   Nth m l2 x -> 
-  n = (m + length l1)%nat -> 
-  Nth n (l1 ++ l2) x.
+  Nth (m + length l1)%nat (l1 ++ l2) x.
 Proof using.
-  intros. subst. gen m. induction l1; introv H; rew_list.
+  intros. gen m. induction l1; introv H; rew_list.
   { applys_eq~ H 3. }
   { applys_eq* Nth_succ 3. }
 Qed.
+
+Lemma Nth_app_r' : forall n m x l1 l2,
+  Nth m l2 x -> 
+  n = (m + length l1)%nat -> 
+  Nth n (l1 ++ l2) x.
+Proof using. intros. subst. applys* Nth_app_r. Qed.
 
 Lemma Nth_nil_inv : forall n x,
   Nth n nil x -> 
@@ -887,7 +897,7 @@ End Nth.
 (* ---------------------------------------------------------------------- *)
 (** ** [nth_default] as a partial function with a default *)
 
-Fixpoint nth_default A (d:A) (n:nat) (l:list A) : A :=
+Fixpoint nth_default A (d:A) (n:nat) (l:list A) {struct l} : A :=
   match l with
   | nil => d
   | x::l' =>
@@ -918,9 +928,19 @@ Proof using. introv. reflexivity. Qed.
 
 Definition nth_default_cons := nth_default_succ.
 
-Lemma nth_default_of_Nth : forall n l x dummy,
+Lemma nth_default_gt_length : forall l d n,
+  n >= length l ->
+  nth_default d n l = d.
+Proof using.
+  induction l as [|l']; introv N; rew_list in *.
+  { auto. }
+  { destruct n as [|n']. { false; math. }
+    simpl. rewrite~ IHl. math. }
+Qed.
+
+Lemma nth_default_of_Nth : forall n l x d,
   Nth n l x -> 
-  nth_default dummy n l = x.
+  nth_default d n l = x.
 Proof using. introv H. induction~ H. Qed.
 
 Lemma Nth_of_nth_default : forall l d n x,
@@ -954,6 +974,10 @@ Implicit Types n : nat.
 Implicit Types x : A.
 Implicit Types l : list A.
 
+Lemma nth_lt_length : forall x l,
+  nth 0 (x::l) = x.
+Proof using. intros. apply nth_default_zero. Qed.
+
 Lemma nth_zero : forall x l,
   nth 0 (x::l) = x.
 Proof using. intros. apply nth_default_zero. Qed.
@@ -964,6 +988,14 @@ Proof using. intros. apply nth_default_succ. Qed.
 
 Definition nth_cons := nth_succ.
 
+Lemma nth_cons_case : forall n x l,
+  nth n (x::l) = (If n = 0 then x else nth (n-1) l).
+Proof using.
+  intros. destruct n as [|n'].
+  { case_if. rewrite~ nth_zero. }
+  { case_if. rewrite~ nth_succ. fequals; math. }
+Qed.
+
 Lemma nth_pos : forall n x l,
   n > 0 ->
   nth n (x::l) = nth (n-1) l.
@@ -972,6 +1004,11 @@ Proof using.
   { false. math. } 
   { rewrite nth_succ. fequals. math. } 
 Qed.
+
+Lemma nth_gt_length : forall l n,
+  n >= length l ->
+  nth n l = arbitrary.
+Proof using. introv N. applys~ nth_default_gt_length. Qed.
 
 Lemma nth_of_Nth : forall n l x,
   Nth n l x -> 
@@ -1001,6 +1038,38 @@ Lemma nth_mem : forall n l x,
   n < length l ->
   mem x l.
 Proof using. introv E N. forwards~ H: Nth_of_nth E. applys* Nth_mem H. Qed.
+
+Lemma nth_app_l : forall n l1 l2,
+  n < length l1 ->
+  nth n (l1 ++ l2) = nth n l1.
+Proof using.
+  introv N. applys nth_of_Nth. applys Nth_app_l. applys~ Nth_nth.
+Qed.
+
+Lemma nth_app_r : forall n l1 l2,
+  n >= length l1 -> 
+  nth n (l1 ++ l2) = nth (n - length l1) l2.
+Proof using.
+  (* -- TODO: investigate issue with Qed if not unfolding nth *) 
+  unfold nth. intros n l1. gen n. induction l1; introv N; rew_list in *.
+  { fequals; math. }
+  { destruct n as [|n']. { false; math. }
+    unfold nth_default; fold nth_default. simpl.
+    (* rewrite nth_succ. *) rewrite IHl1; [|math].
+    fequals; math. }
+Qed.
+
+Lemma nth_last_case : forall n x l,
+  nth n (l&x) = (If n = length l then x else nth n l).
+Proof using.
+  intros. case_if.
+  { rewrite nth_app_r; [|math]. math_rewrite (n-length l = 0).
+    rewrite~ nth_zero. }
+  { tests C': (n < length l).
+    { rewrite~ nth_app_l. }
+    { rewrite nth_gt_length; [|rew_list; math]. 
+      rewrite nth_gt_length; [|math]. auto. } }
+Qed.
 
 End NthFunc.
 
@@ -1311,7 +1380,7 @@ Proof using.
     { rewrite update_succ. rew_list. rewrite~ IHl. } }
 Qed.
 
-Lemma nth_update_eq : forall n l v,
+Lemma nth_update_same : forall n l v,
   n < length l ->
   nth n (update n v l) = v.
 Proof using.

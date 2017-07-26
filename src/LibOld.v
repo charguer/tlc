@@ -136,6 +136,62 @@ Fixpoint factorial (n:nat) : nat :=
 (************************************************************)
 (* LibInt *)
 
+(** --TODO: remove lemma below with comparisons in %nat *)
+
+Lemma le_nat_of_le_int' : forall (n m:nat),
+  (n:int) <= (m:int) -> 
+  (n <= m)%nat.
+Proof using. math. Qed.
+
+Lemma le_int_of_le_nat' : forall (n m:nat),
+  (n <= m)%nat -> 
+  (n:int) <= (m:int).
+Proof using. math. Qed.
+
+Lemma lt_nat_of_lt_int' : forall (n m:nat),
+  (n:int) < (m:int) -> 
+  (n < m)%nat.
+Proof using. math. Qed.
+
+Lemma lt_int_of_lt_nat' : forall (n m:nat),
+  (n < m)%nat -> 
+  (n:int) < (m:int).
+Proof using. math. Qed.
+
+Lemma ge_nat_of_ge_int' : forall (n m:nat),
+  (n:int) >= (m:int) -> 
+  (n >= m)%nat.
+Proof using. math. Qed.
+
+Lemma ge_int_of_ge_nat' : forall (n m:nat),
+  (n >= m)%nat -> 
+  (n:int) >= (m:int).
+Proof using. math. Qed.
+
+Lemma gt_nat_of_gt_int' : forall (n m:nat),
+  (n:int) > (m:int) -> 
+  (n > m)%nat.
+Proof using. math. Qed.
+
+Lemma gt_int_of_gt_nat' : forall (n m:nat),
+  (n > m)%nat -> 
+  (n:int) > (m:int).
+Proof using. math. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+
+Lemma abs_eq_nat_inv : forall (x:int) (y:nat),
+  abs x = y :> nat ->
+  x >= 0 ->
+  x = y :> int.
+  
+
+Lemma abs_neq_nat_inv : forall (x:int) (y:nat),
+  abs x <> y :> nat ->
+  x >= 0 ->
+  x <> y :> int.
+
 (* ---------------------------------------------------------------------- *)
 (** ** Calling [maths] after eliminating boolean reflection *)
 
@@ -1468,4 +1524,282 @@ Qed.
 
 *)
 
+(************************************************************)
+(************************************************************)
+(************************************************************)
+(* LibListZ *)
+
+
+
+(* ********************************************************************** *)
+(** * DEPRECATED -- List predicates using indices in Z *)
+
+Section ZindicesOld.
+Variables A : Type.
+Implicit Types x : A.
+Implicit Types l : list A.
+Implicit Types i : int.
+Ltac auto_tilde ::= eauto with maths.
+
+(* ---------------------------------------------------------------------- *)
+(** * DEPRECATED *)
+
+(** Predicates *)
+
+Definition ZInbound i l :=
+  0 <= i /\ i < length l.
+
+Definition ZNth i l x :=
+  Nth (abs i) l x /\ 0 <= i.
+
+Definition ZUpdate i x l l' :=
+  Update (abs i) x l l' /\ 0 <= i.
+
+
+(* ---------------------------------------------------------------------- *)
+(** * DEPRECATED -- Znth *)
+
+Lemma ZNth_here : forall i x l,
+  i = 0 -> ZNth i (x::l) x.
+Proof using. intros. subst. split~. constructor. Qed.
+
+Lemma ZNth_zero : forall x l,
+  ZNth 0 (x::l) x.
+Proof using. intros. apply~ ZNth_here. Qed.
+
+Lemma ZNth_next : forall i j x y l,
+  ZNth j l x -> i = j+1 -> ZNth i (y::l) x.
+Proof using.
+  introv [H P] M. subst. split~.
+  applys_eq* Nth_next 3. rew_abs_pos~.
+Qed.
+
+Lemma ZNth_app_l : forall i x l1 l2,
+  ZNth i l1 x -> ZNth i (l1 ++ l2) x.
+Proof using. introv [H P]. split~. apply~ Nth_app_l. Qed.
+
+Lemma ZNth_app_r : forall i j x l1 l2,
+  ZNth j l2 x -> i = j + length l1 -> ZNth i (l1 ++ l2) x.
+Proof using.
+  introv [H P]. unfold length. split~. subst.
+  apply* Nth_app_r. rew_abs_pos~.
+Qed.
+
+Lemma ZNth_nil_inv : forall i x,
+  ZNth i nil x -> False.
+Proof using. introv [H P]. apply* Nth_nil_inv. Qed.
+
+Lemma ZNth_cons_inv : forall i x l,
+  ZNth i l x ->
+     (exists q, l = x::q /\ i = 0)
+  \/ (exists y q j, l = y::q /\ ZNth j q x /\ i = j+1).
+Proof using.
+  introv [H P]. forwards~: (@abs_pos i).
+  destruct (Nth_cons_inv H); unpack.
+  left. exists___. split~.
+  right. exists___. splits~.
+   split. rewrite* abs_pos_nat. math.
+   math.
+Qed.
+
+Lemma ZNth_inbound : forall i l,
+   ZInbound i l -> exists x, ZNth i l x.
+Proof using.
+  introv [P U]. unfolds length. gen_eq n: (abs i).
+  gen i l. induction n; intros;
+    forwards~: (@abs_pos i); destruct l; rew_length in U; try math.
+  math_rewrite (i = 0). exists __. split~. constructor.
+  forwards~ [x [M P']]: (>> IHn (i-1) l).
+    forwards~: (@abs_to_succ_abs_minus_one i).
+    exists x. split~. rewrite~ (@abs_to_succ_abs_minus_one i). constructor~.
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** * DEPRECATED -- ZInbound *)
+
+Lemma ZInbound_zero : forall x l,
+  ZInbound 0 (x::l).
+Proof using. split; unfold length; rew_list~. Qed.
+
+Lemma ZInbound_zero_not_nil : forall x l,
+  l <> nil -> ZInbound 0 l.
+Proof using.
+  intros. split~. unfold length.
+  destruct l; tryfalse. rew_list~.
+Qed.
+
+Lemma ZInbound_cons : forall i j x l,
+  ZInbound j l -> j = i-1 -> ZInbound i (x::l).
+Proof using. introv [P U] H. split; rew_list~. Qed.
+
+Lemma ZInbound_nil_inv : forall i,
+  ZInbound i nil -> False.
+Proof using. introv [P U]. rew_list in U. math. Qed.
+
+Lemma ZInbound_cons_inv : forall i x l,
+  ZInbound i (x::l) -> i = 0 \/ (i <> 0 /\ ZInbound (i-1) l).
+Proof using.
+  introv [P U]. rew_length in U. tests: (i = 0).
+    left~.
+    right~. split. math. split~.
+Qed.
+
+Lemma ZInbound_cons_pos_inv : forall i x l,
+  ZInbound i (x::l) -> i <> 0 -> ZInbound (i-1) l.
+Proof using.
+  introv H P. destruct* (ZInbound_cons_inv H).
+Qed.
+
+Lemma ZInbound_one_pos_inv : forall i x,
+  ZInbound i (x::nil) -> i <> 0 -> False.
+Proof using.
+  intros. eapply ZInbound_nil_inv. apply* ZInbound_cons_pos_inv.
+Qed.
+
+Lemma ZInbound_app_l_inv : forall i l1 l2,
+  ZInbound i (l1++l2) -> i < length l1 -> ZInbound i l1.
+Proof using. introv [P U] H. split~. Qed.
+
+Lemma ZInbound_app_r_inv : forall i j l1 l2,
+  ZInbound j (l1++l2) -> j = length l1 + i -> i >= 0 -> ZInbound i l2.
+Proof using. introv [P U] R H. rew_length in U. split~. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** * DEPRECATED -- ZUpdate *)
+
+Lemma ZUpdate_here : forall x y l,
+  ZUpdate 0 x (y::l) (x::l).
+Proof using. split~. apply Update_here. Qed.
+
+Lemma ZUpdate_cons : forall i j x y l l',
+  ZUpdate j x l l' -> i = j+1 -> ZUpdate i x (y::l) (y::l').
+Proof using.
+  introv [U P] H. split~. applys_eq~ Update_cons 4.
+  subst. rew_abs_pos~.
+Qed.
+
+Lemma ZUpdate_app_l : forall i x l1 l1' l2,
+  ZUpdate i x l1 l1' -> ZUpdate i x (l1++l2) (l1'++l2).
+Proof using. introv [U P]. split~. apply~ Update_app_l. Qed.
+
+Lemma ZUpdate_app_r : forall i j x l1 l2 l2',
+  ZUpdate j x l2 l2' -> i = j + length l1 -> ZUpdate i x (l1++l2) (l1++l2').
+Proof using.
+  introv [U P] H. unfolds length. split~. apply~ Update_app_r.
+  subst. rew_abs_pos~.
+Qed.
+
+Lemma ZUpdate_not_nil : forall i x l1 l2,
+  ZUpdate i x l1 l2 -> l2 <> nil.
+Proof using. introv [U P]. apply~ Update_not_nil. Qed.
+
+Lemma ZUpdate_length : forall i x l l',
+  ZUpdate i x l l' -> length l = length l'.
+Proof using.
+  introv [U P]. unfolds length.
+  forwards~: Update_length.
+Qed.
+
+
+End ZindicesOld.
+
+
+
+(* ---------------------------------------------------------------------- *)
+(** * count *)
+
+(* UNDER CONSTRUCTION *)
+
+(* TODO: complete definitions and proofs, which are used by CFML/Dijstra *)
+
+Require Import LibWf.
+
+(* TODO: implement a non-decidable version of count *)
+
+Axiom count : (* UNDER CONSTRUCTION *)
+  forall A (P:A->Prop) (l:list A), int.
+
+(* currently not used
+  Axiom count_make : forall A (f:A->Prop) n v,
+    count f (make n v) = (If f v then n else 0).
 *)
+
+Axiom count_update : (* UNDER CONSTRUCTION *)
+  forall `{Inhab A} (P:A->Prop) (l:list A) (i:int) v,
+  index l i ->
+  count P (l[i:=v]) = count P l
+    - (If P (l[i]) then 1 else 0)
+    + (If P v then 1 else 0).
+
+Axiom count_bounds : (* UNDER CONSTRUCTION *)
+  forall `{Inhab A} (l:list A) (P:A->Prop),
+  0 <= count P l <= length l.
+
+(** The following lemma is used to argue that the update to a sequence,
+    when writing a value that satisfies [P] in place of one that did not
+    satisfy [P], decreases the total number of values that satisfying
+    [P] in the sequence. *)
+
+Lemma count_upto : forall `{Inhab A} (P:A->Prop) (l:list A) (n i:int) (v:A),
+  ~ P (l[i]) -> P v -> index l i -> (length l <= n)%Z ->
+  upto n (count P (l[i:=v])) (count P l).
+Proof using.
+  introv Ni Pv Hi Le. forwards K: (count_bounds (l[i:=v]) P). split.
+  rewrite length_update in K. math.
+  lets M: (@count_update A _). rewrite~ M. clear M.
+  do 2 (case_if; tryfalse). math.
+Qed.
+
+
+(* -------------------------------------------------------------------------- *)
+(* TODO: define a version of take that directly takes an int *)
+
+Module TakeInt. (* TODO: move to LibListZ *)
+Import LibInt.
+Section Facts.
+Variables (A:Type).
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma take_cons_pred_int : forall x l (n:int),
+  n > 0 ->
+  take (abs n) (x::l) = x :: (take (abs (n-1)) l).
+Proof using. (* using stdlib *)
+  introv Pos. rewrite take_cons_pred.
+  rewrite abs_minus; try math. auto.
+  forwards: lt_abs_abs 0 n; math.
+Qed.
+
+Lemma take_cons_int : forall x l (n:int),
+  n >= 0 ->
+  take (abs (n+1)) (x::l) = x :: (take (abs n) l).
+Proof using.
+  introv Pos. rewrite~ abs_plus.
+  rewrite~ plus_comm. math.
+Qed.
+
+End Facts.
+End TakeInt.
+Export TakeInt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+(************************************************************)
+(************************************************************)
+(************************************************************)
+
+*)
+
+
