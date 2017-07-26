@@ -388,6 +388,7 @@ Definition app_eq_self_inv_l := self_eq_app_l_inv.
 nth_update_same => nth_update_same
 
 Nth_app_r => Nth_app_r'
+update_prefix_length => update_middle
 
 (* ********************************************************************** *)
 (** too specific *)

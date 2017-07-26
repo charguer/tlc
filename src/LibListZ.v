@@ -211,7 +211,7 @@ Lemma read_last_case : forall l i v,
 Proof using.
   introv. simpl. unfold read_impl. case_if.
   { case_if~; math. } 
-  { rewrite nth_last. rewrite~ abs_eq_nat_eq. }
+  { rewrite nth_last_case. rewrite~ abs_eq_nat_eq. }
 Qed.
 
 End Read.
@@ -242,7 +242,7 @@ Proof using. (* --LATER: cleanup proof *)
     eapply Hread. math. }
 Qed.
 
-Lemma eq_of_extensional_using_index : forall `{Inhab A} (l1 l2:list A),
+Lemma eq_of_extensional_index : forall `{Inhab A} (l1 l2:list A),
   length l1 = length l2 ->
   (forall i, index l1 i -> l1[i] = l2[i]) ->
   l1 = l2.
@@ -289,9 +289,9 @@ Proof using.
     read_inst, read_impl. simpl. introv N. rewrite int_index_eq in N.
   case_if. math.
   case_if. case_if. auto. case_if.
-    subst. rewrite~ nth_update_eq. apply lt_nat_of_lt_int. rewrite abs_pos; try math.
-    rewrite~ nth_update_neq. apply lt_nat_of_lt_int. rewrite abs_pos; try math.
-      apply neq_nat_of_neq_int. rewrite abs_pos; try math. rewrite abs_pos; try math.
+    subst. rewrite~ nth_update_same. apply lt_nat_of_lt_int. rewrite abs_nonneg; try math.
+    rewrite~ nth_update_neq. apply neq_nat_of_neq_int. rewrite abs_nonneg; try math.
+     rewrite abs_nonneg; try math.
 Qed.
 
 Lemma read_update_same : forall l i v,
@@ -308,8 +308,8 @@ Proof using. introv N. rewrite~ read_update_case. case_if; auto_false~. Qed.
 Lemma update_update_same : forall l i v w,
   index l i ->
   l[i:=v][i:=w] = l[i:=w].
-Proof using. (* --TODO: cleanup proof *)
-  intros. eapply ext_eq_index; repeat rewrite length_update.
+Proof using IA. (* --TODO: cleanup proof *)
+  intros. eapply eq_of_extensional_index; repeat rewrite length_update.
   { reflexivity. }
   intros j.
   repeat rewrite index_update_eq.
@@ -323,8 +323,8 @@ Lemma update_update_neq : forall l i j v w,
   index l j -> 
   i <> j -> 
   l[i:=v][j:=w] = l[j:=w][i:=v].
-Proof using. (* --TODO: cleanup proof *)
-  intros. eapply ext_eq_index; repeat rewrite length_update.
+Proof using IA. (* --TODO: cleanup proof *)
+  intros. eapply eq_of_extensional_index; repeat rewrite length_update.
   { reflexivity. }
   intros k.
   repeat rewrite index_update_eq.
@@ -340,24 +340,25 @@ Lemma update_app_r : forall l2 j l1 i ij v,
   0 <= j ->
   ij = i + j ->
   (l1 ++ l2)[ij:=v] = l1 ++ (l2[j:=v]).
-Proof using. (* --TODO: cleanup proof *)
+Proof using IA. (* --TODO: cleanup proof *)
   intros. subst ij.
   unfold LibContainer.update, update_inst, update_impl.
   unfold update. do 2 (case_if; [ math | ]).
-  eapply LibList.update_app_right with (i := abs i).
-  { eauto using abs_length. }
-  { eapply Zabs2Nat.inj_add; math. }
+  rewrite Zabs2Nat.inj_add; try math. subst i.
+  rewrite length_eq. rewrite abs_nat.
+  rewrite~ update_app_r. fequals_rec. math.
 Qed.
 
-Lemma update_app_middle : forall i l1 l2 v w,
+Lemma update_middle : forall i l1 l2 v w,
   i = length l1 ->
   (l1 ++ w :: l2)[i := v] = l1 & v ++ l2.
-Proof using. (* --TODO: cleanup proof *)
+Proof using IA. (* --TODO: cleanup proof *)
   intros.
   unfold LibContainer.update, update_inst, update_impl.
   unfold update. case_if; [ math | ].
-  eapply LibList.update_app_right_here.
-  eauto using abs_length.
+  rewrite~ LibList.update_middle. subst i.
+  rewrite length_eq. rewrite~ abs_nat. 
+  (* -- LATER: factorize the pattern of the above line *)
 Qed.
 
 End Update.
@@ -374,18 +375,10 @@ Definition make A (n:int) (v:A) : list A :=
 
 Section Make.
 Transparent index_inst read_inst.
-Variables A : Type.
+Context (A : Type) {IA:Inhab A}.
 Implicit Types x v : A.
 Implicit Types l : list A.
 Implicit Types n i : int.
-
-Lemma index_make : forall n i v,
-  index n i ->
-  index (make n v) i.
-Proof using.
-  introv H. rewrite index_eq_index_length. rewrite int_index_eq in H.
-  rewrite~ length_make. math.
-Qed.
 
 Lemma length_make : forall n v,
   n >= 0 ->
@@ -393,7 +386,16 @@ Lemma length_make : forall n v,
 Proof using.
   introv N. unfold make. case_if. math.
   unfold length. rewrite LibList.length_make.
-  rewrite~ abs_pos.
+  rewrite~ abs_nonneg.
+Qed.
+
+Lemma index_make : forall n i v,
+  index n i ->
+  index (make n v) i.
+Proof using.
+  introv H. rewrite index_eq_index_length.
+  rewrite int_index_eq in H.
+  rewrite~ length_make.
 Qed.
 
 Lemma read_make : forall i n v,
@@ -415,17 +417,12 @@ Lemma cons_make_same : forall n x,
 Lemma cons_make_pred_same : forall n x, 
   0 < n -> 
   x::(make (n - 1) x) = make n x.
-Proof using. (* --TODO: cleanup proof *)
-  intros.
-  unfold make. do 2 (case_if; [ math | ]).
-  rewrite abs_minus by math.
-  change (abs 1) with 1%nat.
-  assert (0 < abs n)%nat.
-  { change 0%nat with (abs 0%Z).
-    eapply Zabs.lt_abs_abs.
-    math. }
-  eapply LibList.cons_make.
-  math.
+Proof using.
+  intros. unfold make.
+  do 2 (case_if; [ math | ]).
+  rewrite <- LibList.make_succ. fequals.
+  applys eq_nat_of_eq_int.
+  rewrite~ <- abs_eq_succ_abs_minus_one.
 Qed.
 
 End Make.
@@ -467,33 +464,33 @@ Global Opaque card_inst.
 
 (** [rew_array_nocase] is a light normalization tactic for array *)
 
-Hint Rewrite @read_make @length_make @length_update @read_update_eq
+Hint Rewrite @read_make @length_make @length_update @read_update_same
   : rew_array_nocase.
 
 Tactic Notation "rew_array_nocase" :=
   autorewrite with rew_array_nocase.
-Tactic Notation "rew_arr" "in" hyp(H) :=
+Tactic Notation "rew_array_nocase" "in" hyp(H) :=
   autorewrite with rew_array_nocase in H.
-Tactic Notation "rew_arr" "in" "*" :=
+Tactic Notation "rew_array_nocase" "in" "*" :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_array_nocase).
   (* autorewrite with rew_array_nocase in *. *)
-Tactic Notation "rew_arr" "~" :=
+Tactic Notation "rew_array_nocase" "~" :=
   rew_array_nocase; auto_tilde.
-Tactic Notation "rew_arr" "*" :=
+Tactic Notation "rew_array_nocase" "*" :=
   rew_array_nocase; auto_star.
-Tactic Notation "rew_arr" "~" "in" hyp(H) :=
+Tactic Notation "rew_array_nocase" "~" "in" hyp(H) :=
   rew_array_nocase in H; auto_tilde.
-Tactic Notation "rew_arr" "*" "in" hyp(H) :=
+Tactic Notation "rew_array_nocase" "*" "in" hyp(H) :=
   rew_array_nocase in H; auto_star.
-Tactic Notation "rew_arr" "~" "in" "*" :=
+Tactic Notation "rew_array_nocase" "~" "in" "*" :=
   rew_array_nocase in *; auto_tilde.
-Tactic Notation "rew_arr" "*" "in" "*" :=
+Tactic Notation "rew_array_nocase" "*" "in" "*" :=
   rew_array_nocase in *; auto_star.
 
 (** [rew_array] is a normalization tactic for array, which introduces
     case analyses for all read-on-update operations. *)
 
-Hint Rewrite @read_make @length_make @length_update @read_update_eq
+Hint Rewrite @read_make @length_make @length_update @read_update_same
   @read_update_case @read_cons_case @read_last_case : rew_array.
 
 Tactic Notation "rew_array" :=

@@ -1353,10 +1353,11 @@ Proof using IA.
     { rewrite update_cons. fequals. erewrite* IHl1'. math. } }
 Qed.
 
-Lemma update_prefix_length : forall l1 l2 x v,
-  update (length l1) v (l1 ++ x :: l2) = l1 & v ++ l2.
+Lemma update_middle : forall l1 l2 n x v,
+  n = length l1 ->
+  update n v (l1 ++ x :: l2) = l1 & v ++ l2.
 Proof using IA.
-  intros. rew_list. rewrites update_app_r.
+  intros. subst. rew_list. rewrites update_app_r.
   { math_rewrite (length l1 - length l1 = 0). rew_list~. }
   { math. }
 Qed.

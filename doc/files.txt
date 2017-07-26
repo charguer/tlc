@@ -29,16 +29,12 @@ Stable files:
    LibInt
    LibNat
    LibList
+   LibListZ
 
    LibContainer
    LibSet
    LibMap
    LibCore
-
-
-Remaining to clean up:
-
-   LibListZ
 
 
 Work-in-progess files (compile, but with material remaining to be polished)
