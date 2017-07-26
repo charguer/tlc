@@ -786,7 +786,7 @@ Definition test_split_3 := test_split_2.
 
 Lemma demo_splits : test_split_3.
 Proof using.
-  dup 5.
+  dup 4.
   (* spliting a bunch of conjunction is a pain *)
   split. skip. split. skip. split. skip. split. skip. skip.
   (* but it is sometimes too aggressive. *)

@@ -1,6 +1,7 @@
 
-(** DISCLAIMER: contents of this file is mainly deprecated
-   it should be reimplemented using the finite property from LibSet *)
+(** DEPRECATED: the contents of this file is deprecated
+   it should be reimplemented using the finite property
+   from LibSet *)
 
 
 (**************************************************************************

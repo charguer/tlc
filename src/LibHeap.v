@@ -1,11 +1,7 @@
-(* -- TODO DEPRECATED
+(* -- DEPRECATED : should use LibMap instead,
+      or (yet to be written) LibMapX for computable version *)
 
-
-
-(** DISCLAIMER: don't use this file, it's going to be deprecated *)
-
-
-
+(*
 
 (**************************************************************************
 * TLC: A library for Coq                                                  *

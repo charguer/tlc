@@ -1,3 +1,4 @@
+(* TEMPORARY FOR BACKWARD COMPATIBILITY 
 
 (************************************************************)
 (************************************************************)
@@ -1464,5 +1465,7 @@ Proof using.
   rewrite set_incl_in_eq. intros. rewrite in_set_st_eq in *.
   rewrite Mem_app_or_eq. tauto.
 Qed.
+
+*)
 
 *)

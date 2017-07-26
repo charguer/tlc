@@ -1,12 +1,10 @@
-(* -- TODO
-
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Variable names, and freshness properties                                *
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibList LibLogic LibNat LibEpsilon LibReflect LibExec.
+Require Import LibTactics LibList LibLogic LibNat LibEpsilon LibReflect.
 Require Export LibFset.
 
 
@@ -24,10 +22,16 @@ Parameter var : Set.
 Parameter Inhab_var : Inhab var.
 
 (** This type is comparable. *)
-(* DEPRECATED
-Parameter var_comp : Comparable var.
-Instance var_comparable : Comparable var := var_comp.
-*)
+
+Parameter var_compare : var -> var -> bool.
+
+Parameter var_compare_eq : forall (x y:var),
+  var_compare x y = isTrue (x = y).
+
+  (* DEPRECATED
+  Parameter var_comp : Comparable var.
+  Instance var_comparable : Comparable var := var_comp.
+  *)
 
 (** We can build sets of variables. *)
 
@@ -49,15 +53,31 @@ Module Export Variables : VariablesType.
 
 Definition var := nat.
 
-Lemma Inhav_var : Inhab var.
+Lemma Inhab_var : Inhab var.
 Proof using. apply (Inhab_of_val 0). Qed.
 
-(* DEPRECATED
-Lemma var_comp : Comparable var.
-Proof using. apply nat_comparable. Qed.
+(* --LATER: reuse nat_compare *)
+Fixpoint var_compare (x y : nat) :=
+  match x, y with
+  | O, O => true
+  | S x', S y' => var_compare x' y'
+  | _, _ => false
+  end.
 
-Instance var_comparable : Comparable var := var_comp.
-*)
+Lemma var_compare_eq : forall (x y:var),
+  var_compare x y = isTrue (x = y).
+Proof using.
+  unfold var. intros x; induction x; intros y; destruct y; 
+   simpl; rew_bool_eq; try nat_math.
+  rewrite IHx. rew_bool_eq. nat_math.
+Qed.
+
+  (* DEPRECATED
+  Lemma var_comp : Comparable var.
+  Proof using. apply nat_comparable. Qed.
+
+  Instance var_comparable : Comparable var := var_comp.
+  *)
 
 Definition vars := fset var.
 
@@ -69,7 +89,7 @@ Lemma var_gen_list_spec : forall n l,
 Proof using.
   unfold var_gen_list. induction l; introv I.
   rewrite from_list_nil in I. false (in_empty_inv I).
-  rewrite from_list_cons in I. rew_list.
+  rewrite from_list_cons in I. rew_listx.
    rewrite in_union in I. destruct I as [H|H].
      rewrite in_singleton in H. subst. nat_math.
      specializes IHl H. nat_math.
@@ -80,8 +100,8 @@ Definition var_gen (E : vars) : var :=
 
 Lemma var_gen_spec : forall E, (var_gen E) \notin E.
 Proof using.
-  intros. unfold var_gen. spec_epsilon as l.
-  applys fset_finite. rewrite Hl. introv H.
+  intros. unfold var_gen. epsilon l. applys fset_finite.
+  intros Hl. rewrite Hl. introv H.
   forwards M: var_gen_list_spec H. nat_math.
 Qed.
 
@@ -223,13 +243,13 @@ Lemma notin_var_gen : forall E F,
   (var_gen E) \notin F.
 Proof using. intros. autos~ var_gen_spec. Qed.
 
-Implicit Arguments notin_singleton_r    [x y].
-Implicit Arguments notin_singleton_l    [x y].
-Implicit Arguments notin_singleton_swap [x y].
-Implicit Arguments notin_union_r  [x E F].
-Implicit Arguments notin_union_r1 [x E F].
-Implicit Arguments notin_union_r2 [x E F].
-Implicit Arguments notin_union_l  [x E F].
+Arguments notin_singleton_r [x] [y].
+Arguments notin_singleton_l [x] [y].
+Arguments notin_singleton_swap [x] [y].
+Arguments notin_union_r [x] [E] [F].
+Arguments notin_union_r1 [x] [E] [F].
+Arguments notin_union_r2 [x] [E] [F].
+Arguments notin_union_l [x] [E] [F].
 
 (** Tactics to deal with notin.  *)
 
@@ -382,7 +402,7 @@ Proof using.
   intros. gen n L. induction xs; simpl; intros n L Fr;
     destruct n; tryfalse*.
   auto.
-  rew_length. rewrite* <- (@IHxs n (L \u \{a})).
+  rew_list. rewrite* <- (@IHxs n (L \u \{a})).
 Qed.
 
 Lemma fresh_resize : forall L n xs,
@@ -397,14 +417,14 @@ Proof using.
   introv Fr. rewrite* <- (fresh_length _ _ _ Fr).
 Qed.
 
-Implicit Arguments fresh_union_r [xs L1 L2 n].
-Implicit Arguments fresh_union_r1 [xs L1 L2 n].
-Implicit Arguments fresh_union_r2 [xs L1 L2 n].
-Implicit Arguments fresh_union_l [xs L1 L2 n].
-Implicit Arguments fresh_empty  [L n xs].
-Implicit Arguments fresh_length [L n xs].
-Implicit Arguments fresh_resize [L n xs].
-Implicit Arguments fresh_resize_length [L n xs].
+Arguments fresh_union_r [xs] [L1] [L2] [n].
+Arguments fresh_union_r1 [xs] [L1] [L2] [n].
+Arguments fresh_union_r2 [xs] [L1] [L2] [n].
+Arguments fresh_union_l [xs] [L1] [L2] [n].
+Arguments fresh_empty [L] [n] [xs].
+Arguments fresh_length [L] [n] [xs].
+Arguments fresh_resize [L] [n] [xs].
+Arguments fresh_resize_length [L] [n] [xs].
 
 Lemma fresh_single_notin : forall x xs n,
   fresh \{x} n xs ->
@@ -477,4 +497,3 @@ Hint Extern 1 (fresh _ _ _) => fresh_solve.
 (* LATER: more automation of fresh_length properties *)
 
 
-*)

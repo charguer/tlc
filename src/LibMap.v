@@ -121,11 +121,13 @@ Proof using. intros. apply (Inhab_of_val (@empty_impl A B)). Qed.
       Proof. typeclass. Qed. 
 *)
 
+(* ---------------------------------------------------------------------- *)
+(** ** TEMPORARY *)
 
-(* ********************************************************************** *)
-(* Extra definitons *)
-
-(*-- LATER: make [finite] a typeclass *)
+(*-- LATER: make [finite] a typeclass, define [finite_impl]  
+     using [dom_impl], and prove a lemma [finite_eq] of type
+     [finite M = finite (dom M)].
+ *)
 
 Definition finite A B (M:map A B) :=
   finite (dom M).

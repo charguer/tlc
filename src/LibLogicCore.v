@@ -86,6 +86,7 @@ Set Implicit Arguments.
 
   Remark: to follow conventions, constructors should be [or_l] and [or_r].
 
+*)
 
 (* ---------------------------------------------------------------------- *)
 (** ** Definition of [iff] *)

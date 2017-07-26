@@ -99,8 +99,8 @@ Hint Immediate eq_prod2 eq_prod3 eq_prod4.
 
 *)
 
-Arguments fst [A] [B].
-Arguments snd [A] [B].
+Arguments fst {A} {B}.
+Arguments snd {A} {B}.
 
 
 (* ---------------------------------------------------------------------- *)

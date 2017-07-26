@@ -350,7 +350,9 @@ Class Card_empty :=
 Class Card_single :=
   { card_single : forall X, card \{X} = 1%nat }.
 Class Card_union :=
-  { card_union : forall E F, E \# F -> card (E \u F) = (card E + card F)%nat }.
+  { card_union : forall E F, card (E \u F) = (card E + card F)%nat }.
+Class Card_disjoin_union :=
+  { card_disjoin_union : forall E F, E \# F -> card (E \u F) = (card E + card F)%nat }.
 Class Card_union_le :=
   { card_union_le : forall E F, card (E \u F) <= (card E + card F)%nat }.
 

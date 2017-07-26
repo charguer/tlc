@@ -32,52 +32,41 @@ Stable files:
 
    LibContainer
    LibSet
+   LibMap
+   LibCore
 
 
 Remaining to clean up:
 
-
    LibListZ
 
-   LibMap
+
+Work-in-progess files (compile, but with material remaining to be polished)
+
    LibMultiset
-
-   LibCore
-
-
-For later executability
-
-   LibBoolX
-   LibNatX
-   LibListX
-
-
-For later cleanup (not yet used so much)
-
-   LibListSort
-   LibListSub
    LibPer
    LibFun
    LibStream
    LibGraph
    LibFset
-
-For later cleanup (specific to metatheory)
-
-   LibHeap
    LibVar
    LibEnv
    LibLN
-
-
-
-Demo files:
-
    LibTacticsDemos
    LibFixDemos
    LibOtherDemos
 
 
 
+Deprecated (contents commented out):
 
-+++todo: "extens" tactic should not call simpl.
+   LibHeap
+   LibOld
+
+
+For future use (if TLC becomes one day independent from STDLIB):
+
+   LibLogicCore
+
+
+

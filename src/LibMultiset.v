@@ -1,5 +1,5 @@
 (** DISCLAIMER: this file is under construction and still contains a 
-    couple admits.a *)
+    couple admits. *)
 
 (**************************************************************************
 * TLC: A library for Coq                                                  *
@@ -41,8 +41,8 @@ Definition dom_impl E := set_st (fun x => E x > 0).
 
 (* -- TODO: update these definitions to match those of finite sets *)
 Definition list_repr_impl (E:multiset A) (l:list (A*nat)) :=
-     No_duplicates (LibList.map (@fst _ _) l)
-  /\ forall n x, Mem (x,n) l <-> (n = E x /\ n > 0).
+     noduplicates (LibList.map (@fst _ _) l)
+  /\ forall n x, mem (x,n) l <-> (n = E x /\ n > 0).
 
 Definition to_list_impl (E:multiset A) := epsilon (list_repr_impl E).
 
@@ -183,6 +183,8 @@ End Instances.
 (* ---------------------------------------------------------------------- *)
 (** ** Foreach *)
 
+(** --TODO: foreach properties should be shared in LibContainer *)
+
 Section ForeachProp.
 Variables (A : Type).
 Implicit Types P Q : A -> Prop.
@@ -239,10 +241,10 @@ End ForeachProp.
 (* ********************************************************************** *)
 (** * Tactics *)
 
+(** EXPERIMENTAL tactics -- TODO: add documentation *)
+
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics to prove equalities on unions *)
-
-(* todo: doc *)
 
 Lemma for_multiset_union_assoc : forall A, assoc (union (T:=multiset A)).
 Proof using. intros. apply union_assoc. Qed.
@@ -320,7 +322,6 @@ Proof using.
   intros. do 2 rewrite (union_assoc l2). apply permut_get_7.
 Qed.
 
-
 Lemma permut_tactic_setup : forall C l1 l2,
    C (\{} \u l1 \u \{}) (l2 \u \{}) -> C l1 l2.
 Proof using. intros. rews_permut_simpl. eauto. Qed.
@@ -329,7 +330,6 @@ Lemma permut_tactic_keep : forall C l1 l2 l3 l4,
   C ((l1 \u l2) \u l3) l4 ->
   C (l1 \u (l2 \u l3)) l4.
 Proof using. intros. rews_permut_simpl. eauto. Qed.
-
 
 Lemma permut_tactic_trans : forall C l1 l2 l3,
   l3 = l2 -> C l1 l3 -> C l1 l2.
@@ -525,11 +525,11 @@ Proof using. intros. apply in_union_r. apply~ in_union_get_4. Qed.
 
 End InUnionGet.
 
-Implicit Arguments in_union_get_1 [A x l1 l2].
-Implicit Arguments in_union_get_2 [A x l1 l2 l3].
-Implicit Arguments in_union_get_3 [A x l1 l2 l3 l4].
-Implicit Arguments in_union_get_4 [A x l1 l2 l3 l4 l5].
-Implicit Arguments in_union_get_5 [A x l1 l2 l3 l4 l5 l6].
+Arguments in_union_get_1 [A] [x] [l1] [l2].
+Arguments in_union_get_2 [A] [x] [l1] [l2] [l3].
+Arguments in_union_get_3 [A] [x] [l1] [l2] [l3].
+Arguments in_union_get_4 [A] [x] [l1] [l2] [l3] [l4].
+Arguments in_union_get_5 [A] [x] [l1] [l2] [l3] [l4] [l5].
 
 (** [in_union_get] solves a goal of the form
     [x \in F1 \u ... \u FN] when there exists an
@@ -678,8 +678,8 @@ Proof using. introv H. rewrite @in_union_eq in H. auto. typeclass. Qed.
 
 End InUnionInv.
 
-Implicit Arguments in_single_inv [A x y].
-Implicit Arguments in_union_inv [A x l1 l2].
+Arguments in_single_inv [A] [x] [y].
+Arguments in_union_inv [A] [x] [l1] [l2].
 
 Ltac multiset_in_inv_base H M :=
   match type of H with
@@ -702,7 +702,7 @@ Lemma union_empty_inv_multiset : forall A (l1 l2:multiset A),
   l1 \u l2 = \{} -> l1 = \{} /\ l2 = \{}.
 Proof using. intros. eapply union_empty_inv_inst. eauto. Qed.
 
-Implicit Arguments union_empty_inv_multiset [A l1 l2].
+Arguments union_empty_inv_multiset [A] [l1] [l2].
 
 Ltac multiset_empty_core H :=
   match type of H with

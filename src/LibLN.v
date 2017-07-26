@@ -5,7 +5,7 @@
 
 Set Implicit Arguments.
 Require Import LibList.
-Require Export LibTactics LibProd LibLogic LibVar LibEnv.
+Require Export LibTactics LibProd LibLogic LibVar LibEnv LibFset.
 
 Open Scope fset_scope.
 Open Scope env_scope.
@@ -13,6 +13,8 @@ Open Scope env_scope.
 
 (* ********************************************************************** *)
 (** ** Case analysis on variables and indices *)
+
+(** --LATER: replace these specific tactics with the generic ones *)
 
 (** [case_if_eq E F] performs a case analysis to test
     whether [E = F] or [E <> F]. It is used to implement
@@ -219,7 +221,7 @@ Lemma list_for_n_concat : forall (A : Set) (P : A -> Prop) n1 n2 L1 L2,
   list_for_n P (n1+n2) (L1 ++ L2).
 Proof using.
   unfold list_for_n. introv [? ?] [? ?]. split.
-  rew_length~.
+  rew_list~.
   apply* Forall_app.
 Qed.
 

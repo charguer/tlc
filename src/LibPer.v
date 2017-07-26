@@ -1,9 +1,6 @@
+(* DEPRECATED
 
-
-
-
-(* TODO: cleanup and merge into LibRelation.v *)
-
+   needs a cleanup and merge into LibRelation.v 
 
 
 
@@ -157,3 +154,5 @@ Proof using.
   do 2 rewrite stclosure_is_tclosure_sclosure. f_equal.
   unfold sclosure, Rel.union, per_single. extens. tauto.
 Qed.
+
+*)

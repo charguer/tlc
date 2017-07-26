@@ -1,3 +1,9 @@
+(** DISCLAIMER: the current presentation of monoids uses typeclasses,
+    but in fact it's not obvious that typeclasses are needed/useful here. 
+    Indeed, there is no overloading involved.
+    Thus, the interface might change in the near future. *)
+
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Mathematical structures                                                 *
