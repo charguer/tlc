@@ -2201,6 +2201,15 @@ Proof using.
   rewrite take_cons. fequals_rec. math.
 Qed.
 
+Lemma take_ge : forall n l,
+  (n >= length l) ->
+  take n l = l.
+Proof using.
+  induction n; destruct l; introv H; rew_list in *; auto.
+  { false. math. }
+  { rewrite take_cons. fequals. applys IHn. math. }
+Qed.
+
 Lemma take_is_prefix : forall n l,
   exists q, l = take n l ++ q.
 Proof using.
@@ -2402,6 +2411,11 @@ Proof using.
   introv E. forwards~ (l'&N&M): drop_spec n l.
   pattern l at 2. rewrite M. rew_list. math.
 Qed.
+
+Lemma list_eq_take_app_drop : forall n l,
+  n <= length l ->
+  take n l ++ drop n l = l.
+Proof using. introv H. forwards*: take_app_drop_spec n l. Qed.
 
 (* TODO: Nth_take_l, etc... 
 
