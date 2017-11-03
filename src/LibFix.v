@@ -1867,6 +1867,44 @@ Proof using.
   applys~ FixFunMod_inv F. applys~ rec_fixed_point_generally_consistent' R.
 Qed.
 
+(* TODO: add comments *)
+
+Fixpoint func_iter n A B (F:(A->B)->(A->B)) (f:A->B) : A -> B :=
+  match n with
+  | O => f 
+  | S n' => F (func_iter n' F f)
+  end.
+
+Lemma FixFun_fix_partial_iter : forall A (R:binary A) (P:A->Prop)
+   B {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
+  f = FixFun F -> wf R -> rec_contractive_noinv eq P F R ->
+  (forall n x, P x -> f x = func_iter n F f x).
+Proof using.
+  introv Def Wf Cont.
+  lets~ M: FixFun_fix_partial Cont. rewrite <- Def in M.
+  intros n. induction n.
+  { auto. }
+  { intros x Px. simpl. applys eq_trans (F f x).
+    { applys~ M. }
+    { applys~ Cont. } }
+Qed.
+
+Implicit Arguments FixFun_fix_partial_iter [A B [IB] F f].
+
+Lemma FixFun_fix_iter : forall A (R:binary A) B {IB:Inhab B} (F:(A->B)->(A->B))
+   (f:A->B),
+  f = FixFun F -> wf R ->
+  (forall f1 f2 x,
+    (forall y, R y x -> f1 y = f2 y) ->
+    F f1 x = F f2 x) ->
+  (forall n x, f x = func_iter n F f x).
+Proof using.
+  intros. apply FixFun_fix_partial_iter with (IB:=IB) (R:=R) (P:=pred_true); auto.
+  hnf; autos*.
+Qed.
+
+Implicit Arguments FixFun_fix_iter [A B [IB] F f].
+
 
 (** -------- Mixed Corecursive and Recursive functions --------- *)
 
