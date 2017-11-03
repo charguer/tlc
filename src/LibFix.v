@@ -1889,7 +1889,7 @@ Proof using.
     { applys~ Cont. } }
 Qed.
 
-Implicit Arguments FixFun_fix_partial_iter [A B [IB] F f].
+Arguments FixFun_fix_partial_iter [A] _ _ [B] {IB} [F] [f].
 
 Lemma FixFun_fix_iter : forall A (R:binary A) B {IB:Inhab B} (F:(A->B)->(A->B))
    (f:A->B),
@@ -1903,7 +1903,7 @@ Proof using.
   hnf; autos*.
 Qed.
 
-Implicit Arguments FixFun_fix_iter [A B [IB] F f].
+Arguments FixFun_fix_iter [A] _ [B] {IB} [F] [f].
 
 
 (** -------- Mixed Corecursive and Recursive functions --------- *)
