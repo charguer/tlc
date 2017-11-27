@@ -3,9 +3,9 @@
 * Packing the Core Modules                                                *
 **************************************************************************)
 
-Require Export LibTactics LibLogic LibOperation LibReflect.
-Require Export LibUnit LibProd LibSum LibOption LibNat LibInt LibList.
-Require Export LibRelation LibOrder LibWf.
+From TLC Require Export LibTactics LibLogic LibOperation LibReflect.
+From TLC Require Export LibUnit LibProd LibSum LibOption LibNat LibInt LibList.
+From TLC Require Export LibRelation LibOrder LibWf.
 Export LibTacticsCompatibility.
 
 Open Scope Z_scope.

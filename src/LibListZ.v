@@ -5,11 +5,11 @@
 
 Set Implicit Arguments.
 Generalizable Variables A B.
-Require Import LibTactics LibLogic LibOperation LibReflect
+From TLC Require Import LibTactics LibLogic LibOperation LibReflect
   LibProd LibNat LibInt LibOption LibWf.
-Require Export LibList LibNat.
-Require Import LibInt.
-Require Export LibContainer.
+From TLC Require Export LibList LibNat.
+From TLC Require Import LibInt.
+From TLC Require Export LibContainer.
 
 Local Open Scope comp_scope.
 

@@ -5,7 +5,7 @@
 ***************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics.
+From TLC Require Import LibTactics.
 
 
 (* ********************************************************************** *)

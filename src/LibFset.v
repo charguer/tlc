@@ -10,8 +10,8 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibList.
-Require Import LibSet LibLogic LibEqual LibReflect.
+From TLC Require Import LibTactics LibList.
+From TLC Require Import LibSet LibLogic LibEqual LibReflect.
 
 
 (* ********************************************************************** *)

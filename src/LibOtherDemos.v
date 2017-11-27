@@ -4,8 +4,8 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics.
-Require Import LibLogic LibEqual LibList LibRelation LibWf LibList LibLN.
+From TLC Require Import LibTactics.
+From TLC Require Import LibLogic LibEqual LibList LibRelation LibWf LibList LibLN.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -420,7 +420,7 @@ End LibVarDemos.
 (* ---------------------------------------------------------------------- *)
 (** ** Demo of LibSet tactics *)
 
-Require Import LibSet.
+From TLC Require Import LibSet.
 
 Lemma inter_union_disjoint_right:
   forall A (E F G : set A),

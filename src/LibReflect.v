@@ -4,8 +4,8 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics.
-Require Export LibBool LibLogic.
+From TLC Require Import LibTactics.
+From TLC Require Export LibBool LibLogic.
 
 Implicit Type P : Prop.
 Implicit Type b : bool.

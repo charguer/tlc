@@ -14,7 +14,7 @@
 
 
 Set Implicit Arguments.
-Require Import LibCore LibSet.
+From TLC Require Import LibCore LibSet.
 
 (*-----------------------------------------------------------*)
 

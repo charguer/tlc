@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibEpsilon LibRelation.
+From TLC Require Import LibTactics LibLogic LibEpsilon LibRelation.
 Generalizable Variables A B.
 
 (** This files includes several versions of the axiom of choice.

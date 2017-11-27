@@ -5,9 +5,9 @@
 
 Set Implicit Arguments.
 Generalizable Variables A B.
-Require Import LibTactics LibLogic LibReflect LibOption
+From TLC Require Import LibTactics LibLogic LibReflect LibOption
   LibRelation LibLogic LibOperation LibEpsilon LibMonoid LibSet.
-Require Export LibContainer.
+From TLC Require Export LibContainer.
 
 Local Open Scope set_scope.
 

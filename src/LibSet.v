@@ -6,10 +6,10 @@
 Set Implicit Arguments.
 Generalizable Variables A B.
 Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
-Require Import LibTactics LibLogic LibReflect LibList
+From TLC Require Import LibTactics LibLogic LibReflect LibList
   LibOperation LibMonoid LibInt LibNat
   LibEpsilon LibRelation LibMin.
-Require Export LibContainer.
+From TLC Require Export LibContainer.
 
 
 (* ********************************************************************** *)

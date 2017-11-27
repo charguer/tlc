@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibOperation.
+From TLC Require Import LibTactics LibLogic LibOperation.
 
 
 (* ********************************************************************** *)

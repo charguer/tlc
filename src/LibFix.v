@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibReflect LibEpsilon LibInt
+From TLC Require Import LibTactics LibLogic LibReflect LibEpsilon LibInt
   LibProd LibSum LibOperation LibRelation LibWf LibOrder LibMin.
 
 

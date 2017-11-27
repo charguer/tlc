@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibReflect.
+From TLC Require Import LibTactics LibReflect.
 Require Export Coq.Strings.String.
 
 

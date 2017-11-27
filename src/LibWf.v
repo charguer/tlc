@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic
+From TLC Require Import LibTactics LibLogic
  LibProd LibSum LibRelation LibNat LibInt.
 
 

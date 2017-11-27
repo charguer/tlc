@@ -234,7 +234,7 @@ Ltac zify_nat ::= repeat zify_nat_rel; repeat zify_nat_op_extended; unfold Z_of_
 (************************************************************)
 (* * Pow function *)
 
-Require Import Zpow_facts.
+From TLC Require Import Zpow_facts.
 
 Lemma power_pos:
   forall k n,
@@ -258,7 +258,7 @@ Proof using.
 Qed.
 
 (* A tactic that helps dealing with goals containing "b^m" for multiple m *)
-Require Import List.
+From TLC Require Import List.
 
 Ltac subst_eq_boxer_list l rewrite_tac :=
   match l with
@@ -345,7 +345,7 @@ Tactic Notation "rew_pow" "*" constr(b) constr(min_e) "in" hyp(H) :=
 (************************************************************)
 (* * Min function *)
 
-Require Import LibEpsilon.
+From TLC Require Import LibEpsilon.
 
 Instance int_le_total_order : Le_total_order (A:=int).
 Proof using.
@@ -584,7 +584,7 @@ Ltac nat_math_lia :=
 Ltac nat_math_nia :=
   nat_math_setup; nia.
 
-Require Import Psatz.
+From TLC Require Import Psatz.
 
 
 
@@ -1714,7 +1714,7 @@ End ZindicesOld.
 
 (* TODO: complete definitions and proofs, which are used by CFML/Dijstra *)
 
-Require Import LibWf.
+From TLC Require Import LibWf.
 
 (* TODO: implement a non-decidable version of count *)
 

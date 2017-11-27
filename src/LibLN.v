@@ -4,8 +4,8 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibList.
-Require Export LibTactics LibProd LibLogic LibVar LibEnv LibFset.
+From TLC Require Import LibList.
+From TLC Require Export LibTactics LibProd LibLogic LibVar LibEnv LibFset.
 
 Open Scope fset_scope.
 Open Scope env_scope.

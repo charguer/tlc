@@ -5,8 +5,8 @@
 
 Set Implicit Arguments.
 Require Export Coq.Arith.Arith Coq.omega.Omega.
-Require Import LibTactics LibReflect LibBool LibOperation LibRelation LibOrder.
-Require Export LibOrder.
+From TLC Require Import LibTactics LibReflect LibBool LibOperation LibRelation LibOrder.
+From TLC Require Export LibOrder.
 Global Close Scope positive_scope.
 
 

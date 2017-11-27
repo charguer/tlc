@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibAxioms.
+From TLC Require Import LibTactics LibAxioms.
 Generalizable Variables A.
 
 

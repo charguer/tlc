@@ -9,7 +9,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibReflect LibList LibSet LibExec.
+From TLC Require Import LibTactics LibReflect LibList LibSet LibExec.
 Generalizable Variable K V.
 
 

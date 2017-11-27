@@ -8,7 +8,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibContainer LibSet.
+From TLC Require Import LibTactics LibLogic LibContainer LibSet.
 Generalizable Variables A.
 
 
@@ -81,7 +81,7 @@ Proof using. intros. subst~. Qed.
 
 (** Composition of [LibList.map] behaves well. **)
 (* Could not be put in [LibList] because of circular dependencies. *)
-Require Import LibList.
+From TLC Require Import LibList.
 
 Lemma list_map_compose : forall A B C (f : A -> B) (g : B -> C) l,
   LibList.map g (LibList.map f l) = LibList.map (g \o f) l.
@@ -134,7 +134,7 @@ Proof using. intros. unfold fupdate. case_if*. Qed.
 
 Section FunctionImage.
 Open Scope set_scope.
-Require Import LibList.
+From TLC Require Import LibList.
 
 Definition image A B (f : A -> B) (E : set A) : set B :=
   \set{ y | exists_ x \in E, y = f x }.

@@ -15,8 +15,8 @@ FUTURE WORK
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics.
-Require Export LibBool LibLogic LibReflect.
+From TLC Require Import LibTactics.
+From TLC Require Export LibBool LibLogic LibReflect.
 Generalizable Variable P.
 
 

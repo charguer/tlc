@@ -4,8 +4,8 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibList LibLogic LibNat LibEpsilon LibReflect.
-Require Export LibFset.
+From TLC Require Import LibTactics LibList LibLogic LibNat LibEpsilon LibReflect.
+From TLC Require Export LibFset.
 
 
 (* ********************************************************************** *)

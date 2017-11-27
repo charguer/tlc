@@ -4,8 +4,8 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics.
-Require Export LibAxioms LibEqual.
+From TLC Require Import LibTactics.
+From TLC Require Export LibAxioms LibEqual.
 Generalizable Variables A B P.
 
 

@@ -8,7 +8,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibReflect LibOperation
+From TLC Require Import LibTactics LibLogic LibReflect LibOperation
   LibRelation LibOrder LibEpsilon.
 Generalizable Variables A.
 
@@ -135,7 +135,7 @@ Qed.
 (**************************************************************************)
 (* * Application to [nat] *)
 
-Require Import LibNat.
+From TLC Require Import LibNat.
 
 (* The type [nat] enjoys this property. *)
 

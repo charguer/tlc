@@ -5,8 +5,9 @@
 
 Set Implicit Arguments.
 Generalizable Variables A B.
-Require Import LibTactics LibLogic LibReflect LibFun LibEpsilon LibList
+From TLC Require Import LibTactics LibLogic LibReflect LibFun LibEpsilon LibList
   LibInt LibNat LibProd LibSum LibRelation LibWf LibFix LibStream.
+Require Coq.Arith.Even. (* for demo *)
 Open Scope nat_scope.
 Open Scope comp_scope.
 Open Scope fun_scope.
@@ -163,7 +164,7 @@ End OnlyEven.
 
 Module OnlyEvenCompute.
 
-Require Import Even.
+Import Coq.Arith.Even.
 
 Definition Only_even only_even n :=
   if eq_nat_dec n 0 then 1 else
@@ -312,8 +313,6 @@ Qed.
 
 (* ********************************************************************** *)
 (** * Integer division (binary function) *)
-
-Require Import Arith. (* todo : needed?*)
 
 (** [div n m] returns a pair [(q,r)] such that
     [n = q*m + r] with [r < m]. Its definition involves
@@ -710,7 +709,7 @@ End MyFilters.
 (* ********************************************************************** *)
 (** * An example with cofinite trees *)
 
-Require Import LibNat.
+Require Import TLC.LibNat.
 
 (** Definition of [itree], trees with possibly-infinite branches *)
 

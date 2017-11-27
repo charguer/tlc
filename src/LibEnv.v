@@ -5,8 +5,8 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibOption LibList LibProd LibLogic LibReflect.
-Require Export LibVar.
+From TLC Require Import LibTactics LibOption LibList LibProd LibLogic LibReflect.
+From TLC Require Export LibVar.
 Generalizable Variable A.
 
 

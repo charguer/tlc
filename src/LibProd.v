@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibReflect.
+From TLC Require Import LibTactics LibLogic LibReflect.
 Generalizable Variables A B.
 
 

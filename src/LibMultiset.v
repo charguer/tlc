@@ -8,10 +8,10 @@
 
 Set Implicit Arguments.
 Generalizable Variables A B.
-Require Import LibTactics LibLogic LibReflect
+From TLC Require Import LibTactics LibLogic LibReflect
   LibRelation LibList LibInt LibNat LibOperation
   LibEpsilon LibSet LibMonoid.
-Require Export LibContainer.
+From TLC Require Export LibContainer.
 
 
 (* ********************************************************************** *)

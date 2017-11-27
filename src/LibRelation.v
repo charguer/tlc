@@ -4,8 +4,8 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Import LibTactics LibLogic LibBool LibLogic LibProd LibSum.
-Require Export LibOperation.
+From TLC Require Import LibTactics LibLogic LibBool LibLogic LibProd LibSum.
+From TLC Require Export LibOperation.
 
 
 (* ********************************************************************** *)
