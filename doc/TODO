@@ -1,8 +1,7 @@
 +++todo: "extens" tactic should not call simpl.
++++define nth_option, then nth_default, then nth.
+------------------
 
-
-
-----------
 
 Section Drop.
 Variables (A : Type).
