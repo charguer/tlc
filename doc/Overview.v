@@ -12,7 +12,7 @@
   - doc/files.txt gives the list of files that have been cleaned up
     according to the new conventions and that compile in v8.6.
 
-    DISCLAIMER: only the files marked "stable" in "doc/files.txt"
+    DISCLAIMER: only the files marked "stable" in "doc/StableFiles.txt"
     have been cleaned up to compile in v8.6 and follow the new conventions.
 
 *)
