@@ -387,7 +387,6 @@ Hint Rewrite
   bool_eq_true_eq bool_eq_false_eq true_eq_bool_eq false_eq_bool_eq
   : rew_bool_eq.
 
-
 Tactic Notation "rew_bool_eq" :=
   autorewrite with rew_bool_eq.
 Tactic Notation "rew_bool_eq" "~" :=
