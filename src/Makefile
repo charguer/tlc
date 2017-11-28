@@ -15,48 +15,6 @@ SERIOUS := 1
 -include settings.sh
 
 ############################################################################
-# Files.
-
-SRC :=\
-   LibTactics \
-   \
-   LibAxioms \
-   LibEqual \
-   LibLogic \
-   \
-   LibOperation \
-   LibBool \
-   LibReflect \
-   \
-   LibNat \
-   LibRelation \
-   LibEpsilon \
-   LibChoice \
-   LibOperation \
-   LibOrder \
-   LibWf \
-   \
-   LibProd \
-   LibSum \
-   LibUnit \
-   LibOption \
-   LibString \
-   LibInt \
-   LibMonoid \
-   LibList \
-   LibListSub \
-   LibListZ \
-   \
-   LibMin \
-   LibFix \
-   \
-   LibContainer \
-   LibSet
-
-# V := $(addsuffix .v,$(SRC))
-
-
-############################################################################
 # Compilation.
 
 # By default, we compile and install only .vo files. We could compile
@@ -73,8 +31,6 @@ export COQFLAGS
 
 all depend clean _CoqProject:
 	$(MAKE) -f Makefile.coq $@
-
-#  V="$(V)" 
 
 ############################################################################
 # Installation.
