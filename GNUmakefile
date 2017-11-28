@@ -38,7 +38,7 @@ package:
 # Test the archive that we just created.
 	rm -rf /tmp/$(PACKAGE)
 	cd /tmp && tar xvfz $(PACKAGE).tar.gz
-	cd /tmp/$(PACKAGE) && make -j4
+	cd /tmp/$(PACKAGE) && make -j32
 
 # -------------------------------------------------------------------------
 
