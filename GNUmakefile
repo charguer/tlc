@@ -2,6 +2,8 @@
 
 include Makefile
 
+.PHONY: package export opam tag
+
 # -------------------------------------------------------------------------
 
 # Utilities.
@@ -17,8 +19,6 @@ MD5SUM  := $(shell if hash md5  2>/dev/null ; then echo "md5 -r" ; else echo md5
 DATE     := $(shell /bin/date +%Y%m%d)
 PACKAGE  := tlc-$(DATE)
 PWD      := $(shell pwd)
-
-.PHONY: package
 
 package:
 # Archive creation.
@@ -62,10 +62,12 @@ OPAMSUBDATE := $(OPAMSUB)/$(NAME).$(DATE)
 # Our checksum command.
 CSUM     = $(shell $(MD5SUM) /tmp/$(PACKAGE).tar.gz | $(CUT) -d ' ' -f 1)
 
-.PHONY: export opam
-
 export:
 	$(RSYNC) /tmp/$(PACKAGE).tar.gz $(TARGET)
+
+# -------------------------------------------------------------------------
+
+# Creating a new opam package description.
 
 opam:
 # Update my local copy of the opam repository.
@@ -94,3 +96,10 @@ opam:
 	@ echo "If happy, please run:"
 	@ echo "  cd $(OPAM) && git commit && git push && firefox https://github.com/"
 	@ echo "and issue a pull request."
+
+# -------------------------------------------------------------------------
+
+# Creating a git tag.
+
+tag:
+	git tag -a $(DATE) -m "Release $(DATE)."
