@@ -172,7 +172,7 @@ Proof using.
     intros x. exists~ (f x).
 Qed.
 
-(* TODO: Dependent relational choice, is it meaningful?, useful? *)
+(* --TODO: Dependent relational choice, is it meaningful?, useful? *)
 
 
 (* ---------------------------------------------------------------------- *)

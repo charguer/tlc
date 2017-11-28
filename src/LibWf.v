@@ -513,7 +513,7 @@ Hint Resolve wf_rel_preimage : wf.
 (* ********************************************************************** *)
 (** * Union *)
 
-(* TODO..
+(* --TODO..
 
 Section WfUnion.
   Variables (A : Type).
@@ -577,7 +577,7 @@ End WfUnion.
 
 *)
 
-(* TODO: Disjoint union, useful? *)
+(* --TODO: Disjoint union, useful? *)
 
 (* end hide *)
 

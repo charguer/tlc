@@ -351,7 +351,7 @@ Hint Extern 1 ((_ \notin _) /\ _) => splits.
 (* ********************************************************************** *)
 (** ** Tactics for [fresh] *)
 
-(* todo: cleanup proofs of fresh using calc_fset *)
+(* --TODO: cleanup proofs of fresh using calc_fset *)
 
 Lemma fresh_union_r : forall xs L1 L2 n,
   fresh (L1 \u L2) n xs -> fresh L1 n xs /\ fresh L2 n xs.

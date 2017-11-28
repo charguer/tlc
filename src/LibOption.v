@@ -7,7 +7,7 @@ Set Implicit Arguments.
 From TLC Require Import LibTactics LibReflect.
 Generalizable Variables A.
 
-(* TODO: find a more explicit name? *)
+(* --TODO: find a more explicit name? *)
 
 
 (* ********************************************************************** *)
@@ -102,7 +102,7 @@ Arguments map_eq_some_inv [A] [B] [f] [o] [x].
 (* ---------------------------------------------------------------------- *)
 (** ** [map_on] *)
 
-(* TODO: is this really useful? *)
+(* --TODO: is this really useful? *)
 (** [map_on o f] is the same as [map f o], only the arguments are swapped. *)
 
 Definition map_on A B (o : option A) (f : A -> B) : option B :=
@@ -137,7 +137,7 @@ Definition apply A B (f : A->option B) (o : option A) : option B :=
 (* ---------------------------------------------------------------------- *)
 (** ** [apply_on] *)
 
-(* TODO: is this really useful? *)
+(* --TODO: is this really useful? *)
 (** [apply_on o f] is the same as [apply f o] *)
 
 Definition apply_on A B (o : option A) (f : A->option B) : option B:=

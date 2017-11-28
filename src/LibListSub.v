@@ -28,7 +28,7 @@ Variables (A : Type).
 Definition prefix (ys xs : list A) :=
   exists zs, ys ++ zs = xs.
 
-  (* TODO one could give an alternate definition of [prefix] as an
+  (* --TODO one could give an alternate definition of [prefix] as an
      inductive predicate with two cases: [Nil/Cons] and [Cons/Cons].
      This would give rise to a potentially useful induction principle.
      Or just prove this induction principle directly. *)
@@ -329,7 +329,7 @@ End PrefixClosed.
 (* The [prefix] ordering on lists has been defined in [LibList]. Here, we
    provide an alternate definition, as well as more properties. *)
 
-(* TODO characterize [prefix] as pointwise equality *)
+(* --TODO characterize [prefix] as pointwise equality *)
 
 Section PrefixMore.
 

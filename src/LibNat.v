@@ -102,7 +102,7 @@ Ltac nat_math :=
 (** ** The [nat_maths] database is used for registering automation
        on mathematical goals. *)
 
-(* TODO: rename [nat_maths] database to [nat_math] *)
+(* --TODO: rename [nat_maths] database to [nat_math] *)
 
 Ltac nat_math_hint := nat_math.
 

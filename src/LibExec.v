@@ -22,7 +22,7 @@ Generalizable Variable P.
 
 
 
-(* TODO
+(* --TODO
 
 
 Definition nat_comparable_demo (x y : nat) :=
@@ -190,7 +190,7 @@ Proof using. introv. applys (@decidable_make (istrue b) b). rew_refl~. Qed.
 Global Instance not_decidable : forall (P : Prop),
   Decidable P -> Decidable (~ P).
 Proof using.
-  (* todo: cleanup proof *)
+  (* --TODO: cleanup proof *)
   introv [dec spec]. applys decidable_make (neg dec).
   rew_refl. rewrite~ spec.
 Qed.
@@ -257,7 +257,7 @@ Extraction Inline comparable_beq.
 (** [Comparable] can be proved by exhibiting a decidability
     result in the form of a strong sum *)
 
-(* TODO: rename dec_to_comparable *)
+(* --TODO: rename dec_to_comparable *)
 Lemma comparable_of_dec : forall (A:Type),
   (forall x y : A, {x = y} + {x <> y}) ->
   Comparable A.
@@ -308,10 +308,10 @@ Extraction Inline pick.
 
 (** Instances of pickable *)
 
-Global Instance eq_pickable : forall (A : Type) (a : A), (* todo: use `{Inhab A} *)
+Global Instance eq_pickable : forall (A : Type) (a : A), (* --TODO: use `{Inhab A} *)
   Pickable (eq a).
 Proof using.
-  (* todo: clean up proof *)
+  (* --TODO: clean up proof *)
   introv. applys pickable_make a.
   intro. reflexivity.
 Qed.
@@ -359,7 +359,7 @@ Proof using. applys comparable_of_dec string_dec. Qed.
 (**************************************************************)
 (** ** Extension to Stdlib comparisons *)
 
-(* TODO: remove dependency on stdlib by removing following two lemmas *)
+(* --TODO: remove dependency on stdlib by removing following two lemmas *)
 
 Definition comparison_compare c1 c2 :=
   match c1, c2 with

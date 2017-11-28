@@ -338,7 +338,7 @@ Lemma ex_list_repr_impl_of_ex_list_covers_impl : forall E,
   ex (list_covers_impl E) -> 
   ex (list_repr_impl E).
 Proof using.
-  (* TODO: factorize this wiht later proofs *)
+  (* --TODO: factorize this wiht later proofs *)
   introv (L&M). sets_eq L1 EQL1: (remove_duplicates L).
   forwards~ (HN&HM&_): remove_duplicates_spec EQL1.
   sets L2: (filter (fun x => x \in E) L1).
@@ -981,7 +981,7 @@ Implicit Types E F : set A.
 Lemma foreach_empty : forall P,
   @foreach A (set A) _ P \{}.
 Proof using. intros_all. false. Qed.
-(* TODO: false* @in_empty. typeclass. *)
+(* --TODO: false* @in_empty. typeclass. *)
 
 Lemma foreach_single : forall P X,
   P X -> 

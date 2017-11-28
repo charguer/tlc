@@ -14,7 +14,7 @@ From TLC Require Export LibOperation.
 (* ---------------------------------------------------------------------- *)
 (** ** Type of endorelation, i.e. homogeneous binary relations *)
 
-(* TODO: what would be a better name for [binary]? *)
+(* --TODO: what would be a better name for [binary]? *)
 
 Definition binary (A : Type) := A -> A -> Prop.
 
@@ -414,7 +414,7 @@ Proof using. introv H N1 N2. apply* H. Qed.
 
 End Functional.
 
-(* TODO: define a tactic "functional_exploit R" that looks for two distinct
+(* --TODO: define a tactic "functional_exploit R" that looks for two distinct
    assumptions in the goal of the form [R ?x ?y] and produces [functional R]
    as subgoal, and provides the equality [?y1 = ?y2]. *)
 
@@ -630,7 +630,7 @@ Proof using.
   destruct Hxy; destruct Hxz; auto_false*.
 Qed.
 
-(* TODO: generic definition of covariant? *)
+(* --TODO: generic definition of covariant? *)
 Lemma covariant_union : forall R1 R2 S1 S2,
   rel_incl R1 S1 ->
   rel_incl R2 S2 ->
@@ -763,7 +763,7 @@ End Inverse.
 Definition rel_preimage (A B:Type) (R:binary B) (f:A->B) : binary A :=
   fun x y => R (f x) (f y).
 
-(* TODO: lemmas *)
+(* --TODO: lemmas *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1628,7 +1628,7 @@ Lemma covariant_rtclosure : forall R1 R2,
   rel_incl (rtclosure R1) (rtclosure R2).
 Proof using. unfolds rel_incl. introv H M. induction* M. Qed.
 
-(* TODO: find better name for this one and similar *)
+(* --TODO: find better name for this one and similar *)
 Lemma rel_incl_rtclosure_rtclosure : forall R1 R2,
   rel_incl R1 (rtclosure R2) ->
   rel_incl (rtclosure R1) (rtclosure R2).
@@ -2219,7 +2219,7 @@ Qed.
 
 (* LATER: many lemmas like the above? *) 
 
-(* TODO: rename this lemma *)
+(* --TODO: rename this lemma *)
 Lemma rel_incl_tclosure_stclosure_l : forall R1 R2,
   rel_incl R1 (stclosure R2) ->
   rel_incl (tclosure R1) (stclosure R2).

@@ -9,6 +9,7 @@ From TLC Require Import LibTactics LibLogic LibReflect LibRelation.
 Export LibTacticsCompatibility.
 From TLC Require Export LibNat.
 
+(* --LATER: rename [plus] to [add] everywhere? *)
 
 (* ********************************************************************** *)
 (** * Parsing of integers and operations *)
@@ -511,6 +512,8 @@ Tactic Notation "rew_int" "*" "in" hyp(H) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Lifting of comparisons from [nat] to [int] *)
 
+(* TODO: perhaps only state those as equalities? *)
+
 Lemma eq_nat_of_eq_int : forall (n m:nat),
   (n:int) = (m:int) ->
   n = m :> nat.
@@ -520,6 +523,20 @@ Lemma neq_nat_of_neq_int : forall (n m:nat),
   (n:int) <> (m:int) -> 
   (n <> m)%nat.
 Proof using. math. Qed.
+
+Lemma eq_int_of_eq_nat : forall (n m:nat),
+  n = m :> nat ->
+  (n:int) = (m:int).
+Proof using. math. Qed.
+
+Lemma neq_int_of_neq_nat : forall (n m:nat),
+  (n <> m)%nat -> 
+  (n:int) <> (m:int).
+Proof using. math. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Lifting of inequalities from [nat] to [int] *)
 
 Lemma le_nat_of_le_int : forall (n m:nat),
   (n:int) <= (m:int) -> 
@@ -565,14 +582,29 @@ Proof using. math. Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Lifting of operations from [nat] to [int] *)
 
-Lemma plus_nat_int : forall (n m:nat),
+Lemma plus_nat_eq_plus_int : forall (n m:nat),
   (n+m)%nat = (n:int) + (m:int) :> int.
 Proof using.
   Transparent nat_to_Z.
   intros. unfold nat_to_Z. applys Nat2Z.inj_add.
 Qed.
 
+Lemma minus_nat_eq_minus_int : forall (n m:nat),
+  (n >= m)%nat ->
+  (n-m)%nat = (n:int) - (m:int) :> int.
+Proof using.
+  Transparent nat_to_Z.
+  intros. unfold nat_to_Z. applys Nat2Z.inj_sub. math.
+Qed.
+
+(* -- LATER: tactic for lifting all operators and comparisons into Z *)
+
 (* -- LATER: complete with other operators *)
+
+(* -- LATER: is the hint below really necessary?
+     if so, there should probably be other hints similar to it *)
+
+Hint Rewrite plus_nat_eq_plus_int : rew_maths.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -635,6 +667,25 @@ Lemma abs_minus : forall (x y:int),
   abs (x - y) = (abs x - abs y)%nat :> nat.
 Proof using. intros. applys Zabs2Nat.inj_sub; math. Qed.
 
+Lemma abs_nat_plus_nonneg : forall (n:nat) (x:int),
+  x >= 0 ->
+ abs (n + x)%Z = (n + abs x)%nat.
+Proof using.
+  introv N. applys eq_nat_of_eq_int. 
+  rewrite plus_nat_eq_plus_int.
+  do 2 (rewrite abs_nonneg; [|math]). auto.
+Qed.
+
+Lemma abs_gt_minus_nat : forall (n:nat) (x:int),
+  (x >= n)%Z ->
+ abs (x - n)%Z = (abs x - n)%nat.
+Proof using.
+  introv N. applys eq_nat_of_eq_int. 
+  rewrite minus_nat_eq_minus_int.
+  do 2 (rewrite abs_nonneg; [|math]). auto.
+  applys ge_nat_of_ge_int. rewrite abs_nonneg; math.
+Qed.
+
 Lemma succ_abs_eq_abs_one_plus : forall (x:int),
   x >= 0 -> 
   S (abs x) = abs (1 + x) :> nat.
@@ -665,10 +716,7 @@ Tactic Notation "rew_abs_nonneg" :=
 Tactic Notation "rew_abs_nonneg" "~" :=
   autorewrite with rew_abs_nonneg; try math; autos~.
 
-(* -- LATER: is the hint below really necessary?
-     if so, there should probably be other hints similar to it *)
 
-Hint Rewrite plus_nat_int : rew_maths.
 
 
 

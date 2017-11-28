@@ -878,7 +878,7 @@ Proof using.
     (* step the invariant *)
     introv Cohi. rewrite Fixv. unfold V.
     forwards* (l&El&L): (>> (@local_limit_dep_name I) i).
-    rewrite El. clear El. (* todo: limitation of forward *)
+    rewrite El. clear El. (* --TODO: limitation of forward *)
     applys~ (contractive_to_invariant Cofe Contr).
     introv Rji. applys~ (Conti (predecessor i) v).
   lets LocCohv Qv: (forall_conj_inv_1 LocCohQv). clear LocCohQv.
@@ -1214,7 +1214,7 @@ Proof using.
   destruct p as [i x]. intros H.
   split.
   intros j y Le Px. rewrite rclosure_eq in Le. destruct Le as [Le|Eq].
-    destruct (IH (j,y)) as [K _]; autos~. (* TODO: bug forwards *)
+    destruct (IH (j,y)) as [K _]; autos~. (* --TODO: bug forwards *)
       intros [k z] Le'. apply H. apply~ trans_lexico2. apply trans_tclosure. apply Le'.
    inversions Eq.
    forwards~ [K _]: (>> Cont i x f1 f2). intros y j Py Lt.
@@ -1730,11 +1730,11 @@ Qed.
 
 Arguments FixValModMut2_fix [I] [A1] [A2] {IA1} {IA2} M E1 E2 [F1] [F2] [x1] [x2].
 
-(* todo: express continuity with two invariants *)
+(* --TODO: express continuity with two invariants *)
 
 (** -------- Recursive functions --------- *)
 
-(* todo: comment and use in the next proof *)
+(* --TODO: comment and use in the next proof *)
 
 Lemma FixFunMod_inv :
   forall A (P:A->Prop) B {IB:Inhab B} (F:(A->B)->(A->B)) (E:binary B) (f f':A->B),
@@ -1867,7 +1867,7 @@ Proof using.
   applys~ FixFunMod_inv F. applys~ rec_fixed_point_generally_consistent' R.
 Qed.
 
-(* TODO: add comments *)
+(* --TODO: add comments *)
 
 Fixpoint func_iter n A B (F:(A->B)->(A->B)) (f:A->B) (x:A) : B :=
   match n with

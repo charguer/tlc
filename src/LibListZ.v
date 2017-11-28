@@ -1,4 +1,4 @@
-(*-- TODO COMPLETE CLEANUP --*)
+(*--TODO COMPLETE CLEANUP --*)
 
 (**************************************************************************
 * TLC: A library for Coq                                                  *
@@ -20,7 +20,7 @@ Ltac auto_tilde ::= eauto with maths.
 
 (* ********************************************************************** *)
 (** * List operations using indices in Z *)
-
+ 
 (* ---------------------------------------------------------------------- *)
 (** * Length, with result as [int] *)
 
@@ -216,6 +216,27 @@ Proof using.
   { rewrite nth_last_case. rewrite~ abs_eq_nat_eq. }
 Qed.
 
+Lemma read_middle : forall i l1 l2 x,
+  i = length l1 ->
+  (l1 ++ x :: l2)[i] = x.
+Proof.
+  introv M. rewrite length_eq in M. unfold read, read_inst, read_impl.
+  case_if. { false; math. }
+  rewrite~ nth_middle. subst. rewrite~ abs_nat.
+Qed.
+
+Lemma read_app : forall i l1 l2,
+  (l1 ++ l2)[i] = (If i < length l1 then l1[i] else l2[i - length l1]).
+Proof using.
+  intros. rewrite length_eq. unfold read, read_inst, read_impl. case_if.
+  { case_if. { auto. } { false; math. } }
+  case_if as C'.
+  { applys nth_app_l. applys lt_nat_of_lt_int. rewrite abs_nonneg; math. }
+  case_if. { false; math. }
+  rewrite abs_gt_minus_nat; [|math]. applys nth_app_r.
+  { applys ge_nat_of_ge_int. rewrite abs_nonneg; math. }
+Qed.
+
 End Read.
 
 Global Opaque read_inst.
@@ -260,6 +281,10 @@ Definition update_impl A (l:list A) (i:int) (v:A) : list A :=
 Instance update_inst : forall A, BagUpdate int A (list A).
 Proof using. constructor. rapply (@update_impl A). Defined.
 
+
+Notation "m [ x := v ]" := (LibContainer.update m x v)
+  (at level 9, format "m [ x := v ]", left associativity) :foo.
+
 Section Update.
 Transparent index_inst read_inst update_inst.
 Context (A : Type) `{IA:Inhab A}.
@@ -267,12 +292,16 @@ Implicit Types x v w : A.
 Implicit Types l : list A.
 Implicit Types i j : int.
 
+
+
+
 Lemma length_update : forall l i v,
   length (l[i:=v]) = length l.
 Proof using.
   intros. unfold update_inst, update_impl, length, update. simpl.
   case_if. math. rewrite~ length_update.
 Qed.
+
 
 Lemma index_update_eq : forall l i j v,
   index (l[j:=v]) i = index l i.
@@ -308,6 +337,8 @@ Lemma read_update_neq : forall l i j v,
 Proof using. introv N. rewrite~ read_update_case. case_if; auto_false~. Qed.
 
 End Update.
+
+
 
 Section UpdateNoInhab.
 Transparent index_inst read_inst update_inst.
@@ -421,16 +452,41 @@ Proof using.
   applys nth_make. forwards: lt_abs_abs i n; try math.
 Qed.
 
-(*-- LATER:
-Lemma cons_make_same : forall n x, 
-  0 <= n -> 
-  x::(make n x) = make (n+1) x.
-*)
-
-Lemma cons_make_pred_same : forall n x, 
-  0 < n -> 
-  x::(make (n - 1) x) = make n x.
+Lemma make_zero : forall v, 
+  make 0 v = nil.
 Proof using.
+  intros. unfold make. case_if. { false; math. } 
+  asserts_rewrite (abs 0 = 0%nat). { applys eq_int_nat. rewrite abs_pos; math. }
+  auto.
+Qed.
+
+Lemma make_succ_l: forall n v, 
+  n >= 0 -> 
+  make (n+1) v = v :: make n v.
+Proof using.
+  intros. rewrites <- (>> cons_make (n+1)). math. fequals_rec; math.
+Qed.
+
+Lemma make_succ_r: forall n v, 
+  n >= 0 -> 
+  make (n+1) v = make n v & v.
+Proof using.
+  intros. asserts IA: (Inhab A). applys prove_Inhab x. applys ext_eq.
+  { rewrite length_make. rew_list. rewrite length_make.
+    math. math. math. }
+  { intros i Ei. rewrite length_make in Ei; [| math ].
+    rewrite read_make; [| rewrite int_index_def; math ]. 
+    rewrite read_app. case_if as C; (rewrite length_make in C; [|math]).
+    { rewrite~ read_make. rewrite int_index_def. math. } 
+    { rewrite length_make; [|math]. math_rewrite (i-n = 0).
+      rewrite~ read_zero. } }
+Qed.
+
+Lemma make_eq_cons_make_pred : forall n v, 
+  0 < n -> 
+  v::(make (n - 1) v) = make n v.
+Proof using.
+xxx reuse above
   intros. unfold make.
   do 2 (case_if; [ math | ]).
   rewrite <- LibList.make_succ. fequals.
@@ -439,6 +495,46 @@ Proof using.
 Qed.
 
 End Make.
+
+
+(* ---------------------------------------------------------------------- *)
+(** * [LibList.map] interactions with [LibListZ] operations *)
+
+xx
+
+Lemma length_map : forall A B (l:list A) (f:A->B),
+  length (map f l) = length l.
+Proof using. intros. unfold length. rewrite~ length_map. Qed.
+
+Lemma index_map_eq : forall A B (l:list A) i (f:A->B),
+  index (map f l) i = index l i.
+Proof using. intros. rewrite index_def in *. rewrite~ length_map. Qed.
+
+Lemma index_map : forall A B (l:list A) i (f:A->B),
+  index l i -> index (map f l) i.
+Proof using. intros. rewrite~ index_map_eq. Qed.
+
+Lemma map_update : forall A B (l:list A) (i:int) (x:A) (f:A->B),
+  index l i ->
+  map f (l[i := x]) = (map f l)[i := f x].
+Proof using.
+  introv H. rewrite index_def, int_index_def in H.
+  unfold update_inst, update_impl, update. simpl.
+  case_if. { false; math. }
+  { applys list_update_map. { applys int_nat_lt. rewrite abs_pos; math. } }
+Qed.
+
+Lemma read_map : forall `{IA:Inhab A} `{IB:Inhab B} (l:list A) (i:int) (f:A->B),
+  index l i ->
+  (map f l)[i] = f (l[i]).
+Proof using.
+  introv H. rewrite index_def, int_index_def in H.
+  unfold read_inst, read_impl, nth. simpl. case_if.
+  { false; math. }
+  { rewrite nth_map. (* TODO: why rewrite @nth_map fails *) auto.
+    applys int_nat_lt. rewrite abs_pos; math. }
+Qed.
+
 
 
 (* ---------------------------------------------------------------------- *)

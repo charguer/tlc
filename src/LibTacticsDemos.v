@@ -658,7 +658,7 @@ Proof using.
   lets_inverts (conj P P) as H1 H2. skip.
 Qed.
 
-(* TODO: false_invert *)
+(* --TODO: false_invert *)
 
 Inductive Behave : Type :=
   | Behave_intro :
@@ -753,7 +753,7 @@ Inductive natequal : nat -> nat -> Prop :=
   | natequal_O : natequal 0 0
   | natequal_S : forall n, natequal n n -> natequal (S n) (S n).
 
-(* TODO
+(* --TODO
 
 Lemma demo_inductions : forall n m p,
   natequal (n + m) (m + p) -> p = n.
@@ -1301,7 +1301,7 @@ Proof using.
   let_simpl.
   reflexivity.
   (* One can name the arguments of ['let] step by step *)
-  let_name. (* TODO: avoid naming of x in 12 *)
+  let_name. (* --TODO: avoid naming of x in 12 *)
   let_name as z.
   subst x. subst z. reflexivity.
 Qed.

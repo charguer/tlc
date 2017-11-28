@@ -561,6 +561,17 @@ Proof using.
     subst. right*. }
 Qed.
 
+Lemma list_middle_inv : forall n l,
+  n < length l ->
+  exists l1 x l2, l = l1++x::l2 /\ length l1 = n.
+Proof using.
+  intros. gen l. induction n; introv N; 
+   destruct l as [|x l']; rew_list in *; try solve [ false; math ].
+  { exists~ (@nil A) x l'. }
+  { forwards (l1&x'&l2&E&M): IHn l'. math.
+    exists (x::l1) x' l2. subst l'. rew_list~. } 
+Qed.
+
 End AppInversion.
 
 Arguments last_eq_nil_inv [A] [a] [l].
@@ -1059,6 +1070,22 @@ Proof using.
     fequals; math. }
 Qed.
 
+(*-- TODO: perhaps above lemmas could be proved from that one instead *)
+Lemma nth_app : forall n l1 l2,
+  nth n (l1 ++ l2) = If (n < length l1) then (nth n l1) else (nth (n - length l1) l2).
+Proof using.
+  intros. case_if. { applys~ nth_app_l. } { applys nth_app_r; math. }
+Qed.
+
+Lemma nth_middle : forall n l1 x l2,
+  n = length l1 -> 
+  nth n (l1 ++ x :: l2) = x.
+Proof using.
+  introv E. rewrite nth_app_r.
+  { math_rewrite (n - length l1 = 0). rewrite~ nth_zero. }
+  math.
+Qed.
+
 Lemma nth_last_case : forall n x l,
   nth n (l&x) = (If n = length l then x else nth n l).
 Proof using.
@@ -1465,6 +1492,18 @@ Lemma length_map : forall f l,
 Proof using.
   intros. induction~ l. 
   { rewrite map_cons. do 2 rewrite length_cons. auto. }
+Qed.
+
+Lemma map_update : forall n f l x,
+  n < length l ->
+  map f (update n x l) = update n (f x) (map f l).
+Proof using.
+  introv I. gen n. induction l; intros; rew_list in *.
+  { false; math. }
+  { destruct n as [|n'].
+    { rewrite~ update_zero. }
+    { rewrite map_cons. do 2 rewrite update_cons. rewrite map_cons.
+      fequals. applys IHl. math. } }
 Qed.
 
 Lemma map_eq_nil_inv : forall f l,

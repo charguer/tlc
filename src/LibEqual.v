@@ -441,7 +441,7 @@ Proof using. intros. apply~ pred_ext_6. Qed.
 (* ********************************************************************** *)
 (** * Equality of function and predicate applications *)
 
-(* TODO: generalize this section to dependent arguments *)
+(* --TODO: generalize this section to dependent arguments *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** A same function applied to equal arguments yield equal result *)
@@ -603,7 +603,7 @@ Proof using.
   rewrite (prop_eq_self_impl_when_true a).
   subst P'. intros.
   set (Y := fun f => (fun x => f (g1 x x)) (g2 (fun x => f (g1 x x)))).
-  applys (has_fixpoint_make Y). (* TODO: why [applys has_fixpoint_make Y] fails *)
+  applys (has_fixpoint_make Y). (* --TODO: why [applys has_fixpoint_make Y] fails *)
   { intros f. unfold Y at 1. rewrite~ Fix. }
 Qed.
 

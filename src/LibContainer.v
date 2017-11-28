@@ -55,7 +55,10 @@ Notation "x \:= v" := (single_bind x v)
 Notation "m [ x ]" := (read m x)
   (at level 9, format "m [ x ]").
 Notation "m [ x := v ]" := (update m x v)
-  (at level 9, format "m [ x  :=  v ]").
+  (at level 28, format "m [ x := v ]", left associativity).
+(* DEPRECATED
+Notation "m [ x := v ]" := (update m x v)
+  (at level 9, format "m [ x  :=  v ]").*)
 
 (* DEPRECATED *)
 Notation "m \( x )" := (read m x)
@@ -79,7 +82,7 @@ Notation "m1 '\#' m2" := (disjoint m1 m2)
 
 Open Scope container_scope.
 
-(* todo: bug with spaces *)
+(* --TODO: bug with spaces *)
 Notation "''{' x '}'" := (single x) (format "''{' x '}'")
   : container_scope.
 
@@ -376,7 +379,7 @@ Class Disjoint_single_r_eq :=
 Class Inter_disjoint :=
   { inter_disjoint : forall E F, E \# F -> E \n F = \{} }.
 
-  (* TODO: add more *)
+  (* --TODO: add more *)
 
 End Properties.
 
@@ -565,7 +568,7 @@ Global Instance notin_union_inv_of_notin_union_eq :
   Notin_union_inv.
 Proof using. constructor. introv I. rewrite~ notin_union_eq in I. Qed.
 
-  (* TODO: in remove properties?*)
+  (* --TODO: in remove properties?*)
 
 (** Incl *)
 

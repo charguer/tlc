@@ -329,7 +329,7 @@ Proof using.  (*todo: optimize proof *)
     (fold_left (fun a b => and b (decide (P a))) true l).
   tests: (Forall P l).
    rewrite~ isTrue_true. fold_bool.
-    induction~ C. rew_list. (* TODO: rewrite neutral_l_and. *) simpl. case_if~.
+    induction~ C. rew_list. (* --TODO: rewrite neutral_l_and. *) simpl. case_if~.
    rewrite~ isTrue_false. fold_bool.
     induction~ l.
      false C. constructor~.

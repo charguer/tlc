@@ -204,7 +204,7 @@ Tactic Notation "unfolds_uncurryp" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Inverse projections for relations *)
 
-(* TODO: rename to [unprojpNK] and define also [unprojNK] *)
+(* --TODO: rename to [unprojpNK] and define also [unprojNK] *)
 
 (** [unprojNK] turns a function of type [AK -> AK -> B]
     into a function of type [(A1*..*AN) -> (A1*..*AN) -> B]. *)
