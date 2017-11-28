@@ -280,6 +280,26 @@ Proof using. tautob; auto_false*. Qed.
 Arguments xor_inv_or [b1] [b2].
 
 
+(* ---------------------------------------------------------------------- *)
+(** ** Lemmas for normalizing [b = true] and [b = false] terms *)
+
+Lemma bool_eq_true_eq : forall b,
+  (b = true) = istrue b.
+Proof using. extens. tautob. Qed.
+
+Lemma bool_eq_false_eq : forall b,
+  (b = false) = istrue (!b).
+Proof using. extens. tautob. Qed.
+
+Lemma true_eq_bool_eq : forall b,
+  (true = b) = istrue b.
+Proof using. extens. tautob. Qed.
+
+Lemma false_eq_bool_eq : forall b,
+  (false = b) = istrue (!b).
+Proof using. extens. tautob. Qed.
+
+
 (* ********************************************************************** *)
 (** * Tactics *)
 
@@ -364,7 +384,9 @@ Hint Rewrite
   not_not_eq
   istrue_true_eq istrue_false_eq istrue_isTrue_eq
   istrue_neg_eq istrue_and_eq istrue_or_eq
+  bool_eq_true_eq bool_eq_false_eq true_eq_bool_eq false_eq_bool_eq
   : rew_bool_eq.
+
 
 Tactic Notation "rew_bool_eq" :=
   autorewrite with rew_bool_eq.
@@ -393,7 +415,12 @@ Tactic Notation "rew_bool_eq" "*" "in" "*" :=
 (** ** Tactics extended for reflection *)
 
 (** Extension of the tactic [case_if] to automatically performs
-    simplification using [logics]. *)
+    simplification using [logics]. 
+    
+    For less aggressive introduction of [istrue], consider rewriting
+    without the lemmas:
+    [bool_eq_true_eq bool_eq_false_eq true_eq_bool_eq false_eq_bool_eq]
+*)
 
 Ltac case_if_post H ::= 
   rew_bool_eq in H; tryfalse.

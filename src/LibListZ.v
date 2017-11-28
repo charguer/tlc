@@ -307,11 +307,21 @@ Lemma read_update_neq : forall l i j v,
   (l[i:=v])[j] = l[j].
 Proof using. introv N. rewrite~ read_update_case. case_if; auto_false~. Qed.
 
+End Update.
+
+Section UpdateNoInhab.
+Transparent index_inst read_inst update_inst.
+Context (A : Type).
+Implicit Types x v w : A.
+Implicit Types l : list A.
+Implicit Types i j : int.
+
 Lemma update_update_same : forall l i v w,
   index l i ->
   l[i:=v][i:=w] = l[i:=w].
-Proof using IA. (* --TODO: cleanup proof *)
-  intros. eapply eq_of_extensional_index; repeat rewrite length_update.
+Proof using. (* --TODO: cleanup proof *)
+  intros. asserts IA: (Inhab A). typeclass.
+  eapply eq_of_extensional_index; repeat rewrite length_update.
   { reflexivity. }
   intros j.
   repeat rewrite index_update_eq.
@@ -325,8 +335,9 @@ Lemma update_update_neq : forall l i j v w,
   index l j -> 
   i <> j -> 
   l[i:=v][j:=w] = l[j:=w][i:=v].
-Proof using IA. (* --TODO: cleanup proof *)
-  intros. eapply eq_of_extensional_index; repeat rewrite length_update.
+Proof using. (* --TODO: cleanup proof *)
+  intros. asserts IA: (Inhab A). typeclass.
+  eapply eq_of_extensional_index; repeat rewrite length_update.
   { reflexivity. }
   intros k.
   repeat rewrite index_update_eq.
@@ -342,8 +353,8 @@ Lemma update_app_r : forall l2 j l1 i ij v,
   0 <= j ->
   ij = i + j ->
   (l1 ++ l2)[ij:=v] = l1 ++ (l2[j:=v]).
-Proof using IA. (* --TODO: cleanup proof *)
-  intros. subst ij.
+Proof using. (* --TODO: cleanup proof *)
+  intros. asserts IA: (Inhab A). typeclass. subst ij.
   unfold LibContainer.update, update_inst, update_impl.
   unfold update. do 2 (case_if; [ math | ]).
   rewrite Zabs2Nat.inj_add; try math. subst i.
@@ -354,8 +365,8 @@ Qed.
 Lemma update_middle : forall i l1 l2 v w,
   i = length l1 ->
   (l1 ++ w :: l2)[i := v] = l1 & v ++ l2.
-Proof using IA. (* --TODO: cleanup proof *)
-  intros.
+Proof using. (* --TODO: cleanup proof *)
+  intros. asserts IA: (Inhab A). typeclass.
   unfold LibContainer.update, update_inst, update_impl.
   unfold update. case_if; [ math | ].
   rewrite~ LibList.update_middle. subst i.
@@ -363,7 +374,7 @@ Proof using IA. (* --TODO: cleanup proof *)
   (* -- LATER: factorize the pattern of the above line *)
 Qed.
 
-End Update.
+End UpdateNoInhab.
 
 Global Opaque update_inst.
 

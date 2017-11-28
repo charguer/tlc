@@ -243,6 +243,7 @@ Lemma neg_or : automorphism neg or and.
 Proof using. tautob. Qed.
 
 Lemma neg_neg : involutive neg.
+(* forall x, ! (! b) = b *)
 Proof using. tautob. Qed.
 
 

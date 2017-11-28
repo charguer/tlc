@@ -443,7 +443,7 @@ Parameter is_marked : marks -> nat -> bool.
 Parameter add_mark : marks -> nat -> marks.
 Parameter nb_unmarked : marks -> nat.
 Parameter add_mark_nb_unmarked : forall m i,
-  is_marked m i = false ->
+  ~ is_marked m i ->
   nb_unmarked (add_mark m i) < nb_unmarked m.
 
 Parameter neighbours : nat -> list nat.
@@ -457,7 +457,7 @@ Definition Dfs dfs m i :=
 Definition dfs := FixFun2 Dfs.
 
 Lemma fix_dfs : forall m i,
-  is_marked m i = false ->
+  ~ is_marked m i ->
   dfs m i = Dfs dfs m i.
   (* Could be added to the statement:
      /\ (forall m i, is_marked m i = false ->
