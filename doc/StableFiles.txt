@@ -39,6 +39,7 @@ Stable files:
 
 Work-in-progess files (compile, but with material remaining to be polished)
 
+   LibListSub
    LibMultiset
    LibPer
    LibFun

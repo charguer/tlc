@@ -19,15 +19,15 @@ SERIOUS := 1
 
 SRC :=\
    LibTactics \
-	\
+   \
    LibAxioms \
    LibEqual \
    LibLogic \
-	\
+   \
    LibOperation \
    LibBool \
    LibReflect \
-	\
+   \
    LibNat \
    LibRelation \
    LibEpsilon \
@@ -35,7 +35,7 @@ SRC :=\
    LibOperation \
    LibOrder \
    LibWf \
-	\
+   \
    LibProd \
    LibSum \
    LibUnit \
@@ -44,10 +44,12 @@ SRC :=\
    LibInt \
    LibMonoid \
    LibList \
-	\
-	LibMin \
-	LibFix \
-	\
+   LibListSub \
+   LibListZ \
+   \
+   LibMin \
+   LibFix \
+   \
    LibContainer \
    LibSet
 

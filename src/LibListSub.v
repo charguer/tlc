@@ -1,4 +1,4 @@
-(*--- under construction
+(*-- TODO COMPLETE CLEANUP --*)
 
 (**************************************************************************
 * TLC: A library for Coq                                                  *
@@ -13,10 +13,6 @@ From TLC Require Import LibTactics LibLogic LibReflect LibOperation
 Local Open Scope nat_scope.
 Local Open Scope comp_scope.
 Global Close Scope list_scope.
-
-
-
-
 
 
 (* -------------------------------------------------------------------------- *)
@@ -52,10 +48,10 @@ Lemma prefix_antisymmetric:
   prefix ys xs ->
   xs = ys.
 Proof using.
-  introv (ws&?) (zs&?). subst ys. rew_list in *.
-  forwards: app_eq_self_inv_l. { eauto. }
-  forwards: app_eq_nil_inv. { eauto. }
-  unpack. subst ws zs. rew_list. eauto.
+  introv (ws&Ex) (zs&Ey). subst ys. rew_list in *.
+  forwards Ey': app_l_eq_self_inv (rm Ey).
+  forwards (E1&E2): app_eq_nil_inv (rm Ey').
+  subst. rew_list~.
 Qed.
 
 Lemma prefix_transitive:
@@ -232,14 +228,14 @@ Qed.
 
 (* [prefix] and [No_duplicates]. *)
 
-Lemma no_duplicates_prefix:
+Lemma noduplicates_prefix:
   forall xs ys,
-  No_duplicates ys ->
+  noduplicates ys ->
   prefix xs ys ->
-  No_duplicates xs.
+  noduplicates xs.
 Proof using.
   introv ? (zs&?). subst.
-  forwards: No_duplicates_inv_app; eauto.
+  forwards: noduplicates_app_inv; eauto.
   tauto.
 Qed.
 
@@ -328,12 +324,14 @@ End PrefixClosed.
 
 (* -------------------------------------------------------------------------- *)
 
+(* DEPRECATED?
+
 (* The [prefix] ordering on lists has been defined in [LibList]. Here, we
    provide an alternate definition, as well as more properties. *)
 
-(* TEMPORARY characterize [prefix] as pointwise equality *)
+(* TODO characterize [prefix] as pointwise equality *)
 
-Section Prefix.
+Section PrefixMore.
 
 Variables (A : Type).
 Implicit Types xs ys : list A.
@@ -343,7 +341,7 @@ Proof using. math. Qed.
 
 Local Hint Resolve le_implies_ge length_nonneg.
 
-(* [prefix], [snoc], and read access. *)
+(* [prefix], [snoc], and read access.
 
 Lemma prefix_read:
   forall `{Inhab A} ys xs y,
@@ -367,6 +365,7 @@ Proof using.
     destruct xs as [ | x xs ]; [ congruence | ].
     simpl. eapply IHys. exists zs. rew_list. congruence. }
 Qed.
+ *)
 
 (* [prefix] and [length]. *)
 
@@ -380,6 +379,7 @@ Proof using.
   math.
 Qed.
 
+
 Lemma prefix_snoc_length:
   forall ys y xs,
   prefix (ys & y) xs ->
@@ -390,7 +390,7 @@ Proof using.
   math.
 Qed.
 
-End Prefix.
+End PrefixMore.
 
 
 *)

@@ -1592,8 +1592,12 @@ flip_trichotomous => trichotomous_inverse
 removed: Arguments nle_to_sle {A} {H} {NLe_to_SLe} [x] [y].
 
 
-
+ge_from_le => ge_of_le
+le_from_le => lt_of_le
+=> gt_of_le
 --
+
+my_Z_of_nat => nat_to_Z
 
 Ltac  math_debug => math_setup 
 

@@ -1,6 +1,8 @@
+(*-- TODO COMPLETE CLEANUP --*)
+
 (**************************************************************************
 * TLC: A library for Coq                                                  *
-* Lists accessed with integers (not nat) and using LibContainer typeclasses     *
+* Lists accessed with integers (not nat), using LibContainer typeclasses  *
 **************************************************************************)
 
 Set Implicit Arguments.
