@@ -1,13 +1,6 @@
 # This Makefile is not shipped.
 
-# -------------------------------------------------------------------------
-
-# Delegate these commands.
-
-.PHONY: all clean install uninstall
-
-all clean install uninstall:
-	@ $(MAKE) -C src $@
+include Makefile
 
 # -------------------------------------------------------------------------
 
@@ -35,13 +28,11 @@ package:
 	  -X $(PWD)/.gitignore \
 	  --exclude=.git \
 	  --exclude=.gitignore \
-	  --exclude=dev \
 	  --exclude=doc \
-	  --exclude=new \
 	  --exclude=old \
 	  --exclude=opam \
 	  --exclude=open.sh \
-	  --exclude=todo \
+	  --exclude=README.md \
 	  --exclude=GNUmakefile \
 	  -cvz -f $(PACKAGE).tar.gz $(PACKAGE)
 # Test the archive that we just created.
