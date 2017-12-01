@@ -341,7 +341,7 @@ Lemma indom_update_same : forall A `{Inhab B} (m:map A B) (i:A) (v:B),
   i \indom (m[i:=v]).
 Proof using. intros. rewrite~ indom_update_eq. Qed.
 
-Hint Resolve indom_update_same. (* TODO: move *)
+Hint Resolve indom_update_same. (* --TODO: move *)
 
 (* update *)
 
@@ -381,7 +381,7 @@ Lemma binds_inj : forall A i `{Inhab B} v1 v2 (M:map A B),
 Proof using.
   introv IB H1 H2.
   rewrite (@binds_eq_indom_read A B IB) in *.
-  destruct H1; destruct H2. congruence. (* todo: cleanup *)
+  destruct H1; destruct H2. congruence. (* --TODO: cleanup *)
 Qed.
 
 Lemma binds_of_indom_read : forall A `{Inhab B} (M:map A B) x v,
@@ -512,7 +512,7 @@ Qed.
 
 Lemma dom_remove_one : forall A B i (M:map A B),
   dom (M\--i) = dom M \- \{i}.
-Proof using. intros. applys~ dom_remove. Qed. (* TODO: needed ? *)
+Proof using. intros. applys~ dom_remove. Qed. (* --TODO: needed ? *)
 
 Lemma index_remove_one_in : forall A B i j (M:map A B),
   index M j -> 
@@ -520,7 +520,7 @@ Lemma index_remove_one_in : forall A B i j (M:map A B),
   index (M\--i) j.
 Proof using.
   introv R N. rewrite index_eq_indom in *. rewrite dom_remove_one.
-  rew_set. auto. (* todo: "rew_set*" *)
+  rew_set. auto. (* --TODO: "rew_set*" *)
 Qed.
 
 Arguments index_remove_one_in [A] [B].
@@ -647,7 +647,7 @@ Proof using.
   rewrite~ fold_union.
     apply~ finite_to_finite_fold_support.
     apply~ finite_to_finite_fold_support.
-    rewrite disjoint_eq. (* TODO: applys disjoint_prove. *)
+    rewrite disjoint_eq. (* --TODO: applys disjoint_prove. *)
     intros (k,x). rew_set. intros (k1&x1&E1&R1) (k2&x2&E2&R2).
      inverts E1. forwards~: binds_impl_dom_impl R1.
      inverts E2. forwards~: binds_impl_dom_impl R2.
@@ -664,7 +664,7 @@ Proof using.
          unfolds union_impl, binds_impl. rewrite~ EN.
       inverts E. exists k x. split~. forwards~: binds_impl_dom_impl R.
         unfolds union_impl, binds_impl. rewrite~ R.
-Qed. (* todo: cleanup proof *)
+Qed. (* --TODO: cleanup proof *)
 
 End Properties.
 

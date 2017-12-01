@@ -354,7 +354,7 @@ Proof using.
   intros. tests: (x <= y). left~. right. math.
 Qed.
 
-(* todo: make polymorphic with classes *)
+(* --TODO: make polymorphic with classes *)
 
 Section Min.
 Implicit Types x y : int.
@@ -540,7 +540,7 @@ Qed.
 Lemma div2_bounds : forall m n,
   m = n / 2 -> 2 * m <= n /\ n <= 2 * m + 1.
 Proof using. (* using stdlib *)
-  intros. lets K: (Z_div_mod_eq n 2) __. math. (* TODO: forwards shouldn't do simpl *)
+  intros. lets K: (Z_div_mod_eq n 2) __. math. (* --TODO: forwards shouldn't do simpl *)
   rewrite <- H in K.
   lets [E1 E2]: (mod2_bound n). math.
 Qed.
@@ -633,7 +633,7 @@ Ltac Zdiv_eliminate tt :=
   unfold Z.div;
   repeat (Zdiv_eliminate_step tt).
 
-(* todo: deal differently with iterated divisions,
+(* --TODO: deal differently with iterated divisions,
    in order to avoid blow up *)
 
 Ltac Zdiv_instantiate_hyp_steps tt :=
@@ -741,7 +741,7 @@ Ltac math_nia := math_setup; nia.
 (* ********************************************************************** *)
 (* * Order modulo *)
 
-(* TODO: deprecate this *)
+(* --TODO: deprecate this *)
 
 
 
@@ -1022,7 +1022,7 @@ Ltac permut_simpl_prepare :=
    apply permut_tactic_setup;
    repeat rewrite <- union_assoc.
 
-(* todo : doc *)
+(* --TODO : doc *)
 
 Ltac cancel_all_dup l :=
   repeat first
@@ -1070,7 +1070,7 @@ Ltac permut_simpl :=
   rew_permut_simpl;
   try apply refl_equal.
 
-(* TODO: move demos somewhere else *)
+(* --TODO: move demos somewhere else *)
 
 Section DemoSetUnion.
 Variables (A:Type).
@@ -1221,7 +1221,7 @@ Hint Extern 3 (_ \in _) => in_union_extract.
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics to invert a membership hypothesis *)
 
-(* TODO: document and clean up *)
+(* --TODO: document and clean up *)
 
 Section InversionsTactic.
 Context (A:Type).
@@ -1330,7 +1330,7 @@ Tactic Notation "eq_set" "*" :=
 
   (** Sets of sets *)
 
-  (* todo: typeclass for bigunion and bigintersection *)
+  (* --TODO: typeclass for bigunion and bigintersection *)
 
   Definition bigunion_impl A (E : set (set A)) : set A :=
     \set{ x | exists_ F \in E, x \in (F:set A) }.
@@ -1426,7 +1426,7 @@ Qed.
 
 
 
-Lemma binds_update_neq' : forall A i j `{Inhab B} v w (M:map A B), (* todo: needed? *)
+Lemma binds_update_neq' : forall A i j `{Inhab B} v w (M:map A B), (* --TODO: needed? *)
   i <> j -> 
   binds M i v -> 
   binds (M[j:=w]) i v.
@@ -1712,11 +1712,11 @@ End ZindicesOld.
 
 (* UNDER CONSTRUCTION *)
 
-(* TODO: complete definitions and proofs, which are used by CFML/Dijstra *)
+(* --TODO: complete definitions and proofs, which are used by CFML/Dijstra *)
 
 From TLC Require Import LibWf.
 
-(* TODO: implement a non-decidable version of count *)
+(* --TODO: implement a non-decidable version of count *)
 
 Axiom count : (* UNDER CONSTRUCTION *)
   forall A (P:A->Prop) (l:list A), int.
@@ -1754,9 +1754,9 @@ Qed.
 
 
 (* -------------------------------------------------------------------------- *)
-(* TODO: define a version of take that directly takes an int *)
+(* --TODO: define a version of take that directly takes an int *)
 
-Module TakeInt. (* TODO: move to LibListZ *)
+Module TakeInt. (* --TODO: move to LibListZ *)
 Import LibInt.
 Section Facts.
 Variables (A:Type).

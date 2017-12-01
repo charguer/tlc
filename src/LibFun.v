@@ -94,7 +94,7 @@ Qed.
 End Combinators.
 
 (** Tactic for simplifying function compositions *)
-(* TODO: not used; might become deprecated *)
+(* --TODO: not used; might become deprecated *)
 
 Hint Rewrite compose_id_l compose_id_r compose_assoc : rew_compose.
 Tactic Notation "rew_compose" :=
@@ -246,6 +246,6 @@ Lemma applyn_ind : forall A (P : A -> Prop) (f : A -> A) x n,
 Proof using. introv I. induction n; introv Hx; autos*. Qed.
 
 
-(* TODO: rename applyn to iter *)
-(* TODO: migrate iteration of functionals from LibFix to here *)
+(* --TODO: rename applyn to iter *)
+(* --TODO: migrate iteration of functionals from LibFix to here *)
 

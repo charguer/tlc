@@ -1711,6 +1711,7 @@ set_norm => rew_set in *
 
 ===================
 
+cons_make_pred_same => make_eq_cons_make_pred
 rew_arr => rew_array_nocase 
 LibListZ_length_def => length_eq
 length_singleton => length_one

@@ -124,14 +124,14 @@ Proof using.
   intuition.
 Qed.
 
-(* TODO: rename lemma *)
+(* --TODO: rename lemma *)
 Lemma prove_per_single : forall A (x y : A),
   (per_single x y) x y.
 Proof using.
   unfold per_single. eauto.
 Qed.
 
-(* TODO: move instance *)
+(* --TODO: move instance *)
 Global Instance binary_incl : forall A, BagIncl (binary A).
 Proof using. constructor. rapply (@LibRelation.incl A). Defined.
 
@@ -141,7 +141,7 @@ Lemma per_add_edge_covariant : forall A (B1 B2 : binary A) x y,
   incl (per_add_edge B1 x y) (per_add_edge B2 x y).
 Proof using.
   unfold binary_incl. unfold per_add_edge.
-  (* TODO: was     eauto using stclosure_le, union_covariant. *)
+  (* --TODO: was     eauto using stclosure_le, union_covariant. *)
   introv M. applys stclosure_le. applys* union_covariant.
 Qed.
 

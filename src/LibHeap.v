@@ -81,7 +81,7 @@ Parameter binds_rem : forall h k k' v,
 Parameter binds_rem_inv : forall h k v k',
   binds (rem h k') k v -> k <> k' /\ binds h k v.
 
-(* TODO: need to add the instance BagRemove to LibSet
+(* --TODO: need to add the instance BagRemove to LibSet
 Parameter dom_rem : forall h k,
   dom (rem h k) = (dom h) \- k.
 For now, we used this derived form:
@@ -127,7 +127,7 @@ Definition binds (l : heap K V) k v :=
   Assoc k v l.
 Definition to_list (l : heap K V) := l.
 
-(* TODO: move *)
+(* --TODO: move *)
 Generalizable Variable A B.
 Fixpoint assoc `{Comparable A} `{Inhab B} k (l:list (A*B)) : B :=
   match l with
@@ -155,7 +155,7 @@ Implicit Arguments empty [[K] [V]].
 Section HeapParameters.
 Context `{HK: Comparable K} `{IV: Inhab V}.
 Implicit Types h : heap K V.
-(* TODO: do the right proof using *)
+(* --TODO: do the right proof using *)
 
 Lemma indom_equiv_binds : forall h k,
   indom h k = (exists v, binds h k v).
@@ -199,7 +199,7 @@ Lemma binds_rem_inv : forall h k v k',
 Proof using HK.
 Admitted. (* File will be soon deprecated *)
 
-(* TODO: need to add the instance BagRemove to LibSet
+(* --TODO: need to add the instance BagRemove to LibSet
 Lemma dom_rem : forall h k,
   dom (rem h k) = (dom h) \- k.
 For now, we used this derived form:
@@ -239,7 +239,7 @@ Qed.
 Lemma read_option_def : forall h k,
   read_option h k = (If indom h k then Some (read h k) else None).
 Proof using.
-(* TODO
+(* --TODO
   introv. cases_if.
    rewrite* <- binds_equiv_read_option.
     rewrites* binds_equiv_read.
@@ -247,7 +247,7 @@ Proof using.
 *)
 Admitted. (* File will be soon deprecated *)
 
-(* TODO: move *)
+(* --TODO: move *)
 Generalizable Variable A.
 Fixpoint mem_assoc B `{Comparable A} k (l : list (A * B)) : bool :=
   match l with
@@ -407,7 +407,7 @@ Lemma not_indom_empty : forall k,
   ~ indom (@empty K V) k.
 Proof using HV. introv H. unfold indom in H. rewrite dom_empty in H.
 Admitted. (* File will be soon deprecated *)
-  (* TODO: add an instance for in_empty_eq in LibSet.
+  (* --TODO: add an instance for in_empty_eq in LibSet.
   apply* in_empty_eq. *)
 
 Lemma not_binds_empty : forall k v,

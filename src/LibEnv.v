@@ -1239,7 +1239,7 @@ Ltac binds_cases H :=
     first [ binds_single B | binds_cases B | idtac ] in
   let B1 := fresh "B" in let B2 := fresh "B" in
   binds_case H as B1 B2; (*fix_env;*) [ go B1 | go B2 ].
-  (* TODO: add support for binds_empty_inv *)
+  (* --TODO: add support for binds_empty_inv *)
 
 (* LATER: improve the above tactic using pattern matching
 Ltac binds_cases_base H :=

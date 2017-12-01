@@ -41,7 +41,7 @@ Hint Constructors permut_one.
 
 (** Permutation is an equivalence *)
 
-(* TODO: use [refl] [sym] [trans] predicates *)
+(* --TODO: use [refl] [sym] [trans] predicates *)
 
 Lemma permut_refl : forall l,
   permut l l.
@@ -252,7 +252,7 @@ End PermutationTactic.
 (** [permut_prepare] applies to a goal of the form [permut l l']
     and sets [l] and [l'] in the form [l1 ++ l2 ++ .. ++ nil],
     (some of the lists [li] are put in the form [x::nil]). *)
-(* todo: improve so as to ensure no rewrite inside elements *)
+(* --TODO: improve so as to ensure no rewrite inside elements *)
 
 Hint Rewrite app_assoc app_nil_l app_nil_r : permut_rew.
 
@@ -266,7 +266,7 @@ Ltac permut_lemma_get n :=
   end.
 
 Ltac permut_isolate_cons :=
-  do 20 try (* todo : repeat *)
+  do 20 try (* --TODO : repeat *)
     match goal with |- context [?x::?l] =>
       match l with
       | nil => fail 1

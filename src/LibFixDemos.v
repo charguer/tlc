@@ -121,7 +121,7 @@ Proof using.
   rewrite (@fix_log many_steps). dup.
   { reflexivity. }
   { applys eq_trans. unfold Log; simpl. eauto. eauto. }
-  (* TODO: eauto bug: it should try reflexivity before applying lemmas *)
+  (* --TODO: eauto bug: it should try reflexivity before applying lemmas *)
 Qed.
 
 End LogCompute.
@@ -153,7 +153,7 @@ Proof using.
   subst. inverts Pn as Pn'.
   apply* IH. math_rewrite (n = S (S (n - 2))) in Pn.
   rewrite Nat.even_succ_succ in Pn. auto.
-  (* TODO: revive the TLC definition of even to avoid dependency
+  (* --TODO: revive the TLC definition of even to avoid dependency
      on stdlib
      inverts Pn as Pn'; tryfalse. inverts Pn'. simpl. rew_nat~. *)
 Qed.
@@ -338,7 +338,7 @@ Qed.
 (* ********************************************************************** *)
 (** * A function on trees -- higher-order recursion *)
 
-Definition Mem A (x:A) l := Exists (=x) l. (* todo: move *)
+Definition Mem A (x:A) l := Exists (=x) l. (* --TODO: move *)
 
 (** The congruence rule for [map] on lists *)
 
@@ -796,7 +796,7 @@ Proof using.
   unfold itree_diagonal; fold itree_diagonal.
   sets_eq <- u0: (u 0). sets_eq <- uk: (u k).
   destruct u0 as [|t01 t02]; destruct uk as [|tk1 tk2]; auto_false.
-  split. (* todo: find a way to factorize both sides *)
+  split. (* --TODO: find a way to factorize both sides *)
   (* left subtree *)
   destruct i. simple~.
   sets u': (itree_left \o shifts u).
@@ -880,7 +880,7 @@ Lemma product_incr_similarity : forall i m1 m1' m2 m2',
 Proof using.
   induction i using peano_induction.
   change (itree_similar_upto) with (family_sim itree_family).
-  introv K1 K2. (* todo: setoid rewrite *)
+  introv K1 K2. (* --TODO: setoid rewrite *)
   eapply cofe_similar_modulo. apply itree_family_COFE.
     rewrite <- itree_similar_eq. apply product_fixpoint.
     rewrite <- itree_similar_eq. apply product_fixpoint.
