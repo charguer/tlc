@@ -53,19 +53,23 @@ Notation "x '\notin' E" := (notin x E)
 Notation "x \:= v" := (single_bind x v)
   (at level 29) : container_scope.
 Notation "m [ x ]" := (read m x)
+  (at level 7, format "m [ x ]", left associativity).
+Notation "m [ x := v ]" := (update m x v)
+  (at level 7, format "m [ x := v ]", left associativity).
+
+(* DEPRECATED
+Notation "m [ x ]" := (read m x)
   (at level 9, format "m [ x ]").
 Notation "m [ x := v ]" := (update m x v)
-  (at level 28, format "m [ x := v ]", left associativity).
-(* DEPRECATED
-Notation "m [ x := v ]" := (update m x v)
-  (at level 9, format "m [ x  :=  v ]").*)
+  (at level 9, format "m [ x  :=  v ]").
+*)
 
-(* DEPRECATED *)
+(* DEPRECATED 
 Notation "m \( x )" := (read m x)
   (at level 33, format "m \( x )", only parsing) : container_scope.
 Notation "m \( x := v )" := (update m x v)
   (at level 33, format "m \( x := v )", only parsing) : container_scope.
-
+*)
 
 Notation "m1 '\c' m2" := (incl m1 m2)
   (at level 38) : container_scope.

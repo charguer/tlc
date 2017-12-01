@@ -1100,6 +1100,27 @@ Qed.
 
 End NthFunc.
 
+Section NthFuncAux.
+Context (A:Type) {IA: Inhab A}.
+Implicit Types n : nat.
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma eq_of_extens : forall l1 l2,
+  length l1 = length l2 ->
+  (forall n, n < length l1 -> nth n l1 = nth n l2) ->
+  l1 = l2.
+Proof using IA. 
+  intros l1. induction l1; intros l2; destruct l2; simpl; introv HL HN;
+  try solve [ eauto | false ]. rew_list in *. f_equal.
+  { forwards M: (rm HN) 0. math. do 2 rewrite nth_zero in M. auto. }
+  { applys IHl1. { math. }
+    { intros n L. forwards M: (rm HN) (S n). math.
+      do 2 rewrite nth_cons in M. auto. } }
+Qed.
+
+End NthFuncAux.
+
 Arguments nth [A] {IA}.
 Opaque nth.
 

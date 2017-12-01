@@ -1,5 +1,23 @@
+-----
+
+Class BagRead A B T := { read : T -> A -> B }.
+Class BagUpdate A B T := { update : T -> A -> B -> T }.
 
 
+
+
+Instance read_inst : BagRead nat nat nat.
+Admitted.
+
+Instance update_inst : BagUpdate nat nat nat.
+Admitted.
+
+
+Lemma test : forall m x : nat,
+  m [ x := 3 ][ x := 3 ][3][5][ x := 3 ] = 0.
+
+
+------
 
 
 
