@@ -1,3 +1,6 @@
+++rename Constant TLC.LibEqual.exist_eq_exist
+
++++fix "cases_if" tactic so that it works on "if classicT(x=y) then...".
 +++todo: "extens" tactic should not call simpl.
 +++define nth_option, then nth_default, then nth.
 ------------------
