@@ -6,8 +6,8 @@
 Set Implicit Arguments.
 From TLC Require Import LibTactics.
 
-(* LATER: eliminate the use of the section *)
-(* LATER: add inversion lemmas *)
+(* --LATER: eliminate the use of the section *)
+(* --LATER: add inversion lemmas *)
 
 
 (* ********************************************************************** *)

@@ -232,7 +232,7 @@ Proof using. auto. Qed.
 Lemma neg_true : ! true = false.
 Proof using. auto. Qed.
 
-(* LATER: fix coq display of goals below *)
+(* --LATER: fix coq display of goals below *)
 
 Lemma neg_and : automorphism neg and or.
 (* forall x y, ! (x && y) = (! x) || (! y) *)

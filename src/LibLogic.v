@@ -866,7 +866,7 @@ Hint Unfold pred_true pred_false.
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of combinators *)
 
-(* LATER: reformulate using [pred_all] and [pred_and] (?) *)
+(* --LATER: reformulate using [pred_all] and [pred_and] (?) *)
 
 Lemma pred_conj_forall_distrib : forall A (P Q: A->Prop),
   ((forall x, P x) /\ (forall x, Q x)) = (forall x, P x /\ Q x).
@@ -879,7 +879,7 @@ Proof using. intros. apply prop_ext. iff H. autos*. split; intros x; apply* (H x
 Definition pred_incl (A : Type) (P Q : A -> Prop) :=
   forall x, P x -> Q x.
 
-(* LATER: create a section here *)
+(* --LATER: create a section here *)
 
 Lemma pred_eq_forall_impl : forall A (P Q : A -> Prop),
   pred_incl P Q = (forall x, P x -> Q x).

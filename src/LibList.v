@@ -655,7 +655,7 @@ Lemma mem_last_eq_cases : forall x y l,
   mem x (l&y) = ((x <> y /\ mem x l) \/ (x = y)).
 Proof using.
   intros. extens. induction l; rew_list.  
-  (* TODO: redo the proof by induction on the length of the list *)
+  (* --TODO: redo the proof by induction on the length of the list *)
   { tests: (x = y). { autos*. } 
     { iff M. 
       { inverts~ M. } 
@@ -830,7 +830,7 @@ Proof using.
   { forwards*: IHn. math. }
 Qed.
 
-(* TODO: which name for this lemma? *)
+(* --TODO: which name for this lemma? *)
 Lemma Nth_inbound_inv : forall n l,
   n < length l -> 
   exists x, Nth n l x.
@@ -1215,7 +1215,7 @@ Proof using.
   { introv. rewrite rev_cons. rew_listx~. }
 Qed.
 
-(* TODO: Nth_rev and nth_rev *)
+(* --TODO: Nth_rev and nth_rev *)
 
 End Rev.
 
@@ -1453,7 +1453,7 @@ Proof using.
       { rew_listx. applys~ IHl. } } }
 Qed.
 
-(* TODO: possibly add Nth_update_eq and Nth_update_neq *)
+(* --TODO: possibly add Nth_update_eq and Nth_update_neq *)
 
 End Update.
 
@@ -1641,7 +1641,7 @@ Proof using.
     { rew_list in E. false. } }
 Qed.
 
-(* TODO: possibly add length_concat and nth_concat *)
+(* --TODO: possibly add length_concat and nth_concat *)
 
 End Concat.
 
@@ -1676,7 +1676,7 @@ Proof using. auto. Qed.
 
 Lemma filter_app : forall l1 l2 P,
   filter P (l1 ++ l2) = filter P l1 ++ filter P l2.
-Proof using. (* todo: factorise with map_app and above *)
+Proof using. (* --TODO: factorise with map_app and above *)
   intros. unfold filter.
   assert (forall accu,
     fold_right (fun x acc => If P x then x::acc else acc) accu (l1 ++ l2) =
@@ -1753,7 +1753,7 @@ Proof using.
     { inverts M. false. applys~ IHl. } }
 Qed.
 
-(* TODO: filter_congruence: filter prodides equal
+(* --TODO: filter_congruence: filter prodides equal
     results for predicate equivalent on all elements in l. *)
 
 End Filter.
@@ -1814,7 +1814,7 @@ Proof using.
     { lets: length_filter l (<> x). math. } }
 Qed.
 
-(* LATER: lemma for [remove x (remove y) l = ...] *)
+(* --LATER: lemma for [remove x (remove y) l = ...] *)
 
 End Remove.
 
@@ -1960,7 +1960,7 @@ Proof using.
   intros. rewrite remove_as_filter. applys* noduplicates_filter.
 Qed.
 
-(* TODO: noduplicates_rev *)
+(* --TODO: noduplicates_rev *)
 
 End Noduplicates.
 
@@ -2190,7 +2190,7 @@ Proof using.
     forwards*: IHN. inverts* E. }
 Qed.
 
-(* TODO: discuss whether Nth_split_r and Nth_split_l are needed *)
+(* --TODO: discuss whether Nth_split_r and Nth_split_l are needed *)
 
 Lemma nth_split : forall `{IA:Inhab A} `{IB:Inhab B} n l (r:list A) (s:list B),
   (r,s) = split l ->
@@ -2477,7 +2477,7 @@ Lemma list_eq_take_app_drop : forall n l,
   take n l ++ drop n l = l.
 Proof using. introv H. forwards*: take_app_drop_spec n l. Qed.
 
-(* TODO: Nth_take_l, etc... 
+(* --TODO: Nth_take_l, etc... 
 
   Lemma Nth_take_l : forall n m l l' x, 
     n < m ->
@@ -2548,8 +2548,8 @@ Proof using.
   subst l. rewrite length_last. math.
 Qed.
 
-(* TODO: more properties of take_drop_last *)
-(* TODO: find a better name for this function *)
+(* --TODO: more properties of take_drop_last *)
+(* --TODO: find a better name for this function *)
 
 End TakeDropLast.
 
@@ -2984,7 +2984,7 @@ Inductive Forall3 A B C (P : A -> B -> C -> Prop)
       Forall3 P l1 l2 l3 ->
       Forall3 P (x1::l1) (x2::l2) (x3::l3).
 
-(* LATER: lemmas about Forall3 *)
+(* --LATER: lemmas about Forall3 *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -3193,7 +3193,7 @@ Proof using.
     substs. exists (x :: l1) x' l2. splits~. constructors~.
 Qed.
 
-(* LATER?
+(* --LATER?
 Lemma Exists_filter_inv : forall P Q l,
   Exists P (filter Q l) ->
   exists x, P x /\ Q x.
@@ -3218,7 +3218,7 @@ Inductive Exists2 A1 A2 (P : A1 -> A2 -> Prop)
       Exists2 P l1 l2 ->
       Exists2 P (x1::l1) (x2::l2).
 
-(* LATER: lemmas about Exists2 *)
+(* --LATER: lemmas about Exists2 *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -3235,7 +3235,7 @@ Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
       x <> y ->
       Assoc x v ((y,w)::l).
 
-(* LATER: lemmas about Assoc *)
+(* --LATER: lemmas about Assoc *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -3296,7 +3296,7 @@ Proof using.
   { rew_listx. fequals. applys~ H. eauto. }
 Qed.
 
-(* TODO: reformulate using a definition of list permutation, *)
+(* --TODO: reformulate using a definition of list permutation, *)
 Lemma fold_equiv_step : forall m f l a,
   Comm_monoid m ->
   noduplicates l ->
@@ -3305,7 +3305,7 @@ Lemma fold_equiv_step : forall m f l a,
      fold m f l = fold m f (a::l')
   /\ (forall x, mem x l <-> mem x (a::l'))
   /\ noduplicates (a::l').
-Proof using. (* TODO: cleanup *)
+Proof using. (* --TODO: cleanup *)
   introv Hm. induction l as [|b t]; introv DL La. inverts La.
   tests: (a = b).
     exists t. splits*.
@@ -3321,7 +3321,7 @@ Proof using. (* TODO: cleanup *)
          constructors~. introv N. applys DLb. rewrite EQ. constructors~.
 Qed.
 
-(* TODO: reformulate using a definition of list permutation,
+(* --TODO: reformulate using a definition of list permutation,
    which is entailed by the premises 2,3 and 4. *)
 Lemma fold_equiv : forall m f l1 l2,
   Comm_monoid m ->
@@ -3329,7 +3329,7 @@ Lemma fold_equiv : forall m f l1 l2,
   noduplicates l2 ->
   (forall x, mem x l1 <-> mem x l2) ->
   fold m f l1 = fold m f l2.
-Proof using. (* TODO: cleanup *)
+Proof using. (* --TODO: cleanup *)
   intros m f l1. induction l1; introv HM D1 D2 EQ.
   cuts_rewrite (l2 = nil). rewrite~ fold_nil.
     destruct l2; auto. forwards~ M: (proj2 (EQ a)). inverts M.
@@ -3349,7 +3349,7 @@ Qed.
 
 End Fold.
 
-(* TODO: decide later whether TLC should rely on [Proper] *)
+(* --TODO: decide later whether TLC should rely on [Proper] *)
 Lemma fold_pointwise : forall B m (leB : B -> B -> Prop),
   Monoid m ->
   refl leB ->
@@ -3358,7 +3358,7 @@ Lemma fold_pointwise : forall B m (leB : B -> B -> Prop),
   forall (f f' : A -> B),
   (forall x, mem x l -> leB (f x) (f' x)) ->
   leB (fold m f l) (fold m f' l).
-Proof using. (* TODO: cleanup *)
+Proof using. (* --TODO: cleanup *)
   Hint Constructors mem.
   introv HM HR HP. induction l; introv HL.
   do 2 rewrite fold_nil. applys HR.

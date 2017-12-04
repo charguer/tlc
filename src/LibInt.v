@@ -206,12 +206,12 @@ Ltac generalize_arith :=
     end
   | H:?E |- _ =>
     match is_arith E with
-    | true => generalize H; clear H (* todo: revert H? *)
+    | true => generalize H; clear H (* --todo: revert H? *)
     | false => clear H
     end
   end.
 
-(* TODO:
+(* --TODO:
 Ltac split_if_eq_bool :=
   let go _ := apply eq_bool_prove; intros in
   match goal with
@@ -276,7 +276,7 @@ Ltac math_setup_goal :=
     (* try split_if_eq_bool. *)
   *)
 
-(* todo; [int_nat_conv]
+(* --TODO; [int_nat_conv]
 Lemma int_nat_plus : forall (n m:nat),
   (n + m)%nat = (n + m)%Z :> int.
 Proof using. applys inj_plus. Qed.
@@ -285,7 +285,7 @@ Hint Rewrite int_nat_plus : int_nat_conv.
 
 (** [math] tactics performs several preprocessing step,
     selects all arithmetic hypotheses, and the call omega. *)
-(* todo: autorewrite with int_nat_conv in *. after int_comp_to_zarith *)
+(* --TODO: autorewrite with int_nat_conv in *. after int_comp_to_zarith *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -317,7 +317,7 @@ Tactic Notation "math" simple_intropattern(I) ":" constr(E) :=
   asserts I: E; [ math | ].
 Tactic Notation "maths" constr(E) :=
   let H := fresh "H" in asserts H: E; [ math | ].
-(* todo: parsing conflit *)
+(* --TODO: parsing conflit *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -356,7 +356,7 @@ Proof using. intros. ring. Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Hint externs for calling math in the hint base [maths] *)
 
-(* TODO: rename [maths] database to [math] *)
+(* --TODO: rename [maths] database to [math] *)
 
 Ltac math_hint := math.
 
@@ -512,7 +512,7 @@ Tactic Notation "rew_int" "*" "in" hyp(H) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Lifting of comparisons from [nat] to [int] *)
 
-(* TODO: perhaps only state those as equalities? *)
+(* --TODO: perhaps only state those as equalities? *)
 
 Lemma eq_nat_of_eq_int : forall (n m:nat),
   (n:int) = (m:int) ->

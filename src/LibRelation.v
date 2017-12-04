@@ -181,7 +181,7 @@ End Antisym.
 Definition antisym_wrt A (E:binary A) R :=
   forall x y, R x y -> R y x -> E x y.
 
-(* LATER: lemmas *)
+(* --LATER: lemmas *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -261,7 +261,7 @@ Section Equiv.
 Variables (A : Type).
 Implicit Types R : binary A.
 
-(* LATER: lemmas *)
+(* --LATER: lemmas *)
 
 End Equiv.
 
@@ -269,7 +269,7 @@ End Equiv.
 (* ---------------------------------------------------------------------- *)
 (** ** Inclusion *)
 
-(* LATER: see also typeclass [incl] *)
+(* --LATER: see also typeclass [incl] *)
 
 Definition rel_incl A B (R1 R2:A->B->Prop) :=
   forall x y, R1 x y -> R2 x y.
@@ -544,7 +544,7 @@ End Iff.
 (* ---------------------------------------------------------------------- *)
 (** ** The empty relation *)
 
-(* LATER: see also typeclass [empty] *)
+(* --LATER: see also typeclass [empty] *)
 
 Definition empty A : binary A :=
   fun x y => False.
@@ -572,7 +572,7 @@ End Empty.
 (* ---------------------------------------------------------------------- *)
 (** ** Union of two relations  *)
 
-(* LATER: see also typeclass [union] *)
+(* --LATER: see also typeclass [union] *)
 
 Definition union A (R1 R2:binary A) : binary A :=
   fun x y => R1 x y \/ R2 x y.
@@ -643,12 +643,12 @@ End Union.
 (* ---------------------------------------------------------------------- *)
 (** ** Intersection of two relations  *)
 
-(* LATER: see also typeclass [inter] *)
+(* --LATER: see also typeclass [inter] *)
 
 Definition inter A (R1 R2:binary A) : binary A :=
   fun x y => R1 x y /\ R2 x y.
 
-(* LATER: add lemmas *)
+(* --LATER: add lemmas *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -657,7 +657,7 @@ Definition inter A (R1 R2:binary A) : binary A :=
 Definition compl A (R:binary A) : binary A :=
   fun x y => ~ R y x.
 
-(* LATER: add lemmas *)
+(* --LATER: add lemmas *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -794,7 +794,7 @@ Section Rel_fun.
 Variables (A : Type).
 Implicit Types R : binary A.
 
-(* LATER: properties of [rel_fun] *)
+(* --LATER: properties of [rel_fun] *)
 
 End Rel_fun.
 
@@ -842,7 +842,7 @@ Proof using.
   { intros [x1 x2] [y1 y2] [z1 z2]. simple*. }
 Qed.
 
-(* LATER: other lemmas *)
+(* --LATER: other lemmas *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -978,14 +978,14 @@ Proof using.
   { left~. } { subst. right~. }
 Qed.
 
-(* LATER: other lemmas *)
+(* --LATER: other lemmas *)
 
 
 
 (* ********************************************************************** *)
 (** * Closures *)
 
-(* LATER: more lemmas about union and inter *)
+(* --LATER: more lemmas about union and inter *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1149,7 +1149,7 @@ Proof using. introv H M. destruct* M. Qed.
 End Rclosure.
 
 Hint Constructors rclosure : rclosure.
-(* LATER: here and later, add more hints *)
+(* --LATER: here and later, add more hints *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1471,7 +1471,7 @@ Qed.
 
 Lemma tclosure_eq_tclosure'l : forall R,
   tclosure R = tclosure'l R.
-  (* LATER: tclosure'l = tclosure. *)
+  (* --LATER: tclosure'l = tclosure. *)
 Proof using.
   extens. intros x y. iff M.  
   { induction* M. applys* trans_tclosure'l y. }
@@ -1504,7 +1504,7 @@ Qed.
 
 Lemma tclosure_eq_tclosure'r : forall R,
   tclosure R = tclosure'r R.
-  (* LATER: tclosure'l = tclosure. *)
+  (* --LATER: tclosure'l = tclosure. *)
 Proof using.
   extens. intros x y. iff M.  
   { induction* M. applys* trans_tclosure'r y. }
@@ -1519,7 +1519,7 @@ Proof using.
   introv H1 H2 M. rewrite tclosure_eq_tclosure'r in *. induction* M.
 Qed.
 
-(* LATER: can these induction principles be proved directly? *)
+(* --LATER: can these induction principles be proved directly? *)
 
 End Ind.
 
@@ -1671,7 +1671,7 @@ Qed.
 
 Lemma rtclosure_eq_rtclosure'l : forall R,
   rtclosure R = rtclosure'l R.
-  (* LATER: tclosure'l = tclosure. *)
+  (* --LATER: tclosure'l = tclosure. *)
 Proof using.
   extens. intros x y. iff M.  
   { induction* M. applys* trans_rtclosure'l y. }
@@ -1703,7 +1703,7 @@ Qed.
 
 Lemma rtclosure_eq_rtclosure'r : forall R,
   rtclosure R = rtclosure'r R.
-  (* LATER: tclosure'l = tclosure. *)
+  (* --LATER: tclosure'l = tclosure. *)
 Proof using.
   extens. intros x y. iff M.  
   { induction* M. applys* trans_rtclosure'r y. }
@@ -2217,7 +2217,7 @@ Proof using.
   { induction* M. }
 Qed.
 
-(* LATER: many lemmas like the above? *) 
+(* --LATER: many lemmas like the above? *) 
 
 (* --TODO: rename this lemma *)
 Lemma rel_incl_tclosure_stclosure_l : forall R1 R2,
@@ -2225,7 +2225,7 @@ Lemma rel_incl_tclosure_stclosure_l : forall R1 R2,
   rel_incl (tclosure R1) (stclosure R2).
 Proof using. introv H M. induction* M. Qed.
 
-(* LATER: many lemmas like the above? *)
+(* --LATER: many lemmas like the above? *)
 
 End EquivClosures.
 
@@ -2276,7 +2276,7 @@ Qed.
 
 End MixedClosures.
 
-(* LATER: similar lemmas relating [rstclosure] and [stclosure] *)
+(* --LATER: similar lemmas relating [rstclosure] and [stclosure] *)
 
 
 (* ---------------------------------------------------------------------- *)

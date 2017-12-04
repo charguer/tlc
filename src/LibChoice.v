@@ -30,8 +30,8 @@ Proof using.
   intros. exists (fun x => sig_val (indefinite_description (H x))).
   intro x. apply (sig_proof (indefinite_description (H x))).
 Qed.
-(* LATER: the premise is called [defined] in LibRelation *)
-(* LATER: functionality -> definedness? *)
+(* --LATER: the premise is called [defined] in LibRelation *)
+(* --LATER: functionality -> definedness? *)
 
 
 (* ---------------------------------------------------------------------- *)

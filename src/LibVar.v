@@ -494,6 +494,6 @@ Ltac fresh_solve :=
 
 Hint Extern 1 (fresh _ _ _) => fresh_solve.
 
-(* LATER: more automation of fresh_length properties *)
+(* --LATER: more automation of fresh_length properties *)
 
 

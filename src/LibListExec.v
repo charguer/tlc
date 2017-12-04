@@ -102,7 +102,7 @@ Proof using. auto. Qed.
 Lemma filterb_app : forall f l1 l2,
   filterb f (l1 ++ l2) = filterb f l1 ++ filterb f l2.
 Proof using.  
-  (* LATER: investigate how to factorise with proof of map_app *)
+  (* --LATER: investigate how to factorise with proof of map_app *)
   intros. unfold filterb.
   assert (forall accu,
     fold_right (fun x acc => if f x then x::acc else acc) accu (l1 ++ l2) =
@@ -122,7 +122,7 @@ Lemma filterb_last : forall f x l,
   filterb f (l & x) = filterb f l ++ (if f x then x::nil else nil).
 Proof using. intros. rewrite~ filterb_app. Qed.
 
-(* LATER: add length_filterb *)
+(* --LATER: add length_filterb *)
 
 End Filterb.
 
@@ -237,7 +237,7 @@ Fixpoint mem_decide `{Comparable A} (x : A) (l : list A) :=
 Definition remove `{CA:Comparable A} (x:A) (l:list A) :=
   filter (fun y => decide (y <> x)) l.
 
-(* LATER: properties of [remove] *)
+(* --LATER: properties of [remove] *)
 
 Arguments remove [A] {CA}.
 Opaque remove.
@@ -252,7 +252,7 @@ Fixpoint removes `{CA:Comparable A} (l1 l2:list A) :=
   | x::l1' => removes l1' (remove x l2)
   end.
 
-(* LATER: properties of [removes] *)
+(* --LATER: properties of [removes] *)
 
 Arguments removes [A] {CA}.
 Opaque removes.
@@ -265,7 +265,7 @@ Opaque removes.
 (* ---------------------------------------------------------------------- *)
 (** ** Forall_bool *)
 
-(* LATER: properties of [forall_bool] *)
+(* --LATER: properties of [forall_bool] *)
 
 Definition forall_bool A (f : A->bool) (l:list A) :=
   fold_right (fun x acc => acc && (f x)) true l.
@@ -276,7 +276,7 @@ Opaque forall_bool.
 (* ---------------------------------------------------------------------- *)
 (** ** Exists_bool *)
 
-(* LATER: properties of [exists_bool] *)
+(* --LATER: properties of [exists_bool] *)
 
 Definition exists_bool A (f : A->bool) (l:list A) :=
   fold_right (fun x acc => acc || (f x)) false l.

@@ -1383,7 +1383,7 @@ Tactic Notation "eq_set" "*" :=
 *)
 
 
-(* LATER: is this deprecated?
+(* --LATER: is this deprecated?
   Lemma binds_update_rem : forall A i j `{Inhab B} v w (M:map A B),
     j \notindom' M -> binds (M[j:=w]) i v -> binds M i v.
   Hint Resolve binds_update_rem.
@@ -1405,7 +1405,7 @@ Qed.
 
 (* ---------------------------------------------------------------------- *)
 
-(* LATER: cleanup the three lemmas below *)
+(* --LATER: cleanup the three lemmas below *)
 
 (* FALSE
 Lemma binds_update_neq_inv' : forall A B i j v w (M:map A B),

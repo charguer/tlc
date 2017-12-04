@@ -204,7 +204,7 @@ Hint Extern 1 (None <> Some _) => congruence.
 (* ---------------------------------------------------------------------- *)
 (** extens *)
 
-(* later: state some extensionality *)
+(* --LATER: state some extensionality *)
 
 (* ---------------------------------------------------------------------- *)
 (** index *)
@@ -415,7 +415,7 @@ Proof using.
   introv N K. asserts IB: (Inhab B). constructor. exists* v.
   rewrite (@binds_eq_indom_read A B IB) in *.
   rewrite~ indom_update_eq. rewrite* read_update_neq.
-Qed. (* later: cleanup proof *)
+Qed. (* --LATER: cleanup proof *)
 
 Lemma binds_update_same : forall A B i v (M:map A B),
   binds (M[i:=v]) i v.
@@ -476,7 +476,7 @@ Proof.
   introv M D. rewrite set_disjoint_eq in D.
   simpl. unfold read_impl, union_impl. cases (m2 i).
   { false D M. applys~ indom_of_binds. simpl. unfolds* binds_impl. }
-    (* LATER: simplify line above *)
+    (* --LATER: simplify line above *)
   { cases~ (m1 i). }
 Qed.
 
@@ -490,7 +490,7 @@ Proof.
   { auto. } 
   { cases (m1 i) as C.
     { false D M. applys~ indom_of_binds. simpl. unfolds* binds_impl. }
-    (* LATER: simplify line above *)
+    (* --LATER: simplify line above *)
     { auto. } }
 Qed.
 
@@ -616,7 +616,7 @@ Lemma binds_impl_dom_impl : forall A `{Inhab B} (M:map A B) x v,
   x \in dom_impl M.
 Proof using. introv IB K. unfolds binds_impl, dom_impl. rew_set. congruence. Qed.
 
-(* LATER: avoid `{Inhab B}: if not empty, then inhab, else result true *)
+(* --LATER: avoid `{Inhab B}: if not empty, then inhab, else result true *)
 (* internal use *)
 Lemma finite_to_finite_fold_support : forall A `{Inhab B} (M:map A B),
   finite M ->
@@ -631,7 +631,7 @@ Proof using.
   simpl. unfold read_impl. hnf in R. rewrite~ R.
 Qed.
 
-(* LATER: avoid `{Inhab B} *)
+(* --LATER: avoid `{Inhab B} *)
 Lemma fold_union : forall A `{Inhab B} C (m:monoid_op C) (f:A->B->C) (M N : map A B),
   Comm_monoid m ->
   finite M ->
