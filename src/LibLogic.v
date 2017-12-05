@@ -59,7 +59,7 @@ Definition arbitrary `{Inhab A} : A :=
 
 (** Extraction of [arbitrary] constants as a runtime error. *)
 
-Extract Constant arbitrary => "(raise Not_found)".
+(* Extract Constant arbitrary => "(raise Not_found)". *)
 
 
 (* ---------------------------------------------------------------------- *)
