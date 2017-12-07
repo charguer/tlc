@@ -33,6 +33,24 @@ Compatibility:
    - Disclaimer: to allow improving the design of TLC, backward compatibility is not guaranteed.
    - TLC should not be incompatible with use of the standard library.
 
+Compilation
+===========
+
+The released versions of TLC are available via `opam`:
+
+    opam repo add coq-released http://coq.inria.fr/opam/released
+    opam install -j4 coq-tlc
+
+A working copy of TLC can be compiled and installed as follows:
+
+    # first clone this repository, then descend into it, and:
+    make
+    make install
+
+Documentation
+=============
+
+Some (partial) documentation can be found in the directory [doc](doc/).
 
 License
 =======
@@ -42,18 +60,3 @@ All files in TLC are distributed under the GNU-LGPL license.
 If you need a more permissive license, please contact the author.
 
 Authors: Arthur Charguéraud, with contributions from François Pottier.
-
-
-Documentation
-=============
-
-Some (partial) documentation can be found in the subfolder [doc](doc/).
-
-
-Compilation
-===========
-
-To compile and install everything:
-
-    make
-    make install
