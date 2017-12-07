@@ -41,10 +41,10 @@ The released versions of TLC are available via `opam`:
     opam repo add coq-released http://coq.inria.fr/opam/released
     opam install -j4 coq-tlc
 
-A working copy of TLC can be compiled and installed as follows:
+A working copy of TLC can also be compiled and installed as follows:
 
     # first clone this repository, then descend into it, and:
-    make
+    make -j4
     make install
 
 Documentation
