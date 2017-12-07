@@ -3,30 +3,41 @@
 Description
 ===========
 
-TLC is a general purpose Coq library that provides an alternative to Coq's standard library.
+TLC is a general-purpose library that provides an alternative to Coq's standard library.
 
-   - TLC takes as axiom extensionality, classical logic and indefinite description (Hilbert's epsilon). These axioms allow for significantly simpler formal definitions in many cases.
-   - TLC takes advantage of the type class mechanism. In particular, this allows for common operators and lemma names for all container data structures and all order relations.
-   - TLC includes the optimal fixed point combinator, which can be used for building arbitrarily-complex recursive and co-recursive definitions.
-   - TLC provides a collection of tactics that enhance the default tactics provided by Coq. These tactics help constructing more concise and more robust proof scripts.
-
+   - TLC relies on the axioms of
+     functional extensionality,
+     propositional extensionality,
+     and indefinite description (also known as Hilbert's epsilon operator).
+     The consequences of these axioms include
+     the law of the excluded middle
+     as well as proof irrelevance.
+     Accepting these axioms often makes life significantly simpler.
+   - TLC takes advantage of Coq's type class mechanism.
+     In particular, this allows for common operators and lemma names
+     for all container data structures and all order relations.
+   - TLC includes the optimal fixed point combinator,
+     which allows arbitrarily-complex recursive and co-recursive definitions.
+   - TLC provides a collection of tactics that enhance the default tactics
+     provided by Coq. These tactics help construct more concise and more
+     robust proof scripts.
 
 Status:
 
-   - TLC compiles with Coq v8.6 (tags are available for prior versions).
+   - The current version of TLC works with Coq 8.6 and 8.7.
    - TLC 2.0 (beta) was released in November 2017, with a complete polishing phase.
- 
+
 
 Compatibility:
 
    - Disclaimer: to allow improving the design of TLC, backward compatibility is not guaranteed.
    - TLC should not be incompatible with use of the standard library.
- 
+
 
 License
 =======
 
-All the files from TLC are distributed under the GNU-LGPL license.
+All files in TLC are distributed under the GNU-LGPL license.
 
 If you need a more permissive license, please contact the author.
 
@@ -36,16 +47,13 @@ Authors: Arthur Charguéraud, with contributions from François Pottier.
 Documentation
 =============
 
-Some (partial) documentation can be found in subfolder "doc".
+Some (partial) documentation can be found in the subfolder [doc](doc/).
 
 
 Compilation
 ===========
 
-To compile everything:
+To compile and install everything:
 
-    cd src
     make
     make install
-    
-    
