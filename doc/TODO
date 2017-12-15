@@ -1,3 +1,5 @@
++list.combine => should be arbitrary in case (nil,cons).
+
 ++rename Constant TLC.LibEqual.exist_eq_exist
 
 +++fix "cases_if" tactic so that it works on "if classicT(x=y) then...".

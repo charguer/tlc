@@ -2024,13 +2024,10 @@ Hint Rewrite mem_remove_duplicates : rew_listx.
 (** ** Combine *)
 
 Fixpoint combine A B (r:list A) (s:list B) : list (A*B) :=
-  match r with
-  | nil => nil
-  | a::r' =>
-    match s with
-    | nil => arbitrary
-    | b::s' => (a,b)::(combine r' s')
-    end
+  match r, s with
+  | nil, nil => nil
+  | a::r', b::s' => (a,b)::(combine r' s')
+  | _, _ => arbitrary (* [r] and [s] have non-equal length *)
   end.
 
 Section Combine.
