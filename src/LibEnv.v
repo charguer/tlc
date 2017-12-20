@@ -372,9 +372,10 @@ Lemma keys_singles : forall xs vs,
   length xs = length vs ->
   keys (xs ~* vs) = xs.
 Proof using.
-  intros. rew_env_defs. gen vs. induction xs; introv E.
+  intros. rew_env_defs. gen vs. induction xs; destruct vs; 
+   introv E; rew_list in E; tryfalse.
   rew_list~.
-  destruct vs. false. simpl. rew_env_defs. rew_listx. fequals.
+  simpl. rew_env_defs. rew_listx. fequals.
    rew_list in E. applys IHxs. inverts E. auto.
 Qed.
 
