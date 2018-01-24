@@ -485,9 +485,10 @@ Global Opaque make.
 
 Section Map.
 Transparent index_inst read_inst update_inst.
-Context (A : Type).
+(*Context (A : Type).
 Implicit Types x v : A.
 Implicit Types l : list A.
+*)
 Implicit Types n i : int.
 
 Lemma length_map : forall A B (l:list A) (f:A->B),
@@ -501,6 +502,15 @@ Proof using. intros. rewrite index_eq_inbound in *. rewrite~ length_map. Qed.
 Lemma index_map : forall A B (l:list A) i (f:A->B),
   index l i -> index (map f l) i.
 Proof using. intros. rewrite~ index_map_eq. Qed.
+
+Lemma map_make : forall A B (f:A->B) (n:int) (v:A),
+  n >= 0 ->
+  map f (make n v) = make n (f v).
+Proof using.
+  Transparent make.
+  intros. unfold make. case_if. { false; math. }
+  applys map_make.
+Qed.
 
 Lemma map_update : forall A B (l:list A) (i:int) (x:A) (f:A->B),
   index l i ->

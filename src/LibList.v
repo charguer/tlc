@@ -1515,6 +1515,14 @@ Proof using.
   { rewrite map_cons. do 2 rewrite length_cons. auto. }
 Qed.
 
+Lemma map_make : forall f n v,
+  map f (make n v) = make n (f v).
+Proof using.
+  intros. induction n as [|n'].
+  { do 2 rewrite make_zero. auto. }
+  { do 2 rewrite make_succ. rewrite map_cons. fequals. }
+Qed.
+
 Lemma map_update : forall n f l x,
   n < length l ->
   map f (update n x l) = update n (f x) (map f l).
@@ -1532,6 +1540,36 @@ Lemma map_eq_nil_inv : forall f l,
   l = nil.
 Proof using.
   introv E. destruct~ l. rewrite map_cons in E. false.
+Qed.
+
+Lemma map_eq_cons_inv : forall f l1 (x2:B) t2,
+  map f l1 = x2::t2 -> 
+  exists x1 t1, l1 = x1::t1 /\ x2 = f x1 /\ t2 = map f t1.
+Proof using.
+  introv E. destruct l1; [false|].
+  rewrite map_cons in E. inverts* E.
+Qed.
+
+Lemma map_eq_app_inv : forall f l r1 r2,
+  map f l = r1 ++ r2 ->
+  exists l1 l2, l = l1++l2 /\ r1 = map f l1 /\ r2 = map f l2.
+Proof using.
+  intros f l. induction l as [|x l']; introv E.
+  { rewrite map_nil in E. lets (?&?): nil_eq_app_inv E. subst.
+    exists* (@nil A) (@nil A). }
+  { rewrite map_cons in E. destruct r1 as [|y r1']; rew_list in E.
+    { exists* (@nil A) (x::l'). }
+    { invert E ;=> N1 N2. forwards (l1'&l2&E1&E2&E3): IHl' N2.
+      exists (x::l1') l2. subst*. } }
+Qed.
+
+Lemma map_eq_middle_inv : forall f l r1 y r2,
+  map f l = r1 ++ y :: r2 ->
+  exists l1 x l2, l = l1++x::l2 /\ r1 = map f l1 /\ y = f x /\ r2 = map f l2.
+Proof using.
+  introv E. lets (l1&l2'&E1&E2&E3): map_eq_app_inv (rm E).
+  lets (x&l2&E4&E5&E6): map_eq_cons_inv (eq_sym E3).
+  exists l1 x l2. subst*.
 Qed.
 
 Lemma map_inj : forall f l1 l2,
@@ -1555,6 +1593,11 @@ Hint Rewrite map_nil map_cons map_app map_last : rew_listx.
 Lemma map_id : forall A (l:list A),
   map id l = l.
 Proof using. introv. induction~ l. rew_listx. fequals~. Qed.
+
+Lemma map_id_ext : forall A (l:list A) (f:A->A),
+  (forall x, f x = x) ->
+  map f l = l.
+Proof using. introv E. cuts_rewrite (f = id). apply map_id. extens~. Qed.
 
 Lemma mem_map : forall (A B:Type) (f:A->B) (l:list A) x,
   mem x l -> 
