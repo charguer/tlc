@@ -46,7 +46,7 @@ Proof using. intros. apply (Inhab_of_val 0%Z). Qed.
       Coercion Z_of_nat : nat >-> Z.
    because otherwise when we try to make the coercion opaque using:
       Opaque Z_of_nat.
-   the omega fails to work. 
+   the omega fails to work.
    Thus, we introduce an alias, called [nat_to_Z] for [Z_of_nat],
    and we register [nat_to_Z] as coercion.
 *)
@@ -72,7 +72,7 @@ Coercion nat_to_Z : nat >-> Z.
 Open Scope Z_scope.
 Open Scope comp_scope.
 
-(** The typeclass [le] on type [int] is bound to [Zle], from Coq's 
+(** The typeclass [le] on type [int] is bound to [Zle], from Coq's
     standard library *)
 
 Instance le_int_inst : Le int := Build_Le Zle.
@@ -191,7 +191,7 @@ Ltac arith_goal_or_false :=
     to some arithmetic goal. It destructs conjunctions on the fly. *)
 
 Lemma istrue_isTrue_forw : forall (P:Prop),
-  istrue (isTrue P) -> 
+  istrue (isTrue P) ->
   P.
 Proof using. introv H. rew_istrue~ in H. Qed.
 
@@ -291,7 +291,7 @@ Hint Rewrite int_nat_plus : int_nat_conv.
 (* ---------------------------------------------------------------------- *)
 (** ** Main driver for the set up process to goal [omega] *)
 
-(* --TODO: this probably is no longer necessary, since 
+(* --TODO: this probably is no longer necessary, since
      LibTactic version seems equivalent *)
 Ltac check_noevar_goal ::=
   match goal with |- ?G => first [ has_evar G; fail 1 | idtac ] end.
@@ -341,7 +341,7 @@ Tactic Notation "math_only_if_arith" :=
 (** ** Elimination of multiplication, to call omega *)
 
 (* In order to use [math] with simple multiplications, add the command:
-     Hint Rewrite mult_2_eq_plus mult_3_eq_plus : rew_maths. 
+     Hint Rewrite mult_2_eq_plus mult_3_eq_plus : rew_maths.
    TEMPORARY: these lemmas should go away as [omega] is able to inline
    trivial multiplication by itself
 *)
@@ -520,7 +520,7 @@ Lemma eq_nat_of_eq_int : forall (n m:nat),
 Proof using. math. Qed.
 
 Lemma neq_nat_of_neq_int : forall (n m:nat),
-  (n:int) <> (m:int) -> 
+  (n:int) <> (m:int) ->
   (n <> m)%nat.
 Proof using. math. Qed.
 
@@ -530,7 +530,7 @@ Lemma eq_int_of_eq_nat : forall (n m:nat),
 Proof using. math. Qed.
 
 Lemma neq_int_of_neq_nat : forall (n m:nat),
-  (n <> m)%nat -> 
+  (n <> m)%nat ->
   (n:int) <> (m:int).
 Proof using. math. Qed.
 
@@ -539,42 +539,42 @@ Proof using. math. Qed.
 (** ** Lifting of inequalities from [nat] to [int] *)
 
 Lemma le_nat_of_le_int : forall (n m:nat),
-  (n:int) <= (m:int) -> 
+  (n:int) <= (m:int) ->
   (n <= m).
 Proof using. math. Qed.
 
 Lemma le_int_of_le_nat : forall (n m:nat),
-  (n <= m) -> 
+  (n <= m) ->
   (n:int) <= (m:int).
 Proof using. math. Qed.
 
 Lemma lt_nat_of_lt_int : forall (n m:nat),
-  (n:int) < (m:int) -> 
+  (n:int) < (m:int) ->
   (n < m).
 Proof using. math. Qed.
 
 Lemma lt_int_of_lt_nat : forall (n m:nat),
-  (n < m) -> 
+  (n < m) ->
   (n:int) < (m:int).
 Proof using. math. Qed.
 
 Lemma ge_nat_of_ge_int : forall (n m:nat),
-  (n:int) >= (m:int) -> 
+  (n:int) >= (m:int) ->
   (n >= m).
 Proof using. math. Qed.
 
 Lemma ge_int_of_ge_nat : forall (n m:nat),
-  (n >= m) -> 
+  (n >= m) ->
   (n:int) >= (m:int).
 Proof using. math. Qed.
 
 Lemma gt_nat_of_gt_int : forall (n m:nat),
-  (n:int) > (m:int) -> 
+  (n:int) > (m:int) ->
   (n > m).
 Proof using. math. Qed.
 
 Lemma gt_int_of_gt_nat : forall (n m:nat),
-  (n > m) -> 
+  (n > m) ->
   (n:int) > (m:int).
 Proof using. math. Qed.
 
@@ -619,7 +619,7 @@ Lemma abs_nat : forall (n:nat),
 Proof using. exact Zabs_nat_Z_of_nat. Qed.
 
 Lemma abs_nonneg : forall (x:int),
-  x >= 0 -> 
+  x >= 0 ->
   abs x = x :> int.
 Proof using.
   intros. rewrite inj_Zabs_nat.
@@ -631,13 +631,13 @@ Lemma abs_eq_nat_eq : forall (x:int) (y:nat),
   (abs x = y :> nat) = (x = Z_of_nat y :> int).
 Proof using.
   introv M. extens. iff E.
-  { subst. rewrite Zabs2Nat.id_abs, Z.abs_eq; math. } 
+  { subst. rewrite Zabs2Nat.id_abs, Z.abs_eq; math. }
   { subst. rewrite~ Zabs2Nat.id. }
 Qed.
 
 Lemma lt_abs_abs : forall (n m : int),
-  (0 <= n) -> 
-  (n < m) -> 
+  (0 <= n) ->
+  (n < m) ->
   (abs n < abs m).
 Proof using.
   intros. nat_comp_to_peano. apply Zabs_nat_lt. math.
@@ -656,13 +656,13 @@ Lemma abs_1 : abs 1 = 1%nat :> nat.
 Proof using. reflexivity. Qed.
 
 Lemma abs_plus : forall (x y:int),
-  (x >= 0) -> 
+  (x >= 0) ->
   (y >= 0) ->
   abs (x + y) = (abs x + abs y)%nat :> nat.
 Proof using. intros. applys Zabs2Nat.inj_add; math. Qed.
 
 Lemma abs_minus : forall (x y:int),
-  (x >= y) -> 
+  (x >= y) ->
   (y >= 0) ->
   abs (x - y) = (abs x - abs y)%nat :> nat.
 Proof using. intros. applys Zabs2Nat.inj_sub; math. Qed.
@@ -671,7 +671,7 @@ Lemma abs_nat_plus_nonneg : forall (n:nat) (x:int),
   x >= 0 ->
  abs (n + x)%Z = (n + abs x)%nat.
 Proof using.
-  introv N. applys eq_nat_of_eq_int. 
+  introv N. applys eq_nat_of_eq_int.
   rewrite plus_nat_eq_plus_int.
   do 2 (rewrite abs_nonneg; [|math]). auto.
 Qed.
@@ -680,14 +680,14 @@ Lemma abs_gt_minus_nat : forall (n:nat) (x:int),
   (x >= n)%Z ->
  abs (x - n)%Z = (abs x - n)%nat.
 Proof using.
-  introv N. applys eq_nat_of_eq_int. 
+  introv N. applys eq_nat_of_eq_int.
   rewrite minus_nat_eq_minus_int.
   do 2 (rewrite abs_nonneg; [|math]). auto.
   applys ge_nat_of_ge_int. rewrite abs_nonneg; math.
 Qed.
 
 Lemma succ_abs_eq_abs_one_plus : forall (x:int),
-  x >= 0 -> 
+  x >= 0 ->
   S (abs x) = abs (1 + x) :> nat.
 Proof using.
   intros x. pattern x. applys (@measure_induction _ abs). clear x.
@@ -695,7 +695,7 @@ Proof using.
 Qed.
 
 Lemma abs_eq_succ_abs_minus_one : forall (x:int),
-  x > 0 -> 
+  x > 0 ->
   abs x = S (abs (x - 1)) :> nat.
 Proof using.
   intros. apply eq_nat_of_eq_int.
@@ -715,10 +715,3 @@ Tactic Notation "rew_abs_nonneg" :=
   autorewrite with rew_abs_nonneg.
 Tactic Notation "rew_abs_nonneg" "~" :=
   autorewrite with rew_abs_nonneg; try math; autos~.
-
-
-
-
-
-
-
