@@ -481,7 +481,7 @@ Proof using. math. Qed.
     expressions involving integers *)
 
 Hint Rewrite plus_zero_r plus_zero_l minus_zero_r minus_zero_l
-  mult_zero_l mult_zero_r mult_one_l mult_one_r : rew_nat.
+  mult_zero_l mult_zero_r mult_one_l mult_one_r : rew_int.
 
 Tactic Notation "rew_int" :=
   autorewrite with rew_int.
