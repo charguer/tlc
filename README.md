@@ -59,4 +59,5 @@ All files in TLC are distributed under the GNU-LGPL license.
 
 If you need a more permissive license, please contact the author.
 
-Authors: Arthur Charguéraud, with contributions from François Pottier.
+Authors: Arthur Charguéraud,
+with contributions from Armaël Guéneau and François Pottier.
