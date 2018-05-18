@@ -70,15 +70,12 @@ Lemma length_last : forall x l,
   length (l & x) = 1 + length l.
 Proof using. intros. unfold length. rew_list~. Qed.
 
-Lemma length_zero_inv : forall l,
-  length l = 0 -> 
-  l = nil.
-Proof using. intros. unfolds length. applys~ LibList.length_zero_inv. Qed.
-
 End Length.
 
 Hint Rewrite length_nil length_cons length_app
- length_last length_rev : rew_list.
+ length_last : rew_list.
+Hint Rewrite length_nil length_cons length_app
+ length_last : rew_listx.
  (* --TODO: should we use a separate [rew_listZ] data base? probably so *)
 
 (** Automation for [math], to unfold [length] *)
@@ -97,6 +94,48 @@ Goal forall (l : list Z) (s n : int),
   n >= 0.
 Proof using. intros. math. Qed.
 
+
+(* ---------------------------------------------------------------------- *)
+(** * Inversion lemmas for structural composition *)
+
+Section AppInversion.
+Variables A : Type.
+Implicit Types x : A.
+Implicit Types l : list A.
+
+(**------- Length -------- *)
+
+Lemma length_zero_inv : forall l,
+  length l = 0 ->
+  l = nil.
+Proof using. intros. unfolds length. applys~ LibList.length_zero_inv. Qed.
+
+Lemma length_zero_eq_eq_nil : forall l,
+  (length l = 0) = (l = nil).
+Proof using.
+  intros. unfolds length. rewrite <-LibList.length_zero_eq_eq_nil. math.
+Qed.
+
+Lemma length_neq_inv : forall l1 l2,
+  length l1 <> length l2 ->
+  (l1 <> l2).
+Proof using. introv N E. subst*. Qed.
+
+Lemma length_pos_inv_cons : forall l,
+  (length l > 0) ->
+  exists x l', l = x :: l'.
+Proof using.
+  intros. unfolds length. applys~ LibList.length_pos_inv_cons.
+Qed.
+
+Lemma length_pos_inv_last : forall l,
+  (length l > 0) ->
+  exists x l', l = l' & x.
+Proof using.
+  intros. unfolds length. applys~ LibList.length_pos_inv_last.
+Qed.
+
+End AppInversion.
 
 (* ---------------------------------------------------------------------- *)
 (** * [index], with length as [int], as typeclass *)
@@ -479,6 +518,22 @@ End MakeNoInhab.
 
 Global Opaque make.
 
+(* ---------------------------------------------------------------------- *)
+(** * [LibList.rev] interactions with [LibListZ] operations *)
+
+Section Rev.
+Variables (A : Type).
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma length_rev : forall l,
+  length (rev l) = length l.
+Proof using. intros. unfold length. rew_list~. Qed.
+
+End Rev.
+
+Hint Rewrite length_rev : rew_list.
+Hint Rewrite length_rev : rew_listx.
 
 (* ---------------------------------------------------------------------- *)
 (** * [LibList.map] interactions with [LibListZ] operations *)
@@ -536,6 +591,68 @@ Qed.
 
 End Map.
 
+(* ---------------------------------------------------------------------- *)
+(** * [LibList.filter] interactions with [LibListZ] operations *)
+
+Section Filter.
+Variables (A : Type).
+Implicit Types x : A.
+Implicit Types l : list A.
+Implicit Types P : A -> Prop.
+
+Lemma length_filter : forall l P,
+  length (filter P l) <= length l.
+Proof using.
+  intros. unfolds length. forwards~: LibList.length_filter l P.
+Qed.
+
+Lemma filter_length_two_disjoint : forall (P Q : A-> Prop) l,
+  (forall x, mem x l -> P x -> Q x -> False) ->
+  length (filter P l) + length (filter Q l) <= length l.
+Proof using.
+  intros. unfolds length.
+  forwards~: LibList.filter_length_two_disjoint.
+Qed.
+
+Lemma filter_length_partition : forall P l,
+    length (filter (fun x => P x) l)
+  + length (filter (fun x => ~ P x) l)
+  <= length l.
+Proof using.
+  intros. unfolds length. forwards~: LibList.filter_length_partition P l.
+Qed.
+
+Lemma length_filter_eq_mem_ge_one : forall x l,
+  mem x l ->
+  length (filter (= x) l) >= 1.
+Proof using.
+  intros. unfolds length. forwards~: LibList.length_filter_eq_mem_ge_one.
+Qed.
+
+End Filter.
+
+(* ---------------------------------------------------------------------- *)
+(** * [LibList.remove] interactions with [LibListZ] operations *)
+
+Section Remove.
+Variables (A : Type).
+Implicit Types a x : A.
+Implicit Types l : list A.
+
+Lemma length_remove : forall l a,
+  length (LibList.remove a l) <= length l.
+Proof using. intros. applys length_filter. Qed.
+
+Lemma length_remove_mem : forall x l,
+  mem x l ->
+  length (LibList.remove x l) < length l.
+Proof using.
+  intros. unfolds length. forwards~: LibList.length_remove_mem.
+Qed.
+
+End Remove.
+
+(* ---------------------------------------------------------------------- *)
 
 (* ---------------------------------------------------------------------- *)
 (** * [card], with result as [nat], as typeclass *)
