@@ -18,7 +18,7 @@ Ltac auto_tilde ::= eauto with maths.
 
 (* ********************************************************************** *)
 (** * List operations using indices in Z *)
- 
+
 (* ---------------------------------------------------------------------- *)
 (** * Length, with result as [int] *)
 
@@ -46,7 +46,7 @@ Proof using.
   rewrite abs_nonneg; math.
 Qed.
 
-Lemma length_nonneg : forall (l: list A), 
+Lemma length_nonneg : forall (l: list A),
   0 <= length l.
 Proof using. intros. rewrite length_eq. math. Qed.
 
@@ -91,9 +91,9 @@ Hint Rewrite length_eq : rew_maths.
 Goal forall A (l : list A), 0 <= length l.
 Proof using. intros. math. Qed.
 
-Goal forall (l : list Z) (s n : int), 
-  s <= n -> 
-  s = length l -> 
+Goal forall (l : list Z) (s n : int),
+  s <= n ->
+  s = length l ->
   n >= 0.
 Proof using. intros. math. Qed.
 
@@ -117,7 +117,7 @@ Lemma index_eq_inbound : forall l i,
 Proof using. auto. Qed.
 
 Lemma index_of_inbound : forall l i,
-  0 <= i < length l -> 
+  0 <= i < length l ->
   index l i.
 Proof using. intros. rewrite~ index_eq_inbound. Qed.
 
@@ -126,15 +126,15 @@ Lemma index_eq_index_length : forall l i,
 Proof using. auto. Qed.
 
 Lemma index_of_index_length : forall l i,
-  index (length l) i -> 
+  index (length l) i ->
   index l i.
 Proof using. introv H. rewrite* index_eq_index_length. Qed.
 
 (** Reformulation of above, helpful for automation *)
 
 Lemma index_of_index_length' : forall l n i,
-  index n i -> 
-  n = length l -> 
+  index n i ->
+  n = length l ->
   index l i.
 Proof using. intros. subst. rewrite~ index_eq_index_length. Qed.
 
@@ -171,15 +171,15 @@ Qed.
 
 Lemma read_zero : forall x l,
   (x::l)[0] = x.
-Proof using. 
-  intros. rewrite read_cons_case. case_if. auto. 
+Proof using.
+  intros. rewrite read_cons_case. case_if. auto.
 Qed.
 
 Lemma read_succ : forall x l i,
   0 <= i < length l ->
   (x::l)[i+1] = l[i].
 Proof using.
-  introv M. rewrite read_cons_case. case_if. { math. }  
+  introv M. rewrite read_cons_case. case_if. { math. }
   fequals. math.
 Qed.
 
@@ -187,7 +187,7 @@ Lemma read_last_case : forall l i v,
   (l & v)[i] = (If i = length l then v else l[i]).
 Proof using.
   introv. simpl. unfold read_impl. case_if.
-  { case_if~; math. } 
+  { case_if~; math. }
   { rewrite nth_last_case. rewrite~ abs_eq_nat_eq. }
 Qed.
 
@@ -212,7 +212,7 @@ Proof using.
   { applys ge_nat_of_ge_int. rewrite abs_nonneg; math. }
 Qed.
 
-(** * Equality between two lists from equality of length and 
+(** * Equality between two lists from equality of length and
       extensional equality of reads. *)
 
 Lemma eq_of_extens_range : forall l1 l2,
@@ -266,7 +266,7 @@ Lemma index_update_eq : forall l i j v,
 Proof using. intros. rewrite index_eq_index_length in *. rewrite~ length_update. Qed.
 
 Lemma index_update : forall l i j v,
-  index l i -> 
+  index l i ->
   index (l[j:=v]) i.
 Proof using. intros. rewrite~ index_update_eq. Qed.
 
@@ -284,13 +284,13 @@ Proof using.
 Qed.
 
 Lemma read_update_same : forall l i v,
-  index l i -> 
+  index l i ->
   (l[i:=v])[i] = v.
 Proof using. introv N. rewrite~ read_update_case. case_if~. Qed.
 
 Lemma read_update_neq : forall l i j v,
   index l j ->
-  (i <> j) -> 
+  (i <> j) ->
   (l[i:=v])[j] = l[j].
 Proof using. introv N. rewrite~ read_update_case. case_if; auto_false~. Qed.
 
@@ -305,7 +305,7 @@ Implicit Types i j : int.
 
 Lemma update_zero : forall v x l,
   (x::l)[0:=v] = v::l.
-Proof using. 
+Proof using.
   intros. unfold update, update_inst, update_impl.
   case_if. false; math. rewrite~ update_zero.
 Qed.
@@ -313,10 +313,10 @@ Qed.
 Lemma update_cons_pos : forall n v x l,
   n > 0 ->
   (x::l)[n:=v] = x::(l[(n-1):=v]).
-Proof using. 
+Proof using.
   introv N. unfold update, update_inst, update_impl.
   do 2 (case_if; try solve [ false; math ]).
-  rewrite~ update_cons_pos. 
+  rewrite~ update_cons_pos.
   { fequals_rec. rewrite <- abs_gt_minus_nat. fequals. math. }
   { applys gt_nat_of_gt_int. rewrite abs_nonneg; math. }
 Qed.
@@ -324,7 +324,7 @@ Qed.
 Lemma update_update_same : forall l i v w,
   index l i ->
   l[i:=v][i:=w] = l[i:=w].
-Proof using. 
+Proof using.
   intros. asserts IA: (Inhab A). typeclass.
   eapply eq_of_extens; repeat rewrite length_update. { auto. }
   intros k Hk. repeat rewrite index_update_eq in Hk.
@@ -333,9 +333,9 @@ Proof using.
 Qed.
 
 Lemma update_update_neq : forall l i j v w,
-  index l i -> 
-  index l j -> 
-  i <> j -> 
+  index l i ->
+  index l j ->
+  i <> j ->
   l[i:=v][j:=w] = l[j:=w][i:=v].
 Proof using.
   intros. asserts IA: (Inhab A). typeclass.
@@ -351,8 +351,8 @@ Lemma update_app_l : forall l1 i l2 v,
 Proof using.
   introv N. asserts IA: (Inhab A). typeclass.
   unfold LibContainer.update, update_inst, update_impl.
-  rewrite length_eq in N. case_if~. rewrite~ update_app_l. 
-  applys lt_nat_of_lt_int. rewrite~ abs_nonneg. 
+  rewrite length_eq in N. case_if~. rewrite~ update_app_l.
+  applys lt_nat_of_lt_int. rewrite~ abs_nonneg.
 Qed.
 
 Lemma update_app_r : forall l2 j l1 i ij v,
@@ -372,7 +372,7 @@ Qed.
 Lemma update_middle : forall i l1 l2 v w,
   i = length l1 ->
   (l1 ++ w :: l2)[i := v] = l1 & v ++ l2.
-Proof using. 
+Proof using.
   introv E. rewrites~ (>> update_app_r 0 i).
   rewrite update_zero. rew_list~.
 Qed.
@@ -415,20 +415,20 @@ Proof using.
 Qed.
 
 Lemma read_make : forall i n v,
-  index n i -> 
+  index n i ->
   (make n v)[i] = v.
 Proof using.
-  introv N. rewrite int_index_eq in N. 
+  introv N. rewrite int_index_eq in N.
   unfold make, read_inst, read_impl, nth.
   case_if. math. simpl. case_if. math.
   applys nth_make. forwards: lt_abs_abs i n; try math.
 Qed.
 
-Lemma make_zero : forall v, 
+Lemma make_zero : forall v,
   make 0 v = nil.
 Proof using.
   intros. unfold make. case_if. { false; math. }
-  asserts_rewrite (abs 0 = 0%nat). 
+  asserts_rewrite (abs 0 = 0%nat).
   { applys eq_nat_of_eq_int. rewrite abs_nonneg; math. }
   auto.
 Qed.
@@ -442,8 +442,8 @@ Implicit Types x v : A.
 Implicit Types l : list A.
 Implicit Types n i : int.
 
-Lemma make_succ_l : forall n v, 
-  n >= 0 -> 
+Lemma make_succ_l : forall n v,
+  n >= 0 ->
   make (n+1) v = v :: make n v.
 Proof using.
   introv N. unfold make. case_if; case_if; try solve [false;math].
@@ -451,8 +451,8 @@ Proof using.
   { rewrite succ_abs_eq_abs_one_plus. fequal. math. math. }
 Qed.
 
-Lemma make_succ_r : forall n v, 
-  n >= 0 -> 
+Lemma make_succ_r : forall n v,
+  n >= 0 ->
   make (n+1) v = make n v & v.
 Proof using.
   intros. asserts IA: (Inhab A). applys Inhab_of_val v.
@@ -468,7 +468,7 @@ Proof using.
 Qed.
 
 Lemma make_eq_cons_make_pred : forall n v,
-  0 < n -> 
+  0 < n ->
   make n v = v :: (make (n-1) v).
 Proof using.
   intros. math_rewrite (n = (n-1)+1). rewrite make_succ_l.
@@ -519,7 +519,7 @@ Proof using.
   introv H. rewrite index_eq_inbound in H.
   unfold update_inst, update_impl, update. simpl.
   case_if. { false; math. }
-  { applys LibList.map_update. 
+  { applys LibList.map_update.
     { applys lt_nat_of_lt_int. rewrite abs_nonneg; math. } }
 Qed.
 
@@ -540,7 +540,7 @@ End Map.
 (* ---------------------------------------------------------------------- *)
 (** * [card], with result as [nat], as typeclass *)
 
-(** Note that [card] produces a [nat], whereas [length] produces an [int]. 
+(** Note that [card] produces a [nat], whereas [length] produces an [int].
     Currently, in practice, we use [LibList.length] rather than [card]. *)
 
 Definition card_impl A (l:list A) : nat :=
@@ -623,7 +623,7 @@ Ltac auto_tilde ::= auto_tilde_default.
 
 (*
 Lemma length_tail : forall l,
-  l <> nil -> 
+  l <> nil ->
   length (tail l) = length l - 1.
 Proof using. induction l; intros; simpl; unfold length; rew_list. congruence. math. Qed.
 
@@ -632,7 +632,7 @@ Lemma length_tail_le : forall l,
 Proof using. destruct l; simpl; unfold length; rew_list; math. Qed.
 
 Lemma length_le_1_inv_tail_eq_nil : forall l,
-  length l <= 1 -> 
+  length l <= 1 ->
   tail l = nil.
 Proof using.
   intros. destruct l; eauto.
