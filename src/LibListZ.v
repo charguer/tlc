@@ -653,6 +653,286 @@ Qed.
 End Remove.
 
 (* ---------------------------------------------------------------------- *)
+(** ** Take, with an [int] as the number of elements *)
+
+Definition take A (n:int) (l:list A) : list A :=
+  LibList.take (to_nat n) l.
+
+Section Take.
+Variables (A : Type).
+Implicit Types n : int.
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma take_nil : forall n,
+  take n (@nil A) = nil.
+Proof using. intros. unfold take. apply LibList.take_nil. Qed.
+
+Lemma take_zero : forall l,
+  take 0 l = nil.
+Proof using. auto. Qed.
+
+Lemma take_succ : forall x l n,
+  0 <= n ->
+  take (n+1) (x::l) = x :: (take n l).
+Proof using.
+  intros. unfold take. rew_to_nat_nonneg~.
+  rewrite Nat.add_1_r. apply LibList.take_succ.
+Qed.
+
+Definition take_cons := take_succ.
+
+Lemma take_cons_pos : forall x l n,
+  (n > 0) ->
+  take n (x::l) = x :: (take (n-1) l).
+Proof using.
+  intros. unfold take. rew_to_nat_nonneg~.
+  rewrite~ LibList.take_cons_pos.
+  forwards~: lt_to_nat_to_nat 0 n.
+Qed.
+
+Lemma take_neg : forall n l,
+  n <= 0 ->
+  take n l = nil.
+Proof using. intros. unfold take. rewrite~ to_nat_neg. Qed.
+
+Lemma take_ge : forall n l,
+  (n >= length l) ->
+  take n l = l.
+Proof using.
+  intros. unfold take, length in *. applys~ LibList.take_ge.
+  rewrites~ to_nat_ge_nat_ge.
+Qed.
+
+Lemma take_is_prefix : forall n l,
+  exists q, l = take n l ++ q.
+Proof using.
+  intros. unfold take. applys~ LibList.take_is_prefix.
+Qed.
+
+Lemma take_app_l : forall n l l',
+  (n <= length l) ->
+  take n (l ++ l') = take n l.
+Proof using.
+  intros. tests: (0 <= n).
+  { unfold take, length in *.
+    applys~ LibList.take_app_l. rewrites~ to_nat_le_nat_le. }
+  { rewrite !take_neg; auto; math. }
+Qed.
+
+Lemma take_app_r : forall n l l',
+  (n >= length l) ->
+  take n (l ++ l') = l ++ take (n - length l) l'.
+Proof using.
+  intros. unfold take, length in *. rew_to_nat_nonneg~.
+  applys~ LibList.take_app_r. rewrites~ to_nat_ge_nat_ge.
+Qed.
+
+Lemma take_prefix_length : forall l l',
+  take (length l) (l ++ l') = l.
+Proof using.
+  intros. unfold take, length. rew_to_nat_nonneg~.
+  applys~ LibList.take_prefix_length.
+Qed.
+
+Lemma take_full_length : forall l,
+  take (length l) l = l.
+Proof using.
+  intros. unfold take, length. rew_to_nat_nonneg~.
+  apply LibList.take_full_length.
+Qed.
+
+(* See below for [length_take] and other properties *)
+
+End Take.
+
+(* Arguments take [A] : simpl never. *)
+
+Hint Rewrite take_nil take_zero take_succ : rew_listx.
+(* Note: [take_prefix_length] and [take_full_length]
+   may be safely added to [rew_listx]. *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Drop, with an [int] as the number of elements. *)
+
+Definition drop A (n:int) (l:list A) : list A :=
+  LibList.drop (to_nat n) l.
+
+Section Drop.
+Variables (A : Type).
+Implicit Types n : int.
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma drop_nil : forall n,
+  drop n (@nil A) = nil.
+Proof using. intros. unfold drop. apply LibList.drop_nil. Qed.
+
+Lemma drop_zero : forall l,
+  drop 0 l = l.
+Proof using. auto. Qed.
+
+Lemma drop_succ : forall x l n,
+  0 <= n ->
+  drop (n+1) (x::l) = (drop n l).
+Proof using.
+  intros. unfold drop. rew_to_nat_nonneg~.
+  rewrite Nat.add_1_r. apply LibList.drop_succ.
+Qed.
+
+Definition drop_cons := drop_succ.
+
+Lemma drop_neg : forall n l,
+  n <= 0 ->
+  drop n l = l.
+Proof using. intros. unfold drop. rewrite~ to_nat_neg. Qed.
+
+Lemma drop_cons_pos : forall x l n,
+  (n > 0) ->
+  drop n (x::l) = drop (n-1) l.
+Proof using.
+  intros. unfold drop. rew_to_nat_nonneg~.
+  apply~ LibList.drop_cons_pos.
+  forwards~: lt_to_nat_to_nat 0 n.
+Qed.
+
+Lemma drop_is_suffix : forall n l,
+  exists q, l = q ++ drop n l.
+Proof using.
+  intros. unfold drop. apply LibList.drop_is_suffix.
+Qed.
+
+Lemma drop_app_l : forall n l l',
+  (n <= length l) ->
+  drop n (l ++ l') = drop n l ++ l'.
+Proof using.
+  intros. tests: (0 <= n).
+  { unfold drop, length in *.
+    apply LibList.drop_app_l. rewrites~ to_nat_le_nat_le. }
+  { rewrite !drop_neg; auto; math. }
+Qed.
+
+Lemma drop_app_r : forall n l l',
+  (n >= length l) ->
+  drop n (l ++ l') = drop (n - length l) l'.
+Proof using.
+  intros. unfold drop, length in *. rew_to_nat_nonneg~.
+  apply LibList.drop_app_r. rewrites~ to_nat_ge_nat_ge.
+Qed.
+
+Lemma drop_app_length : forall l l',
+  drop (length l) (l ++ l') = l'.
+Proof using.
+  intros. unfold drop, length. rew_to_nat_nonneg~.
+  apply LibList.drop_app_length.
+Qed.
+
+Lemma drop_at_length : forall l,
+  drop (length l) l = nil.
+Proof using.
+  intros. unfold drop, length. rew_to_nat_nonneg~.
+  apply LibList.drop_at_length.
+Qed.
+
+(* See below for [length_drop] and other properties *)
+
+End Drop.
+
+(* Arguments drop [A] : simpl never. *)
+
+Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
+(* Note: [drop_prefix_length] and [drop_full_length]
+   may be safely added to [rew_list]. *)
+
+(* ---------------------------------------------------------------------- *)
+(** ** Take and drop decomposition of a list *)
+
+Section TakeAndDrop.
+Variables (A : Type).
+Implicit Types x : A.
+Implicit Types l : list A.
+
+Lemma take_app_drop_spec : forall n l f r,
+  f = take n l ->
+  r = drop n l ->
+  (0 <= n <= length l ->
+      l = f ++ r
+   /\ length f = n
+   /\ length r = length l - n) /\
+  (n <= 0 ->
+    f = nil /\ r = l).
+Proof using.
+  introv ? ?. split.
+  { intros (? & Hn). unfold take, drop, length in *.
+    forwards~ (? & ? & Hlenrest): @LibList.take_app_drop_spec (to_nat n) l f r.
+    { rewrites~ to_nat_le_nat_le. }
+    splits~.
+    { symmetry. rewrite~ <-to_nat_eq_nat_eq. }
+    { rewrites~ <-(>> to_nat_to_int n). rewrite Hlenrest.
+      rewrite~ minus_nat_eq_minus_int.
+      rewrite~ <-to_nat_le_nat_le in Hn. } }
+  { intros. rewrites~ take_neg in *. rewrites~ drop_neg in *. }
+Qed.
+
+Lemma take_spec : forall n l,
+  0 <= n <= length l ->
+  exists l', length (take n l) = n
+          /\ l = (take n l) ++ l'.
+Proof using. introv E. forwards* (E1&_): take_app_drop_spec. forwards*: E1. Qed.
+
+Lemma length_take_nonneg : forall n l,
+  0 <= n <= length l ->
+  length (take n l) = n.
+Proof using. introv E. forwards~ (l'&N&M): take_spec n l. Qed.
+
+Lemma length_take : forall n l,
+  n <= length l ->
+  length (take n l) = Z.max 0 n.
+Proof using.
+  intros. tests: (0 <= n).
+  { rewrite~ length_take_nonneg. rewrite~ Z.max_r. }
+  { rewrite~ take_neg. rewrite~ Z.max_l. }
+Qed.
+
+Lemma drop_spec : forall n l,
+  0 <= n <= length l ->
+  exists l', length l' = n
+          /\ l = l' ++ (drop n l).
+Proof using. introv E. forwards* (E1&_): take_app_drop_spec. forwards*: E1. Qed.
+
+Lemma length_drop_nonneg : forall n l,
+  0 <= n <= length l ->
+  length (drop n l) = length l - n.
+Proof using.
+  introv E. forwards~ (l'&N&M): drop_spec n l.
+  pattern l at 2. rewrite M. rew_list. math.
+Qed.
+
+Lemma length_drop : forall n l,
+  n <= length l ->
+  length (drop n l) = Z.min (length l) (length l - n).
+Proof using.
+  intros. tests: (0 <= n).
+  { rewrite~ length_drop_nonneg. rewrite~ Z.min_r. }
+  { rewrite~ drop_neg. rewrite~ Z.min_l. }
+Qed.
+
+Lemma list_eq_take_app_drop : forall n l,
+  n <= length l ->
+  take n l ++ drop n l = l.
+Proof using.
+  introv H. tests: (0 <= n).
+  { forwards*: take_app_drop_spec n l. }
+  { rewrite~ take_neg. rewrite~ drop_neg. }
+Qed.
+
+End TakeAndDrop.
+
+Arguments take_app_drop_spec [A].
+Arguments take_spec [A].
+Arguments drop_spec [A].
+
+
 
 (* ---------------------------------------------------------------------- *)
 (** * [card], with result as [nat], as typeclass *)
