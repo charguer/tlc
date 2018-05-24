@@ -643,6 +643,29 @@ Proof using.
   intros. nat_comp_to_peano. apply Zabs_nat_lt. math.
 Qed.
 
+Lemma abs_to_int : forall (n : int),
+  0 <= n ->
+  Z_of_nat (abs n) = n.
+Proof using. intros. rewrite~ abs_nonneg. Qed.
+
+Lemma abs_le_nat_le : forall (x:int) (y:nat),
+  (0 <= x) ->
+  (abs x <= y) = (x <= y)%Z.
+Proof.
+  intros. extens. iff E.
+  { rewrites~ <-(>> abs_to_int x). math. }
+  { rewrites~ <-(>> abs_to_int x) in E. math. }
+Qed.
+
+Lemma abs_ge_nat_ge : forall (x:int) (y:nat),
+  (0 <= x) ->
+  (abs x >= y) = (x >= y)%Z .
+Proof.
+  intros. extens. iff E.
+  { rewrites~ <-(>> abs_to_int x). math. }
+  { rewrites~ <-(>> abs_to_int x) in E. math. }
+Qed.
+
 (** -- TODO: many useful lemmas missing *)
 
 
@@ -715,3 +738,103 @@ Tactic Notation "rew_abs_nonneg" :=
   autorewrite with rew_abs_nonneg.
 Tactic Notation "rew_abs_nonneg" "~" :=
   autorewrite with rew_abs_nonneg; try math; autos~.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Positive part of an integer. Returns 0 on negative values. *)
+
+Notation "'to_nat'" := Z.to_nat (at level 0).
+
+Lemma to_nat_nat : forall (n:nat),
+  to_nat n = n.
+Proof using. exact Nat2Z.id. Qed.
+
+Lemma to_nat_nonneg : forall (x:int),
+  x >= 0 ->
+  to_nat x = x :> int.
+Proof using. intros. apply~ Z2Nat.id. Qed.
+
+Lemma to_nat_neg : forall (x:int),
+  x <= 0 ->
+  to_nat x = 0%nat.
+Proof using.
+  intros x H. destruct~ x.
+  assert (Z.pos p = 0) as ->. { forwards: Zle_0_pos p. math. }
+  reflexivity.
+Qed.
+
+Lemma to_nat_eq_nat_eq : forall (x:int) (y:nat),
+  x >= 0 ->
+  (to_nat x = y :> nat) = (x = Z_of_nat y :> int).
+Proof using.
+  introv M. extens. iff E.
+  { subst. rewrite~ Z2Nat.id. }
+  { subst. rewrite~ Nat2Z.id. }
+Qed.
+
+Lemma lt_to_nat_to_nat : forall (n m : int),
+  (0 <= n) ->
+  (n < m) ->
+  (to_nat n < to_nat m).
+Proof using.
+  intros. nat_comp_to_peano.
+  rewrite <-!Zabs2Nat.abs_nat_nonneg by math.
+  apply~ Zabs_nat_lt. math.
+Qed.
+
+Lemma to_nat_to_int : forall (n : int),
+  0 <= n ->
+  Z_of_nat (to_nat n) = n.
+Proof using. intros. rewrite~ to_nat_nonneg. Qed.
+
+Lemma to_nat_le_nat_le : forall (x:int) (y:nat),
+  (0 <= x) ->
+  (to_nat x <= y) = (x <= y)%Z.
+Proof.
+  intros. extens. iff E.
+  { rewrites~ <-(>> to_nat_to_int x). math. }
+  { rewrites~ <-(>> to_nat_to_int x) in E. math. }
+Qed.
+
+Lemma to_nat_ge_nat_ge : forall (x:int) (y:nat),
+  (0 <= x) ->
+  (to_nat x >= y) = (x >= y)%Z .
+Proof.
+  intros. extens. iff E.
+  { rewrites~ <-(>> to_nat_to_int x). math. }
+  { rewrites~ <-(>> to_nat_to_int x) in E. math. }
+Qed.
+
+(* ---------------------------------------------------------------------- *)
+(** ** [to_nat] distribute on constants and operators *)
+
+Lemma to_nat_0 : to_nat 0 = 0%nat :> nat.
+Proof using. reflexivity. Qed.
+
+Lemma to_nat_1 : to_nat 1 = 1%nat :> nat.
+Proof using. reflexivity. Qed.
+
+Lemma to_nat_plus : forall (x y:int),
+  (x >= 0) ->
+  (y >= 0) ->
+  to_nat (x + y) = (to_nat x + to_nat y)%nat :> nat.
+Proof using. intros. apply~ Z2Nat.inj_add. Qed.
+
+Lemma to_nat_minus : forall (x y:int),
+  (x >= y) ->
+  (y >= 0) ->
+  to_nat (x - y) = (to_nat x - to_nat y)%nat :> nat.
+Proof using. intros. apply~ Z2Nat.inj_sub. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Tactic [rew_to_nat_nonneg] to normalize expressions involving [to_nat]
+       issuing side-conditions that arguments are nonnegative *)
+
+Hint Rewrite to_nat_nat to_nat_0 to_nat_1 to_nat_plus to_nat_minus
+     to_nat_nonneg : rew_to_nat_nonneg.
+
+Tactic Notation "rew_to_nat_nonneg" :=
+  autorewrite with rew_to_nat_nonneg.
+Tactic Notation "rew_to_nat_nonneg" "~" :=
+  autorewrite with rew_to_nat_nonneg; try math; autos~.
