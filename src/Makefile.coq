@@ -187,23 +187,21 @@ ide: _CoqProject
 
 # In a multi-directory setting, it is not entirely clear how to find the
 # files that we wish to remove.
-# One approach is to view $(V) as the authoritative list of source files
+
+# One approach would be to view $(V) as the authoritative list of source files
 # and remove just the derived files $(VO), etc.
-# Another approach is to scan all subdirectories of $(ROOTDIR) and remove
-# all .vo files in them.
-# We combine both approaches.
+
+# Another approach is to scan all subdirectories of $(ROOTDIR) and remove all
+# object files in them. We follow this approach.
 
 # Be careful to use regular expressions that work both with GNU find
 # and with BSD find (MacOS).
 
 clean::
-	rm -f $(patsubst %.v,%.v.d,$(V)) # not $(VD)
-	rm -f $(VIO) $(VO) $(VQ)
-	find $(ROOTDIR) -regex ".*~" -exec rm {} +
-	find $(ROOTDIR) -regex ".*\.aux" -exec rm {} +
-	find $(ROOTDIR) -regex "\..*\.aux" -exec rm {} +
-	find $(ROOTDIR) -regex ".*\.glob" -exec rm {} +
-	find $(ROOTDIR) -regex ".*\.cache" -exec rm {} +
-	find $(ROOTDIR) -regex ".*\.crashcoqide" -exec rm {} +
-	find $(ROOTDIR) -regex ".*/\.coq-native" -exec rm -rf {} +
-	find $(ROOTDIR) -regex ".*/\.coqide" -exec rm -rf {} +
+	for d in `find $(ROOTDIR) -type d -not -regex ".*\\.git.*"` ; do \
+	  (cd $$d && \
+	     rm -f *~ && \
+	     rm -f *.{vo,vio,vq,v.d,aux,glob,cache,crashcoqide} && \
+	     rm -rf *.coq-native *.coqide && \
+	     true) ; \
+	done
