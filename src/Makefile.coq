@@ -201,6 +201,7 @@ clean::
 	for d in `find $(ROOTDIR) -type d -not -regex ".*\\.git.*"` ; do \
 	  (cd $$d && \
 	     rm -f *~ && \
+	     rm -f .*.aux && \
 	     rm -f *.{vo,vio,vq,v.d,aux,glob,cache,crashcoqide} && \
 	     rm -rf *.coq-native *.coqide && \
 	     true) ; \
