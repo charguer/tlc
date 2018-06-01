@@ -1,13 +1,13 @@
 convention:
 Lemma trans_strict_of_antisym : forall R,
-  trans R -> 
-  antisym R -> 
+  trans R ->
+  antisym R ->
   trans (strict R).
 => trans_strict
   because antisym is necessary.
 
 Lemma trans_large : forall R,
-  trans R -> 
+  trans R ->
   trans (large R).
 Proof using. unfold large. introv Tr [H1|E1] [H2|E2]; subst*. Qed.
 => because obvious that propagates from trans.
@@ -15,7 +15,7 @@ Proof using. unfold large. introv Tr [H1|E1] [H2|E2]; subst*. Qed.
 
 
 => "Heavy" operators are more likely to distribute over lighter ones.
-     
+
 Lemma map_app : forall f l1 l2,
   map f (l1 ++ l2) = map f l1 ++ map f l2.
 
@@ -240,7 +240,7 @@ Proof using. auto_false. Qed.
 
 Definition app_cancel_nil_l := app_eq_self_inv_l
 
-Definition app_eq_prefix_inv_l := app_cancel_l. (* DEPRECATED *) 
+Definition app_eq_prefix_inv_l := app_cancel_l. (* DEPRECATED *)
 
 Definition length_neq_elim := length_neq_inv.
 
@@ -726,7 +726,7 @@ Proof using.
 Qed.
 
 Lemma Update_cons : forall i x y l l',
-  Update i x l l' -> 
+  Update i x l l' ->
   Update (S i) x (y::l) (y::l').
 Proof using.
   introv (L&O&E). splits.
@@ -738,7 +738,7 @@ Qed.
 Definition Update_succ := Update_cons.
 
 Lemma Update_app_l : forall i x l1 l1' l2,
-  Update i x l1 l1' -> 
+  Update i x l1 l1' ->
   Update i x (l1++l2) (l1'++l2).
 Proof using.
   introv (L&O&E). splits.
@@ -750,8 +750,8 @@ Proof using.
 Qed.
 
 Lemma Update_app_r : forall i j x l1 l2 l2',
-  Update j x l2 l2' -> 
-  i = (j + length l1)%nat -> 
+  Update j x l2 l2' ->
+  i = (j + length l1)%nat ->
   Update i x (l1++l2) (l1++l2').
 Proof using.
   introv (L&O&E) Eq. splits.
@@ -763,17 +763,17 @@ Proof using.
 Qed.
 
 Lemma Update_length : forall i x l l',
-  Update i x l l' -> 
+  Update i x l l' ->
   length l = length l'.
 Proof using. introv (L&O&E). auto. Qed.
 
 Lemma Update_not_nil_l : forall i x l1 l2,
-  Update i x l1 l2 -> 
+  Update i x l1 l2 ->
   l1 <> nil.
 Proof using. introv (L&O&E) K. subst. inverts E; auto_false. Qed.
 
 Lemma Update_not_nil_r : forall i x l1 l2,
-  Update i x l1 l2 -> 
+  Update i x l1 l2 ->
   l2 <> nil.
 Proof using. introv (L&O&E) K. subst. inverts E. Qed.
 
@@ -784,9 +784,9 @@ End UpdateRel.
 
 (* ---------------------------------------------------------------------- *)
 
-Definition head_of_le := head_le. 
+Definition head_of_le := head_le.
 
-Definition head_le := heads_le. 
+Definition head_le := heads_le.
 (* and same for lemmas *)
 
 (* ---------------------------------------------------------------------- *)
@@ -1234,7 +1234,7 @@ Definition func_same_1 := func_eq_1.
 (* ---------------------------------------------------------------------- *)
 (** ** Equal functions on equal arguments provide equal results *)
 
-(* Remark: is this really needed? maybe applying successively 
+(* Remark: is this really needed? maybe applying successively
    two lemmas [func_eq] and [func_same] is sufficient. *)
 
 Section FuncEqual.
@@ -1247,22 +1247,22 @@ Lemma func_equal_1 : forall (f g:A1->B) x1 y1,
 Proof using. intros. subst~. Qed.
 
 Lemma func_equal_2 : forall (f g:A1->A2->B) x1 y1 x2 y2,
-  f = g -> 
-  x1 = y1 -> 
+  f = g ->
+  x1 = y1 ->
   x2 = y2 ->
   f x1 x2 = f y1 y2.
 Proof using. intros. subst~. Qed.
 
 Lemma func_equal_3 : forall (f g:A1->A2->A3->B) x1 y1 x2 y2 x3 y3,
-  f = g -> 
-  x1 = y1 -> 
-  x2 = y2 -> 
+  f = g ->
+  x1 = y1 ->
+  x2 = y2 ->
   x3 = y3 ->
   f x1 x2 x3 = f y1 y2 y3.
 Proof using. intros. subst~. Qed.
 
 Lemma func_equal_4 : forall (f g:A1->A2->A3->A4->B) x1 y1 x2 y2 x3 y3 x4 y4,
-  f = g -> 
+  f = g ->
   x1 = y1 ->
   x2 = y2 ->
   x3 = y3 ->
@@ -1306,7 +1306,7 @@ End FuncEqual.
       has_fixpoint_fix : forall f, has_fixpoint_F f = f (has_fixpoint_F f) }.
 
   Lemma prop_has_fixpoint_when_true : forall A,
-    A -> 
+    A ->
     has_fixpoint A.
   Proof using.
     intros A a. destruct (prop_retract_to_self_impl_when_true a) as [g1 g2 Fix].
@@ -1427,7 +1427,7 @@ EVERYWHERE foo_elim => foo_inv
 (* ---------------------------------------------------------------------- *)
 
 AND SIMILAR
-	lexico2_app_1 => lexico2_1 
+	lexico2_app_1 => lexico2_1
 
 Definition irrefl_neq := irrefl_inv_neq.
 Definition sym_to_eq := sym_inv_eq.
@@ -1527,7 +1527,7 @@ Proof using. intros. subst*. Qed.
 -----------
 
 
-Lemma epsilon_spec' : forall A (P:A->Prop) (x:A) (H:P x) {IA:Inhab A}, 
+Lemma epsilon_spec' : forall A (P:A->Prop) (x:A) (H:P x) {IA:Inhab A},
   P (epsilon P).
 Proof using. intros. applys* epsilon_spec. Qed.
 
@@ -1599,7 +1599,7 @@ le_from_le => lt_of_le
 
 my_Z_of_nat => nat_to_Z
 
-Ltac  math_debug => math_setup 
+Ltac  math_debug => math_setup
 
 
 ---
@@ -1608,9 +1608,9 @@ LibWf
 
 incl_wf => wf_of_rel_incl
 
-measure_trans => trans_measure 
+measure_trans => trans_measure
 
-measure_wf => wf_measure 
+measure_wf => wf_measure
 
 binary_map => rel_preimage
 
@@ -1625,7 +1625,7 @@ LibMonoid
 List
 
 list_no_mem => eq_list_not_mem
- 
+
 
 finite_prove_covers => finite_of_list_covers
 finite_prove_repr => finite_of_list_repr
@@ -1712,7 +1712,7 @@ set_norm => rew_set in *
 ===================
 
 cons_make_pred_same => make_eq_cons_make_pred
-rew_arr => rew_array_nocase 
+rew_arr => rew_array_nocase
 LibListZ_length_def => length_eq
 length_singleton => length_one
 length_le_1_implies_nil_tail => length_le_1_inv_tail_eq_nil

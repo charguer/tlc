@@ -1,8 +1,8 @@
 (* DEPRECATED
 
-   needs a cleanup and merge into LibRelation.v 
+   needs a cleanup and merge into LibRelation.v
 
-
+*)
 
 (**************************************************************************
 * TLC: A library for Coq                                                  *
@@ -55,6 +55,14 @@ Qed.
 Definition per_single A (a b:A) :=
   fun x y => x = a /\ y = b.
 
+(* TEMPORARY: move this as well to relations *)
+Lemma inverse_per_single : forall A (a b:A),
+  inverse (per_single a b) = per_single b a.
+Proof using.
+  intros. applys pred_ext_2. intros. unfold inverse, per_single. autos*.
+Qed.  
+
+
 (** Extension of an per [B] with a node [z] *)
 
 Definition per_add_node A (B:binary A) (z:A) :=
@@ -66,8 +74,8 @@ Definition per_add_edge A (B:binary A) (x y:A) :=
   stclosure (Rel.union B (per_single x y)).
 
 Lemma per_add_edge_le : forall A (B:binary A) a b,
-  Rel.incl B (per_add_edge B a b).
-Proof using. introv. intros x y H. apply stclosure_step. left~. Qed.
+  rel_incl B (per_add_edge B a b).
+Proof using. introv. intros x y H. apply stclosure_once. left~. Qed.
 
 Lemma add_edge_already : forall A (B:binary A) a b,
   per B -> B a b -> per_add_edge B a b = B.
@@ -85,8 +93,7 @@ Lemma per_add_edge_per : forall A (R : binary A) a b,
   per R -> per (per_add_edge R a b).
 Proof using.
   introv [Rs Rt]. unfold per_add_edge. constructor.
-  introv H. induction* H.
-  introv H1. gen z. induction* H1.
+  introv H. applys~ sym_stclosure. applys~ trans_stclosure.
 Qed.
 
 Lemma per_dom_add_edge : forall A (B:binary A) x y,
@@ -103,7 +110,7 @@ Proof using.
   left. destruct E; subst; destruct H as [M|[? ?]]; subst*.
   intuition.
   intuition.
-  destruct H as [E|[Zx|Zy]]; subst*.
+  apply stclosure_once. destruct H as [E|[Zx|Zy]]; subst*.
 Qed.
 
 Lemma per_add_node_per : forall A (B:binary A) r,
@@ -133,7 +140,7 @@ Qed.
 
 (* --TODO: move instance *)
 Global Instance binary_incl : forall A, BagIncl (binary A).
-Proof using. constructor. rapply (@LibRelation.incl A). Defined.
+Proof using. constructor. rapply (@rel_incl A A). Defined.
 
 
 Lemma per_add_edge_covariant : forall A (B1 B2 : binary A) x y,
@@ -142,17 +149,18 @@ Lemma per_add_edge_covariant : forall A (B1 B2 : binary A) x y,
 Proof using.
   unfold binary_incl. unfold per_add_edge.
   (* --TODO: was     eauto using stclosure_le, union_covariant. *)
-  introv M. applys stclosure_le. applys* union_covariant.
+  introv M. applys covariant_stclosure. applys* covariant_union.
+  applys refl_rel_incl.
 Qed.
 
 Lemma per_add_edge_symmetric : forall A (B : binary A) x y,
   per_add_edge B y x = per_add_edge B x y.
 Proof using.
-  unfold per_add_edge. intros.
+  unfold per_add_edge. intros. 
   (* If two relations have the same symmetric closure, then
      they have the same symmetric-transitive closure. *)
-  do 2 rewrite stclosure_is_tclosure_sclosure. f_equal.
-  unfold sclosure, Rel.union, per_single. extens. tauto.
+  do 2 rewrite <- tclosure_sclosure_eq_stclosure. f_equal.
+  apply pred_ext_2. intros a b. do 2 rewrite sclosure_eq.
+  unfold Rel.union, per_single. tauto.
 Qed.
 
-*)

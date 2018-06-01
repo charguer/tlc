@@ -231,12 +231,12 @@ Proof using.
 Qed.
 
 Lemma set_ext : forall E F,
-  (forall (x:A), x \in E <-> x \in F) -> 
+  (forall (x:A), x \in E <-> x \in F) ->
   E = F.
 Proof using. intros. rewrite~ set_ext_eq. Qed.
 
 Lemma set_st_eq : forall A (P Q : A -> Prop),
-  (forall (x:A), P x <-> Q x) -> 
+  (forall (x:A), P x <-> Q x) ->
   set_st P = set_st Q.
 Proof using. intros. asserts_rewrite~ (P = Q). extens~. Qed.
 
@@ -305,7 +305,7 @@ Qed.
 (** repr and covers *)
 
 Lemma list_covers_of_list_repr : forall E L,
-  list_repr E L -> 
+  list_repr E L ->
   list_covers E L.
 Proof using. introv (ND&EQ). introv Hx. rewrite~ EQ. Qed.
 
@@ -335,7 +335,7 @@ Proof using. unfold list_repr. tauto. Qed.
 (** to_list *)
 
 Lemma ex_list_repr_impl_of_ex_list_covers_impl : forall E,
-  ex (list_covers_impl E) -> 
+  ex (list_covers_impl E) ->
   ex (list_repr_impl E).
 Proof using.
   (* --TODO: factorize this wiht later proofs *)
@@ -350,7 +350,7 @@ Proof using.
 Qed.
 
 Lemma list_repr_to_list_of_finite : forall E,
-  finite E -> 
+  finite E ->
   list_repr E (to_list E).
 Proof using.
   introv FE. unfolds to_list, finite, list_repr_impl.
@@ -360,7 +360,7 @@ Qed.
 
 (* corrolary of above, presented as an inversion lemma *)
 Lemma eq_to_list_inv : forall E L,
-  L = to_list E -> 
+  L = to_list E ->
   finite E ->
   list_repr E L.
 Proof.
@@ -410,24 +410,24 @@ Qed.
 (* introduction *)
 
 Lemma finite_of_list_covers : forall (E:set A) L,
-  list_covers E L -> 
+  list_covers E L ->
   finite E.
 Proof using. introv H. exists* L. Qed.
 
 Lemma finite_of_list_repr : forall (E:set A) L,
-  list_repr E L -> 
+  list_repr E L ->
   finite E.
 Proof using. introv (ND&EQ). exists~ L. introv Hx. rewrite~ EQ. Qed.
 
 Lemma finite_of_ex_list_covers : forall (E:set A),
-  ex (list_covers E) -> 
+  ex (list_covers E) ->
   finite E.
 Proof using. introv (L&H). applys* finite_of_list_covers. Qed.
 
 (* elimination *)
 
 Definition finite_inv_list_covers_and_card : forall (E:set A),
-  finite E -> 
+  finite E ->
   exists L, list_covers E L /\ card E = length L.
 Proof.
   introv (L&H). sets m: (card E).
@@ -500,8 +500,8 @@ Section Finite_remove_inv.
 Local Opaque remove_inst single_inst.
 
 Lemma finite_remove_inv : forall E F,
-  finite (E \- F) -> 
-  finite F -> 
+  finite (E \- F) ->
+  finite F ->
   finite E.
 Proof using.
   introv H1 H2. lets (L1&R1): finite_inv_list_covers H1.
@@ -515,7 +515,7 @@ Qed.
 End Finite_remove_inv.
 
 Lemma finite_remove_one_inv : forall E x,
-  finite (E \-- x) -> 
+  finite (E \-- x) ->
   finite E.
 Proof using.
   introv H. applys finite_remove_inv H. applys finite_single.
@@ -541,7 +541,7 @@ Qed.
 (* introduction of properties on card *)
 
 Definition list_covers_inv_card : forall (E:set A) L,
-  list_covers E L -> 
+  list_covers E L ->
   (card E <= length L)%nat.
 Proof using.
   introv H. sets m: (card E). set_unf.
@@ -550,7 +550,7 @@ Proof using.
 Qed.
 
 Definition finite_inv_list_repr_and_card : forall (E:set A),
-  finite E -> 
+  finite E ->
   exists L, list_repr E L /\ card E = length L.
 Proof.
   introv H. forwards (L1&HL1&EL1): finite_inv_list_covers_and_card H.
@@ -570,7 +570,7 @@ Proof.
 Qed.
 
 Lemma list_repr_inv_card : forall (E:set A) (L:list A),
-  list_repr E L -> 
+  list_repr E L ->
   card E = length L.
 Proof using.
   introv HR. lets (ND&EQ): HR.
@@ -582,7 +582,7 @@ Proof using.
 Qed.
 
 Definition finite_inv_card_ge : forall (E:set A) n,
-  finite E -> 
+  finite E ->
   (forall L, list_covers E L -> (length L >= n)%nat) ->
   (card E >= n)%nat.
 Proof using.
@@ -600,13 +600,13 @@ Definition list_covers_inv_card_eq : forall (E:set A) L,
 Proof using.
   introv HC HG.
   forwards~: list_covers_inv_card HC.
-  forwards~: finite_inv_card_ge HG. 
+  forwards~: finite_inv_card_ge HG.
     applys* finite_of_list_covers.
   math.
 Qed.
 
 Lemma card_eq_length_to_list : forall (E:set A),
-  finite E -> 
+  finite E ->
   card E = length (to_list E).
 Proof using.
   introv FE. applys list_repr_inv_card. applys~ eq_to_list_inv.
@@ -647,11 +647,11 @@ Variables (A : Type).
 Implicit Types x y : A.
 Implicit Types E F : set A.
 
-Lemma set_in_empty_eq : forall x, 
+Lemma set_in_empty_eq : forall x,
   x \in (\{}:set A) = False.
 Proof using. apply in_empty_eq. Qed.
 
-Lemma set_in_single_eq : forall x y, 
+Lemma set_in_single_eq : forall x y,
   x \in (\{y}:set A) = (x = y).
 Proof using. apply in_single_eq. Qed.
 
@@ -685,8 +685,8 @@ Proof using. apply disjoint_eq. Qed.
 
 End Autorewrite.
 
-Hint Rewrite in_set_st_eq set_in_empty_eq set_in_single_eq 
-  set_in_inter_eq set_in_union_eq set_in_remove_eq set_in_extens_eq 
+Hint Rewrite in_set_st_eq set_in_empty_eq set_in_single_eq
+  set_in_inter_eq set_in_union_eq set_in_remove_eq set_in_extens_eq
   set_incl_in_eq set_disjoint_eq : rew_set.
 
 (* tactic *)
@@ -751,7 +751,7 @@ Proof using.
 Qed.
 
 Lemma card_union_le : forall A (E F:set A),
-  finite E -> 
+  finite E ->
   finite F ->
   card (E \u F) <= (card E + card F)%nat.
 Proof using.
@@ -967,7 +967,7 @@ Tactic Notation "rew_set" "in" "*" :=
 (* ---------------------------------------------------------------------- *)
 (** ** TEMPORARY Foreach *)
 
-(** -- TODO: these lemmas should be instead derived as typeclasses   
+(** -- TODO: these lemmas should be instead derived as typeclasses
        in a generic way, in LibContainer. *)
 
 (** -- TODO: add a paragraphe of the definition:
@@ -984,18 +984,18 @@ Proof using. intros_all. false. Qed.
 (* --TODO: false* @in_empty. typeclass. *)
 
 Lemma foreach_single : forall P X,
-  P X -> 
+  P X ->
   @foreach A (set A) _ P (\{ X }).
 Proof using. intros_all. rewrite in_single_eq in H0. subst*. Qed.
 
 Lemma foreach_union : forall P E F,
-  foreach P E -> 
-  foreach P F -> 
+  foreach P E ->
+  foreach P F ->
   foreach P (E \u F).
 Proof using. intros_all. destruct~ (in_union_inv H1). Qed.
 
 Lemma foreach_union_inv : forall P E F,
-  foreach P (E \u F) -> 
+  foreach P (E \u F) ->
   foreach P E /\ foreach P F.
 Proof using.
   introv H. split; introv K.
@@ -1020,13 +1020,13 @@ Proof using.
 Qed.
 
 Lemma foreach_of_pred_incl: forall P Q E,
-  foreach P E -> 
-  pred_incl P Q -> 
+  foreach P E ->
+  pred_incl P Q ->
   foreach Q E.
 Proof using. introv H L K. apply~ L. Qed.
 
 Lemma foreach_remove_of_foreach_all : forall P E F,
-  foreach P E -> 
+  foreach P E ->
   foreach P (E \- F).
 Proof using. introv M H. applys M. rewrite in_remove_eq in H. autos*. Qed.
 
@@ -1036,8 +1036,8 @@ Lemma foreach_remove : forall P E F,
 Proof using. introv M Px. rewrite in_remove_eq in Px. applys* M. Qed.
 
 Lemma notin_of_foreach_not : forall P x E,
-  foreach P E -> 
-  ~ P x -> 
+  foreach P E ->
+  ~ P x ->
   x \notin E.
 Proof using. introv M N I. applys N. applys~ M. Qed.
 

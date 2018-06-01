@@ -744,6 +744,7 @@ Proof using.
   apply~ trichotomy_left.
 Qed.
 
+(* TODO rename to equiv_inverse *)
 Lemma inverse_equiv : forall A (E:binary A),
   equiv E -> 
   equiv (inverse E).
@@ -751,6 +752,14 @@ Proof using.
   introv Equi. unfold inverse. constructor; intros_all;
     dintuition eauto.
 Qed.
+
+Lemma inverse_union : forall R1 R2,
+  inverse (union R1 R2) = union (inverse R1) (inverse R2).
+Proof using.
+  unfold inverse, union. constructor; intros_all;
+    dintuition eauto.
+Qed.
+
 
 End Inverse.
 
