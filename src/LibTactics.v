@@ -144,7 +144,7 @@ Ltac gen_until_mark_with_processing cont :=
   match goal with H: ?T |- _ =>
   match T with
   | ltac_Mark => clear H
-  | _ => cont H; generalize H; clear H; 
+  | _ => cont H; generalize H; clear H;
          gen_until_mark_with_processing cont
   end end.
 
@@ -366,9 +366,9 @@ Ltac fast_rm_inside E :=
 (** When tactic takes a natural number as argument, it may be
     parsed either as a natural number or as a relative number.
     In order for tactics to convert their arguments into natural numbers,
-    we provide a conversion tactic. 
-    
-    Note: the tactic [number_to_nat] is extended in [LibInt] to 
+    we provide a conversion tactic.
+
+    Note: the tactic [number_to_nat] is extended in [LibInt] to
     take into account the [int] type, alias for [Z]. *)
 
 Require Coq.Numbers.BinNums Coq.ZArith.BinInt.
@@ -416,7 +416,7 @@ Tactic Notation "ltac_pattern" constr(E) "at" constr(K) "in" hyp(H) :=
   | _ => fail "ltac_pattern: arity not supported"
   end.
 
-(** [ltac_set (x := E) at K] is the same as [set (x := E) at K] except 
+(** [ltac_set (x := E) at K] is the same as [set (x := E) at K] except
     that [K] is a Coq number (nat or Z) rather than a Ltac integer. *)
 
 Tactic Notation "ltac_set" "(" ident(X) ":=" constr(E) ")" "at" constr(K) :=
@@ -2846,7 +2846,7 @@ Tactic Notation "inject" hyp(H) "as" ident(X1) ident(X2) ident(X3)
     are similar to [inverts] and [injects] except that they perform
     substitution on all equalities from the context and not only
     the ones freshly generated. The counterpart is that they have
-    simpler implementations. 
+    simpler implementations.
 
     DEPRECATED: these tactics should no longer be used. *)
 
@@ -2907,7 +2907,7 @@ Tactic Notation "cases" constr(E) :=
     Currently, this tactic is extended in LibReflect to clean up
     boolean propositions. *)
 
-Ltac case_if_post H := 
+Ltac case_if_post H :=
   tryfalse.
 
 (** [case_if] looks for a pattern of the form [if ?B then ?E1 else ?E2]
@@ -5225,7 +5225,7 @@ Ltac fequal_base ::=
             end end.
 
     The real implementation is careful to not generalized [ltac_Mark],
-    even though it is of type [Prop]. 
+    even though it is of type [Prop].
     TODO: investigate whether it would be sufficient to put [ltac_Mark]
     in [Type] to obtain the desired behavior. *)
 
