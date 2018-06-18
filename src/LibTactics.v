@@ -4103,6 +4103,8 @@ Tactic Notation "branch" "~" constr(N) :=
 Tactic Notation "branch" "~" constr(K) "of" constr(N) :=
   branch K of N; auto_tilde.
 
+Tactic Notation "branches" "~" :=
+  branches; auto_tilde.
 Tactic Notation "branches" "~" constr(T) :=
   branches T; auto_tilde.
 Tactic Notation "branches" "~" constr(N) constr(T) :=
