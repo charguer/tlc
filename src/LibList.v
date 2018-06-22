@@ -3030,7 +3030,7 @@ Inductive Forall3 A B C (P : A -> B -> C -> Prop)
 (* ---------------------------------------------------------------------- *)
 (* ** Exists *)
 
-(** [exists P l] asserts that there exists a value in the
+(** [Exists P l] asserts that there exists a value in the
     list [l] that satisfied the predicate [P]. *)
 
 Inductive Exists A (P:A->Prop) : list A -> Prop :=
