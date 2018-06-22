@@ -121,7 +121,7 @@ Definition read_impl A `{Inhab B} (M:map A B) (k:A) :=
 
 (* Uncomment below to see the error message, saying that an instance
    for [BagRead int ?B (map int B)]. The message does not say it,
-   but it complains in fact that [Inhab B] could not be found. 
+   but it complains in fact that [Inhab B] could not be found.
    We'll understand why the message is like so further on. *)
 
 (*
@@ -165,7 +165,9 @@ Definition my_read (m:map int val) (i:int) :=
     ["Display all level-level contents" from the view menu in CoqIDE]
     to see the low-level interpretation. *)
 
+(*
 Print my_read.
+*)
 
 (** What happens during type-checking is that [read_inst] gets
     automatically inferred by the typeclass mechanism, based on the
@@ -194,16 +196,22 @@ Lemma test_resolution_3 : forall B, Inhab B.
 Proof using. intros. try typeclass. (* resolution fails *) Abort.
 
 Lemma test_resolution_4 : BagRead int val (map int val).
-Proof using. debug eauto with typeclass_instances. Qed.
+Proof using. (* execute:
+   debug eauto with typeclass_instances. *) Abort.
 
 Lemma test_resolution_5 : forall B, BagRead int B (map int B).
-Proof using. 
-  intros.
-  debug eauto with typeclass_instances.
-  (* shows that eauto is stuck after [apply read_inst] *)
-  apply read_inst.
-  debug eauto with typeclass_instances.
-  (* shows that eauto is stuck on this subgoal. *)
+Proof using.
+  (* execute:
+
+    intros.
+    debug eauto with typeclass_instances.
+    (* shows that eauto is stuck after [apply read_inst] *)
+    apply read_inst.
+    debug eauto with typeclass_instances.
+    (* shows that eauto is stuck on this subgoal. *)
+
+
+  *)
 Abort.
 
 
