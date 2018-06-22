@@ -3288,6 +3288,148 @@ Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
 
 
 (* ---------------------------------------------------------------------- *)
+(* ** Count *)
+
+(** [count P l] returns the number of elements of [l] satisfying the predicate
+    [P]. *)
+
+Definition count A (P: A -> Prop) (l: list A): nat :=
+  length (filter P l).
+
+Section Count.
+Variables A : Type.
+Implicit Types l : list A.
+Implicit Types P : A -> Prop.
+
+(* Rewriting *)
+
+Lemma count_nil : forall P,
+  count P nil = 0.
+Proof using. auto. Qed.
+
+Lemma count_cons : forall P l x,
+  count P (x::l) = If P x then 1 + (count P l) else count P l.
+Proof using.
+  intros. unfold count. rew_listx~. case_if~.
+Qed.
+
+Lemma count_app : forall P l1 l2,
+  count P (l1++l2) = count P l1 + count P l2.
+Proof using.
+  intros. unfold count. rew_listx~.
+Qed.
+
+Lemma count_last : forall P l x,
+  count P (l&x) = If P x then 1 + (count P l) else count P l.
+Proof using.
+  intros. unfold count. rew_listx~. case_if~. rew_listx~. math.
+Qed.
+
+Lemma count_rev : forall P l,
+  count P (rev l) = count P l.
+Proof using.
+  intros. unfold count. rew_listx~.
+Qed.
+
+Lemma count_eq_length_filter : forall P l,
+  count P l = length (filter P l).
+Proof using. auto. Qed.
+
+(* Properties *)
+
+Lemma count_le_length : forall P l,
+  count P l <= length l.
+Proof using.
+  intros. unfold count. apply length_filter.
+Qed.
+
+(* Forward *)
+
+Lemma count_Forall_not : forall P l,
+  Forall (fun x => ~ P x) l ->
+  count P l = 0.
+Proof using.
+  induction l; introv H.
+  - rewrite~ count_nil.
+  - rew_listx in H. destruct H.
+    rewrite count_cons. case_if~.
+Qed.
+
+Lemma count_Forall : forall P l,
+  Forall P l ->
+  count P l = length l.
+Proof using.
+  induction l; introv H.
+  - rewrite~ count_nil.
+  - rew_listx in H. destruct H. rew_list.
+    rewrite count_cons. case_if~.
+Qed.
+
+Lemma Exists_inv_count : forall P l,
+  Exists P l ->
+  0 < count P l.
+Proof using.
+  induction l; introv E.
+  - inversion E.
+  - forwards: Exists_cons_inv E. rewrite count_cons. case_if~.
+    { math. }
+    { branches; autos*. }
+Qed.
+
+Lemma mem_inv_count : forall P x l,
+  mem x l ->
+  P x ->
+  0 < count P l.
+Proof using.
+  eauto using Exists_inv_count, mem_Exists.
+Qed.
+
+(* Inversion *)
+
+Lemma count_eq_zero_inv : forall P l,
+  count P l = 0 ->
+  Forall (fun x => ~ P x) l.
+Proof using.
+  induction l; introv H.
+  - constructor.
+  - rew_listx. rewrite count_cons in H. case_if~.
+Qed.
+
+Lemma count_eq_length_inv : forall P l,
+  count P l = length l ->
+  Forall P l.
+Proof using.
+  induction l; introv H.
+  - constructor.
+  - rew_listx in *. rewrite count_cons in H. case_if~.
+    false. forwards~: count_le_length P l. math.
+Qed.
+
+Lemma Exists_of_count_pos : forall P l,
+  0 < count P l ->
+  Exists P l.
+Proof using.
+  induction l; introv H.
+  - false. rewrite count_nil in H. math.
+  - rewrite count_cons in H. case_if.
+    { applys~ Exists_head. }
+    { applys~ Exists_tail. }
+Qed.
+
+Lemma mem_of_count_pos : forall P l,
+  0 < count P l ->
+  exists x, mem x l /\ P x.
+Proof.
+  intros. forwards*: Exists_of_count_pos. rewrites* Exists_eq_exists_mem in *.
+Qed.
+
+End Count.
+
+Opaque count.
+
+Hint Rewrite count_nil count_cons count_app count_last count_rev : rew_listx.
+
+(* ---------------------------------------------------------------------- *)
 (** * Fold *)
 
 (** WARNING: EXPERIMENTAL SECTION *)
