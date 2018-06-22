@@ -1737,6 +1737,15 @@ Lemma filter_last : forall x l P,
   filter P (l & x) = filter P l ++ (If P x then x::nil else nil).
 Proof using. intros. rewrite~ filter_app. Qed.
 
+Lemma filter_rev : forall l P,
+  filter P (rev l) = rev (filter P l).
+Proof using.
+  intros. induction l.
+  - rewrite !rev_nil, filter_nil. auto.
+  - rewrite rev_cons, filter_cons, filter_last, IHl.
+    case_if~; rew_listx~.
+Qed.
+
 Lemma mem_filter_eq : forall x P l,
   mem x (filter P l) = (mem x l /\ P x).
 Proof using.
@@ -1803,7 +1812,7 @@ End Filter.
 
 Opaque filter.
 
-Hint Rewrite filter_nil filter_cons filter_app filter_last
+Hint Rewrite filter_nil filter_cons filter_app filter_last filter_rev
              mem_filter_eq : rew_listx.
 
 
