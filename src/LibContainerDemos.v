@@ -158,7 +158,7 @@ Proof. constructor. applys (@read_impl A B IB). Defined.
 (** In the light of this, let's inspect the interpretation of [m[i]].
     It means [@read int val (map int val) read_inst m i]. *)
 
-Definition my_read (m:map int val) (i:int) :=
+Definition my_read (m:map int val) (i:int): val :=
   m[i].
 
 (** You can activate [Set Printing All] or menu
