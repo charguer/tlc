@@ -933,6 +933,114 @@ Arguments take_spec [A].
 Arguments drop_spec [A].
 
 
+(* ---------------------------------------------------------------------- *)
+(** ** [count], returning an int *)
+
+Definition count A (P: A -> Prop) (l: list A): int :=
+  abs (LibList.count P l).
+
+Section Count.
+Variables A : Type.
+Implicit Types l : list A.
+Implicit Types P : A -> Prop.
+
+Ltac gowith L :=
+  let H := fresh in
+  lets H: L;
+  repeat (let x := fresh in intro x; specializes H x);
+  unfold count in *; repeat rewrites~ abs_nonneg in *;
+  try solve [
+    first [ rewrites~ H in * | forwards~: H ];
+    repeat case_if~
+  ].
+
+(* Rewriting *)
+
+Lemma count_nil : forall P,
+  count P nil = 0.
+Proof using. auto. Qed.
+
+Lemma count_cons : forall P l x,
+  count P (x::l) = If P x then 1 + (count P l) else count P l.
+Proof using. gowith LibList.count_cons. Qed.
+
+Lemma count_app : forall P l1 l2,
+  count P (l1++l2) = count P l1 + count P l2.
+Proof using. gowith LibList.count_app. Qed.
+
+Lemma count_last : forall P l x,
+  count P (l&x) = If P x then 1 + (count P l) else count P l.
+Proof using. gowith LibList.count_last. Qed.
+
+Lemma count_rev : forall P l,
+  count P (rev l) = count P l.
+Proof using. gowith LibList.count_rev. Qed.
+
+Lemma count_eq_length_filter : forall P l,
+  count P l = length (filter P l).
+Proof using. gowith LibList.count_eq_length_filter. Qed.
+
+(* Properties *)
+
+Lemma count_nonneg : forall P l,
+  0 <= count P l.
+Proof using. intros. unfold count. math. Qed.
+
+Lemma count_le_length : forall P l,
+  count P l <= length l.
+Proof using. gowith LibList.count_le_length. Qed.
+
+(* Forward *)
+
+Lemma count_Forall_not : forall P l,
+  Forall (fun x => ~ P x) l ->
+  count P l = 0.
+Proof using. gowith LibList.count_Forall_not. Qed.
+
+Lemma count_Forall : forall P l,
+  Forall P l ->
+  count P l = length l.
+Proof using. gowith LibList.count_Forall. Qed.
+
+Lemma Exists_inv_count : forall P l,
+  Exists P l ->
+  0 < count P l.
+Proof using. gowith LibList.Exists_inv_count. Qed.
+
+Lemma mem_inv_count : forall P x l,
+  mem x l ->
+  P x ->
+  0 < count P l.
+Proof using. gowith LibList.mem_inv_count. Qed.
+
+(* Inversion *)
+
+Lemma count_eq_zero_inv : forall P l,
+  count P l = 0 ->
+  Forall (fun x => ~ P x) l.
+Proof using. gowith LibList.count_eq_zero_inv. Qed.
+
+Lemma count_eq_length_inv : forall P l,
+  count P l = length l ->
+  Forall P l.
+Proof using. intros. gowith LibList.count_eq_length_inv. Qed.
+
+Lemma Exists_of_count_pos : forall P l,
+  0 < count P l ->
+  Exists P l.
+Proof using. gowith LibList.Exists_of_count_pos. Qed.
+
+Lemma mem_of_count_pos : forall P l,
+  0 < count P l ->
+  exists x, mem x l /\ P x.
+Proof using. gowith LibList.mem_of_count_pos. Qed.
+
+End Count.
+
+Opaque count.
+
+Hint Rewrite count_nil count_cons count_app count_last count_rev : rew_listx.
+
 
 (* ---------------------------------------------------------------------- *)
 (** * [card], with result as [nat], as typeclass *)
