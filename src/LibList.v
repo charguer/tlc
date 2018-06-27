@@ -3136,10 +3136,10 @@ Proof using. introv H. rewrite* Exists_last_eq in H. Qed.
 (* Interactions *)
 
 Lemma Exists_eq_exists_mem : forall P l,
-  Exists P l <-> (exists x, mem x l /\ P x).
+  Exists P l = (exists x, mem x l /\ P x).
 Proof using.
   Hint Constructors mem.
-  introv. induction l as [|y l'].
+  introv. extens. induction l as [|y l'].
   { iff M (x&M&H). { inverts M. } { inverts M. } }
   { iff M (x&M&H).
     { inverts M as N.
@@ -3156,7 +3156,7 @@ Lemma mem_Exists : forall P l x,
   Exists P l.
 Proof using. introv M H. rewrite* Exists_eq_exists_mem. Qed.
 
-Lemma mem_Exists_eq : forall P l x,
+Lemma mem_Exists_eq : forall P l x, (* TODO: rename *)
   mem x l = Exists (= x) l.
 Proof using.
   intros. extens. rewrite* Exists_eq_exists_mem. iff M (y&?&?); subst*.
@@ -3250,6 +3250,9 @@ Lemma Exists_filter_inv : forall P Q l,
 
 End Exists.
 
+Hint Rewrite Exists_nil_eq Exists_cons_eq Exists_one_eq Exists_app_eq Exists_last_eq : rew_listx.
+
+
 
 (* ---------------------------------------------------------------------- *)
 (* ** Exists2 *)
@@ -3293,7 +3296,7 @@ Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
 (** [count P l] returns the number of elements of [l] satisfying the predicate
     [P]. *)
 
-Definition count A (P: A -> Prop) (l: list A): nat :=
+Definition count A (P: A -> Prop) (l: list A) : nat :=
   length (filter P l).
 
 Section Count.
@@ -3301,133 +3304,148 @@ Variables A : Type.
 Implicit Types l : list A.
 Implicit Types P : A -> Prop.
 
+(* Alternative definition *)
+
+Lemma count_eq_length_filter : forall P l,
+  count P l = length (filter P l).
+Proof using. auto. Qed.
+
 (* Rewriting *)
 
 Lemma count_nil : forall P,
   count P nil = 0.
 Proof using. auto. Qed.
 
-Lemma count_cons : forall P l x,
-  count P (x::l) = If P x then 1 + (count P l) else count P l.
-Proof using.
-  intros. unfold count. rew_listx~. case_if~.
-Qed.
+Lemma count_one : forall P x,
+  count P (x::nil) = If P x then 1 else 0.
+Proof using. intros. unfold count. rew_listx. case_if~. Qed.
 
 Lemma count_app : forall P l1 l2,
   count P (l1++l2) = count P l1 + count P l2.
-Proof using.
-  intros. unfold count. rew_listx~.
+Proof using. intros. unfold count. rew_listx~. Qed.
+
+Lemma count_cons : forall P l x,
+  count P (x::l) = count P l + If P x then 1 else 0.
+Proof using. 
+  intros. rewrite <- app_cons_one_r, count_app, count_one. math.
 Qed.
 
 Lemma count_last : forall P l x,
-  count P (l&x) = If P x then 1 + (count P l) else count P l.
-Proof using.
-  intros. unfold count. rew_listx~. case_if~. rew_listx~. math.
-Qed.
+  count P (l&x) = count P l + If P x then 1 else 0.
+Proof using. intros. rewrite count_app, count_one. math. Qed.
 
 Lemma count_rev : forall P l,
   count P (rev l) = count P l.
-Proof using.
-  intros. unfold count. rew_listx~.
-Qed.
+Proof using. intros. unfold count. rew_listx~. Qed.
 
-Lemma count_eq_length_filter : forall P l,
-  count P l = length (filter P l).
-Proof using. auto. Qed.
+End Count.
+
+Hint Rewrite count_nil count_cons count_one count_app count_rev : rew_listx.
+
+Section Count2.
+Variables A : Type.
+Implicit Types l : list A.
+Implicit Types P : A -> Prop.
 
 (* Properties *)
 
 Lemma count_le_length : forall P l,
   count P l <= length l.
-Proof using.
-  intros. unfold count. apply length_filter.
-Qed.
+Proof using. intros. apply length_filter. Qed.
 
-(* Forward *)
+(* Interactions with [Forall] *)
 
-Lemma count_Forall_not : forall P l,
-  Forall (fun x => ~ P x) l ->
-  count P l = 0.
+(* TODO: should use a tactic for bruteforcing iff/false/math/eauto *)
+
+Lemma Forall_eq_count_eq_length : forall P l,
+  Forall P l = (count P l = length l).
 Proof using.
-  induction l; introv H.
-  - rewrite~ count_nil.
-  - rew_listx in H. destruct H.
-    rewrite count_cons. case_if~.
+  intros. induction l; rew_listx.
+  { extens*. }
+  { rewrite IHl. extens. iff (M1&M2) M; case_if.
+    { math. }
+    { split~. math. }
+    { false. forwards~: count_le_length P l. math. } }
 Qed.
 
 Lemma count_Forall : forall P l,
   Forall P l ->
   count P l = length l.
-Proof using.
-  induction l; introv H.
-  - rewrite~ count_nil.
-  - rew_listx in H. destruct H. rew_list.
-    rewrite count_cons. case_if~.
-Qed.
+Proof using. introv. rewrite~ Forall_eq_count_eq_length. Qed.
 
-Lemma Exists_inv_count : forall P l,
-  Exists P l ->
-  0 < count P l.
-Proof using.
-  induction l; introv E.
-  - inversion E.
-  - forwards: Exists_cons_inv E. rewrite count_cons. case_if~.
-    { math. }
-    { branches; autos*. }
-Qed.
-
-Lemma mem_inv_count : forall P x l,
-  mem x l ->
-  P x ->
-  0 < count P l.
-Proof using.
-  eauto using Exists_inv_count, mem_Exists.
-Qed.
-
-(* Inversion *)
-
-Lemma count_eq_zero_inv : forall P l,
-  count P l = 0 ->
-  Forall (fun x => ~ P x) l.
-Proof using.
-  induction l; introv H.
-  - constructor.
-  - rew_listx. rewrite count_cons in H. case_if~.
-Qed.
-
-Lemma count_eq_length_inv : forall P l,
+Lemma Forall_of_count_eq_length : forall P l,
   count P l = length l ->
   Forall P l.
+Proof using. introv. rewrite~ Forall_eq_count_eq_length. Qed.
+
+(* Interactions with [Forall (pred_not P)] *)
+
+Lemma Forall_not_eq_count_eq_zero : forall P l,
+  Forall (fun x => ~ P x) l = (count P l = 0).
 Proof using.
-  induction l; introv H.
-  - constructor.
-  - rew_listx in *. rewrite count_cons in H. case_if~.
-    false. forwards~: count_le_length P l. math.
+  intros. induction l; rew_listx.
+  { extens*. }
+  { rewrite IHl. extens. iff (M1&M2) M; case_if.
+    { math. }
+    { false. math. }
+    { split~. math. } }
+Qed.
+
+Lemma Forall_not_of_count_eq_zero : forall P l,
+  count P l = 0 ->
+  Forall (fun x => ~ P x) l.
+Proof using. introv. rewrite~ Forall_not_eq_count_eq_zero. Qed.
+
+Lemma count_eq_zero_of_Forall_not : forall P l,
+  Forall (fun x => ~ P x) l ->
+  count P l = 0.
+Proof using. introv. rewrite~ Forall_not_eq_count_eq_zero. Qed.
+
+(* Interactions with [Exists] *)
+
+Lemma Exists_eq_count_pos : forall P l,
+  Exists P l = (count P l > 0).
+Proof using.
+  intros. induction l; rew_listx.
+  { extens. iff M; false; math. }
+  { rewrite IHl. extens. iff [M|M] M; case_if; try math.
+    { left~. }
+    { right. math. } }
 Qed.
 
 Lemma Exists_of_count_pos : forall P l,
-  0 < count P l ->
+  count P l > 0 ->
   Exists P l.
+Proof using. introv. rewrite~ Exists_eq_count_pos. Qed.
+
+Lemma count_pos_of_Exists : forall P l,
+  Exists P l ->
+  count P l > 0.
+Proof using. introv. rewrite~ Exists_eq_count_pos. Qed.
+
+(* Interactions with [mem] *)
+
+Lemma count_pos_eq_exists_mem : forall P l,
+  (count P l > 0) = (exists x, mem x l /\ P x).
 Proof using.
-  induction l; introv H.
-  - false. rewrite count_nil in H. math.
-  - rewrite count_cons in H. case_if.
-    { applys~ Exists_head. }
-    { applys~ Exists_tail. }
+  intros. rewrite <- Exists_eq_count_pos, Exists_eq_exists_mem. auto.
 Qed.
 
-Lemma mem_of_count_pos : forall P l,
-  0 < count P l ->
+Lemma count_pos_of_mem : forall x P l,
+  mem x l ->
+  P x ->
+  count P l > 0.
+Proof using. introv. rewrite* count_pos_eq_exists_mem. Qed.
+
+Lemma exists_mem_of_count_pos : forall P l,
+  count P l > 0 ->
   exists x, mem x l /\ P x.
-Proof.
-  intros. forwards*: Exists_of_count_pos. rewrites* Exists_eq_exists_mem in *.
-Qed.
+Proof using. introv. rewrite* count_pos_eq_exists_mem. Qed.
 
-End Count.
+End Count2.
 
 Opaque count.
 
-Hint Rewrite count_nil count_cons count_app count_last count_rev : rew_listx.
 
 (* ---------------------------------------------------------------------- *)
 (** * Fold *)

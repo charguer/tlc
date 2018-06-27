@@ -960,8 +960,12 @@ Lemma count_nil : forall P,
   count P nil = 0.
 Proof using. auto. Qed.
 
+Lemma count_one : forall P x,
+  count P (x::nil) = If P x then 1 else 0.
+Proof using. gowith LibList.count_one. Qed.
+
 Lemma count_cons : forall P l x,
-  count P (x::l) = If P x then 1 + (count P l) else count P l.
+  count P (x::l) = count P l + If P x then 1 else 0.
 Proof using. gowith LibList.count_cons. Qed.
 
 Lemma count_app : forall P l1 l2,
@@ -969,7 +973,7 @@ Lemma count_app : forall P l1 l2,
 Proof using. gowith LibList.count_app. Qed.
 
 Lemma count_last : forall P l x,
-  count P (l&x) = If P x then 1 + (count P l) else count P l.
+  count P (l&x) = count P l + If P x then 1 else 0.
 Proof using. gowith LibList.count_last. Qed.
 
 Lemma count_rev : forall P l,
@@ -990,50 +994,82 @@ Lemma count_le_length : forall P l,
   count P l <= length l.
 Proof using. gowith LibList.count_le_length. Qed.
 
-(* Forward *)
+(* Interactions with [Forall] *)
 
-Lemma count_Forall_not : forall P l,
-  Forall (fun x => ~ P x) l ->
-  count P l = 0.
-Proof using. gowith LibList.count_Forall_not. Qed.
+Lemma Forall_eq_count_eq_length : forall P l,
+  Forall P l = (count P l = length l).
+Proof using.
+  intros. rewrite LibList.Forall_eq_count_eq_length, length_eq.
+  unfold count. rewrite abs_nonneg; math.
+Qed.
 
 Lemma count_Forall : forall P l,
   Forall P l ->
   count P l = length l.
-Proof using. gowith LibList.count_Forall. Qed.
+Proof using. introv. rewrite~ Forall_eq_count_eq_length. Qed.
 
-Lemma Exists_inv_count : forall P l,
-  Exists P l ->
-  0 < count P l.
-Proof using. gowith LibList.Exists_inv_count. Qed.
-
-Lemma mem_inv_count : forall P x l,
-  mem x l ->
-  P x ->
-  0 < count P l.
-Proof using. gowith LibList.mem_inv_count. Qed.
-
-(* Inversion *)
-
-Lemma count_eq_zero_inv : forall P l,
-  count P l = 0 ->
-  Forall (fun x => ~ P x) l.
-Proof using. gowith LibList.count_eq_zero_inv. Qed.
-
-Lemma count_eq_length_inv : forall P l,
+Lemma Forall_of_count_eq_length : forall P l,
   count P l = length l ->
   Forall P l.
-Proof using. intros. gowith LibList.count_eq_length_inv. Qed.
+Proof using. introv. rewrite~ Forall_eq_count_eq_length. Qed.
+
+(* Interactions with [Forall (pred_not P)] *)
+
+Lemma Forall_not_eq_count_eq_zero : forall P l,
+  Forall (fun x => ~ P x) l = (count P l = 0).
+Proof using.
+  intros. rewrite LibList.Forall_not_eq_count_eq_zero.
+  unfold count. rewrite abs_nonneg; math.
+Qed.
+
+Lemma Forall_not_of_count_eq_zero : forall P l,
+  count P l = 0 ->
+  Forall (fun x => ~ P x) l.
+Proof using. introv. rewrite~ Forall_not_eq_count_eq_zero. Qed.
+
+Lemma count_eq_zero_of_Forall_not : forall P l,
+  Forall (fun x => ~ P x) l ->
+  count P l = 0.
+Proof using. introv. rewrite~ Forall_not_eq_count_eq_zero. Qed.
+
+(* Interactions with [Exists] *)
+
+Lemma Exists_eq_count_pos : forall P l,
+  Exists P l = (count P l > 0).
+Proof using.
+  intros. rewrite LibList.Exists_eq_count_pos.
+  unfold count. rewrite abs_nonneg; math.
+Qed.
 
 Lemma Exists_of_count_pos : forall P l,
-  0 < count P l ->
+  count P l > 0 ->
   Exists P l.
-Proof using. gowith LibList.Exists_of_count_pos. Qed.
+Proof using. introv. rewrite~ Exists_eq_count_pos. Qed.
 
-Lemma mem_of_count_pos : forall P l,
-  0 < count P l ->
+Lemma count_pos_of_Exists : forall P l,
+  Exists P l ->
+  count P l > 0.
+Proof using. introv. rewrite~ Exists_eq_count_pos. Qed.
+
+(* Interactions with [mem] *)
+
+Lemma count_pos_eq_exists_mem : forall P l,
+  (count P l > 0) = (exists x, mem x l /\ P x).
+Proof using.
+  intros. rewrite <- LibList.count_pos_eq_exists_mem.
+  unfold count. rewrite abs_nonneg; math.
+Qed.
+
+Lemma count_pos_of_mem : forall x P l,
+  mem x l ->
+  P x ->
+  count P l > 0.
+Proof using. introv. rewrite* count_pos_eq_exists_mem. Qed.
+
+Lemma exists_mem_of_count_pos : forall P l,
+  count P l > 0 ->
   exists x, mem x l /\ P x.
-Proof using. gowith LibList.mem_of_count_pos. Qed.
+Proof using. introv. rewrite* count_pos_eq_exists_mem. Qed.
 
 End Count.
 
