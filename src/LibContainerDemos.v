@@ -241,6 +241,3 @@ Admitted.
     of this equality makes sense. *)
 
 End Internal.
-
-
-

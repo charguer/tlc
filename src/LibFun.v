@@ -1,4 +1,4 @@
-(** DEPRECATED?  
+(** DEPRECATED?
     \o notation for composition is used in LibFixDemos
 *)
 
@@ -250,4 +250,3 @@ Proof using. introv I. induction n; introv Hx; autos*. Qed.
 
 (* --TODO: rename applyn to iter *)
 (* --TODO: migrate iteration of functionals from LibFix to here *)
-

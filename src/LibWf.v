@@ -16,13 +16,13 @@ From TLC Require Import LibTactics LibLogic
  Inductive Acc A (R:A->A->Prop) (x:A) : Prop :=
    | Acc_intro : (forall (y:A), R y x -> Acc y) -> Acc x.
 
- Definition well_founded A (R:A->A->Prop) := 
+ Definition well_founded A (R:A->A->Prop) :=
     forall (x:A), Acc x.
 
 *)
 
 (** TLC introduces [wf] as a shorter name for [well_founded], both
-    for conciseness and for tactics to specifically recognize 
+    for conciseness and for tactics to specifically recognize
     this symbol. *)
 
 Definition wf := well_founded.
@@ -31,7 +31,7 @@ Definition wf := well_founded.
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics *)
 
-(** [auto with wf] attempts to unfold the names of 
+(** [auto with wf] attempts to unfold the names of
     the relations given as argument to [wf]. *)
 
 Hint Extern 1 (wf ?R) => progress (unfold R) : wf.
@@ -50,7 +50,7 @@ Tactic Notation "solve_wf" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Definition *)
 
-(** [measure f] is a well-founded binary relation which 
+(** [measure f] is a well-founded binary relation which
     relates [x] to [y] when [f x < f y], at type [nat]. *)
 
 Definition measure A (f:A->nat) : binary A :=
@@ -64,7 +64,7 @@ Section Measure.
 Variables (A : Type).
 Implicit Type f : A -> nat.
 
-Lemma wf_measure : forall f, 
+Lemma wf_measure : forall f,
   wf (measure f).
 Proof using.
   intros f a. gen_eq n: (f a). gen a. pattern n.
@@ -73,7 +73,7 @@ Proof using.
   rewrite <- Eq in H. apply* IH.
 Qed.
 
-Lemma trans_measure : forall (f : A -> nat), 
+Lemma trans_measure : forall (f : A -> nat),
   trans (measure f).
 Proof using. intros. unfold measure, trans. intros. nat_math. Qed.
 
@@ -88,11 +88,11 @@ Hint Resolve wf_measure : wf.
 (** ** Measure on pairs *)
 
 Definition measure2 A1 A2 (f : A1 -> A2 -> nat) : binary (A1*A2) :=
-  fun p1 p2 => let (x1,y1) := p1 in 
-               let (x2,y2) := p2 in 
+  fun p1 p2 => let (x1,y1) := p1 in
+               let (x2,y2) := p2 in
                (f x1 y1 < f x2 y2).
 
-Lemma wf_measure2 : forall A1 A2 (f:A1->A2->nat), 
+Lemma wf_measure2 : forall A1 A2 (f:A1->A2->nat),
   wf (measure2 f).
 Proof using.
   intros A1 A2 f [x1 x2]. apply (@measure_induction _ (uncurry2 f)). clear x1 x2.
@@ -154,8 +154,8 @@ Hint Resolve wf_empty : wf.
 (** Well-foundedness preserved by inclusion *)
 
 Lemma wf_of_rel_incl : forall A (R1 R2 : binary A),
-  wf R1 -> 
-  rel_incl R2 R1 -> 
+  wf R1 ->
+  rel_incl R2 R1 ->
   wf R2.
 Proof using.
   introv W1 Inc. intros x.
@@ -233,11 +233,11 @@ Proof using. auto. Qed.
 
 Lemma downto_intro : forall (b n m:int),
   b <= n ->
-  n < m -> 
+  n < m ->
   downto b n m.
 Proof using. split~. Qed.
 
-Lemma wf_downto : forall (b:int), 
+Lemma wf_downto : forall (b:int),
   wf (downto b).
 Proof using.
   intros b n.
@@ -263,12 +263,12 @@ Lemma upto_eq : forall b n m,
 Proof using. auto. Qed.
 
 Lemma upto_intro : forall b n m,
-  n <= b -> 
-  m < n -> 
+  n <= b ->
+  m < n ->
   upto b n m.
 Proof using. split~. Qed.
 
-Lemma wf_upto : forall n, 
+Lemma wf_upto : forall n,
   wf (upto n).
 Proof using.
   intros b n.
@@ -382,8 +382,8 @@ Hint Resolve
 
 Lemma wf_lexico2 : forall A1 A2
  (R1:binary A1) (R2:binary A2),
-  wf R1 -> 
-  wf R2 -> 
+  wf R1 ->
+  wf R2 ->
   wf (lexico2 R1 R2).
 Proof using.
   introv W1 W2. intros [x1 x2]. gen x2.
@@ -395,8 +395,8 @@ Qed.
 
 Lemma wf_lexico3 : forall A1 A2 A3
  (R1:binary A1) (R2:binary A2) (R3:binary A3),
-  wf R1 -> 
-  wf R2 -> 
+  wf R1 ->
+  wf R2 ->
   wf R3 ->
   wf (lexico3 R1 R2 R3).
 Proof using.
@@ -405,9 +405,9 @@ Qed.
 
 Lemma wf_lexico4 : forall A1 A2 A3 A4
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R1 -> 
-  wf R2 -> 
-  wf R3 -> 
+  wf R1 ->
+  wf R2 ->
+  wf R3 ->
   wf R4 ->
   wf (lexico4 R1 R2 R3 R4).
 Proof using.
@@ -422,7 +422,7 @@ Hint Resolve wf_lexico2 wf_lexico3 wf_lexico4 : wf.
 
 Lemma wf_prod2_of_wf_1 : forall (A1 A2:Type)
  (R1:binary A1) (R2:binary A2),
-  wf R1 -> 
+  wf R1 ->
   wf (prod2 R1 R2).
 Proof using.
   introv W1. intros [x1 x2].
@@ -432,7 +432,7 @@ Qed.
 
 Lemma wf_prod2_of_wf_2 : forall (A1 A2:Type)
  (R1:binary A1) (R2:binary A2),
-  wf R2 -> 
+  wf R2 ->
   wf (prod2 R1 R2).
 Proof using.
   introv W2. intros [x1 x2].
@@ -442,43 +442,43 @@ Qed.
 
 Lemma wf_prod3_of_wf_1 : forall (A1 A2 A3:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3),
-  wf R1 -> 
+  wf R1 ->
   wf (prod3 R1 R2 R3).
 Proof using. intros. apply wf_prod2_of_wf_1. apply~ wf_prod2_of_wf_1. Qed.
 
 Lemma wf_prod3_of_wf_2 : forall (A1 A2 A3:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3),
-  wf R2 -> 
+  wf R2 ->
   wf (prod3 R1 R2 R3).
 Proof using. intros. apply wf_prod2_of_wf_1. apply~ wf_prod2_of_wf_2. Qed.
 
 Lemma wf_prod3_of_wf_3 : forall (A1 A2 A3:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3),
-  wf R3 -> 
+  wf R3 ->
   wf (prod3 R1 R2 R3).
 Proof using. intros. apply~ wf_prod2_of_wf_2. Qed.
 
 Lemma wf_prod4_of_wf_1 : forall (A1 A2 A3 A4:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R1 -> 
+  wf R1 ->
   wf (prod4 R1 R2 R3 R4).
 Proof using. intros. apply wf_prod2_of_wf_1. apply~ wf_prod3_of_wf_1. Qed.
 
 Lemma wf_prod4_of_wf_2 : forall (A1 A2 A3 A4:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R2 -> 
+  wf R2 ->
   wf (prod4 R1 R2 R3 R4).
 Proof using. intros. apply wf_prod2_of_wf_1. apply~ wf_prod3_of_wf_2. Qed.
 
 Lemma wf_prod4_of_wf_3 : forall (A1 A2 A3 A4:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R3 -> 
+  wf R3 ->
   wf (prod4 R1 R2 R3 R4).
 Proof using. intros. apply wf_prod2_of_wf_1. apply~ wf_prod3_of_wf_3. Qed.
 
 Lemma wf_prod4_of_wf_4 : forall (A1 A2 A3 A4:Type)
  (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
-  wf R4 -> 
+  wf R4 ->
   wf (prod4 R1 R2 R3 R4).
 Proof using. intros. apply~ wf_prod2_of_wf_2. Qed.
 
@@ -492,7 +492,7 @@ Hint Resolve
 (** * Well-foundedness of a function image *)
 
 Lemma wf_rel_preimage : forall A B (R:binary B) (f:A->B),
-  wf R -> 
+  wf R ->
   wf (rel_preimage R f).
 Proof using.
   introv W. intros x. gen_eq a: (f x). gen x.
@@ -595,5 +595,3 @@ Proof using.
   generalize a b Hba IH. clear a b Hba IH.
   induction 1; eauto using Acc_inv.
 Qed.
-
-
