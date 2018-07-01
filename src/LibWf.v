@@ -241,7 +241,7 @@ Lemma wf_downto : forall (b:int),
   wf (downto b).
 Proof using.
   intros b n.
-  induction_wf: (wf_measure (fun n => Zabs_nat (n-b))) n.
+  induction_wf: (wf_measure (fun n => Z.abs_nat (n-b))) n.
   apply Acc_intro. introv [H1 H2]. apply IH.
   unfolds. applys lt_abs_abs; math.
 Qed.
@@ -272,7 +272,7 @@ Lemma wf_upto : forall n,
   wf (upto n).
 Proof using.
   intros b n.
-  induction_wf: (wf_measure (fun n => Zabs_nat (b-n))) n.
+  induction_wf: (wf_measure (fun n => Z.abs_nat (b-n))) n.
   apply Acc_intro. introv [H1 H2]. apply IH.
   applys lt_abs_abs; math.
 Qed.

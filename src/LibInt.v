@@ -23,7 +23,7 @@ From TLC Require Export LibNat.
 Notation "'int'" := Z : Int_scope.
 
 Infix "+" := Zplus : Int_scope.
-Notation "- x" := (Zopp x) : Int_scope.
+Notation "- x" := (Z.opp x) : Int_scope.
 Infix "-" := Zminus : Int_scope.
 Infix "*" := Zmult : Int_scope.
 
@@ -75,7 +75,7 @@ Open Scope comp_scope.
 (** The typeclass [le] on type [int] is bound to [Zle], from Coq's
     standard library *)
 
-Instance le_int_inst : Le int := Build_Le Zle.
+Instance le_int_inst : Le int := Build_Le Z.le.
 
 
 
@@ -110,24 +110,24 @@ Ltac number_to_nat N ::=
 (* ---------------------------------------------------------------------- *)
 (** ** Translation from typeclass order to ZArith, for using [omega] *)
 
-Lemma le_zarith : le = Zle.
+Lemma le_zarith : le = Z.le.
 Proof using. extens*. Qed.
 
 Global Opaque le_int_inst.
 
-Lemma lt_zarith : lt = Zlt.
+Lemma lt_zarith : lt = Z.lt.
 Proof using.
   extens. rew_to_le. rewrite le_zarith.
   unfold strict. intros. omega.
 Qed.
 
-Lemma ge_zarith : ge = Zge.
+Lemma ge_zarith : ge = Z.ge.
 Proof using.
   extens. rew_to_le. rewrite le_zarith.
   unfold inverse. intros. omega.
 Qed.
 
-Lemma gt_zarith : gt = Zgt.
+Lemma gt_zarith : gt = Z.gt.
 Proof using.
   extens. rew_to_le. rewrite le_zarith.
   unfold strict, inverse. intros. omega.
@@ -230,11 +230,11 @@ Lemma Z_of_nat_O :
 Proof using. reflexivity. Qed.
 
 Lemma Z_of_nat_S : forall n,
-  Z_of_nat (S n) = Zsucc (Z_of_nat n).
+  Z_of_nat (S n) = Z.succ (Z_of_nat n).
 Proof using. intros. rewrite~ <- Zpos_P_of_succ_nat. Qed.
 
 Lemma Z_of_nat_plus1 : forall n,
-  Z_of_nat (1 + n) = Zsucc (Z_of_nat n).
+  Z_of_nat (1 + n) = Z.succ (Z_of_nat n).
 Proof using. intros. rewrite <- Z_of_nat_S. fequals~. Qed.
 
 (** [rew_maths] rewrite any lemma in the base [rew_maths].
@@ -610,9 +610,9 @@ Hint Rewrite plus_nat_eq_plus_int : rew_maths.
 (* ---------------------------------------------------------------------- *)
 (** ** Absolute function in [nat] *)
 
-Notation "'abs'" := Zabs_nat (at level 0).
+Notation "'abs'" := Z.abs_nat (at level 0).
 
-Global Opaque Zabs Zabs_nat.
+Global Opaque Z.abs Z.abs_nat.
 
 Lemma abs_nat : forall (n:nat),
   abs n = n.
@@ -623,7 +623,7 @@ Lemma abs_nonneg : forall (x:int),
   abs x = x :> int.
 Proof using.
   intros. rewrite inj_Zabs_nat.
-  rewrite Zabs_eq. math. math.
+  rewrite Z.abs_eq. math. math.
 Qed.
 
 Lemma abs_eq_nat_eq : forall (x:int) (y:nat),

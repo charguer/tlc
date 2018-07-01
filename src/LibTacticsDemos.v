@@ -6,6 +6,7 @@
 
 Set Implicit Arguments.
 From TLC Require Import LibTactics.
+Require Import Coq.omega.Omega.
 
 
 (* ********************************************************************** *)
@@ -1231,8 +1232,6 @@ Inductive bigredh : nat -> trm -> trm -> Prop :=
       bigredh n t2 v2 ->
       bigredh n (subst x v2 t3) v ->
       bigredh (S n) (trm_app t1 t2) v.
-
-Require Import Coq.omega.Omega.
 
 Hint Extern 1 ((_ < _)%nat) => omega.
 
