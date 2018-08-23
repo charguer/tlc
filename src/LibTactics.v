@@ -1783,7 +1783,7 @@ Tactic Notation "introv" simple_intropattern(I1) simple_intropattern(I2)
 
 (** [intros_all] repeats [intro] as long as possible. Contrary to [intros],
     it unfolds any definition on the way. Remark that it also unfolds the
-    definition of negation, so applying [introz] to a goal of the form
+    definition of negation, so applying [intros_all] to a goal of the form
     [forall x, P x -> ~Q] will introduce [x] and [P x] and [Q], and will
     leave [False] in the goal. *)
 
@@ -2876,7 +2876,7 @@ Tactic Notation "injections" "keep" hyp(H) :=
   injection H; intros; subst.
 
 (** [injections H] is the same as [injection H] followed
-    by [intros] and [clear H] and [subst]. It is a rough
+    by [clear H] and [intros] and [subst]. It is a rough
     implementation of [injects keep H] which behave
     badly when the proof context already contains equalities,
     or when the goal starts with a forall or an implication. *)
@@ -2914,7 +2914,7 @@ Ltac case_if_post H :=
     in the goal, and perform a case analysis on [B] by calling
     [destruct B]. Subgoals containing a contradiction are discarded.
     [case_if] looks in the goal first, and otherwise in the
-    first hypothesis that contains and [if] statement.
+    first hypothesis that contains an [if] statement.
     [case_if in H] can be used to specify which hypothesis to consider.
     Syntaxes [case_if as Eq] and [case_if in H as Eq] allows to name
     the hypothesis coming from the case analysis. *)
@@ -2995,7 +2995,7 @@ Tactic Notation "case_ifs" :=
 (** [destruct_if] looks for a pattern of the form [if ?B then ?E1 else ?E2]
     in the goal, and perform a case analysis on [B] by calling
     [destruct B]. It looks in the goal first, and otherwise in the
-    first hypothesis that contains and [if] statement. *)
+    first hypothesis that contains an [if] statement. *)
 
 Ltac destruct_if_post := tryfalse.
 
@@ -3060,7 +3060,7 @@ Tactic Notation "destruct_head_match" :=
 (**--provided for compatibility with [remember] *)
 
 (** [cases' E] is similar to [case_eq E] except that it generates the
-    equality in the context and not in the goal. The syntax [cases E as H]
+    equality in the context and not in the goal. The syntax [cases' E as H]
     allows specifying the name [H] of that hypothesis. *)
 
 Tactic Notation "cases'" constr(E) "as" ident(H) :=
