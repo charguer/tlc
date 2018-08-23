@@ -10,8 +10,8 @@
     and thereby to help user to write shorter and more robust scripts.
 
     Hopefully, Coq tactics will be improved as time goes by, and this
-    file should ultimately be useless. In the meanwhile, you will
-    probably find it very useful.
+    file should ultimately be useless. In the meanwhile, serious Coq
+    users will probably find it very useful.
 *)
 
 (** The main features offered are:
@@ -20,10 +20,10 @@
     hypotheses of type [Prop], rather than the name of all variables.
   - Tactics providing true support for manipulating N-ary conjunctions,
     disjunctions and existentials, hidding the fact that the underlying
-    implementation is based on binary predicates.
+    implementation is based on binary propositions.
   - Convenient support for automation: tactic followed with the symbol
     "~" or "*" will call automation on the generated subgoals.
-    Symbol "~" stands for [auto] and "*" for [intuition eauto].
+    The symbol "~" stands for [auto] and "*" for [intuition eauto].
     These bindings can be customized.
   - Forward-chaining tactics are provided to instantiate lemmas
     either with variable or hypotheses or a mix of both.
@@ -35,8 +35,7 @@
     which is a weak form of Proof Irrelevance).
   - Tactics for saving time when writing proofs, with tactics to
     asserts hypotheses or sub-goals, and improved tactics for
-    clearing, renaming, and sorting hypotheses.
-*)
+    clearing, renaming, and sorting hypotheses. *)
 
 (** External credits:
   - thanks to Xavier Leroy for providing the idea of tactic [forward],
@@ -3533,6 +3532,21 @@ Tactic Notation "exists" constr(T1) constr(T2) constr(T3) constr(T4)
 Tactic Notation "exists" constr(T1) constr(T2) constr(T3) constr(T4)
  constr(T5) constr(T6) :=
   exists T1; exists T2; exists T3; exists T4; exists T5; exists T6.
+
+(** For compatibility with Coq syntax, [exists T1, .., TN] is also provided. *)
+
+Tactic Notation "exists" constr(T1) "," constr(T2) :=
+  exists T1 T2.
+Tactic Notation "exists" constr(T1) "," constr(T2) "," constr(T3) :=
+  exists T1 T2 T3.
+Tactic Notation "exists" constr(T1) "," constr(T2) "," constr(T3) "," constr(T4) :=
+  exists T1 T2 T3 T4.
+Tactic Notation "exists" constr(T1) "," constr(T2) "," constr(T3) "," constr(T4) ","
+ constr(T5) :=
+  exists T1 T2 T3 T4 T5.
+Tactic Notation "exists" constr(T1) "," constr(T2) "," constr(T3) "," constr(T4) ","
+ constr(T5) "," constr(T6) :=
+  exists T1 T2 T3 T4 T5 T6.
 
 (* The tactic [exists___ N] is short for [exists __ ... __]
    with [N] double-underscores. The tactic [exists] is equivalent
