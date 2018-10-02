@@ -7,7 +7,6 @@ Set Implicit Arguments.
 Generalizable Variables A B.
 From TLC Require Import LibTactics LibLogic LibReflect LibFun LibEpsilon LibList
   LibInt LibNat LibProd LibSum LibRelation LibWf LibFix LibStream.
-Require Coq.Arith.Even. (* for demo *)
 Open Scope nat_scope.
 Open Scope comp_scope.
 Open Scope fun_scope.
@@ -130,6 +129,13 @@ End LogCompute.
 (* ********************************************************************** *)
 (** * Loop on odd numbers -- partial function *)
 
+Fixpoint even (n:nat) : Prop :=
+  match n with
+  | O => True
+  | S O => False
+  | S (S n) => even n
+  end.
+
 Module OnlyEven.
 
 (** The function [F] defined in this module returns [1]
@@ -150,12 +156,9 @@ Lemma only_even_fix : forall n, Nat.even n ->
 Proof using.
   applys~ (FixFun_fix_partial (@lt nat _)).
   intros f1 f2 n Pn IH. unfolds. case_if~. case_if as C'.
-  subst. inverts Pn as Pn'.
-  apply* IH. math_rewrite (n = S (S (n - 2))) in Pn.
-  rewrite Nat.even_succ_succ in Pn. auto.
-  (* --TODO: revive the TLC definition of even to avoid dependency
-     on stdlib
-     inverts Pn as Pn'; tryfalse. inverts Pn'. simpl. rew_nat~. *)
+  { subst. inverts Pn as Pn'. }
+  { apply* IH. destruct n as [|[|n']]; tryfalse. simpls.
+    math_rewrite (n'-0=n'). auto. }
 Qed.
 
 End OnlyEven.
@@ -163,8 +166,6 @@ End OnlyEven.
 (** Same, but now computable version *)
 
 Module OnlyEvenCompute.
-
-Import Coq.Arith.Even.
 
 Definition Only_even only_even n :=
   if eq_nat_dec n 0 then 1 else
@@ -178,14 +179,15 @@ Lemma only_even_fix : forall N n, even n ->
 Proof using.
   applys~ (FixFun_fix_partial_iter (@lt nat _)).
   intros f1 f2 n Pn IH. unfolds. case_if~. case_if.
-  subst. inverts Pn as Pn'. inverts Pn'.
-  apply* IH. inverts Pn as Pn'; tryfalse. inverts Pn'. simpl. rew_nat~.
+  { subst. inverts Pn. }
+  { apply* IH. destruct n as [|[|n']]; tryfalse. simpls.
+    math_rewrite (n'-0=n'). auto. }
 Qed.
 
 Definition many_steps := 100.
 
 Lemma even_8 : even 8.
-Proof using. Hint Constructors even odd. eauto 18. Qed.
+Proof using. simpl. auto. Qed.
 
 Lemma only_even_compute : only_even 8 = 1.
 Proof using.
