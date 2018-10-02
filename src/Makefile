@@ -11,7 +11,6 @@
 # To request creation of .vio files, as opposed to creation of .vo
 # files, define SERIOUS=0.
 
-SERIOUS := 1
 -include settings.sh
 
 ############################################################################
@@ -23,13 +22,12 @@ SERIOUS := 1
 # file can be 80x larger than the corresponding .vo file.
 
 export COQINCLUDE := -R $(shell pwd) TLC
-export SERIOUS
 export COQBIN
 export COQFLAGS
 
 .PHONY: all clean
 
-all depend clean _CoqProject:
+all depend clean _CoqProject proof vos vok:
 	$(MAKE) -f Makefile.coq $@
 
 ############################################################################

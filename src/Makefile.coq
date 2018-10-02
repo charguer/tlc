@@ -16,9 +16,6 @@ SHELL := /usr/bin/env bash
 # COQINCLUDE (default: empty)
 # V          (default: *.v)
 # V_AUX      (default: undefined/empty)
-# SERIOUS    (default: 1)
-#            (if 0, we produce .vio files)
-#            (if 1, we produce .vo files in the old way)
 # VERBOSE    (default: undefined)
 #            (if defined, commands are displayed)
 
@@ -52,8 +49,8 @@ endif
 VIO := $(patsubst %.v,%.vio,$(V))
 VQ  := $(patsubst %.v,%.vq,$(V))
 VO  := $(patsubst %.v,%.vo,$(V))
-
-SERIOUS := 1
+VOS  := $(patsubst %.v,%.vos,$(V))
+VOK  := $(patsubst %.v,%.vok,$(V))
 
 ############################################################################
 # Binaries
@@ -66,18 +63,14 @@ COQCHK := $(COQBIN)coqchk
 ############################################################################
 # Targets
 
-.PHONY: all proof depend quick proof_vo proof_vq
+.PHONY: all depend proof interface vos vok
 
 all: proof
-ifeq ($(SERIOUS),0)
-proof: proof_vq
-else
-proof: proof_vo
-endif
-proof_vq: $(VQ)
 depend: $(VD)
-quick: $(VIO)
-proof_vo: $(VO)
+proof: $(VO)
+vos: $(VOS)
+vok: $(VOK)
+
 
 ############################################################################
 # Verbosity control.
@@ -117,44 +110,24 @@ endif
 %.v.d: %.v
 	$(COQDEP) $(COQINCLUDE) $< > $@
 
-ifeq ($(SERIOUS),0)
-
-%.vo: %.vio
-	@echo "Compiling `basename $*`..."
-	set -o pipefail; ( \
-	  $(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* \
-	  2>&1 | (grep -v 'Checking task' || true))
-
-# The recipe for producing %.vio destroys %.vo. In other words, we do not
-# allow a young .vio file to co-exist with an old (possibly out-of-date) .vo
-# file, because this seems to lead Coq into various kinds of problems
-# ("inconsistent assumption" errors, "undefined universe" errors, warnings
-# about the existence of both files, and so on). Destroying %.vo should be OK
-# as long as the user does not try to build a mixture of .vo and .vio files in
-# one invocation of make.
-%.vio: %.v
-	@echo "Digesting `basename $*`..."
-	rm -f $*.vo
-	$(COQC) $(COQINCLUDE) -quick $<
-
-%.vq: %.vio
-	@echo "Checking `basename $*`..."
-	set -o pipefail; ( \
-	  $(COQC) $(COQINCLUDE) -schedule-vio-checking 1 $< \
-	  2>&1 | (grep -v 'Checking task' || true))
-	touch $@
-
-endif
-
-ifeq ($(SERIOUS),1)
-
 %.vo: %.v
 	@echo "Compiling `basename $*`..."
 	$(COQC) $(COQINCLUDE) $<
 
-# 	@echo "$(COQC) $(COQINCLUDE) $<"
+%.vos: %.v
+	@echo "Digesting `basename $*`..."
+	$(COQC) $(COQINCLUDE) -vos $<
 
-endif
+%.vok: %.v
+	@echo "Checking `basename $*`..."
+	$(COQC) $(COQINCLUDE) -vok $<
+
+# DEPRECATED
+# %.vo: %.vio
+#	@echo "Compiling `basename $*`..."
+#	set -o pipefail; ( \
+#	  $(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* \
+#	  2>&1 | (grep -v 'Checking task' || true))
 
 _CoqProject: .FORCE
 	@echo $(COQINCLUDE) > $@
@@ -202,7 +175,7 @@ clean::
 	  (cd $$d && \
 	     rm -f *~ && \
 	     rm -f .*.aux && \
-	     rm -f *.{vo,vio,vq,v.d,aux,glob,cache,crashcoqide} && \
+	     rm -f *.{vo,vos,vok,v.d,aux,glob,cache,crashcoqide} && \
 	     rm -rf *.coq-native *.coqide && \
 	     true) ; \
 	done
