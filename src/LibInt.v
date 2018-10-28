@@ -612,7 +612,8 @@ Hint Rewrite plus_nat_eq_plus_int : rew_maths.
 
 Notation "'abs'" := Z.abs_nat (at level 0).
 
-Global Opaque Z.abs Z.abs_nat.
+Global Arguments Z.abs : simpl never.
+Global Arguments Z.abs_nat : simpl never.
 
 Lemma abs_nat : forall (n:nat),
   abs n = n.
