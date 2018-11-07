@@ -166,13 +166,13 @@ Proof using.
 Qed.
 
 Global Instance card_empty_inst : Card_empty (T:=multiset A).
-Proof using. admit. (*-- TODO: under construction *) Qed.
+Proof using. admit. (*-- TODO: under construction *) Admitted.
 
 Global Instance card_single_inst : Card_single (A:=A) (T:=multiset A).
-Proof using. admit. (*-- TODO: under construction *) Qed.
+Proof using. admit. (*-- TODO: under construction *) Admitted.
 
 Global Instance card_union_inst : Card_union (T:=multiset A).
-Proof using. admit. (*-- TODO: under construction *) Qed.
+Proof using. admit. (*-- TODO: under construction *) Admitted.
 
 End Instances.
 

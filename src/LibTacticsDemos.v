@@ -39,7 +39,7 @@ Lemma demo_false_2 :
 Proof using.
   intros. dup 3.
   (* [contradiction] does not cover [discriminate] *)
-  try contradiction. skip.
+  try contradiction. demo.
   discriminate.
   (* while [false] covers [contradiction] and [discriminate] *)
   false.
@@ -71,19 +71,19 @@ Lemma demo_asserts_cuts :
 Proof using.
   dup 7.
   (* here is another syntax for assert *)
-  asserts U: H2. skip. skip.
+  asserts U: H2. demo. demo.
   (* that allows for intro-patterns *)
-  asserts [U V]: (H2 /\ H3). skip. skip.
+  asserts [U V]: (H2 /\ H3). demo. demo.
   (* the intro-pattern [U [V W]] may be simply written U V W *)
-  asserts U V W: (H2 /\ H3 /\ H4). skip. skip.
+  asserts U V W: (H2 /\ H3 /\ H4). demo. demo.
   (* this is also convenient for existentials *)
-  asserts x y E F: (exists x y, S x = y /\ x > 0). skip. skip.
+  asserts x y E F: (exists x y, S x = y /\ x > 0). demo. demo.
   (* if no pattern is provided, a fresh name is generated *)
-  asserts: (H2 /\ H3). skip. skip.
+  asserts: (H2 /\ H3). demo. demo.
   (* [asserts~] calls [auto] only on the asserted proposition. *)
-  asserts~ U: (0 = 0). skip.
+  asserts~ U: (0 = 0). demo.
   (* [cuts] is like [asserts] except it swaps subgoals *)
-  cuts U V: (H2 /\ H3). skip. skip.
+  cuts U V: (H2 /\ H3). demo. demo.
 Qed.
 
 
@@ -104,7 +104,7 @@ Proof using.
   lets: (P R).
   (* [lets] on an existing hypothesis makes a copy of it *)
   lets U': U.
-  skip.
+  demo.
 Qed.
 
 
@@ -132,9 +132,9 @@ Lemma demo_applys_to :
 Proof using.
   introv P Q R. dup.
   (* [applys_to R] is used to apply a lemma to [R] and name R the result *)
-  applys_to R Q. skip.
+  applys_to R Q. demo.
   (* another example *)
-  applys_to R P. skip.
+  applys_to R P. demo.
 Qed.
 
 
@@ -154,12 +154,12 @@ Proof using.
   introv.
   (* if there is no more head variables, and no definition can
      be unfolded at head of the goal, it does not do anything *)
-  introv. skip.
+  introv. demo.
   (* [introv A] introduces all variables, then does [intros A] *)
-  introv A. introv B. introv. intros C D. skip.
+  introv A. introv B. introv. intros C D. demo.
   (* [introv] may take several arguments, as illustrated below *)
-  introv A B. introv. skip.
-  introv A B C D. skip.
+  introv A B. introv. demo.
+  introv A B C D. demo.
 Qed.
 
 
@@ -173,13 +173,13 @@ Proof using.
   (* [introv] introduces a variable but no subsequent definition *)
   introv.
   (* [introv] unfolds definition if no variable is visible *)
-  introv. skip.
+  introv. demo.
   (* [introv E] unfolds definitions until finding an hypothesis *)
-  introv E. introv F. skip.
+  introv E. introv F. demo.
   (* [introv E F] unfolds several definitions if needed *)
-  introv E F. skip.
+  introv E F. demo.
   (* [introv] may unfold definition without any introduction *)
-  introv E. introv. skip.
+  introv E. introv. demo.
 Qed.
 
 Lemma demo_introv_3 :
@@ -187,15 +187,15 @@ Lemma demo_introv_3 :
 Proof using.
   dup 5. (* more examples *)
   (* introduces [a] only *)
-  introv. skip.
+  introv. demo.
   (* introduces [a = 0] *)
-  introv E. skip.
+  introv E. demo.
   (* introduces [a = 0] and [a = y] *)
-  introv E F. skip.
+  introv E F. demo.
   (* introduces [a = 0] and [a = y] and [True] *)
-  introv E F G. skip.
+  introv E F G. demo.
   (* introduction of more names fails *)
-  try (introv E F G H). skip.
+  try (introv E F G H). demo.
 Qed.
 
 Definition TestSym := (forall a, a = 0 -> Sym a).
@@ -205,9 +205,9 @@ Lemma demo_introv_4 :
 Proof using.
   dup 2. (* same as before, except the goal itself is a definition *)
   (* introduces [a] only *)
-  introv. skip.
+  introv. demo.
   (* introduces [a = 0] *)
-  introv E. skip.
+  introv E. demo.
 Qed.
 
 Lemma demo_introv_5 :
@@ -215,9 +215,9 @@ Lemma demo_introv_5 :
 Proof using.
   dup 2. (* playing with negation *)
   (* introduces [a = 0] *)
-  introv E. skip.
+  introv E. demo.
   (* introduces [a = 0] and [Sym a] *)
-  introv E F. skip.
+  introv E F. demo.
 Qed.
 
 (* Iterated unfolding to get hypotheses *)
@@ -230,9 +230,9 @@ Lemma demo_introv_6 :
 Proof using.
   dup 2.
   (* introduces only [x], then only [y] *)
-  introv. introv. skip.
+  introv. introv. demo.
   (* introduces [x] and [y] and [True] *)
-  introv E. skip.
+  introv E. demo.
 Qed.
 
 Definition AllSameAgain := AllSame.
@@ -242,9 +242,9 @@ Lemma demo_introv_7 :
 Proof using.
   dup 2.
   (* introduces only [x], then only [y] *)
-  introv. introv. skip.
+  introv. introv. demo.
   (* introduces [x] and [y] and [True] *)
-  introv E. skip.
+  introv E. demo.
 Qed.
 
 Lemma demo_introv_8 :
@@ -254,7 +254,7 @@ Proof using.
      are treated as hypotheses, e.g. variable [c] below.
      This might not be the desired behaviour, but that's
      all I'm able to implement in Ltac. *)
-  introv c E F. skip.
+  introv c E F. demo.
 Qed.
 
 Definition IMP P A (x y : A) := P -> x = y.
@@ -265,8 +265,8 @@ Lemma demo_intros_all :
 Proof using.
   split.
   (* [intros_all] introduces as many arguments as possible *)
-  intros_all. skip.
-  intros_all. skip.
+  intros_all. demo.
+  intros_all. demo.
 Qed.
 
 (* An example showing that [intro] is not very-well
@@ -279,8 +279,8 @@ Definition testing f :=
 Lemma demo_introv_what_to_do : testing (fun a => a = 0).
 Proof using.
   dup.
-    intro. skip. (* does beta-reduce f *)
-    hnf. intro. skip. (* does not beta-reduce f *)
+    intro. demo. (* does beta-reduce f *)
+    hnf. intro. demo. (* does not beta-reduce f *)
 Qed.
 
 End IntrovTest.
@@ -301,12 +301,12 @@ Proof using.
   =>>.
   (* if there is no more head variables, and no definition can
      be unfolded at head of the goal, it does not do anything *)
-  =>>. skip.
+  =>>. demo.
   (* [=>> A] introduces all variables, then does [intros A] *)
-  =>> A. =>> B. =>>. =>> C D. skip.
+  =>> A. =>> B. =>>. =>> C D. demo.
   (* [=>>] may take several arguments, as illustrated below *)
-  =>> A B. =>>. skip.
-  =>> A B. =>>. =>> C D. skip.
+  =>> A B. =>>. demo.
+  =>> A B. =>>. =>> C D. demo.
 Qed.
 
 Lemma demo_arrow_2 :
@@ -316,13 +316,13 @@ Proof using.
   (* [=>>] introduces a variable but no subsequent definition *)
   =>>.
   (* [=>>] unfolds definition if no variable is visible *)
-  =>>. skip.
+  =>>. demo.
   (* [=>> E] unfolds definitions until finding an hypothesis *)
-  =>> E. =>> F. skip.
+  =>> E. =>> F. demo.
   (* [=>> E ? F] unfolds several definitions if needed *)
-  =>> E ? F. skip.
+  =>> E ? F. demo.
   (* [=>>] may unfold definition without any introduction *)
-  =>> x E. =>>. skip.
+  =>> x E. =>>. demo.
 Qed.
 
 Lemma demo_arrow_3 :
@@ -330,15 +330,15 @@ Lemma demo_arrow_3 :
 Proof using.
   dup 5. (* more examples *)
   (* introduces [a] only *)
-  =>>. skip.
+  =>>. demo.
   (* introduces [a = 0] *)
-  =>> E. skip.
+  =>> E. demo.
   (* introduces [a = 0] and [a = y] *)
-  =>> E; =>> F. skip.
+  =>> E; =>> F. demo.
   (* introduces [a = 0] and [a = y] and [True] *)
-  =>> E; =>> F G. skip.
+  =>> E; =>> F G. demo.
   (* introduction of more names fails *)
-  try (=>> E; =>> F G H). skip.
+  try (=>> E; =>> F G H). demo.
 Qed.
 
 Lemma demo_arrow_4 :
@@ -346,9 +346,9 @@ Lemma demo_arrow_4 :
 Proof using.
   dup 2. (* same as before, except the goal itself is a definition *)
   (* introduces [a] only *)
-  =>>. skip.
+  =>>. demo.
   (* introduces [a = 0] *)
-  =>> E. skip.
+  =>> E. demo.
 Qed.
 
 Lemma demo_arrow_5 :
@@ -356,9 +356,9 @@ Lemma demo_arrow_5 :
 Proof using.
   dup 2. (* playing with negation *)
   (* introduces [a = 0] *)
-  =>> E. skip.
+  =>> E. demo.
   (* introduces [a = 0] and [Sym a] *)
-  =>> E F. skip.
+  =>> E F. demo.
 Qed.
 
 Lemma demo_arrow_6 :
@@ -366,9 +366,9 @@ Lemma demo_arrow_6 :
 Proof using.
   dup 2.
   (* introduces only [x], then only [y] *)
-  =>>. =>>. skip.
+  =>>. =>>. demo.
   (* introduces [x] and [y] and [True] *)
-  =>> ? E. skip.
+  =>> ? E. demo.
 Qed.
 
 Lemma demo_arrow_7 :
@@ -376,9 +376,9 @@ Lemma demo_arrow_7 :
 Proof using.
   dup 2.
   (* introduces only [x], then only [y] *)
-  =>>. =>>. skip.
+  =>>. =>>. demo.
   (* introduces [x] and [y] and [True] *)
-  =>> ? E. skip.
+  =>> ? E. demo.
 Qed.
 
 End ArrowTest.
@@ -393,11 +393,11 @@ Lemma demo_gen_and_generalizes :
 Proof using.
   intros. dup 3.
   (* [gen] generalizes an hypothesis and clears it *)
-  gen H. skip.
+  gen H. demo.
   (* it generalizes all the dependencies of a variable *)
-  gen a. skip.
+  gen a. demo.
   (* it also works for several variables at once *)
-  gen b c. skip.
+  gen b c. demo.
 Qed.
 
 Inductive ind : nat -> Prop :=
@@ -412,22 +412,22 @@ Lemma demo_sets_and_set_eq_and_sets_eq : forall n,
 Proof using.
   introv M1 M2. dup 9.
   (* [sets] introduces a name and performs the substitution *)
-  sets a: (3+n). skip.
-  sets b: (7+n). skip.
+  sets a: (3+n). demo.
+  sets b: (7+n). demo.
   (* [set_eq] introduces an equality *)
-  set_eq a Ha: (7+n). skip.
+  set_eq a Ha: (7+n). demo.
   (* [sets_eq] introduces an equality and substitutes *)
-  sets_eq a Ha: (7+n). skip.
+  sets_eq a Ha: (7+n). demo.
   (* the name of the hypothesis can be generated *)
-  sets_eq a: (7+n). skip.
+  sets_eq a: (7+n). demo.
   (* the name of the variable can also be generated *)
-  sets_eq: (7+n). skip.
+  sets_eq: (7+n). demo.
   (* [set_eq in H] performs the substitution in [H] *)
-  set_eq a: (7+n) in M2. skip.
+  set_eq a: (7+n) in M2. demo.
   (* [set_eq in |-] performs no substitution *)
-  set_eq a: (7+n) in |-. skip.
+  set_eq a: (7+n) in |-. demo.
   (* [set_eq <-] generates the equality [7+n=a] *)
-  sets_eq <- a: (7+n). skip.
+  sets_eq <- a: (7+n). demo.
 Qed.
 
 Lemma demo_sets_let_and_sets_eq_let : forall n1 n2 : nat,
@@ -469,12 +469,12 @@ Lemma demo_unfolds_folds :
 Proof using.
   intros. dup 2.
   (* [unfolds] is same as [unfold in *] *)
-  unfolds Dup. skip.
+  unfolds Dup. demo.
   (* [unfolds] can take several arguments *)
   unfolds Id,Dup.
   subst b.
   (* [folds] is same as [fold in *]. *)
-  folds (Dup a). skip.
+  folds (Dup a). demo.
 Qed.
 
 Definition Twice (P:Prop) := True -> P /\ P.
@@ -487,7 +487,7 @@ Proof using.
   unfolds.
   (* it also applies to an hypothesis *)
   unfolds in B.
-  skip.
+  demo.
 Qed.
 
 
@@ -503,7 +503,7 @@ Proof using.
   (* [unsimpl] can be used to undo a simplification *)
   unsimpl (0+0).
   unsimpl (2+0) in H.
-  skip.
+  demo.
 Qed.
 
 
@@ -517,9 +517,9 @@ Lemma demo_substs_1 : forall a b c d e : nat,
 Proof using.
   introv P Q R U V. dup 2.
   (* [subst] does not work with circular equalities *)
-  try subst. skip.
+  try subst. demo.
   (* [substs] does work however *)
-  substs. skip.
+  substs. demo.
 Qed.
 
 Lemma demo_substs_2 : forall x y (f:nat->nat),
@@ -556,9 +556,9 @@ Lemma demo_rewrites :
 Proof using.
   introv H. dup.
   (* [rewrites] support the [rm] identity tag to remove hypothesis *)
-  rewrites (rm H). skip.
+  rewrites (rm H). demo.
   (* [rewrites] can take arguments like [forwards] -- see further *)
-  rewrites (>> H __ 3). skip.
+  rewrites (>> H __ 3). demo.
 Qed.
 
 Lemma demo_rewrites_at : forall x y z,
@@ -566,12 +566,12 @@ Lemma demo_rewrites_at : forall x y z,
 Proof using.
   introv E H. dup.
   (* [rewrite] rewrites in all similar occurences *)
-  rewrite E. skip.
+  rewrite E. demo.
   (* [rewrites at] can be used to control the target of rewrite *)
   rewrites E at 2.
   rewrites E at 2 in H.
   rewrites <- H at 2.
-  skip.
+  demo.
 Qed.
 
 Lemma demo_rewrite_all :
@@ -580,7 +580,7 @@ Lemma demo_rewrite_all :
 Proof using.
   intros E.
   (* [rewrite_all] is same as [repeat rewrite] *)
-  rewrite_all E. skip.
+  rewrite_all E. demo.
 Qed.
 
 Lemma demo_asserts_and_cuts_rewrite : forall n,
@@ -588,20 +588,20 @@ Lemma demo_asserts_and_cuts_rewrite : forall n,
 Proof using.
   introv Lt H. dup 2.
   (* [asserts_rewrite] rewrites and generates a proof obligation *)
-  asserts_rewrite (n = 1). skip. skip.
+  asserts_rewrite (n = 1). demo. demo.
   (* same for [cuts_rewrite], except the subgoals are swapped *)
-  cuts_rewrite (n = 1). skip. skip.
+  cuts_rewrite (n = 1). demo. demo.
 Qed.
 
 Lemma demo_replaces : forall a b, a = b + b -> a + a + a = 3 * a.
 Proof using.
   intros. dup 3.
   (* [replaces] replaces all occurences (the equality subgoal is first) *)
-  replaces a with 3. skip. skip.
+  replaces a with 3. demo. demo.
   (* [replaces at] replaces at a given occurence *)
-  replaces a at 2 with 5. skip. skip.
+  replaces a at 2 with 5. demo. demo.
   (* [replaces] and [replaces at] works in hypotheses *)
-  replaces b at 2 with 4 in H. skip. skip.
+  replaces b at 2 with 4 in H. demo. demo.
 Qed.
 
 Lemma demo_pi_rewrite : forall (P:Prop) (X:P->nat) (p1 p2:P),
@@ -634,10 +634,10 @@ Proof using.
   (* [invert] is same as [inversion H; clear H] except that it
      generalizes the generated hypotheses so that they can
      be named manually using intros or introv *)
-  invert P. introv P' EQ1 EQ2. skip.
+  invert P. introv P' EQ1 EQ2. demo.
   (* [invert as] can be used to name the generated hypotheses
      directly, in the [introv] fashion *)
-  invert P as P' EQ1 EQ2. skip.
+  invert P as P' EQ1 EQ2. demo.
   (* [inverts] does the same as [inversion; clear], then it
      substitutes all the generated equalities (and only
      these fresh equalities, not the older ones) *)
@@ -648,15 +648,15 @@ Proof using.
   inverts P as P. inverts P as P. inverts P.
   (* [invert as] without arguments leaves the hypotheses
      that have been generated in the goal *)
-  inverts P as. introv P'. skip.
+  inverts P as. introv P'. demo.
   (* one may add the keyword [keep] in order to keep the
      inverted hypothesis *)
-  invert keep P. intros. skip.
-  inverts keep P as P' EQ1 EQ2. skip.
-  inverts keep P as. introv P'. skip.
+  invert keep P. intros. demo.
+  inverts keep P as P' EQ1 EQ2. demo.
+  inverts keep P as. introv P'. demo.
   (* [lets_inverts] need to be used to invert expressions
      that are not simply the name of an hypothesis *)
-  lets_inverts (conj P P) as H1 H2. skip.
+  lets_inverts (conj P P) as H1 H2. demo.
 Qed.
 
 (* --TODO: false_invert *)
@@ -675,11 +675,11 @@ Lemma demo_dependent_invert :
 Proof using.
   intros H. dup 3.
   (* [inversion] can generate some dependently-typed equalities *)
-  inversion H. (* look at H9 and H10 *) skip.
+  inversion H. (* look at H9 and H10 *) demo.
   (* [inverts] carries out all the substitution properly *)
-  inverts H. skip.
+  inverts H. demo.
   (* again, it is possible to name the new hypotheses *)
-  inverts H as R1 R2 R3. skip.
+  inverts H as R1 R2 R3. demo.
 Qed.
 
 Lemma demo_inject_and_injects : forall a b c,
@@ -687,15 +687,15 @@ Lemma demo_inject_and_injects : forall a b c,
 Proof using.
   introv EQ. dup 5.
   (* [injection] generates some equalities in the goal *)
-  injection EQ. skip.
+  injection EQ. demo.
   (* [inject] does the same *)
-  inject EQ. skip.
+  inject EQ. demo.
   (* but it is also able to name these hypotheses *)
-  inject EQ as EQ1 EQ2 EQ3. skip.
+  inject EQ as EQ1 EQ2 EQ3. demo.
   (* and [injects] can substitute these hypotheses *)
-  injects EQ. skip.
+  injects EQ. demo.
   (* it also works if the equalities are in the other direction *)
-  symmetry in EQ. injects EQ. skip.
+  symmetry in EQ. injects EQ. demo.
 Qed.
 
 
@@ -722,12 +722,12 @@ Lemma demo_fequals_1 : forall a b c d,
 Proof using.
   intros. dup 3.
   (* [f_equal] is not really clever on tuples *)
-  f_equal. f_equal. skip. skip. skip.
+  f_equal. f_equal. demo. demo. demo.
   (* while [fequal] works better *)
-  fequal. skip. skip. skip.
+  fequal. demo. demo. demo.
   (* even more useful, [fequals] tries to discharge the easy
      subgoals using [reflexivity] and [congruence] *)
-  fequals. skip.
+  fequals. demo.
 Qed.
 
 Lemma demo_fequals_2 : forall f a b c d,
@@ -736,8 +736,8 @@ Lemma demo_fequals_2 : forall f a b c d,
 Proof using.
   intros. dup 2.
   (* [fequal] and [fequals] also work for functions, of course *)
-  fequal. skip. skip. skip.
-  fequals. skip.
+  fequal. demo. demo. demo.
+  fequals. demo.
 Qed.
 
 (** [fequals] supports proof irrelevance *)
@@ -761,9 +761,9 @@ Lemma demo_inductions : forall n m p,
 Proof using.
   intros. dup.
   (* [induction] does not work -- too weak hypotheses *)
-  induction H. skip. skip.
+  induction H. demo. demo.
   (* but [inductions], based on [dependent induction], does work. *)
-  inductions H gen n m p. skip. skip.
+  inductions H gen n m p. demo. demo.
 Qed.
 
 Lemma demo_inductions' : forall n m,
@@ -771,9 +771,9 @@ Lemma demo_inductions' : forall n m,
 Proof using.
   intros. dup.
   (* same *)
-  induction H. skip. skip.
+  induction H. demo. demo.
   (* correct version *)
-  inductions H gen n m. skip.
+  inductions H gen n m. demo.
 Qed.
 
 *)
@@ -789,13 +789,13 @@ Lemma demo_splits : test_split_3.
 Proof using.
   dup 4.
   (* spliting a bunch of conjunction is a pain *)
-  split. skip. split. skip. split. skip. split. skip. skip.
+  split. demo. split. demo. split. demo. split. demo. demo.
   (* but it is sometimes too aggressive. *)
   (* [splits N] splits a conjunction in N parts *)
-  splits 4. skip. skip. skip. skip.
-  splits 3. skip. skip. skip.
+  splits 4. demo. demo. demo. demo.
+  splits 3. demo. demo. demo.
   (* [splits] is able to guess the appropriate arity *)
-  splits. skip. skip. skip. splits. skip. skip. skip.
+  splits. demo. demo. demo. splits. demo. demo. demo.
 Qed.
 
 Lemma demo_branch :
@@ -803,19 +803,19 @@ Lemma demo_branch :
 Proof using.
   dup 6.
   (* [branch K of N] is used to select a branch of a disjunction *)
-  branch 1 of 6. skip.
+  branch 1 of 6. demo.
   branch 4 of 6. auto.
-  branch 6 of 6. skip.
+  branch 6 of 6. demo.
   (* [branch] can usually guess the appopriate arity *)
-  branch 1. skip.
+  branch 1. demo.
   branch 4. auto.
-  branch 6. skip.
+  branch 6. demo.
 Qed.
 
 Lemma demo_destructs :
   1 = 2 /\ (2 = 3 /\ 3 = 4) /\ 4 = 5 -> True.
 Proof using.
-  intros H. destructs H. skip.
+  intros H. destructs H. demo.
 Qed.
 
 
@@ -884,7 +884,7 @@ Proof using.
   hide_all.
   apply H.
 *)
-skip.
+demo.
 Qed.
 
 Lemma demo_hide_term : forall x,
@@ -907,13 +907,13 @@ Lemma demo_clears : forall (x y z : nat) (A B : Prop),
 Proof using.
   introv z Pos Neq Iff. dup 5.
   (* [clears] is like [clear] except it clears all dependencies *)
-  clears y. skip.
-  clears x. skip.
-  clears x y. skip.
-  clears Neq A. skip.
+  clears y. demo.
+  clears x. demo.
+  clears x y. demo.
+  clears Neq A. demo.
   (* [clears] without arguments clears only unused variables
      (which are not propositions) *)
-  clears. skip.
+  clears. demo.
 Qed.
 
 Lemma demo_sort :
@@ -931,41 +931,30 @@ Lemma demo_sort :
 Proof using.
   intros.
   (* [sort] puts all the proposition at the bottom of the context *)
-  sort. skip.
+  sort. demo.
 Qed.
 
 
 (* ********************************************************************** *)
-(** * Skip *)
+(** * Admit *)
 
-Lemma demo_skip : forall n m p : nat,
+Lemma demo_admit : forall n m p : nat,
   n > m -> m >= p -> n > p.
 Proof using.
   intros. dup 6.
-  (* [skip H: E] is used to accept a new fact *)
-  skip R1: (m = m). skip.
-  skip R1 R2: (m = m /\ n > m+1). skip.
-  skip q Q: (exists q, q > p). skip.
-  skip: (m <> n). skip.
-  (* [skip_rewrite E] is used to accept a fact E and rewrite it *)
-  skip_rewrite (m = n) in H0. skip.
-  (* [skip_induction] is used to do an induction and cheat on the
+  (* [admits H: E] is used to accept a new fact *)
+  admits R1: (m = m). demo.
+  admits (R1&R2): (m = m /\ n > m+1). demo.
+  admits (q&Q): (exists q, q > p). demo.
+  admits: (m <> n). demo.
+  (* [admit_rewrite E] is used to accept a fact E and rewrite it *)
+  admit_rewrite (m = n) in H0. demo.
+  (* [admit_goal] is used to do an induction and cheat on the
      induction hypothesis, by having it as strong as the initial goal *)
   dup.
-    induction p. skip. skip.
-    skip_induction p. skip. skip.
+    induction p. demo. demo.
+    admit_goal IH. destruct p. demo. demo.
 Qed.
-
-(* DEPRECATED
-Lemma demo_skip_with_existential : False.
-Proof using.
-  dup.
-  (* [skip'] is the alternative implementation of [skip],
-     which forbits [Qed] to be written at the end of the proof *)
-  skip'.
-  skip'.
-Admitted. (* demo *)
-*)
 
 
 (* ********************************************************************** *)
@@ -1026,13 +1015,13 @@ Proof using.
   (* [forwards] is used to instantiate a lemma entirely, generating one
      subgoal for each hypothesis and one existential variable for
      each universally quantified variable *)
-  forwards Q: H. eauto. skip.
+  forwards Q: H. eauto. demo.
   (* an introduction-pattern can be used to decompose the result *)
-  forwards [y [R1 R2]]: H. eauto. skip.
+  forwards [y [R1 R2]]: H. eauto. demo.
   (* and [forwards] can also be used without introduction pattern *)
-  forwards: H. eauto. skip.
+  forwards: H. eauto. demo.
   (* [forwards] does nothing on an hypothesis without quantifiers *)
-  forwards: Le. skip.
+  forwards: Le. demo.
 Qed.
 
 Lemma demo_forwards_2 :
@@ -1139,14 +1128,14 @@ Lemma demo_specializes_definition_3 :
 Proof using.
   intros i H. dup 4.
   (** forwards does not instantiate [mydef] from [H] *)
-  forwards K: H i. skip.
+  forwards K: H i. demo.
   (** ... unless explicitely visible *)
   unfold nesteddef, mydef in H.
    forwards K: H i. apply (refl_equal i). false.
   (** yet, it should be possible to instantiate arguments
       inside [mydef] if providing explicit arguments *)
-  lets K: (>> H i i). skip.
-  lets K: (>> H i (refl_equal i)). skip.
+  lets K: (>> H i i). demo.
+  lets K: (>> H i (refl_equal i)). demo.
 Qed.
 
 
@@ -1166,30 +1155,30 @@ Proof using.
   (* the tactic [equates] inputs the position where
      evars should be introduced in place of arguments;
      the indices are to be counted from the right. *)
-  equates 2. skip. skip.
+  equates 2. demo. demo.
 Admitted. (* demo *)
 
 Lemma demo_equates_non_dep : forall (P:nat->nat->nat->Prop) x y z,
   P x y z.
 Proof using.
   intros. dup 6.
-  equates 1. skip. skip.
-  equates 2. skip. skip.
-  equates 3. skip. skip.
+  equates 1. demo. demo.
+  equates 2. demo. demo.
+  equates 3. demo. demo.
   (* multiple [equates] are allowed *)
-  equates 1 2. skip. skip. skip.
-  equates (>> 1 2). skip. skip. skip.
+  equates 1 2. demo. demo. demo.
+  equates (>> 1 2). demo. demo. demo.
 Admitted. (* demo *)
 
 Lemma demo_equates_dep : forall (P:nat->forall A, A->Prop) x (T:Type) z,
   P x T z.
 Proof using.
   intros. dup 4.
-  equates 1. skip. skip.
+  equates 1. demo. demo.
   (* replacement of dependent hypotheses is not allowed *)
   try equates 2.
-  equates 3. skip. skip.
-  equates 1 3. skip. skip. skip.
+  equates 3. demo. demo.
+  equates 1 3. demo. demo. demo.
 Admitted. (* demo *)
 
 
@@ -1273,15 +1262,15 @@ Proof using.
   (* [exists~ 0 0 0] is the same as [exists 0 0 0] followed with auto *)
   exists~ 0 0 0.
   (* if a wild-card is provided, an existential variable is introduced *)
-  exists __ 0 __. skip.
+  exists __ 0 __. demo.
   (* if a double wild-card is provided, as many existential as possible
      are introduced *)
   exists 0 ___.
   (* a shorthand for [exists __ __ __] is [exists___ 3] *)
-  exists___ 3. skip.
+  exists___ 3. demo.
   (* [exists___] without arguments is the same as [exists __ ... __].
      Contrary to [exists ___], it does not unfold definitions. *)
-  exists___. skip.
+  exists___. demo.
 Admitted. (* demo *)
 
 

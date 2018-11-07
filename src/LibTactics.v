@@ -4143,6 +4143,20 @@ Tactic Notation "exists" "~" constr(T1) constr(T2) constr(T3) constr(T4)
  constr(T5) constr(T6) :=
   exists T1 T2 T3 T4 T5 T6; auto_tilde.
 
+Tactic Notation "exists" "~" constr(T1) "," constr(T2) :=
+  exists T1 T2; auto_tilde.
+Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) :=
+  exists T1 T2 T3; auto_tilde.
+Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) "," 
+ constr(T4) :=
+  exists T1 T2 T3 T4; auto_tilde.
+Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) "," 
+ constr(T4) "," constr(T5) :=
+  exists T1 T2 T3 T4 T5; auto_tilde.
+Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) "," 
+ constr(T4) "," constr(T5) "," constr(T6) :=
+  exists T1 T2 T3 T4 T5 T6; auto_tilde.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Parsing for strong automation *)
@@ -4524,6 +4538,20 @@ Tactic Notation "exists" "*" constr(T1) constr(T2) constr(T3) constr(T4)
  constr(T5) constr(T6) :=
   exists T1 T2 T3 T4 T5 T6; auto_star.
 
+Tactic Notation "exists" "*" constr(T1) "," constr(T2) :=
+  exists T1 T2; auto_star.
+Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) :=
+  exists T1 T2 T3; auto_star.
+Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) "," 
+  constr(T4) :=
+  exists T1 T2 T3 T4; auto_star.
+Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) "," 
+ constr(T4) "," constr(T5) :=
+  exists T1 T2 T3 T4 T5; auto_star.
+Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) "," 
+ constr(T4) "," constr(T5) ","  constr(T6) :=
+  exists T1 T2 T3 T4 T5 T6; auto_star.
+
 
 
 (* ********************************************************************** *)
@@ -4792,73 +4820,119 @@ Tactic Notation "clears_last" constr(N) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Skipping subgoals *)
 
-(** DEPRECATED: the new "admit" tactics now works fine.
+(** The [skip] tactic can be used at any time to admit the current
+    goal. Unlike [admit], it does not require ending the proof with
+    [Admitted] instead of [Qed]. It thus saves the pain of renaming [Qed]
+    into [Admitted] and vice-versa all the time.
+    
+    The implementation of [skip] relies on an axiom [False].
+    To obtain a safe development, it suffices to replace [False] with [True]
+    in the statement of that axiom.
 
-    The [skip] tactic can be used at any time to admit the current
-    goal. Using [skip] is much more efficient than using the [Focus]
-    top-level command to reach a particular subgoal.
-
-    There are two possible implementations of [skip]. The first one
-    relies on the use of an existential variable. The second one
-    relies on an axiom of type [False]. Remark that the builtin tactic
-    [admit] is not applicable if the current goal contains uninstantiated
-    variables.
-
-    The advantage of the first technique is that a proof using [skip]
-    must end with [Admitted], since [Qed] will be rejected with the message
-    "[uninstantiated existential variables]". It is thereafter clear
-    that the development is incomplete.
-
-    The advantage of the second technique is exactly the converse: one
-    may conclude the proof using [Qed], and thus one saves the pain from
-    renaming [Qed] into [Admitted] and vice-versa all the time.
-    Note however, that it is still necessary to instantiate all the existential
+    Note that it is still necessary to instantiate all the existential
     variables introduced by other tactics in order for [Qed] to be accepted.
-
-    The two implementation are provided, so that you can select the one that
-    suits you best. By default [skip'] uses the first implementation, and
-    [skip] uses the second implementation.
 *)
 
-Ltac skip_with_existential :=
-  match goal with |- ?G =>
-    let H := fresh "TEMP" in evar(H:G); eexact H end.
-
+(** To obtain a safe development, change to [skip_axiom : True] *)
 Axiom skip_axiom : False.
-  (* To obtain a safe development, change to [skip_axiom : True] *)
+
 Ltac skip_with_axiom :=
   elimtype False; apply skip_axiom.
 
 Tactic Notation "skip" :=
   skip_with_axiom.
-Tactic Notation "skip'" :=
-  skip_with_existential.
 
-
-(* For backward compatibility *)
-Tactic Notation "admit" :=
-  skip.
+(** To use traditional [admit] instead of [skip] in the tactics defined below,
+    uncomment the following definition, to bind [skip] to [admit]. *)
+(*
+Tactic Notation "skip" :=
+  admit.
+*)
 
 (** [demo] is like [admit] but it documents the fact that admit is intended *)
+
 Tactic Notation "demo" :=
   skip.
 
-(** [skip H: T] adds an assumption named [H] of type [T] to the
+(** [admits H: T] adds an assumption named [H] of type [T] to the
     current context, blindly assuming that it is true.
-    [skip: T] and [skip H_asserts: T] and [skip_asserts: T]
-    are other possible syntax.
-    Note that H may be an intro pattern.
-    The syntax [skip H1 .. HN: T] can be used when [T] is a
-    conjunction of [N] items. *)
+    [admit: T] is another possible syntax.
+    Note that H may be an intro pattern. *)
+
+Tactic Notation "admits" simple_intropattern(I) ":" constr(T) :=
+  asserts I: T; [ skip | ].
+Tactic Notation "admits" ":" constr(T) :=
+  let H := fresh "TEMP" in admits H: T.
+Tactic Notation "admits" "~" ":" constr(T) :=
+  admits: T; auto_tilde.
+Tactic Notation "admits" "*" ":" constr(T) :=
+  admits: T; auto_star.
+
+(** [admit_cuts T] simply replaces the current goal with [T]. *)
+
+Tactic Notation "admit_cuts" constr(T) :=
+  cuts: T; [ skip | ].
+
+(** [admit_goal H] applies to any goal. It simply assumes
+    the current goal to be true. The assumption is named "H".
+    It is useful to set up proof by induction or coinduction.
+    Syntax [admit_goal] is also accepted.*)
+
+Tactic Notation "admit_goal" ident(H) :=
+  match goal with |- ?G => admits H: G end.
+
+Tactic Notation "admit_goal" :=
+  let IH := fresh "IH" in admit_goal IH.
+
+(** [admit_rewrite T] can be applied when [T] is an equality.
+    It blindly assumes this equality to be true, and rewrite it in
+    the goal. *)
+
+Tactic Notation "admit_rewrite" constr(T) :=
+  let M := fresh "TEMP" in admits M: T; rewrite M; clear M.
+
+(** [admit_rewrite T in H] is similar as [admit_rewrite], except that
+    it rewrites in hypothesis [H]. *)
+
+Tactic Notation "admit_rewrite" constr(T) "in" hyp(H) :=
+  let M := fresh "TEMP" in admits M: T; rewrite M in H; clear M.
+
+(** [admit_rewrites_all T] is similar as [admit_rewrite], except that
+    it rewrites everywhere (goal and all hypotheses). *)
+
+Tactic Notation "admit_rewrite_all" constr(T) :=
+  let M := fresh "TEMP" in admits M: T; rewrite_all M; clear M.
+
+(** [forwards_nounfold_admit_sides_then E ltac:(fun K => ..)]
+    is like [forwards: E] but it provides the resulting term
+    to a continuation, under the name [K], and it admits
+    any side-condition produced by the instantiation of [E],
+    using the [skip] tactic. *)
+
+Inductive ltac_goal_to_discard := ltac_goal_to_discard_intro.
+
+Ltac forwards_nounfold_admit_sides_then S cont :=
+  let MARK := fresh "TEMP" in
+  generalize ltac_goal_to_discard_intro;
+  intro MARK;
+  forwards_nounfold_then S ltac:(fun K =>
+    clear MARK;
+    cont K);
+  match goal with
+  | MARK: ltac_goal_to_discard |- _ => skip
+  | _ => idtac
+  end.
+
+(** DEPRECATED -- FOR BACKWARD COMPATIBILITY *)
 
 Tactic Notation "skip" simple_intropattern(I) ":" constr(T) :=
-  asserts I: T; [ skip | ].
+  admits I: T.
 Tactic Notation "skip" ":" constr(T) :=
-  let H := fresh "TEMP" in skip H: T.
+  admits: T.
 Tactic Notation "skip" "~" ":" constr(T) :=
-  skip: T; auto_tilde.
+  admits~:T.
 Tactic Notation "skip" "*" ":" constr(T) :=
-  skip: T; auto_star.
+  admits*:T.
 
 Tactic Notation "skip" simple_intropattern(I1)
  simple_intropattern(I2) ":" constr(T) :=
@@ -4881,79 +4955,27 @@ Tactic Notation "skip" simple_intropattern(I1)
   skip [I1 [I2 [I3 [I4 [I5 I6]]]]]: T.
 
 Tactic Notation "skip_asserts" simple_intropattern(I) ":" constr(T) :=
-  skip I: T.
+  admits I: T.
 Tactic Notation "skip_asserts" ":" constr(T) :=
-  skip: T.
-
-(** [skip_cuts T] simply replaces the current goal with [T]. *)
-
+  admits: T.
 Tactic Notation "skip_cuts" constr(T) :=
-  cuts: T; [ skip | ].
-
-(** [skip_goal H] applies to any goal. It simply assumes
-    the current goal to be true. The assumption is named "H".
-    It is useful to set up proof by induction or coinduction.
-    Syntax [skip_goal] is also accepted.*)
-
+  admit_cuts T.
 Tactic Notation "skip_goal" ident(H) :=
-  match goal with |- ?G => skip H: G end.
-
+  admit_goal H.
 Tactic Notation "skip_goal" :=
-  let IH := fresh "IH" in skip_goal IH.
-
-(** [skip_rewrite T] can be applied when [T] is an equality.
-    It blindly assumes this equality to be true, and rewrite it in
-    the goal. *)
-
+  admit_goal.
 Tactic Notation "skip_rewrite" constr(T) :=
-  let M := fresh "TEMP" in skip_asserts M: T; rewrite M; clear M.
-
-(** [skip_rewrite T in H] is similar as [rewrite_skip], except that
-    it rewrites in hypothesis [H]. *)
-
+  admit_rewrite T.
 Tactic Notation "skip_rewrite" constr(T) "in" hyp(H) :=
-  let M := fresh "TEMP" in skip_asserts M: T; rewrite M in H; clear M.
-
-(** [skip_rewrites_all T] is similar as [rewrite_skip], except that
-    it rewrites everywhere (goal and all hypotheses). *)
-
+  admit_rewrite T in H.
 Tactic Notation "skip_rewrite_all" constr(T) :=
-  let M := fresh "TEMP" in skip_asserts M: T; rewrite_all M; clear M.
-
-(** [skip_induction E] applies to any goal. It simply assumes
-    the current goal to be true (the assumption is named "IH" by
-    default), and call [destruct E] instead of [induction E].
-    It is useful to try and set up a proof by induction
-    first, and fix the applications of the induction hypotheses
-    during a second pass on the Proof using.  *)
-(* --TODO: deprecated *)
-
-Tactic Notation "skip_induction" constr(E) :=
-  let IH := fresh "IH" in skip_goal IH; destruct E.
-
-Tactic Notation "skip_induction" constr(E) "as" simple_intropattern(I) :=
-  let IH := fresh "IH" in skip_goal IH; destruct E as I.
-
-(** [forwards_nounfold_skip_sides_then E ltac:(fun K => ..)]
-    is like [forwards: E] but it provides the resulting term
-    to a continuation, under the name [K], and it admits
-    any side-condition produced by the instantiation of [E],
-    using the [skip] tactic. *)
-
-Inductive ltac_goal_to_discard := ltac_goal_to_discard_intro.
-
+  admit_rewrite_all T.
 Ltac forwards_nounfold_skip_sides_then S cont :=
-  let MARK := fresh "TEMP" in
-  generalize ltac_goal_to_discard_intro;
-  intro MARK;
-  forwards_nounfold_then S ltac:(fun K =>
-    clear MARK;
-    cont K);
-  match goal with
-  | MARK: ltac_goal_to_discard |- _ => skip
-  | _ => idtac
-  end.
-
+  forwards_nounfold_admit_sides_then S cont.
+Tactic Notation "skip_induction" constr(E) :=
+  let IH := fresh "IH" in admit_goal IH; destruct E.
+Tactic Notation "skip_induction" constr(E) "as" simple_intropattern(I) :=
+  let IH := fresh "IH" in admit_goal IH; destruct E as I.
 
 
 (* ********************************************************************** *)
