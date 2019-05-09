@@ -1539,6 +1539,7 @@ Ltac equates_lemma n :=
   | 4 => constr:(equates_4)
   | 5 => constr:(equates_5)
   | 6 => constr:(equates_6)
+  | _ => fail 100 "equates tactic only support up to arity 6"
   end.
 
 Ltac equates_one n :=
