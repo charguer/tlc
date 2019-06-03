@@ -46,6 +46,7 @@ Set Implicit Arguments.
 
 Require Import Coq.Lists.List.
 
+Declare Scope ltac_scope.
 
 (* ********************************************************************** *)
 (** * Fixing Stdlib *)
@@ -55,7 +56,7 @@ Require Import Coq.Lists.List.
   Lemma test : forall b, b = false.
   time eauto 7. (* takes over 4 seconds  to fail! *) *)
 
-Remove Hints Bool.trans_eq_bool.
+Remove Hints Bool.trans_eq_bool : core.
 
 
 (* ********************************************************************** *)
@@ -628,7 +629,7 @@ Tactic Notation "protects" constr(E) "do" tactic(Tac) "/" :=
 
 Definition eq' := @eq.
 
-Hint Unfold eq'.
+Hint Unfold eq' : core.
 
 Notation "x '='' y" := (@eq' _ x y)
   (at level 70, y at next level).
@@ -5071,6 +5072,8 @@ Notation "'exists' x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 ',' P" :=
     it possible to simplify or push to the context let-bindings one by one. *)
 
 (** Definition of ['let] *)
+
+Declare Scope let_scope.
 
 Definition let_binding (A B:Type) (v:A) (K:A->B) := K v.
 

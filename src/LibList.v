@@ -27,9 +27,7 @@ Inductive list (A : Type) : Type :=
 Arguments nil {A}.
 Arguments cons {A}.
 
-Inductive create_liblist_scope.
-Notation "'create_liblist_scope'" := create_liblist_scope : liblist_scope.
-
+Declare Scope liblist_scope.
 Open Scope liblist_scope.
 Delimit Scope liblist_scope with list.
 Bind Scope liblist_scope with list.

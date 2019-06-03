@@ -83,6 +83,7 @@ Definition xor (x y:bool) : bool :=
 
 (** Notations *)
 
+Declare Scope Bool_scope.
 Bind Scope Bool_scope with bool. 
 Open Scope Bool_scope.
 

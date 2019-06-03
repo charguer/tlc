@@ -161,6 +161,8 @@ Definition list_covers A (E:set A) (L:list A) :=
 
 (** DISCLAIMER: these definitions are experimental, they'll probably change *)
 
+Declare Scope set_scope.
+
 Notation "\set{ x | P }" := (@set_st _ (fun x => P))
  (at level 0, x ident, P at level 200) : set_scope.
 Notation "\set{ x : A | P }" := (@set_st A (fun x => P))
