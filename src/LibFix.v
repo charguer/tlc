@@ -196,8 +196,7 @@ Definition partial_fixed_point'
 
 Definition partial_fixed_point
   A B (E:binary B) (F:(A->B)->(A->B)) (f:A-->B) :=
-  forall (f':A-->B), pfun_equiv E (dom f) f f' ->
-                     pfun_equiv E (dom f) f' (F f').
+  fixed_point (pfun_equiv E (dom f)) F f.
 
 (** Let us prove formally the equiv between the two definitions.
     (Note: it is also possible to state the lemma in a way that does
@@ -208,19 +207,12 @@ Lemma partial_fixed_point_definitions :
 Proof using.
   extens. intros A B E F f.
   unfold partial_fixed_point, partial_fixed_point'.
-  destruct f as [f P]. simpl. iff H.
+  destruct f as [f D]. simpl. iff H.
     intros [f' P'] [Eff' Pff']. simpls. subst.
-     hnf. simpl. splits~. applys (H (Build_partial f' P') Pff').
-    intros [f' P'] Eff'. simpls. forwards H1 H2: (H (Build_partial f' P)).
+     hnf. simpl. splits~.
+    intros f' Eff'. simpls. forwards H1 H2: (H (Build_partial f' D)).
      hnf. simpl. splits~. apply H2.
 Qed.
-
-(** A lemma to exploit the property of being a partial fixed point *)
-
-Lemma partial_fixed_point_inv : forall A B (P:A->Prop) F (f:A->B) (E:binary B),
-  partial_fixed_point E F (Build_partial f P) ->
-  fixed_point (pfun_equiv E P) F f.
-Proof using. introv Fixf. intros f' Hff'. apply~ (Fixf (Build_partial f' P)). Qed.
 
 
 (* *************************************************************** *)
@@ -269,7 +261,6 @@ Proof using.
     apply~ (trans_inv (f y)). unfold f. destruct_if.
     epsilon~ fj. intros [Sj Domj]. apply~ Cons. }
 Qed.
-
 
 (* ---------------------------------------------------------------------- *)
 (** ** Existence of the optimal fixed point *)
@@ -1052,7 +1043,7 @@ Proof using.
     apply fun_ext_2. intros f1 f2. unfold M, similar, pfun_equiv.
     apply prop_ext. simpl. split~.
   exists (Build_partial f P). destruct Fixf as [Fixf _]. split~.
-  unfolds in Fixf. intros [f' P']. simpls. rewrite~ Equ.
+  unfold partial_fixed_point. simpl. rewrite~ Equ.
 Qed.
 
 (** Moreover, we prove that such a unique fixed point is
@@ -1069,7 +1060,7 @@ Lemma rec_fixed_point_generally_consistent : forall A B {IB:Inhab B}
   generally_consistent_partial_fixed_point E F (Build_partial f P).
 Proof using.
   introv IB Equiv Comp Wf Cont Fixf Inva. split.
-  unfolds. simpl. intros [f' P'] N. simple~.
+  unfolds. simpl. apply Fixf.
   intros [f' P'] Fixf'.
    sets f'': (fun x => if classicT (P' x) then f' x else f x).
    intros x [Px P'x]. simpls.
@@ -1100,7 +1091,7 @@ Lemma rec_fixed_point_generally_consistent' : forall A B {IB:Inhab B}
   generally_consistent_partial_fixed_point E F (Build_partial f P).
 Proof using.
   introv IB Equiv Wf Cont Fixf. split.
-  unfolds. simpl. intros [f' P'] N. simple~.
+  unfolds. simpl. apply Fixf.
   intros [f' P'] Fixf'.
    sets f'': (fun x => if classicT (P' x) then f' x else f x).
    intros x [Px P'x]. simpls.
@@ -1275,8 +1266,8 @@ Proof using.
      apply~ (>> Limu Kix j x).
     apply~ mixed_contractive_as_contractive.
   exists (Build_partial f P). destruct Fixf as [Fixf _]. split.
-    unfolds in Fixf. rewrite corec_rec_similar in Fixf. rewrite SimE.
-     intros [f' P']. simpls~.
+    unfold partial_fixed_point. simpl.
+    rewrite corec_rec_similar in Fixf. rewrite SimE.  apply Fixf. 
     intros. apply~ (Qf (i,x)).
 Qed.
 
@@ -1296,7 +1287,7 @@ Lemma mixed_fixed_point_generally_consistent :
 Proof using.
   Hint Resolve pfun_equiv_equiv similar_equiv.
   introv IB Cofe WfR SimE. introv Conti Contr Fixf Inva.
-  subst E. split. unfolds. simpl. intros [f' P'] N. simple~.
+  subst E. split. unfolds. simpl. apply Fixf.
   intros [f' P'] Fixf'.
    sets f'': (fun x => if classicT (P' x) then f' x else f x).
    intros x [Px P'x]. simpls.
@@ -1748,7 +1739,7 @@ Proof using.
     forwards* [g Opt]: (@optimal_fixed_point_exists _ _ _ E F).
     exists g. apply~ Fix_prop_of_optimal.
   intros [Fixg Bestg]. subst f.
-  lets Fixf: (proj1 Gcf'). lets Fixf': (partial_fixed_point_inv Fixf).
+  lets Fixf: (proj1 Gcf').
   rewrite partial_fixed_point_definitions in Fixf.
   lets [ED MG]: (Bestg _ Fixf). forwards~ [Dom Equ]: ED.
 Qed.
@@ -1775,7 +1766,6 @@ Proof using.
   intros [Fixg Bestg]. subst f.
   forwards~ (f&Fixf&Inv): (@rec_fixed_point _ _ _ F R P S E).
   lets Fixf': Fixf. rewrite partial_fixed_point_definitions in Fixf'.
-  lets Fixf'': (partial_fixed_point_inv Fixf).
   lets [ED MG]: (Bestg _ Fixf').
   forwards [Dom Equ]: ED.
     eapply rec_fixed_point_generally_consistent with (R:=R); eauto.
@@ -1934,7 +1924,6 @@ Proof using.
   intros [Fixg Bestg]. subst f.
   forwards~ (f&Fixf&Inv): (@mixed_fixed_point _ _ _ _ M E P F R S).
   lets Fixf': Fixf. rewrite partial_fixed_point_definitions in Fixf'.
-  lets Fixf'': (partial_fixed_point_inv Fixf).
   lets [ED MG]: (Bestg _ Fixf').
   forwards [Dom Equ]: ED.
     eapply mixed_fixed_point_generally_consistent with (R:=R); eauto.
