@@ -191,7 +191,7 @@ Definition partial_fixed_point'
 
 (** An equivalent definition of a partial fixed point is the following:
     The partial function [f] is a fixed point of [F] modulo [E] iff
-    for any partial function [f'] equal to [f] on the domain of [f],
+    for any function [f'] equivalent to [f] on the domain of [f],
     [f'] is equivalent to [F f'] on the domain of [f]. *)
 
 Definition partial_fixed_point
@@ -212,6 +212,15 @@ Proof using.
      hnf. simpl. splits~.
     intros f' Eff'. simpls. forwards H1 H2: (H (Build_partial f' D)).
      hnf. simpl. splits~. apply H2.
+Qed.
+
+Lemma partial_fixed_point_definitions' A B F (f:A-->B) (E:binary B) :
+  partial_fixed_point E F f <->
+  forall (f':A-->B), pfun_equiv E (dom f) f f' ->
+                     pfun_equiv E (dom f) f' (F f').
+Proof using.
+  split; intros Fixf f' Eff'.
+    apply~  Fixf. apply~ (Fixf (Build_partial f' (dom f))).
 Qed.
 
 
