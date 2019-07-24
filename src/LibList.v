@@ -845,11 +845,11 @@ Lemma Nth_app_l : forall n x l1 l2,
   Nth n (l1 ++ l2) x.
 Proof using. intros n. induction n; introv H; inverts H; rew_list*. Qed.
 
-Lemma Nth_app_r : forall n m x l1 l2,
-  Nth m l2 x ->
-  Nth (m + length l1)%nat (l1 ++ l2) x.
+Lemma Nth_app_r : forall n x l1 l2,
+  Nth n l2 x ->
+  Nth (n + length l1)%nat (l1 ++ l2) x.
 Proof using.
-  intros. gen m. induction l1; introv H; rew_list.
+  intros. gen n. induction l1; introv H; rew_list.
   { applys_eq~ H 3. }
   { applys_eq* Nth_succ 3. }
 Qed.
@@ -1215,7 +1215,43 @@ Proof using.
   { introv. rewrite rev_cons. rew_listx~. }
 Qed.
 
-(* --TODO: Nth_rev and nth_rev *)
+Lemma Nth_rev : forall n x l,
+  Nth n l x -> 
+  Nth (length l - 1 - n) (rev l) x.
+Proof using.
+  introv. sets_eq N: (length l). gen x n l.
+  induction N; introv E I; destruct l; tryfalse.
+  { inverts I. }
+  { rewrite rev_cons. inverts I as I.
+    { applys Nth_app_r' 0.
+      { constructors. }
+      { rewrite length_rev. rewrite length_cons in E. math. } }
+    { rew_list in E. lets K: IHN I. { math. }
+      apply Nth_app_l. applys_eq K 3. math. } }
+Qed.
+
+Lemma Nth_rev' : forall n x l,
+  n < length l ->
+  Nth (length l - 1 - n) l x -> 
+  Nth n (rev l) x.
+Proof using.
+  introv L M. applys_eq (>> Nth_rev M) 3. math.
+Qed.
+
+Lemma Nth_rev_inv : forall n x l,
+  Nth n (rev l) x -> 
+  Nth (length l - 1 - n) l x.
+Proof using.
+  introv N. lets K: Nth_rev N. rewrite rev_rev, length_rev in K. auto.
+Qed.
+
+Lemma nth_rev : forall `{Inhab A} n l,
+  n < length l ->
+  nth n (rev l) = nth (length l - 1 - n) l.
+Proof using.
+  introv L. applys nth_of_Nth. applys~ Nth_rev'.
+  applys~ Nth_of_nth. math.
+Qed.
 
 End Rev.
 
@@ -1612,6 +1648,17 @@ Proof using.
   introv M. induction M; rew_listx; auto.
 Qed.
 
+Lemma Nth_map_inv : forall (A B:Type) (f:A->B) (l:list A) n (y:B),
+  Nth n (map f l) y ->
+  exists x, y = f x /\ Nth n l x.
+Proof using.
+  introv N. gen n. induction l; introv N.
+  { inverts N. }
+  { rewrite map_cons in N. inverts N as N.
+    { autos*. }
+    { lets (x&E&N'): IHl N. exists* x. } }
+Qed.
+
 Lemma nth_map : forall `{IA:Inhab A} `{IB:Inhab B} (f:A->B) (l:list A) n,
   n < length l ->
   nth n (map f l) = f (nth n l).
@@ -1746,6 +1793,18 @@ Proof using.
     case_if~; rew_listx~.
 Qed.
 
+Lemma filter_eq_self_of_mem_implies_P : forall l P,
+  (forall x, mem x l -> P x) ->
+  filter P l = l.
+Proof using.
+  induction l; introv M.
+  { auto. }
+  { rewrite filter_cons. case_if.
+    { fequals. applys IHl. introv Mx. applys* M. }
+    { false* M. } }
+Qed.
+(** See also [filter_of_Forall] *)
+
 Lemma mem_filter_eq : forall x P l,
   mem x (filter P l) = (mem x l /\ P x).
 Proof using.
@@ -1789,9 +1848,11 @@ Qed.
 Lemma filter_length_partition : forall P l,
     length (filter (fun x => P x) l)
   + length (filter (fun x => ~ P x) l)
-  <= length l.
+  = length l.
 Proof using.
-  intros. applys~ filter_length_two_disjoint P (fun x => ~ P x) l.
+  introv. induction l.
+  { rew_list. nat_math. }
+  { repeat rewrite filter_cons. repeat case_if; rew_list; math. }
 Qed.
 
 Lemma length_filter_eq_mem_ge_one : forall x l,
@@ -1830,6 +1891,14 @@ Implicit Types l : list A.
 Lemma remove_as_filter : forall a l,
   remove a l = filter (<> a) l.
 Proof using. auto. Qed.
+
+Lemma remove_not_mem : forall x l,
+  ~ mem x l ->
+  remove x l = l.
+Proof using.
+  intros. applys filter_eq_self_of_mem_implies_P. 
+  intros y My ->. false.
+Qed.
 
 Lemma mem_remove_eq : forall x a l,
   mem x (remove a l) = (mem x l /\ x <> a).
@@ -1871,6 +1940,8 @@ Qed.
 End Remove.
 
 Opaque remove.
+
+(* -- LATER: [remove_several] as an iteration of [remove] *)
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2012,7 +2083,16 @@ Proof using.
   intros. rewrite remove_as_filter. applys* noduplicates_filter.
 Qed.
 
-(* --TODO: noduplicates_rev *)
+Lemma noduplicates_rev : forall l,
+  noduplicates l ->
+  noduplicates (rev l).
+Proof using.
+  introv M. apply~ noduplicates_Nth_same. introv N1 N2.
+  lets N1': Nth_rev_inv N1. lets N2': Nth_rev_inv N2.
+  lets I1: Nth_inbound N1. lets I2: Nth_inbound N2.
+  rewrite length_rev in *.
+  lets: noduplicates_Nth_same_inv M N1' N2'. math.
+Qed.
 
 End Noduplicates.
 
@@ -2773,6 +2853,14 @@ Lemma Forall_pred_incl : forall P Q l,
   pred_incl P Q ->
   Forall Q l.
 Proof using. introv. induction l; introv H L; inverts* H. Qed.
+
+Lemma filter_eq_self_of_Forall : forall l P,
+  Forall P l ->
+  filter P l = l.
+Proof using.
+  introv M. rewrite Forall_eq_forall_mem in M.
+  applys* filter_eq_self_of_mem_implies_P.
+Qed.
 
 Lemma Forall_filter_same : forall P l,
   Forall P (filter P l).
