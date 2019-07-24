@@ -133,6 +133,8 @@ Definition foreach `{BagIn A T} (P:A->Prop) (E:T) :=
 (* ---------------------------------------------------------------------- *)
 (** ** [index] for natural numbers *)
 
+Local Open Scope Int_scope.
+
 Instance int_index : BagIndex int int.
 Proof using. intros. constructor. exact (fun n (i:int) => 0 <= i < n). Defined.
 

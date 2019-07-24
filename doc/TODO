@@ -1,3 +1,14 @@
+
+*) branch new_read_update_lemmas:
+	probably discard it eventually, does not seem to work well
+
+*) branch new_index:
+	should be merged eventually, after checking that the new treatment of indices works well.
+
+
+=========================
+
+
 +list.combine => should be arbitrary in case (nil,cons).
 
 ++rename Constant TLC.LibEqual.exist_eq_exist

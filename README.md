@@ -24,9 +24,8 @@ TLC is a general-purpose library that provides an alternative to Coq's standard 
 
 Status:
 
-   - The current version of TLC works with Coq 8.6 and 8.7.
-   - TLC 2.0 (beta) was released in November 2017, with a complete polishing phase.
-
+   - The master branch compiles with both Coq 8.8 and Coq 8.9.
+     There is also a branch for Coq 8.10.
 
 Compatibility:
 

@@ -9,5 +9,6 @@ From TLC Require Export LibRelation LibOrder LibWf.
 Export LibTacticsCompatibility.
 
 Open Scope Z_scope.
+Open Scope Int_scope.
 Open Scope comp_scope.
 

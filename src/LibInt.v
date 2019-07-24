@@ -17,20 +17,13 @@ From TLC Require Export LibNat.
 (* ---------------------------------------------------------------------- *)
 (** ** Notation for type and operation *)
 
-(** Define [int] as an alias for [Z], the type of integers from Coq's stdlib.
-    Create a scope called [Int_scope] for notation on integers. *)
+(** Define [int] as an alias for [Z], the type of integers from Coq's stdlib. *)
 
 Declare Scope Int_scope.
 Notation "'int'" := Z : Int_scope.
-
-Infix "+" := Zplus : Int_scope.
-Notation "- x" := (Z.opp x) : Int_scope.
-Infix "-" := Zminus : Int_scope.
-Infix "*" := Zmult : Int_scope.
-
-Bind Scope Int_scope with Z.
 Delimit Scope Int_scope with I.
-Open Scope Int_scope.
+
+Local Open Scope Int_scope.
 
 
 (* ---------------------------------------------------------------------- *)

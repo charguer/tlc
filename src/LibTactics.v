@@ -369,7 +369,7 @@ Ltac fast_rm_inside E :=
     we provide a conversion tactic.
 
     Note: the tactic [number_to_nat] is extended in [LibInt] to
-    take into account the [int] type, alias for [Z]. *)
+    take into account the [Z] type. *)
 
 Require Coq.Numbers.BinNums Coq.ZArith.BinInt.
 

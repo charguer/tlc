@@ -15,6 +15,7 @@
 
 Set Implicit Arguments.
 From TLC Require Import LibCore LibSet.
+Local Open Scope Int_scope.
 
 (*-----------------------------------------------------------*)
 
