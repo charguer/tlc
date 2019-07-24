@@ -11,6 +11,7 @@ From TLC Require Export LibList LibNat.
 From TLC Require Import LibInt.
 From TLC Require Export LibContainer.
 
+Open Scope Int_scope.
 Local Open Scope comp_scope.
 
 Ltac auto_tilde ::= eauto with maths.

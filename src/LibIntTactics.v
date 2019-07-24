@@ -69,7 +69,7 @@ Ltac nat_math_nia :=
 
 Definition Zdiv_hyp (P:Prop) := P.
 
-Lemma Z_div_mod' : forall a b : int,
+Lemma Z_div_mod' : forall a b : Z,
   Zdiv_hyp ((b > 0)%Z) ->
   let (q, r) := Z.div_eucl a b in
   a = (b * q)%I + r /\ (0 <= r < b)%Z.
@@ -121,31 +121,31 @@ Tactic Notation "math_dia" :=
 (** --Commented out so that the compilation does not fail in the absence 
       of the CSDP package...
 
-Lemma math_nia_demo_1 : forall (a b N : int),
+Lemma math_nia_demo_1 : forall (a b N : Z),
   N > 0 ->
   a * N <= b * N ->
   a <= b.
 Proof using. math_nia. Qed.
 
-Lemma math_dia_demo_1 : forall (a b t : int),
+Lemma math_dia_demo_1 : forall (a b t : Z),
   t > 0 ->
   a <= b ->
   a / t <= b / t.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_2 : forall (a t : int),
+Lemma math_dia_demo_2 : forall (a t : Z),
   t > 1 ->
   a > 0 ->
   a / t <= a.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_3 : forall (a b t : int),
+Lemma math_dia_demo_3 : forall (a b t : Z),
   t > 0 ->
   0 <= a <= b ->
   a / t <= b / t.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_4 : forall (a b N : int),
+Lemma math_dia_demo_4 : forall (a b N : Z),
   N > 0 ->
   a > 0 ->
   b > 0 ->
@@ -153,7 +153,7 @@ Lemma math_dia_demo_4 : forall (a b N : int),
   a <= b.
 Proof using. math_dia. Qed.
 
-Lemma math_dia_demo_5 : forall (a b N t : int),
+Lemma math_dia_demo_5 : forall (a b N t : Z),
   N > 0 ->
   t > 1 ->
   a > 0 ->
@@ -173,7 +173,7 @@ Qed.
 
 
 (*--- FUTURE WORK
-Lemma math_dia_demo_span_1 : forall (a b t n N : int),
+Lemma math_dia_demo_span_1 : forall (a b t n N : Z),
   N > 0 ->
   n > 0 ->
   t > 0 ->

@@ -218,26 +218,26 @@ Qed.
 
 
 (* ********************************************************************** *)
-(* * Classic well-founded relations on [int] *)
+(* * Classic well-founded relations on [Z] *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** The relation "less than" on the set of
        integers greater than a fixed lower bound. *)
 
-Definition downto (b:int) :=
-  fun (n m:int) => (b <= n) /\ (n < m).
+Definition downto (b:Z) :=
+  fun (n m:Z) => (b <= n) /\ (n < m).
 
-Lemma downto_eq : forall (b n m:int),
+Lemma downto_eq : forall (b n m:Z),
   downto b n m = (b <= n /\ n < m).
 Proof using. auto. Qed.
 
-Lemma downto_intro : forall (b n m:int),
+Lemma downto_intro : forall (b n m:Z),
   b <= n ->
   n < m ->
   downto b n m.
 Proof using. split~. Qed.
 
-Lemma wf_downto : forall (b:int),
+Lemma wf_downto : forall (b:Z),
   wf (downto b).
 Proof using.
   intros b n.
@@ -255,8 +255,8 @@ Hint Extern 1 (downto _ _ _) => math : maths.
 (** ** The relation "greater than" on the set of
        integers lower than a fixed upper bound. *)
 
-Definition upto (b:int) :=
-  fun (n m:int) => (n <= b) /\ (m < n).
+Definition upto (b:Z) :=
+  fun (n m:Z) => (n <= b) /\ (m < n).
 
 Lemma upto_eq : forall b n m,
   upto b n m = ((n <= b) /\ (m < n)).
