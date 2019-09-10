@@ -3546,6 +3546,8 @@ Variables (A B:Type).
 Implicit Types m : monoid_op B.
 Implicit Types l : list A.
 Implicit Types f g : A->B.
+Hint Resolve @Monoid_neutral_r_of_Monoid @Monoid_neutral_l_of_Monoid
+ @Monoid_assoc_of_Monoid @Monoid_comm_of_Comm_Monoid.
 
 Lemma fold_nil : forall m f,
   fold m f nil = monoid_neutral m.
@@ -3559,7 +3561,8 @@ Lemma fold_one : forall m f x,
   Monoid m ->
   fold m f (x::nil) = f x.
 Proof using.
-  intros. rewrite fold_cons, fold_nil. rewrite~ monoid_neutral_r.
+  intros. rewrite fold_cons, fold_nil.
+  rewrite* @monoid_neutral_r.
 Qed.
 
 Lemma fold_app : forall m f l1 l2,
@@ -3568,8 +3571,8 @@ Lemma fold_app : forall m f l1 l2,
 Proof using.
   unfold fold. intros. rewrite fold_right_app. gen l2.
   induction l1; intros.
-  repeat rewrite fold_right_nil. rewrite~ monoid_neutral_l.
-  repeat rewrite fold_right_cons. rewrite <- monoid_assoc. fequals.
+  repeat rewrite fold_right_nil. rewrite* @monoid_neutral_l.
+  repeat rewrite~ fold_right_cons. rewrite* <- @monoid_assoc. fequals.
 Qed.
 
 Lemma fold_last : forall m f x l,
@@ -3608,7 +3611,7 @@ Proof using. (* --TODO: cleanup *)
      exists (b::L'). splits.
        do 3 rewrite fold_cons. rewrite EL'.
         rewrite fold_cons. do 2 rewrite monoid_assoc.
-        rewrite~ (monoid_comm (f b)).
+        rewrites~ (>> (@monoid_comm) (f b)).
        intros x. specializes EQ x. rewrite mem_cons_eq in EQ.
         do 3 rewrite mem_cons_eq. autos*.
        inverts DL'. constructors.
