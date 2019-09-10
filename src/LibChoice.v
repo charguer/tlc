@@ -72,7 +72,7 @@ Lemma guarded_functional_choice : forall A `{Inhab B} (P : A->Prop) (R : A->B->P
   (exists f, forall x, P x -> R x (f x)).
 Proof using.
   intros. apply (functional_choice (fun x y => P x -> R x y)).
-  intros. apply~ indep_general_premises.
+  intros. apply~ @indep_general_premises.
 Qed.
 
 
