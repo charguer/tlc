@@ -715,8 +715,8 @@ Lemma make_COFE : forall I A {IA:Inhab A} (M:family I A),
   COFE M.
 Proof using. intros. asserts: (OFE M). constructor~. constructor~. Qed.
 
-Hint Resolve @complete_to_locally_complete
-             @complete_to_globally_complete.
+Hint Resolve complete_to_locally_complete
+             complete_to_globally_complete.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -850,9 +850,7 @@ Proof using.
      family_sim M j (v j) (v i)).
     intros i j Rji Cohi Cohj Qk. do 2 rewrite Fixv. unfold V.
     forwards* (l1&El1&L1): (>> (@local_limit_dep_name I) j).
-    { applys* complete_to_locally_complete. }
     forwards* (l2&El2&L2): (>> (@local_limit_dep_name I) i).
-    { applys* complete_to_locally_complete. }
     rewrite El1. rewrite El2. clear El1 El2.
     apply (proj1 (forall_conj_inv_4 Contr)). intros k Rkj.
     asserts Rkj': (family_r M k i). apply* ofe_trans. splits.
@@ -871,7 +869,6 @@ Proof using.
     (* step the invariant *)
     introv Cohi. rewrite Fixv. unfold V.
     forwards* (l&El&L): (>> (@local_limit_dep_name I) i).
-    { applys* complete_to_locally_complete. }
     rewrite El. clear El. (* --TODO: limitation of forward *)
     applys~ (contractive_to_invariant Cofe Contr).
     introv Rji. applys~ (Conti (predecessor i) v).
@@ -890,7 +887,6 @@ Proof using.
     applys~ (trans_sym_rl l). applys~ (trans_sym_rl (v j)).
      applys~ local_limit_dep_inv.
     forwards* (l1&El1&L1): (>> (@local_limit_dep_name I) i).
-    { applys* complete_to_locally_complete. }
      rewrite El1. clear El1. applys~ (Conti (predecessor i) v).
     applys~ (Conti pred_true v). intros k _. applys~ (trans_inv l).
   (* 2- uniqueness *)
@@ -1578,25 +1574,25 @@ Definition FixFun2Mod B {IB:Inhab B} (E:binary B)
    A1 A2 (F:(A1->A2->B)->(A1->A2->B)) :=
   curry2 (FixFunMod E (fun f' => uncurry2 (F (curry2 f')))).
 
-Definition FixFun2 B {IB:Inhab B} := FixFun2Mod (B:=B) eq.
+Definition FixFun2 B {IB:Inhab B} := FixFun2Mod eq.
 
 Definition FixFun3Mod B {IB:Inhab B} (E:binary B)
   A1 A2 A3 (F:(A1->A2->A3->B)->(A1->A2->A3->B)) :=
   curry3 (FixFunMod E (fun f' => uncurry3 (F (curry3 f')))).
 
-Definition FixFun3 B {IB:Inhab B} := FixFun3Mod (B:=B) eq.
+Definition FixFun3 B {IB:Inhab B} := FixFun3Mod eq.
 
 Definition FixFun4Mod B {IB:Inhab B} (E:binary B)
   A1 A2 A3 A4 (F:(A1->A2->A3->A4->B)->(A1->A2->A3->A4->B)) :=
   curry4 (FixFunMod E (fun f' => uncurry4 (F (curry4 f')))).
 
-Definition FixFun4 B {IB:Inhab B} := FixFun4Mod (B:=B) eq.
+Definition FixFun4 B {IB:Inhab B} := FixFun4Mod eq.
 
 Definition FixFun5Mod B {IB:Inhab B} (E:binary B)
   A1 A2 A3 A4 A5 (F:(A1->A2->A3->A4->A5->B)->(A1->A2->A3->A4->A5->B)) :=
   curry5 (FixFunMod E (fun f' => uncurry5 (F (curry5 f')))).
 
-Definition FixFun5 B {IB:Inhab B} := FixFun5Mod (B:=B) eq.
+Definition FixFun5 B {IB:Inhab B} := FixFun5Mod eq.
 
 
 (* ---------------------------------------------------------------------- *)

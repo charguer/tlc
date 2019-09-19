@@ -245,12 +245,12 @@ Qed.
 (* [MMin P] is [mmin le P], in a context where the desired
    ordering can be inferred. *)
 
-Definition MMin `{Inhab A} `{Le A} := mmin (le (A:=A)).
+Definition MMin `{Inhab A} `{Le A} := mmin le.
 
 (* [MMax P] is [mmax le P], in a context where the desired
    ordering can be inferred. *)
 
-Definition MMax `{Inhab A} `{Le A} := mmax (le (A:=A)).
+Definition MMax `{Inhab A} `{Le A} := mmax le.
 
 
 

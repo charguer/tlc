@@ -32,8 +32,6 @@ Definition sig_proof (A : Type) (P : A->Prop) (e : sig P) : P (sig_val e) :=
 (** The proposition [Inhab A] captures the fact that the type [A] is
     inhabited (i.e., there exists at least one value of type [A]). *)
 
-Set Typeclasses Strict Resolution.
-
 Class Inhab (A:Type) : Prop :=
   { Inhab_intro : (exists (x:A), True) }.
 
@@ -216,7 +214,7 @@ Lemma indep_general_premises :
 Proof using.
   introv I M. destruct (prop_inv Q).
   destruct* (M H).
-  exists (arbitrary (A:=A)). auto_false.
+  exists arbitrary. auto_false.
 Qed.
 
 (** Small drinker's paradox *)
@@ -226,7 +224,7 @@ Lemma small_drinker_paradox : forall `{Inhab A} (P : A -> Prop),
 Proof using.
   intros A I P. destruct (prop_inv (exists x, P x)).
   destruct H. exists x. auto.
-  exists (arbitrary (A:=A)). auto_false.
+  exists arbitrary. auto_false.
 Qed.
 
 

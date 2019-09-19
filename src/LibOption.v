@@ -70,7 +70,7 @@ Definition unsome_default A d (o:option A) :=
     value in case the option in [None]. *)
 
 Definition unsome `{Inhab A} :=
-  unsome_default (arbitrary (A:=A)).
+  unsome_default arbitrary.
 
 
 (* ---------------------------------------------------------------------- *)
