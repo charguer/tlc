@@ -910,7 +910,7 @@ Lemma fold_single : forall A B (m:monoid_op B) (f:A->B) (x:A),
 Proof using.
   intros. rewrite fold_eq_fold_to_list.
   rewrite to_list_single. rewrite~ fold_cons.
-  rewrite fold_nil. rewrite~ @monoid_neutral_r. typeclass.
+  rewrite fold_nil. rewrite~ monoid_neutral_r.
 Qed.
 
 Lemma fold_union : forall A B (m:monoid_op B) (f:A->B) (E F:set A),

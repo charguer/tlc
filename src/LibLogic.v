@@ -4,8 +4,6 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Set Typeclasses Unique Instances.
-Set Typeclasses Strict Resolution.
 From TLC Require Import LibTactics.
 From TLC Require Export LibAxioms LibEqual.
 Generalizable Variables A B P.
@@ -33,6 +31,8 @@ Definition sig_proof (A : Type) (P : A->Prop) (e : sig P) : P (sig_val e) :=
 
 (** The proposition [Inhab A] captures the fact that the type [A] is
     inhabited (i.e., there exists at least one value of type [A]). *)
+
+Set Typeclasses Strict Resolution.
 
 Class Inhab (A:Type) : Prop :=
   { Inhab_intro : (exists (x:A), True) }.

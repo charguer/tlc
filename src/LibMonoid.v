@@ -10,7 +10,6 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Set Typeclasses Strict Resolution.
 From TLC Require Import LibTactics LibLogic LibOperation.
 Generalizable Variables A B.
 

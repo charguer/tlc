@@ -4,7 +4,6 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-(* Set Typeclasses Strict Resolution. -- not very realistic with notation *)
 From TLC Require Import LibTactics LibLogic LibReflect
   LibRelation LibOperation LibInt LibMonoid.
 Generalizable Variables A B K T.
@@ -34,7 +33,7 @@ Class BagDom T K := { dom : T -> K }.
 Class BagImg T K := { img : T -> K }.
 Class BagIndex A T := { index : T -> A -> Prop }.
 
-Definition notin `{BagIn A T} (x:A) (m:T) :=
+Definition notin `{BagIn A T} x m :=
   ~ (is_in x m).
 
 (*-- LATER: make [finite] a typeclass *)

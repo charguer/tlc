@@ -4,7 +4,6 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-(* Set Typeclasses Strict Resolution. -- not realistic with notations *)
 From TLC Require Import LibTactics LibLogic LibReflect LibOperation LibRelation.
 Generalizable Variables A.
 
@@ -432,22 +431,22 @@ Global Opaque le lt ge gt.
 (** Structures *)
 
 Class Le_preorder `{Le A} : Prop :=
-  { le_preorder : preorder (le (A:=A)) }.
+  { le_preorder : preorder le }.
 
 Class Le_total_preorder `{Le A} : Prop :=
-  { le_total_preorder : total_preorder (le (A:=A)) }.
+  { le_total_preorder : total_preorder le }.
 
 Class Le_order `{Le A} : Prop :=
-  { le_order : order (le (A:=A)) }.
+  { le_order : order le }.
 
 Class Le_total_order `{Le A} : Prop :=
-  { le_total_order : total_order (le (A:=A)) }.
+  { le_total_order : total_order le }.
 
 Class Lt_strict_order `{Lt A} : Prop :=
-  { lt_strict_order : strict_order (lt (A:=A)) }.
+  { lt_strict_order : strict_order lt }.
 
 Class Lt_strict_total_order `{Lt A} : Prop :=
-  { lt_strict_total_order : strict_total_order (lt (A:=A)) }.
+  { lt_strict_total_order : strict_total_order lt }.
 
 (** Notation *)
 
@@ -484,17 +483,17 @@ Instance lt_of_le : forall `{Le A}, Lt A.
 Instance gt_of_le : forall `{Le A}, Gt A.
   constructor. apply (inverse lt). Defined.
 
-Lemma ge_is_inverse_le : forall `{Le A}, ge = inverse (le (A:=A)).
+Lemma ge_is_inverse_le : forall `{Le A}, ge = inverse le.
 Proof using. extens*. Qed.
 
-Lemma lt_is_strict_le : forall `{Le A}, lt = strict (le (A:=A)).
+Lemma lt_is_strict_le : forall `{Le A}, lt = strict le.
 Proof using. extens*. Qed.
 
-Lemma gt_is_inverse_lt : forall `{Le A}, gt = inverse (lt (A:=A)).
+Lemma gt_is_inverse_lt : forall `{Le A}, gt = inverse lt.
 Proof using. extens*. Qed.
 
-Lemma gt_is_inverse_strict_le : forall `{Le A}, (gt (A:=A)) = inverse (strict (le (A:=A))).
-Proof using. extens. intros. rewrite gt_is_inverse_lt. rewrite* @lt_is_strict_le. Qed.
+Lemma gt_is_inverse_strict_le : forall `{Le A}, gt = inverse (strict le).
+Proof using. extens. intros. rewrite gt_is_inverse_lt. rewrite* lt_is_strict_le. Qed.
 
 Global Opaque ge_of_le lt_of_le gt_of_le.
 
@@ -511,29 +510,29 @@ Tactic Notation "rew_to_le_lt" :=
   autorewrite with rew_to_le_lt in *.
 
 Lemma gt_is_strict_inverse_le : forall `{Le A}, 
-  (gt (A:=A)) = strict (inverse (le (A:=A))).
+  gt = strict (inverse le).
 Proof using. intros. rew_to_le. apply inverse_strict. Qed.
 
 Lemma le_is_rclosure_lt : forall `{Le A},
-  refl (le (A:=A)) -> 
-  (le (A:=A)) = rclosure (lt (A:=A)).
+  refl le -> 
+  le = rclosure lt.
 Proof using. intros. rew_to_le. rewrite~ rclosure_strict. Qed.
 
 Lemma le_is_inverse_ge : forall `{Le A}, 
-  (le (A:=A)) = inverse (ge (A:=A)).
+  le = inverse ge.
 Proof using. intros. rew_to_le. rewrite~ inverse_inverse. Qed.
 
 Lemma lt_is_inverse_gt : forall `{Le A}, 
-  (lt (A:=A)) = inverse (gt (A:=A)).
+  lt = inverse gt.
 Proof using. intros. rew_to_le. rewrite~ inverse_inverse. Qed.
 
 Lemma gt_is_strict_ge : forall `{Le A}, 
-  (gt (A:=A)) = strict (ge (A:=A)).
+  gt = strict ge.
 Proof using. intros. rew_to_le. apply inverse_strict. Qed.
 
 Lemma ge_is_rclosure_gt : forall `{Le A},
-  refl (le (A:=A)) -> 
-  (ge (A:=A)) = rclosure gt.
+  refl le -> 
+  ge = rclosure gt.
 Proof using. intros. rewrite gt_is_strict_ge. rewrite~ rclosure_strict. Qed.
 
 
