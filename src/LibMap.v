@@ -245,11 +245,11 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** indom *)
 
-Lemma indom_empty_inv : forall A B x,
+Lemma indom_empty_inv : forall A B (x:A),
   x \indom (\{} : map A B) ->
   False.
 Proof using.
-  intros. rewrite dom_empty in *. eapply in_empty; typeclass.
+  introv M. rewrite dom_empty in *. applys @in_empty M. typeclass.
 Qed.
 
 
