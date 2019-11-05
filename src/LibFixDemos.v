@@ -314,7 +314,9 @@ Qed.
 
 
 (* ********************************************************************** *)
-(** * Integer division (binary function) *)
+(** * Integer division on nat (binary function) *)
+
+Module DivNat.
 
 (** [div n m] returns a pair [(q,r)] such that
     [n = q*m + r] with [r < m]. Its definition involves
@@ -334,6 +336,8 @@ Proof using.
   introv Posm IH. unfold Div. case_if~.
   rewrite~ IH. unfolds. simpl. math.
 Qed.
+
+End DivNat.
 
 
 (* ********************************************************************** *)
@@ -356,10 +360,9 @@ Definition div := FixFun2 Div.
 Lemma fix_div : forall n m, n >= 0 /\ m > 0 ->
   div n m = Div div n m.
 Proof using.
-  applys~ (FixFun2_fix_partial (measure (fun p => let '(n,m) := p:Z*Z in to_nat n))).
+  applys~ (FixFun2_fix_partial (unproj21 Z (downto 0))).
   introv (Hn&Hm) IH. unfold Div. case_if~.
-  rewrite* IH.
-  { unfolds. nat_comp_to_peano. applys* Z2Nat.inj_lt. }
+  rewrite* IH. { hnf. math. }
 Qed.
 
 End DivInt.
