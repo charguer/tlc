@@ -320,9 +320,9 @@ Qed.
     [n = q*m + r] with [r < m]. Its definition involves
     non-structural recursion. *)
 
-Definition Div div n m :=
+Definition Div div (n:nat) (m:nat) : nat*nat :=
   If n < m then (0,n)
-  else let (q,r) := div (n-m) m : nat*nat in
+  else let '(q,r) := div (n-m) m in
        (q+1,r).
 
 Definition div := FixFun2 Div.
@@ -335,6 +335,34 @@ Proof using.
   rewrite~ IH. unfolds. simpl. math.
 Qed.
 
+
+(* ********************************************************************** *)
+(** * Integer division on int (binary function) *)
+
+Module DivInt.
+Import LibInt.
+
+(** [div n m] returns a pair [(q,r)] such that
+    [n = q*m + r] with [r < m]. Its definition involves
+    non-structural recursion. *)
+
+Definition Div div (n:Z) (m:Z) : Z*Z :=
+  If n < m then (0,n)
+  else let '(q,r) := div (n-m) m in
+       (q+1,r).
+
+Definition div := FixFun2 Div.
+
+Lemma fix_div : forall n m, n >= 0 /\ m > 0 ->
+  div n m = Div div n m.
+Proof using.
+  applys~ (FixFun2_fix_partial (measure (fun p => let '(n,m) := p:Z*Z in to_nat n))).
+  introv (Hn&Hm) IH. unfold Div. case_if~.
+  rewrite* IH.
+  { unfolds. nat_comp_to_peano. applys* Z2Nat.inj_lt. }
+Qed.
+
+End DivInt.
 
 
 (* ********************************************************************** *)
