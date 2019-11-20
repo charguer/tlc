@@ -249,7 +249,7 @@ Lemma indom_empty_inv : forall A B x,
   x \indom (\{} : map A B) ->
   False.
 Proof using.
-  intros. rewrite dom_empty in *. eapply in_empty; typeclass.
+  intros. rewrite dom_empty in *. eapply in_empty; eauto with typeclass_instances.
 Qed.
 
 
