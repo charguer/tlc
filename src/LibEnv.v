@@ -80,7 +80,7 @@ Parameter get_def :
 
 End Definitions.
 
-Arguments empty [A].
+Arguments empty {A}.
 
 End EnvOpsSig.
 
@@ -162,12 +162,14 @@ Proof using. reflexivity. Qed.
 
 End Concrete.
 
-Arguments empty [A].
+Arguments empty {A}.
 
 End EnvOps.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Notations *)
+
+Declare Scope env_scope.
 
 (** [x ~ a] is the notation for a singleton environment mapping x to a. *)
 

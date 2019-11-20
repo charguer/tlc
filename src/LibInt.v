@@ -19,6 +19,7 @@ From TLC Require Export LibNat.
 
 (** Define [int] as an alias for [Z], the type of integers from Coq's stdlib. *)
 
+Declare Scope Int_scope.
 Notation "'int'" := Z : Int_scope.
 Delimit Scope Int_scope with I.
 

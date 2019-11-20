@@ -178,7 +178,7 @@ Qed.
 (** Definition *)
 
 Record total_order A (R:binary A) : Prop := {
-   total_order_order :> order R;
+   total_order_order : order R;
    total_order_total : total R }.
 
 (** Projections *)
@@ -449,6 +449,8 @@ Class Lt_strict_total_order `{Lt A} : Prop :=
   { lt_strict_total_order : strict_total_order lt }.
 
 (** Notation *)
+
+Declare Scope comp_scope.
 
 Notation "x <= y" := (le x y)
   (at level 70, no associativity) : comp_scope.
@@ -1082,6 +1084,8 @@ Open Scope comp_scope.
 
 (** Additional notation for reflected boolean comparison.
     Use [Open Scope comp_scope_reflect] to use them. *)
+
+Declare Scope comp_scope_reflect.
 
 Notation "x ''<=' y" := (isTrue (@le _ _ x y))
   (at level 70, no associativity) : comp_scope_reflect.

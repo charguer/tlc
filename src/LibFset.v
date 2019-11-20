@@ -52,6 +52,8 @@ Arguments empty {A}.
 
 (** Notations *)
 
+Declare Scope fset_scope.
+
 Notation "\{}" := (empty) : fset_scope.
 
 Notation "\{ x }" := (singleton x) : fset_scope.
@@ -197,6 +199,8 @@ End Operations.
 Arguments empty {A}.
 
 (** Notations *)
+
+Declare Scope fset_scope.
 
 Notation "\{}" := (empty) : fset_scope.
 
