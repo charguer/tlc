@@ -6,6 +6,7 @@
 
 SHELL := /usr/bin/env bash
 
+
 ############################################################################
 # Configuration
 #
@@ -65,9 +66,10 @@ COQCHK := $(COQBIN)coqchk
 
 .PHONY: all depend proof interface vos vok
 
-all: proof
-depend: $(VD)
-proof: $(VO)
+all: vo
+depend: vd
+vd: $(VD)
+vo: $(VO)
 vos: $(VOS)
 vok: $(VOK)
 
@@ -103,10 +105,6 @@ endif
 ############################################################################
 # Rules
 
-# If B uses A, then the dependencies produced by coqdep are:
-# B.vo:  B.v A.vo
-# B.vio: B.v A.vio
-
 %.v.d: %.v
 	$(COQDEP) $(COQINCLUDE) $< > $@
 
@@ -121,13 +119,6 @@ endif
 %.vok: %.v
 	@echo "Checking `basename $*`..."
 	$(COQC) $(COQINCLUDE) -vok $<
-
-# DEPRECATED
-# %.vo: %.vio
-#	@echo "Compiling `basename $*`..."
-#	set -o pipefail; ( \
-#	  $(COQC) $(COQINCLUDE) -schedule-vio2vo 1 $* \
-#	  2>&1 | (grep -v 'Checking task' || true))
 
 _CoqProject: .FORCE
 	@echo $(COQINCLUDE) > $@
@@ -146,12 +137,14 @@ endif
 
 .PHONY: ide
 
+# we don't pass $(COQINCLUDE) to coqide because it should read _CoqProject
 .coqide:
-	@echo '$(COQIDE) $(COQINCLUDE) $$*' > .coqide
+	@echo '$(COQIDE) $$*' > .coqide
 	@chmod +x .coqide
 
 ide: _CoqProject
 	$(COQIDE) $(COQINCLUDE)
+
 
 ############################################################################
 # Clean

@@ -2,11 +2,8 @@
 # Certain custom settings can be defined in settings.sh.
 
 # To specify the location of the Coq binaries, define COQBIN (with a
-# trailing slash), e.g. COQBIN=/var/tmp/coq/bin/.
+# trailing slash), e.g. COQBIN=/var/tmp/coq/bin/
 # If COQBIN is undefined, then "coqc" is used.
-
-# To request installation via a symbolic link, as opposed to
-# installation via a copy, define ARTHUR.
 
 # To request creation of .vio files, as opposed to creation of .vo
 # files, define SERIOUS=0.
@@ -38,23 +35,12 @@ TARGET  := $(CONTRIB)/TLC
 
 .PHONY: install uninstall
 
-ifndef ARTHUR
-
 install:
 	rm -rf $(TARGET)
 	mkdir -p $(TARGET)
 	install -m 644 *.v *.vo *.glob Makefile Makefile.coq $(TARGET)
 ifeq ($(SERIOUS),0)
 	install -m 644 *.vio $(TARGET)
-endif
-
-else
-
-install:
-	rm -rf $(TARGET)
-	mkdir -p $(CONTRIB)
-	ln -s `pwd` $(TARGET)
-
 endif
 
 uninstall:
