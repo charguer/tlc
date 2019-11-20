@@ -57,22 +57,22 @@ VOK  := $(patsubst %.v,%.vok,$(V))
 # Binaries
 
 COQC   := $(COQBIN)coqc $(COQFLAGS)
-COQDEP := $(COQBIN)coqdep
+COQDEP := $(COQBIN)coqdep -vos
 COQIDE := $(COQBIN)coqide $(COQFLAGS)
 COQCHK := $(COQBIN)coqchk
 
 ############################################################################
 # Targets
 
-.PHONY: all depend proof interface vos vok
+.PHONY: all depend vd vo vos vok
 
 all: vo
 depend: vd
+
 vd: $(VD)
 vo: $(VO)
 vos: $(VOS)
 vok: $(VOK)
-
 
 ############################################################################
 # Verbosity control.

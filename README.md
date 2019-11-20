@@ -79,7 +79,9 @@ Some (partial) documentation can be found in the directory [doc](doc/).
 License
 =======
 
-All files in TLC are distributed under the MIT X11 license.
+All files in TLC are distributed under the MIT X11 license. See the LICENSE file.
 
-Authors: Arthur Charguéraud,
-with minor contributions from Armaël Guéneau and François Pottier.
+Authors
+=======
+
+See the AUTHORS file.

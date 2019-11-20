@@ -24,7 +24,7 @@ export COQFLAGS
 
 .PHONY: all clean
 
-all depend clean _CoqProject proof vos vok:
+all depend clean _CoqProject depend vo vod vos vok:
 	$(MAKE) -f Makefile.coq $@
 
 ############################################################################
@@ -32,6 +32,8 @@ all depend clean _CoqProject proof vos vok:
 
 CONTRIB := $(shell $(COQBIN)coqc -where)/user-contrib
 TARGET  := $(CONTRIB)/TLC
+
+COQFLAGS=-W -implicit-core-hint-db
 
 .PHONY: install uninstall
 
