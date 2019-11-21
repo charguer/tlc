@@ -1,0 +1,41 @@
+---
+fullname: TLC
+shortname: tlc
+organization: charguer
+community: false
+
+synopsis: >-
+  TLC: A Library for Classical Coq 
+description: |
+  Provides an alternative to the core of the Coq standard library, using classic definitions.
+
+authors:
+- name: Arthur Charguéraud
+
+opam-file-maintainer: arthur.chargueraud@inria.fr
+
+license:
+  fullname: MIT X11 LICENSE
+  identifier: MIT X11
+
+plugin: false
+
+supported_coq_versions:
+  text: master (use the corresponding branch or release for other Coq versions)
+  opam: '{= "dev"}'
+
+tested_coq_nix_versions:
+- version_or_url: https://github.com/coq/coq-on-cachix/tarball/master
+
+tested_coq_opam_versions:
+- version: dev
+
+namespace: TLC
+
+keywords:
+- name: library
+- name: classic
+
+categories:
+- name: Miscellaneous/Coq Extensions
+---

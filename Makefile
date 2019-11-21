@@ -1,8 +1,9 @@
-# This Makefile is shipped.
+# Delegate commands to the src folder
 
-# Delegate these commands.
+.PHONY: all clean install
 
-.PHONY: all clean install uninstall
+all:
+	+make -C src $@
 
-all clean install uninstall:
-	@ $(MAKE) -C src $@
+%:
+	+make -C src $@
