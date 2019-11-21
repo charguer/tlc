@@ -4,7 +4,7 @@ maintainer: "arthur.chargueraud@inria.fr"
 homepage: "https://github.com/charguer/tlc"
 dev-repo: "git+https://github.com/charguer/tlc.git"
 bug-reports: "https://github.com/charguer/tlc/issues"
-license: "MIT X11"
+license: "MIT"
 
 synopsis: "TLC: A Library for Classical Coq "
 description: """

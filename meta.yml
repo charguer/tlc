@@ -16,7 +16,7 @@ opam-file-maintainer: arthur.chargueraud@inria.fr
 
 license:
   fullname: MIT X11 LICENSE
-  identifier: MIT X11
+  identifier: MIT
 
 plugin: false
 
