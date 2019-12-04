@@ -65,7 +65,7 @@ Hint Unfold pfun_equal.
 (** [pfun_equiv] is an equivalence relation. *)
 
 Lemma pfun_equiv_equiv : forall A B (E:binary B) (P:A->Prop),
-  equiv E -> 
+  equiv E ->
   equiv (@pfun_equiv A B E P).
 Proof using.
   introv [RE SE TE]. unfold pfun_equiv. constructor; intros_all*.
@@ -107,7 +107,7 @@ Definition partial_equiv A B (E:binary B) (f f': A-->B) :=
 (** [partial_equiv] is an equivalence relation. *)
 
 Lemma partial_equiv_equiv : forall A B (E:binary B),
-  equiv E -> 
+  equiv E ->
   equiv (@partial_equiv A B E).
 Proof using.
   introv Equi. unfold partial_equiv. constructor.
@@ -128,7 +128,7 @@ Definition extends A B (E:binary B) (f f': A-->B) :=
     fixed points (antisymmetry is modulo equiv). *)
 
 Lemma extends_order : forall A B (E:binary B),
-  equiv E -> 
+  equiv E ->
   order_wrt (partial_equiv E) (@extends A B E).
 Proof using.
   unfold extends. constructor.
@@ -298,7 +298,7 @@ Definition at_most_one_upto (A : Type) (E : A -> A -> Prop) (P : A -> Prop) :=
 (** The optimal fixed point, if it exists, is unique (up to equiv). *)
 
 Lemma optimal_fixed_point_unique : forall A B (E:binary B) (F:(A->B)->(A->B)),
-  equiv E -> 
+  equiv E ->
   at_most_one_upto (partial_equiv E) (optimal_fixed_point E F).
 Proof using.
   introv Equi [Fix1 Ge1] [Fix2 Ge2].
@@ -309,7 +309,7 @@ Qed.
 
 Lemma optimal_fixed_point_exists :
   forall A B {I:Inhab B} (E:binary B) (F:(A->B)->(A->B)),
-  equiv E -> 
+  equiv E ->
   exists (f:A-->B), optimal_fixed_point E F f.
 Proof using.
   introv I Equiv.
@@ -555,17 +555,17 @@ Hint Resolve cofe_ofe cofe_complete.
 Hint Unfold coherent globally_coherent locally_coherent.
 
 Lemma ofe_sim_refl : forall I A (M:family I A) i,
-  OFE M -> 
+  OFE M ->
   refl (family_sim M i).
 Proof using. intros. apply~ equiv_refl. Qed.
 
 Lemma ofe_sim_trans : forall I A (M:family I A) i,
-  OFE M -> 
+  OFE M ->
   trans (family_sim M i).
 Proof using. intros. apply~ equiv_trans. Qed.
 
 Lemma ofe_sim_sym : forall I A (M:family I A) i,
-  OFE M -> 
+  OFE M ->
   sym (family_sim M i).
 Proof using. intros. apply~ equiv_sym. Qed.
 
@@ -586,8 +586,8 @@ Definition complete' I A (M:family I A) :=
 (** Completness implies local completeness *)
 
 Lemma complete_to_locally_complete : forall I A (M:family I A),
-  OFE M -> 
-  complete M -> 
+  OFE M ->
+  complete M ->
   locally_complete M.
 Proof using.
   introv Ofem Comp Cohu. apply~ Comp. intros j' j. introv Rij' Rjj'.
@@ -597,8 +597,8 @@ Qed.
 (** Completness implies global completeness *)
 
 Lemma complete_to_globally_complete : forall I A (M:family I A),
-  OFE M -> 
-  complete M -> 
+  OFE M ->
+  complete M ->
   globally_complete M.
 Proof using. introv Ofem Comp Cohu. apply~ Comp. Qed.
 
@@ -633,8 +633,8 @@ Definition local_limit_dep I A {IA:Inhab A} (M:family I A)
 
 Lemma local_limit_dep_name : forall I A {IA:Inhab A}
   (i:I) (v:I->A) (M:family I A),
-  locally_complete M -> 
-  locally_coherent M i v -> 
+  locally_complete M ->
+  locally_coherent M i v ->
   exists l,
      local_limit_dep M i (fun j _ => v j) = l
   /\ (forall j, family_r M j i -> family_sim M j (v j) l).
@@ -649,8 +649,8 @@ Qed.
 
 Lemma local_limit_dep_inv : forall I A {IA:Inhab A}
   (i j:I) (v:I->A) (M:family I A),
-  locally_complete M -> 
-  locally_coherent M i v -> 
+  locally_complete M ->
+  locally_coherent M i v ->
   family_r M j i ->
   family_sim M j (v j) (local_limit_dep M i (fun j _ => v j)).
 Proof using.
@@ -668,9 +668,9 @@ Qed.
 
 Lemma complete_of_locally_and_globally_complete :
   forall I A {IA:Inhab A} (M:family I A),
-  OFE M -> 
-  locally_complete M -> 
-  globally_complete M -> 
+  OFE M ->
+  locally_complete M ->
+  globally_complete M ->
   complete M.
 Proof using.
   introv IA Ofem Loca Glob Down Cohu.
@@ -705,7 +705,7 @@ Qed.
 (** Summary: the two definitions of completeness are equivalent *)
 
 Lemma complete_eq_complete' : forall I A {IA:Inhab A} (M:family I A),
-  OFE M -> 
+  OFE M ->
   (complete M = complete' M).
 Proof using.
   intros. extens. split. split.
@@ -764,7 +764,7 @@ Definition contractive I A (M:family I A) (F:A->A) (Q:I->A->Prop) :=
     predicate which always returns True. *)
 
 Lemma contractive_noinv_to_contractive : forall I A (M:family I A) (F:A->A),
-  contractive_noinv M F -> 
+  contractive_noinv M F ->
   contractive M F (fun _ _ => True).
 Proof using.
   introv Cont. unfolds. intros. split~. apply Cont. intros. forwards*: H.
@@ -793,8 +793,8 @@ Qed.
 
 Lemma invariant_on_fixed_point :
   forall I A (M:family I A) (F:A->A) (Q:I->A->Prop) (x:A),
-  OFE M -> 
-  continuous M Q -> 
+  OFE M ->
+  continuous M Q ->
   invariant M F Q ->
   similar M x (F x) -> forall i, Q i x.
 Proof using.
@@ -834,8 +834,8 @@ Definition build_fixed_point I A {IA:Inhab A} (M:family I A) (F:A->A) (Cofe:COFE
 
 Theorem cofe_explicit_fixed_point :
   forall I (A:Type) {IA:Inhab A} (M:family I A) (F:A->A) (Q:I->A->Prop)
-  (Cofe: COFE M), 
-  continuous M Q -> 
+  (Cofe: COFE M),
+  continuous M Q ->
   contractive M F Q ->
   let x := build_fixed_point F Cofe in
      unique_fixed_point (similar M) F x
@@ -915,8 +915,8 @@ Qed.
 
 Theorem cofe_fixed_point :
   forall I A {IA:Inhab A} (M:family I A) (F:A->A) (Q:I->A->Prop),
-  COFE M -> 
-  continuous M Q -> 
+  COFE M ->
+  continuous M Q ->
   contractive M F Q ->
   exists x, unique_fixed_point (similar M) F x
          /\ (forall i, Q i x).
@@ -949,8 +949,8 @@ Definition rec_family A B (E:binary B) (P:A->Prop) (R:binary A)
 
 Lemma rec_cofe :
   forall A B {IB:Inhab B} (E:binary B) (P:A->Prop) (R:binary A),
-  equiv E -> 
-  wf R -> 
+  equiv E ->
+  wf R ->
   COFE (rec_family E P R).
 Proof using.
   introv IB Equiv WfR. apply make_COFE; simpl.
@@ -1004,9 +1004,9 @@ Definition pred_compatible A (E:A->A->Prop) (Q:A->Prop) :=
 Lemma rec_contractive_as_contractive :
   forall A B (E:binary B) (P:A->Prop)
   (F:(A->B)->(A->B)) (R:binary A) (S:A->B->Prop),
-  equiv E -> 
+  equiv E ->
   (forall x, pred_compatible E (S x)) ->
-  wf R -> 
+  wf R ->
   rec_contractive E P F R S ->
   contractive (rec_family E P R) F
     (fun x f => P x -> S x (f x)).
@@ -1033,9 +1033,9 @@ Qed.
 
 Theorem rec_fixed_point : forall A B {IB:Inhab B}
  (F:(A->B)->(A->B)) (R:binary A) (P:A->Prop) (S:A->B->Prop) (E:binary B),
-  equiv E -> 
+  equiv E ->
   (forall x, pred_compatible E (S x)) ->
-  wf R -> 
+  wf R ->
   rec_contractive E P F R S ->
   exists (f:A->B), partial_fixed_point E F (Build_partial f P)
                /\ (forall x, P x -> S x (f x)).
@@ -1060,9 +1060,9 @@ Qed.
 
 Lemma rec_fixed_point_generally_consistent : forall A B {IB:Inhab B}
  (F:(A->B)->(A->B)) (R:binary A) (P:A->Prop) (S:A->B->Prop) (E:binary B) f,
-  equiv E -> 
+  equiv E ->
   (forall x, pred_compatible E (S x)) ->
-  wf R -> 
+  wf R ->
   rec_contractive E P F R S ->
   fixed_point (pfun_equiv E P) F f ->
   (forall x, P x -> S x (f x)) ->
@@ -1146,8 +1146,8 @@ Definition corec_rec_family I A B
 
 Lemma corec_rec_cofe :
   forall I A B {IB:Inhab B} (M:family I B) (P:A->Prop) (R:binary A),
-  COFE M -> 
-  wf R -> 
+  COFE M ->
+  wf R ->
   COFE (corec_rec_family M P R).
 Proof using.
   introv IB Cofe WfR. apply make_COFE; simpl.
@@ -1223,7 +1223,7 @@ Proof using.
   introv Px. forwards~ [_ K]: (>> Cont i x f1 f2).
    intros y j Py Lt. forwards* (K1&K2&K3): (H (j,y)).
      forwards*: (>> rel_incl_lexico2 I A (family_r M) (family_r M) R (tclosure R) (j,y) (i,x)).
-Qed. 
+Qed.
 
 (** The simple version of contraction *)
 
@@ -1257,10 +1257,10 @@ Definition mixed_continuous I A B (M:family I B) (S:I->A->B->Prop) :=
 Theorem mixed_fixed_point :
   forall I A B {IB:Inhab B} (M:family I B) (E:binary B) (P:A->Prop)
   (F:(A->B)->(A->B)) (R:binary A) (S:I->A->B->Prop),
-  COFE M -> 
-  wf R -> 
+  COFE M ->
+  wf R ->
   E = similar M ->
-  mixed_continuous M S -> 
+  mixed_continuous M S ->
   mixed_contractive M P F R S ->
   exists (f:A->B), partial_fixed_point E F (Build_partial f P)
                /\ (forall i x, P x -> S i x (f x)).
@@ -1276,7 +1276,7 @@ Proof using.
     apply~ mixed_contractive_as_contractive.
   exists (Build_partial f P). destruct Fixf as [Fixf _]. split.
     unfold partial_fixed_point. simpl.
-    rewrite corec_rec_similar in Fixf. rewrite SimE.  apply Fixf. 
+    rewrite corec_rec_similar in Fixf. rewrite SimE.  apply Fixf.
     intros. apply~ (Qf (i,x)).
 Qed.
 
@@ -1285,10 +1285,10 @@ Qed.
 Lemma mixed_fixed_point_generally_consistent :
   forall I A B {IB:Inhab B} (M:family I B) (E:binary B) (P:A->Prop)
   (R:binary A) (F:(A->B)->(A->B)) (S:I->A->B->Prop) (f:A->B),
-  COFE M -> 
-  wf R -> 
+  COFE M ->
+  wf R ->
   E = similar M ->
-  mixed_continuous M S -> 
+  mixed_continuous M S ->
   mixed_contractive M P F R S ->
   fixed_point (pfun_equiv E P) F f ->
   (forall i x, P x -> S i x (f x)) ->
@@ -1378,7 +1378,7 @@ Qed.
 
 (** Another more relaxed definition of nat-completeness *)
 
-Require LibNat.
+From TLC Require LibNat.
 
 Definition nat_complete' A (sim:nat->binary A) :=
   forall (u:nat->A),
@@ -1414,7 +1414,7 @@ Proof using.
   specializes L j. unfold v in L. case_if~; try false.
   (* global completeness *)
   introv Cohu. forwards [l L]: (Comp u). intros i.
-  induction_wf: lt_wf i. intros. apply~ Cohu. 
+  induction_wf: lt_wf i. intros. apply~ Cohu.
   exists l. introv _. apply L.
 Qed.
 
@@ -1427,7 +1427,7 @@ Definition prod_family_sim I A1 A2 (R:binary I) (Sim1:I->binary A1) (Sim2:I->bin
   Build_family R (fun i => prod2 (Sim1 i) (Sim2 i)).
 
 Lemma prod_cofe_sim : forall I A1 A2 (R:binary I) (Sim1:I->binary A1) (Sim2:I->binary A2),
-  COFE (Build_family R Sim1) -> 
+  COFE (Build_family R Sim1) ->
   COFE (Build_family R Sim2) ->
   COFE (prod_family_sim R Sim1 Sim2).
 Proof using.
@@ -1618,10 +1618,10 @@ Definition FixFun5 B {IB:Inhab B} := FixFun5Mod eq.
 
 Lemma FixValMod_fix_inv : forall I A {IA:Inhab A} (M:family I A)
   (E:binary A) (F:A->A) (Q:I->A->Prop) (x:A),
-  x = FixValMod E F -> 
+  x = FixValMod E F ->
   E = similar M ->
-  COFE M -> 
-  continuous M Q -> 
+  COFE M ->
+  continuous M Q ->
   contractive M F Q ->
   E x (F x) /\ forall i, (Q i x).
 Proof using.
@@ -1641,9 +1641,9 @@ Qed.
 
 Lemma FixValMod_fix : forall I A (M:family I A)
   {IA:Inhab A} (E:binary A) (F:A->A) (x:A),
-  x = FixValMod E F -> 
+  x = FixValMod E F ->
   E = similar M ->
-  COFE M -> 
+  COFE M ->
   contractive_noinv M F -> E x (F x).
 Proof using.
   intros. applys* (@FixValMod_fix_inv I A IA M E F post_true x).
@@ -1656,10 +1656,10 @@ Arguments FixValMod_fix [I] [A] M {IA} [E] [F] [x].
 
 Lemma FixVal_fix_inv : forall I A {IA:Inhab A} (M:family I A)
   (E:binary A) (F:A->A) (Q:I->A->Prop) (x:A),
-  x = FixVal F -> 
+  x = FixVal F ->
   eq = similar M ->
-  COFE M -> 
-  continuous M Q -> 
+  COFE M ->
+  continuous M Q ->
   contractive M F Q ->
   x = F x /\ forall i, (Q i x).
 Proof using. intros. applys* FixValMod_fix_inv. Qed.
@@ -1693,10 +1693,10 @@ Definition valmut2_continuous I A1 A2 (M:family I (A1*A2)) (Q:I->A1->A2->Prop) :
 Lemma FixValModMut2_fix_inv : forall (I A1 A2:Type) {IA1:Inhab A1} {IA2:Inhab A2}
   (M:family I (A1*A2)) (E1:binary A1) (E2:binary A2) (F1:A1->A2->A1)
   (F2:A1->A2->A2) (Q:I->A1->A2->Prop) (x1:A1) (x2:A2),
-  (x1,x2) = FixValModMut2 E1 E2 F1 F2 -> 
+  (x1,x2) = FixValModMut2 E1 E2 F1 F2 ->
   prod2 E1 E2 = similar M ->
-  COFE M -> 
-  valmut2_continuous M Q -> 
+  COFE M ->
+  valmut2_continuous M Q ->
   valmut2_contractive M F1 F2 Q ->
   E1 x1 (F1 x1 x2) /\ E2 x2 (F2 x1 x2) /\ forall i, (Q i x1 x2).
 Proof using.
@@ -1717,9 +1717,9 @@ Definition valmut2_contractive_noinv I A1 A2 (M:family I (A1*A2))
 Lemma FixValModMut2_fix : forall (I A1 A2:Type) {IA1:Inhab A1} {IA2:Inhab A2}
   (M:family I (A1*A2)) (E1:binary A1) (E2:binary A2) (F1:A1->A2->A1)
   (F2:A1->A2->A2) (x1:A1) (x2:A2),
-  (x1,x2) = FixValModMut2 E1 E2 F1 F2 -> 
+  (x1,x2) = FixValModMut2 E1 E2 F1 F2 ->
   prod2 E1 E2 = similar M ->
-  COFE M -> 
+  COFE M ->
   valmut2_contractive_noinv M F1 F2 ->
   E1 x1 (F1 x1 x2) /\ E2 x2 (F2 x1 x2).
 Proof using.
@@ -1760,10 +1760,10 @@ Qed.
 
 Lemma FixFunMod_fix_partial_inv : forall A (R:binary A) (P:A->Prop)
   B (S:A->B->Prop) {IB:Inhab B} (F:(A->B)->(A->B)) (E:binary B) (f:A->B),
-  f = FixFunMod E F -> 
-  equiv E -> 
+  f = FixFunMod E F ->
+  equiv E ->
   (forall x, pred_compatible E (S x)) ->
-  wf R -> 
+  wf R ->
   rec_contractive E P F R S ->
   (forall x, P x -> E (f x) (F f x)) /\
   (forall x, P x -> S x (f x)).
@@ -1786,9 +1786,9 @@ Qed.
 
 Lemma FixFunMod_fix_partial : forall A (R:binary A) (P:A->Prop)
   B {IB:Inhab B} (F:(A->B)->(A->B)) (E:binary B) (f:A->B),
-  f = FixFunMod E F -> 
+  f = FixFunMod E F ->
   equiv E ->
-  wf R -> 
+  wf R ->
   rec_contractive_noinv E P F R ->
   (forall x, P x -> E (f x) (F f x)).
 Proof using.
@@ -1803,8 +1803,8 @@ Local Hint Resolve equiv_eq.
 
 Lemma FixFun_fix_partial_inv : forall A (R:binary A) (P:A->Prop) B
   (S:A->B->Prop) {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
-  f = FixFun F -> 
-  wf R -> 
+  f = FixFun F ->
+  wf R ->
   rec_contractive eq P F R S ->
   (forall x, P x -> f x = F f x) /\
   (forall x, P x -> S x (f x)).
@@ -1814,7 +1814,7 @@ Arguments FixFun_fix_partial_inv [A] R P [B] S {IB} [F] [f].
 
 Lemma FixFun_fix_inv : forall A (R:binary A) B
   (S:A->B->Prop) {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
-  f = FixFun F -> 
+  f = FixFun F ->
   wf R ->
   (forall f1 f2 x,
     (forall y, R y x -> (f1 y) = (f2 y) /\ S y (f1 y)) ->
@@ -1827,8 +1827,8 @@ Arguments FixFun_fix_inv [A] R [B] S {IB} [F] [f].
 
 Lemma FixFun_fix_partial : forall A (R:binary A) (P:A->Prop)
    B {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
-  f = FixFun F -> 
-  wf R -> 
+  f = FixFun F ->
+  wf R ->
   rec_contractive_noinv eq P F R ->
   (forall x, P x -> f x = F f x).
 Proof using.
@@ -1856,8 +1856,8 @@ Arguments FixFun_fix [A] R [B] {IB} [F] [f].
 
 Lemma FixFun_fix_partial' : forall A (R:binary A) (P:A->Prop)
   B {IB:Inhab B} (F:(A->B)->(A->B)) (f' f:A->B),
-  f = FixFun F -> 
-  wf R -> 
+  f = FixFun F ->
+  wf R ->
   rec_contractive' eq P F R f' ->
   fixed_point (pfun_equal P) F f' ->
   (forall x, P x -> f x = F f x).
@@ -1916,11 +1916,11 @@ Arguments FixFun_fix_iter [A] _ [B] {IB} [F] [f].
 Lemma FixFunMod_mixed_partial_inv : forall I A B
   (M:family I B) (R:binary A) (P:A->Prop) (S:I->A->B->Prop)
   (E:binary B) {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
-  f = FixFunMod E F -> 
+  f = FixFunMod E F ->
   E = similar M ->
-  COFE M -> 
+  COFE M ->
   wf R ->
-  mixed_continuous M S -> 
+  mixed_continuous M S ->
   mixed_contractive M P F R S ->
   (forall x, P x -> E (f x) (F f x)) /\
   (forall x i, P x -> S i x (f x)).
@@ -1946,9 +1946,9 @@ Arguments FixFunMod_mixed_partial_inv [I] [A] [B] M R P S E {IB} [F] [f].
 Lemma FixFunMod_mixed_partial : forall I A B
   (M:family I B) (R:binary A) (P:A->Prop)
   (E:binary B) {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
-  f = FixFunMod E F -> 
+  f = FixFunMod E F ->
   E = similar M ->
-  COFE M -> 
+  COFE M ->
   wf R ->
   mixed_contractive_noinv M P F R ->
   (forall x, P x -> E (f x) (F f x)).
@@ -1975,8 +1975,8 @@ Definition corec_contractive I A B (M:family I B) (P:A->Prop)
 Lemma FixFunMod_corec_inv : forall I A B (M:family I B)
   (P:A->Prop) (S:I->B->Prop) {IB:Inhab B} (E:binary B)
   (F:(A->B)->(A->B)) (f:A->B),
-  f = FixFunMod E F -> 
-  E = similar M -> 
+  f = FixFunMod E F ->
+  E = similar M ->
   COFE M ->
   (forall i y1 y2, S i y1 ->
      (forall j, family_r M j i -> family_sim M j y1 y2) ->
@@ -2002,7 +2002,7 @@ Lemma FixFunMod_corec : forall I A B (M:family I B)
   (P:A->Prop) {IB:Inhab B} (E:binary B)
   (F:(A->B)->(A->B)) (f:A->B),
   f = FixFunMod E F ->
-  E = similar M -> 
+  E = similar M ->
   COFE M ->
   corec_contractive_noinv M P F ->
   (forall x, P x -> E (f x) (F f x)).
@@ -2019,7 +2019,7 @@ Lemma FixFunMod_corec_total : forall I A B (M:family I B)
   {IB:Inhab B} (E:B->B->Prop)
   (F:(A->B)->(A->B)) (f:A->B),
   f = FixFunMod E F ->
-  E = similar M -> 
+  E = similar M ->
   COFE M ->
   (forall i x f1 f2,
     (forall y j, family_r M j i -> family_sim M j (f1 y) (f2 y)) ->
@@ -2037,8 +2037,8 @@ Arguments FixFunMod_corec_total [I] [A] [B] M {IB} [E] [F] [f].
 
 Lemma FixFun2Mod_fix_partial_inv : forall A1 A2 (R:binary (A1*A2)) (P:A1->A2->Prop)
   B {IB:Inhab B} (S:A1->A2->B->Prop) (E:binary B) F (f:A1->A2->B),
-  f = FixFun2Mod E F -> 
-  wf R -> 
+  f = FixFun2Mod E F ->
+  wf R ->
   equiv E ->
   (forall x1 x2, pred_compatible E (S x1 x2)) ->
   (forall x1 x2 f1 f2, P x1 x2 ->
@@ -2061,8 +2061,8 @@ Qed.
 
 Lemma FixFun2Mod_fix_partial : forall A1 A2 (R:binary (A1*A2)) (P:A1->A2->Prop)
   B {IB:Inhab B} (S:A1->A2->B->Prop) (E:binary B) F (f:A1->A2->B),
-  f = FixFun2Mod E F -> 
-  wf R -> 
+  f = FixFun2Mod E F ->
+  wf R ->
   equiv E ->
   (forall x1 x2, pred_compatible E (S x1 x2)) ->
   (forall x1 x2 f1 f2, P x1 x2 ->
@@ -2085,7 +2085,7 @@ Qed.
 
 Lemma FixFun2_fix_partial_inv : forall A1 A2 (R:binary (A1*A2)) (P:A1->A2->Prop)
   B (S:A1->A2->B->Prop) {IB:Inhab B} F (f:A1->A2->B),
-  f = FixFun2 F -> 
+  f = FixFun2 F ->
   wf R ->
   (forall x1 x2 f1 f2, P x1 x2 ->
     (forall y1 y2, P y1 y2 -> R (y1,y2) (x1,x2) ->
@@ -2116,7 +2116,7 @@ Arguments FixFun2_fix_partial [A1] [A2] R P [B] {IB} [F] [f].
 
 Lemma FixFun2_fix : forall A1 A2 (R:binary (A1*A2))
   B {IB:Inhab B} F (f:A1->A2->B),
-  f = FixFun2 F -> 
+  f = FixFun2 F ->
   wf R ->
   (forall x1 x2 f1 f2,
     (forall y1 y2, R (y1,y2) (x1,x2) -> f1 y1 y2 = f2 y1 y2) ->
@@ -2128,8 +2128,8 @@ Arguments FixFun2_fix [A1] [A2] R [B] {IB} [F] [f].
 
 Lemma FixFun2Mod_corec : forall I A1 A2 B (M:family I B) {IB:Inhab B}
   (E:binary B) F (f:A1->A2->B),
-  f = FixFun2Mod E F -> 
-  E = similar M -> 
+  f = FixFun2Mod E F ->
+  E = similar M ->
   COFE M ->
   (forall i x1 x2 f1 f2,
     (forall j y1 y2, family_r M j i ->
@@ -2225,9 +2225,9 @@ Qed.
 
 Lemma corec_ind : forall I A {IA:Inhab A} (E:binary A)
   (M:family I A) (F:A->A) (Q:I->A->Prop) (x:A),
-  COFE M -> 
-  continuous M Q -> 
-  E x (F x) -> 
+  COFE M ->
+  continuous M Q ->
+  E x (F x) ->
   E = similar M ->
   (forall i, (forall j, family_r M j i -> Q j x) -> Q i (F x)) ->
   forall i, Q i x.
@@ -2247,8 +2247,8 @@ Lemma mixed_ind : forall I A B (E:binary B)
   (M:family I B) (P:A->Prop)
   (F:(A->B)->(A->B)) (R:binary A) (S:I->A->B->Prop) (f:A->B),
   (forall x, P x -> E (f x) (F f x)) -> E = similar M ->
-  COFE M -> 
-  wf R -> 
+  COFE M ->
+  wf R ->
   mixed_continuous M S ->
   (forall i x, (forall j y, P y -> lexico2 (family_r M) R (j,y) (i,x) -> S j y (f y)) -> S i x (F f x)) ->
   (forall i x, P x -> S i x (f x)).
