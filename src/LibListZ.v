@@ -459,7 +459,7 @@ Lemma read_make : forall i n v,
   (make n v)[i] = v.
 Proof using.
   introv N. rewrite int_index_eq in N.
-  unfold make, read_inst, read_impl, nth.
+  unfold make, read_inst, read_impl.
   case_if. math. simpl. case_if. math.
   applys nth_make. forwards: lt_abs_abs i n; try math.
 Qed.
@@ -592,6 +592,9 @@ Qed.
 
 End Map.
 
+Hint Rewrite length_map index_map_eq : rew_listx.
+
+
 (* ---------------------------------------------------------------------- *)
 (** * [LibList.filter] interactions with [LibListZ] operations *)
 
@@ -642,7 +645,7 @@ Implicit Types l : list A.
 
 Lemma length_remove : forall l a,
   length (LibList.remove a l) <= length l.
-Proof using. intros. applys length_filter. Qed.
+Proof using. intros. rewrite remove_as_filter. applys length_filter. Qed.
 
 Lemma length_remove_mem : forall x l,
   mem x l ->

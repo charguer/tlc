@@ -48,6 +48,7 @@ Require Import Coq.Lists.List.
 
 Declare Scope ltac_scope.
 
+
 (* ********************************************************************** *)
 (** * Fixing Stdlib *)
 
@@ -485,6 +486,11 @@ Ltac is_evar_as_bool E :=
     [ is_evar E; exact true
     | exact false ])).
 
+(** [has_no_evar E] succeeds if [E] contains no evars. *)
+
+Ltac has_no_evar E :=
+  first [ has_evar E; fail 1 | idtac ].
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Check no evar in goal *)
@@ -550,12 +556,19 @@ Ltac mark_to_generalize H :=
 (* ---------------------------------------------------------------------- *)
 (** ** Deconstructing terms *)
 
-(** [get_head E] is a tactic that returns the head constant of the
+(** [E] is a tactic that returns the head constant of the
     term [E], ie, when applied to a term of the form [P x1 ... xN]
     it returns [P]. If [E] is not an application, it returns [E].
     Warning: the tactic seems to loop in some cases when the goal is
     a product and one uses the result of this function. *)
 
+Ltac get_head E :=
+  match E with
+  | ?E' ?x => get_head E'
+  | _ => constr:(E)
+  end.
+
+(* DEPRECATED (non recursive implementation)
 Ltac get_head E :=
   match E with
   | ?P _ _ _ _ _ _ _ _ _ _ _ _ => constr:(P)
@@ -572,6 +585,7 @@ Ltac get_head E :=
   | ?P _ => constr:(P)
   | ?P => constr:(P)
   end.
+*)
 
 (** [get_fun_arg E] is a tactic that decomposes an application
   term [E], ie, when applied to a term of the form [X1 ... XN]
@@ -695,6 +709,26 @@ Tactic Notation "rapply" constr(t) :=
   | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _)
   | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _ _)
   ].
+
+(** No-typeclass refine apply, TEMPORARY for Coq < 8.11. *)
+
+Ltac nrapply H :=
+  first
+  [ notypeclasses refine (H)
+  | notypeclasses refine (H _)
+  | notypeclasses refine (H _ _)
+  | notypeclasses refine (H _ _ _)
+  | notypeclasses refine (H _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _ _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _ _ _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _ _ _ _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _ _ _ _ _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _ _ _ _ _ _ _ _ _)
+  | notypeclasses refine (H _ _ _ _ _ _ _ _ _ _ _ _ _ _) ].
 
 (** The tactics [applys_N T], where [N] is a natural number,
     provides a more efficient way of using [applys T]. It avoids
@@ -2547,15 +2581,20 @@ Tactic Notation "pi_rewrite" constr(E) "in" hyp(H) :=
 (** [fequal] is a variation on [f_equal] which has a better behaviour
     on equalities between n-ary tuples. *)
 
+Ltac fequal_support_for_exist tt := (* refined in LibEqual *)
+  fail.
+
 Ltac fequal_base :=
   let go := f_equal; [ fequal_base | ] in
-  match goal with
-  | |- (_,_,_) = (_,_,_) => go
-  | |- (_,_,_,_) = (_,_,_,_) => go
-  | |- (_,_,_,_,_) = (_,_,_,_,_) => go
-  | |- (_,_,_,_,_,_) = (_,_,_,_,_,_) => go
-  | |- _ => f_equal
-  end.
+  first
+  [ fequal_support_for_exist tt
+  | match goal with
+    | |- (_,_,_) = (_,_,_) => go
+    | |- (_,_,_,_) = (_,_,_,_) => go
+    | |- (_,_,_,_,_) = (_,_,_,_,_) => go
+    | |- (_,_,_,_,_,_) = (_,_,_,_,_,_) => go
+    | |- _ => f_equal
+    end ].
 
 Tactic Notation "fequal" :=
   fequal_base.
@@ -3139,52 +3178,38 @@ Tactic Notation "inductions" ident(E) "gen" ident(X1) ident(X2)
     Here [E] may be either:
    - a proof of [wf R] for [R] of type [A->A->Prop]
    - a binary relation of type [A->A->Prop]
-   - a measure of type [A -> nat] // only when LibWf is used
-
-    Syntaxes [induction_wf: E X] and [induction_wf E X]. *)
+   - a measure of type [A -> nat] // only when LibWf is used *)
 
 (* DEPRECATED
 Tactic Notation "induction_wf" ident(IH) ":" constr(E) ident(X) :=
   pattern X; apply (well_founded_ind E); clear X; intros X IH.
 *)
 
-(* Tactic is later extended in module LibWf *)
+Ltac induction_wf_process_wf_hyp tt := (* refined in LibWf *)
+  idtac.
+
+Ltac induction_wf_process_measure E := (* refined in LibWf *)
+  fail.
+
 Ltac induction_wf_core_then IH E X cont :=
-  let T := type of E in
-  let T := eval hnf in T in
   let clearX tt :=
     first [ clear X | fail 3 "the variable on which the induction is done appears in the hypotheses" ] in
-  match T with
-  (* Support for measures from LibWf, add this:
-  | ?A -> nat =>
-     induction_wf_core_then IH (wf_measure E) X cont
-  *)
-  | ?A -> ?A -> Prop =>
-     pattern X;
-     first [
-       applys well_founded_ind E;
-       clearX tt;
-       [ (* Support for [wf] from LibWf
-         change well_founded with wf; auto with wf *)
-       | intros X IH; cont tt ]
-     | fail 2 ]
-  | _ =>
-    pattern X;
-    applys well_founded_ind E;
-    clearX tt;
-    intros X IH;
-    cont tt
-  end.
+  pattern X;
+  first [ eapply (@well_founded_ind _ E)
+        | eapply (@well_founded_ind _ (E _))
+        | eapply (@well_founded_ind _ (E _ _))
+        | eapply (@well_founded_ind _ (E _ _ _))
+        | induction_wf_process_measure E
+        | applys well_founded_ind E ];
+  clearX tt;
+  first [ induction_wf_process_wf_hyp tt
+        | intros X IH; cont tt ].
 
 Ltac induction_wf_core IH E X :=
   induction_wf_core_then IH E X ltac:(fun _ => idtac).
 
 Tactic Notation "induction_wf" ident(IH) ":" constr(E) ident(X) :=
   induction_wf_core IH E X.
-Tactic Notation "induction_wf" ":" constr(E) ident(X) :=
-  let IH := fresh "IH" in induction_wf IH: E X.
-Tactic Notation "induction_wf" ":" constr(E) ident(X) :=
-  induction_wf: E X.
 
 (** Induction on the height of a derivation: the helper tactic
     [induct_height] helps proving the equivalence of the auxiliary
@@ -4149,13 +4174,13 @@ Tactic Notation "exists" "~" constr(T1) "," constr(T2) :=
   exists T1 T2; auto_tilde.
 Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) :=
   exists T1 T2 T3; auto_tilde.
-Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) "," 
+Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) ","
  constr(T4) :=
   exists T1 T2 T3 T4; auto_tilde.
-Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) "," 
+Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) ","
  constr(T4) "," constr(T5) :=
   exists T1 T2 T3 T4 T5; auto_tilde.
-Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) "," 
+Tactic Notation "exists" "~" constr(T1) "," constr(T2) "," constr(T3) ","
  constr(T4) "," constr(T5) "," constr(T6) :=
   exists T1 T2 T3 T4 T5 T6; auto_tilde.
 
@@ -4544,13 +4569,13 @@ Tactic Notation "exists" "*" constr(T1) "," constr(T2) :=
   exists T1 T2; auto_star.
 Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) :=
   exists T1 T2 T3; auto_star.
-Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) "," 
+Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) ","
   constr(T4) :=
   exists T1 T2 T3 T4; auto_star.
-Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) "," 
+Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) ","
  constr(T4) "," constr(T5) :=
   exists T1 T2 T3 T4 T5; auto_star.
-Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) "," 
+Tactic Notation "exists" "*" constr(T1) "," constr(T2) "," constr(T3) ","
  constr(T4) "," constr(T5) ","  constr(T6) :=
   exists T1 T2 T3 T4 T5 T6; auto_star.
 
@@ -4826,7 +4851,7 @@ Tactic Notation "clears_last" constr(N) :=
     goal. Unlike [admit], it does not require ending the proof with
     [Admitted] instead of [Qed]. It thus saves the pain of renaming [Qed]
     into [Admitted] and vice-versa all the time.
-    
+
     The implementation of [skip] relies on an axiom [False].
     To obtain a safe development, it suffices to replace [False] with [True]
     in the statement of that axiom.

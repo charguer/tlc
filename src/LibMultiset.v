@@ -1,4 +1,4 @@
-(** DISCLAIMER: this file is under construction and still contains a 
+(** DISCLAIMER: this file is under construction and still contains a
     couple admits. *)
 
 (**************************************************************************
@@ -195,7 +195,7 @@ Lemma foreach_empty : forall P,
 Proof using. intros_all. rewrite in_empty_eq in H. false. Qed.
 
 Lemma foreach_single : forall P X,
-  P X -> 
+  P X ->
   @foreach A (multiset A) _ P (\{ X }).
 Proof using. intros_all. rewrite in_single_eq in H0. subst*. Qed.
 
@@ -206,7 +206,7 @@ Proof using. intros_all. destruct~ (in_union_inv H1). Qed.
 Hint Resolve foreach_empty foreach_single foreach_union.
 
 Lemma foreach_union_inv : forall P E F,
-  foreach P (E \u F) -> 
+  foreach P (E \u F) ->
   foreach P E /\ foreach P F.
 Proof using.
   introv H. split; introv K.
@@ -230,8 +230,8 @@ Proof using.
 Qed.
 
 Lemma foreach_weaken : forall P Q E,
-  foreach P E -> 
-  pred_incl P Q -> 
+  foreach P E ->
+  pred_incl P Q ->
   foreach Q E.
 Proof using. introv H L K. apply~ L. Qed.
 
@@ -433,8 +433,8 @@ Ltac permut_simpl_once :=
 Ltac permut_simpl :=
   let L := get_premut_tactic_simpl tt in permut_simpl_for L.
 
-Tactic Notation "multiset_eq" :=
-  permut_simpl.
+Tactic Notation "multiset_eq" := (* currently does not support evars *)
+  check_noevar_goal; permut_simpl.
 
 Section DemoSetUnion.
 Variables (A:Type).

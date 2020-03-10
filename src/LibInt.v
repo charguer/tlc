@@ -132,7 +132,6 @@ Hint Rewrite le_zarith lt_zarith ge_zarith gt_zarith : rew_int_comp.
 Ltac int_comp_to_zarith :=
   autorewrite with rew_int_comp in *.
 
-
 (* ---------------------------------------------------------------------- *)
 (** ** Hypothesis selection *)
 
@@ -599,6 +598,14 @@ Qed.
      if so, there should probably be other hints similar to it *)
 
 Hint Rewrite plus_nat_eq_plus_int : rew_maths.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Properties of comparison *)
+
+Lemma antisym_le_int : 
+  antisym (le (A:=int)).
+Proof using. intros x y L1 L2. math. Qed.
 
 
 (* ---------------------------------------------------------------------- *)

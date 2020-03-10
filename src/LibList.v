@@ -206,7 +206,7 @@ Proof using. intros. rewrite~ app_last_r. Qed.
 
 End App.
 
-Opaque app.
+Global Opaque app.
 
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one_r : rew_list.
@@ -249,7 +249,7 @@ Proof using. intros. rewrite~ fold_right_app. Qed.
 
 End FoldRight.
 
-Opaque fold_right.
+Global Opaque fold_right.
 
 Hint Rewrite fold_right_nil fold_right_cons fold_right_last : rew_listx.
 (* Note: [fold_right_app] may be safely added to [rew_listx] *)
@@ -291,7 +291,7 @@ Proof using. intros. rewrite~ fold_left_app. Qed.
 
 End FoldLeft.
 
-Opaque fold_left.
+Global Opaque fold_left.
 
 Hint Rewrite fold_left_nil fold_left_cons
   fold_left_last : rew_listx.
@@ -334,7 +334,7 @@ Qed.
 
 End Length.
 
-Opaque length.
+Global Opaque length.
 
 Hint Rewrite length_nil length_cons length_app
   length_last : rew_list.
@@ -368,6 +368,13 @@ Proof using.
   extens. iff M. destruct l; rew_list; auto_false*. { subst*. }
 Qed.
 
+Lemma length_one_inv : forall l,
+  length l = 1 ->
+  exists x, l = x::nil.
+Proof using.
+  introv N. destruct l as [|x [|]]; rew_list in *; tryfalse. eauto.
+Qed.
+
 Lemma length_neq_inv : forall l1 l2,
   length l1 <> length l2 ->
   (l1 <> l2).
@@ -394,6 +401,12 @@ Proof using.
       { rew_list in *. math. }
       { exists x (a::l'). rewrite~ E. } } }
 Qed.
+
+Lemma list_same_length_inv_nil : forall l1 l2,
+  length l1 = length l2 ->
+  l1 = nil <-> l2 = nil.
+Proof using. intros. destruct l1; destruct l2; auto_false*. Qed.
+
 
 (**------- Cons -------- *)
 
@@ -722,6 +735,15 @@ Lemma mem_cons_inv : forall l x y,
   mem x (y::l) ->
   x = y \/ mem x l.
 Proof using. introv E. rewrite* mem_cons_eq in E. Qed.
+
+Lemma not_mem_cons_inv : forall x y l,
+  ~ mem x (y::l) ->
+  x <> y /\ ~ mem x l.
+Proof using.
+  introv M. split.
+  { intro_subst. false* M. }
+  { intros N. false* M. }
+Qed.
 
 Lemma mem_cons_inv_cases : forall l x y,
   mem x (y::l) ->
@@ -1120,7 +1142,7 @@ Qed.
 End NthFuncAux.
 
 Arguments nth [A] {IA}.
-Opaque nth.
+Global Opaque nth.
 
 Hint Rewrite nth_zero nth_succ : rew_listx.
 
@@ -1214,7 +1236,7 @@ Proof using.
 Qed.
 
 Lemma Nth_rev : forall n x l,
-  Nth n l x -> 
+  Nth n l x ->
   Nth (length l - 1 - n) (rev l) x.
 Proof using.
   introv. sets_eq N: (length l). gen x n l.
@@ -1230,14 +1252,14 @@ Qed.
 
 Lemma Nth_rev' : forall n x l,
   n < length l ->
-  Nth (length l - 1 - n) l x -> 
+  Nth (length l - 1 - n) l x ->
   Nth n (rev l) x.
 Proof using.
   introv L M. applys_eq (>> Nth_rev M) 3. math.
 Qed.
 
 Lemma Nth_rev_inv : forall n x l,
-  Nth n (rev l) x -> 
+  Nth n (rev l) x ->
   Nth (length l - 1 - n) l x.
 Proof using.
   introv N. lets K: Nth_rev N. rewrite rev_rev, length_rev in K. auto.
@@ -1253,7 +1275,7 @@ Qed.
 
 End Rev.
 
-Opaque rev.
+Global Opaque rev.
 
 Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_list.
 Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_listx.
@@ -1360,7 +1382,7 @@ Proof using. intros. applys nth_of_Nth. applys~ Nth_make. Qed.
 
 End Make.
 
-Opaque make.
+Global Opaque make.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1404,13 +1426,21 @@ Proof using. auto. Qed.
 
 Definition update_cons := update_succ.
 
+Lemma update_cons_case : forall n v x l,
+  update n v (x::l) = (If n = 0 then v::l else x::(update (n-1) v l)).
+Proof using.
+  intros. destruct n as [|n']; case_if.
+  { applys update_zero. }
+  { rewrite update_cons. fequals_rec. math. }
+Qed.
+
 Lemma update_cons_pos : forall n v x l,
   n > 0 ->
   update n v (x::l) = x::(update (n-1) v l).
 Proof using.
-  intros. destruct n.
-  { math. }
-  { rewrite~ update_succ. fequals_rec. math. }
+  introv N. rewrite update_cons_case. case_if.
+  { false. math. }
+  { auto. }
 Qed.
 
 Lemma update_app_l : forall l1 l2 n v,
@@ -1487,15 +1517,28 @@ Proof using.
       { rew_listx. applys~ IHl. } } }
 Qed.
 
+Lemma update_nth_same : forall n l,
+  n < length l ->
+  update n (nth n l) l = l.
+Proof using.
+  introv E. gen n. induction l as [|x l']; intros.
+  { rewrite length_nil in E. false. math. }
+  { rewrite length_cons in E. rewrite update_cons_case.
+    destruct n as [|n']; case_if.
+    { subst. rewrite* nth_zero. }
+    { fequals. rewrite nth_cons. math_rewrite (S n' - 1 = n')%nat.
+      rewrite* IHl'. math. } }
+Qed.
+
 (* --TODO: possibly add Nth_update_eq and Nth_update_neq *)
 
 End Update.
 
-Opaque update.
+Global Opaque update.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Map *)
+(** **   *)
 
 Definition map A B (f:A->B) (l:list A) : list B :=
   fold_right (fun x acc => (f x)::acc) (@nil B) l.
@@ -1617,11 +1660,21 @@ Proof using.
     inverts E. fequals*. }
 Qed.
 
+Lemma map_congr : forall f1 f2 l,
+  (forall x, mem x l -> f1 x = f2 x) ->
+  map f1 l =  map f2 l.
+Proof using.
+  introv H. induction l. { auto. }
+  { do 2 rewrite map_cons. fequals.
+    { applys H. applys mem_here. }
+    { applys IHl. intros x Hx. applys H. applys* mem_next. } }
+Qed.
+
 End Map.
 
-Opaque map.
+Global Opaque map.
 
-Hint Rewrite map_nil map_cons map_app map_last : rew_listx.
+Hint Rewrite map_nil map_cons map_app map_last length_map : rew_listx.
 (* Note: [map_rev] and [map_id] may be safely added to [rew_listx] *)
 
 Lemma map_id : forall A (l:list A),
@@ -1637,6 +1690,20 @@ Lemma mem_map : forall (A B:Type) (f:A->B) (l:list A) x,
   mem x l ->
   mem (f x) (map f l).
 Proof using. introv M. induction M; rew_listx; auto. Qed.
+
+Lemma mem_map' : forall A B (l:list A) (f:A->B) (x:A) (y:B),
+  mem x l ->
+  y = f x ->
+  mem y (map f l).
+Proof using. intros. subst. applys* mem_map. Qed.
+
+Lemma map_map : forall A B C (l:list A) (f:A->B) (g:B->C),
+  map g (map f l) = map (fun x => g (f x)) l.
+Proof using.
+  intros. induction l as [|x l'].
+  { auto. }
+  { repeat rewrite map_cons. fequals. }
+Qed.
 
 Lemma Nth_map : forall (A B:Type) (f:A->B) (l:list A) n (x:A),
   Nth n l x ->
@@ -1733,7 +1800,7 @@ Qed.
 
 End Concat.
 
-Opaque concat.
+Global Opaque concat.
 
 Hint Rewrite concat_nil concat_cons concat_app concat_last : rew_listx.
 
@@ -1869,7 +1936,7 @@ Qed.
 
 End Filter.
 
-Opaque filter.
+Global Opaque filter.
 
 Hint Rewrite filter_nil filter_cons filter_app filter_last filter_rev
              mem_filter_eq : rew_listx.
@@ -1894,7 +1961,7 @@ Lemma remove_not_mem : forall x l,
   ~ mem x l ->
   remove x l = l.
 Proof using.
-  intros. applys filter_eq_self_of_mem_implies_P. 
+  intros. applys filter_eq_self_of_mem_implies_P.
   intros y My ->. false.
 Qed.
 
@@ -1937,7 +2004,7 @@ Qed.
 
 End Remove.
 
-Opaque remove.
+Global Opaque remove.
 
 (* -- LATER: [remove_several] as an iteration of [remove] *)
 
@@ -2228,7 +2295,7 @@ Proof using.
   { applys* Nth_nth. } { applys* Nth_nth. math. }
 Qed.
 
-Opaque combine.
+Global Opaque combine.
 
 Hint Rewrite combine_nil combine_cons : rew_listx.
 
@@ -2343,7 +2410,7 @@ Proof using. introv E N. rewrites~ (>> nth_split E N). Qed.
 
 End Split.
 
-Opaque split.
+Global Opaque split.
 
 Hint Rewrite split_nil : rew_listx.
 
@@ -2448,7 +2515,7 @@ Qed.
 End Take.
 
 (* Arguments take [A] : simpl never. *)
-Opaque take.
+Global Opaque take.
 
 Hint Rewrite take_nil take_zero take_succ : rew_listx.
 (* Note: [take_prefix_length] and [take_full_length]
@@ -2542,7 +2609,7 @@ Qed.
 
 End Drop.
 
-Opaque drop.
+Global Opaque drop.
 (* Arguments drop [A] : simpl never. *)
 
 Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
@@ -2680,7 +2747,7 @@ Qed.
 
 End TakeDropLast.
 
-Opaque take_drop_last.
+Global Opaque take_drop_last.
 Arguments take_drop_last [A] {IA}.
 Arguments take_drop_last_spec [A] {IA}.
 Arguments take_drop_last_length [A] {IA}.
@@ -3360,23 +3427,6 @@ Inductive Exists2 A1 A2 (P : A1 -> A2 -> Prop)
 
 
 (* ---------------------------------------------------------------------- *)
-(* ** Assoc as a relation *)
-
-(** [Assoc x v l] asserts that [(x,v)] the first pair of the
-    form [(x,_)] in [l] *)
-
-Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
-  | Assoc_here : forall l ,
-      Assoc x v ((x,v)::l)
-  | Assoc_next : forall y l w,
-      Assoc x v l ->
-      x <> y ->
-      Assoc x v ((y,w)::l).
-
-(* --LATER: lemmas about Assoc *)
-
-
-(* ---------------------------------------------------------------------- *)
 (* ** Count *)
 
 (** [count P l] returns the number of elements of [l] satisfying the predicate
@@ -3412,7 +3462,7 @@ Proof using. intros. unfold count. rew_listx~. Qed.
 
 Lemma count_cons : forall P l x,
   count P (x::l) = count P l + If P x then 1 else 0.
-Proof using. 
+Proof using.
   intros. rewrite <- app_cons_one_r, count_app, count_one. math.
 Qed.
 
@@ -3530,7 +3580,28 @@ Proof using. introv. rewrite* count_pos_eq_exists_mem. Qed.
 
 End Count2.
 
-Opaque count.
+Global Opaque count.
+
+
+(* ---------------------------------------------------------------------- *)
+(** * Nat seq *)
+
+(** [nat_seq i n] generates a list of variables [x1;x2;..;xn]
+    with [x1=i] and [xn=i+n-1]. Such lists are useful for
+    generic programming. *)
+
+Fixpoint nat_seq (start:nat) (nb:nat) :=
+  match nb with
+  | O => nil
+  | S nb' => start :: nat_seq (S start) nb'
+  end.
+
+Lemma length_nat_seq : forall start nb,
+  length (nat_seq start nb) = nb.
+Proof using.
+  intros. gen start. induction nb; simpl; intros.
+  { auto. } { rew_list. rewrite~ IHnb. }
+Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -3660,33 +3731,38 @@ Proof using. (* --TODO: cleanup *)
   do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHl.
 Qed.
 
-Opaque fold.
+Global Opaque fold.
+
+Hint Rewrite fold_nil fold_cons fold_app : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
-(* ** Induction principle on lists
-     -- TODO cleanup and move to a different file *)
+(* ** Induction principle on lists *)
 
 Section ListSub.
 Variable (A:Type).
 
-(** Immediate sub-list well-founded order *)
+(** Sub-list well-founded order *)
 
 Inductive list_sub : list A -> list A -> Prop :=
   | list_sub_cons : forall x l,
-      list_sub l (x::l).
+      list_sub l (x::l)
+  | list_sub_tail : forall x l1 l2,
+      list_sub l1 l2 ->
+      list_sub l1 (x::l2).
 
 Hint Constructors list_sub.
 
-Lemma list_sub_wf : wf list_sub.
+Lemma list_sub_wf : LibWf.wf list_sub.
 Proof using.
-  intros l. induction l;
-  apply Acc_intro; introv H; inverts~ H.
+  intros l. induction l; apply Acc_intro; introv H.
+  { inverts~ H. }
+  { inverts~ H. applys~ IHl. }
 Qed.
 
 End ListSub.
 
-Arguments list_sub {A}.
+Arguments list_sub [A].
 Hint Constructors list_sub.
 Hint Resolve list_sub_wf : wf.
 
@@ -3701,3 +3777,69 @@ Proof using.
   lets [E|(x&l'&E)]: (last_case l); subst. auto.
   unfolds measure. rewrite length_last in IH. auto with maths.
 Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(* Induction on pairs of lists *)
+
+Lemma list2_ind : forall A B (P:list A->list B->Prop) l1 l2,
+  length l1 = length l2 ->
+  P nil nil ->
+  (forall x1 xs1 x2 xs2,
+     length xs1 = length xs2 -> P xs1 xs2 -> P (x1::xs1) (x2::xs2)) ->
+  P l1 l2.
+Proof using.
+  introv E M1 M2. gen l2. induction l1 as [|x1 l1']; intros;
+   destruct l2 as [|x2 l2']; try solve [false; math]; auto.
+Qed.
+
+Tactic Notation "list2_ind" constr(l1) constr(l2) :=
+  pattern l2; pattern l1;
+  match goal with |- (fun a => (fun b => @?P a b) _) _ =>
+   (* applys list2_ind P *)
+   let X := fresh "P" in set (X := P); applys list2_ind X; unfold X; try clear X
+ end.
+
+Tactic Notation "list2_ind" "~" constr(l1) constr(l2) :=
+  list2_ind l1 l2; auto_tilde.
+
+Tactic Notation "list2_ind" "*" constr(l1) constr(l2) :=
+  list2_ind l1 l2; auto_star.
+
+Tactic Notation "list2_ind" constr(E) :=
+  match type of E with length ?l1 = length ?l2 =>
+    list2_ind l1 l2; [ apply E | | ] end.
+
+
+(* ---------------------------------------------------------------------- *)
+(* Induction on pairs of lists, starting from the last element *)
+
+Lemma list2_ind_last : forall A B (P:list A->list B->Prop) l1 l2,
+  length l1 = length l2 ->
+  P nil nil ->
+  (forall x1 xs1 x2 xs2,
+     length xs1 = length xs2 -> P xs1 xs2 -> P (xs1&x1) (xs2&x2)) ->
+  P l1 l2.
+Proof using.
+  introv E M1 M2. gen l2. induction l1 using list_ind_last;
+   [| rename a into x1, l1 into l1']; intros;
+   destruct (last_case l2) as [|(x2&l2'&E2)]; subst; rew_list in *;
+   try solve [false; math]; auto.
+Qed.
+
+Tactic Notation "list2_ind_last" constr(l1) constr(l2) :=
+  pattern l2; pattern l1;
+  match goal with |- (fun a => (fun b => @?P a b) _) _ =>
+   (* applys list2_ind P *)
+   let X := fresh "P" in set (X := P); applys list2_ind_last X; unfold X; try clear X
+ end.
+
+Tactic Notation "list2_ind_last" "~" constr(l1) constr(l2) :=
+  list2_ind_last l1 l2; auto_tilde.
+
+Tactic Notation "list2_ind_last" "*" constr(l1) constr(l2) :=
+  list2_ind_last l1 l2; auto_star.
+
+Tactic Notation "list2_ind_last" constr(E) :=
+  match type of E with length ?l1 = length ?l2 =>
+    list2_ind_last l1 l2; [ apply E | | ] end.

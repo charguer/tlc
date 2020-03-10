@@ -23,9 +23,9 @@ Global Close Scope positive_scope.
     | S : nat -> nat.
 
   Remark: ideally, constructors would be renamed to [zero] and [succ],
-  or [nat_zero] and [nat_succ], with the notations 
+  or [nat_zero] and [nat_succ], with the notations
   [O] or [0%nat], and [S n] or [succ n].
-  It is indeed proablematic to prevent the use of single letter 
+  It is indeed proablematic to prevent the use of single letter
   variables in pattern matching to the user who does not care about [nat].
 
 *)
@@ -53,7 +53,7 @@ Instance le_nat_inst : Le nat := Build_Le Peano.le.
 (* ---------------------------------------------------------------------- *)
 (** ** Translating typeclass instances to Peano relations *)
 
-(** These lemmas and tactics are useful to transform arithmetic goals 
+(** These lemmas and tactics are useful to transform arithmetic goals
     into a form on which the [omega] decision procedure may apply. *)
 
 Lemma le_peano : le = Peano.le.
@@ -155,7 +155,6 @@ Proof using.
 Qed.
 
 
-
 (* ********************************************************************** *)
 (** * Simplification lemmas *)
 
@@ -172,6 +171,26 @@ Proof using. nat_math. Qed.
 
 Lemma minus_zero_r : forall n,
   n - 0 = n.
+Proof using. nat_math. Qed.
+
+Lemma plus_succ : forall n1 n2,
+  n1 + S n2 = S (n1 + n2).
+Proof using. nat_math. Qed.
+
+Lemma minus_zero : forall n,
+  n - 0 = n.
+Proof using. nat_math. Qed.
+
+Lemma succ_minus_succ : forall n1 n2,
+  S n1 - S n2 = n1 - n2.
+Proof using. nat_math. Qed.
+
+Lemma minus_same : forall n,
+  n - n = 0.
+Proof using. nat_math. Qed.
+
+Lemma plus_minus_same : forall n1 n2,
+  n1 + n2 - n1 = n2.
 Proof using. nat_math. Qed.
 
 Lemma mult_zero_l : forall n,
@@ -198,6 +217,7 @@ Proof using. nat_math. Qed.
     expressions involving natural numbers *)
 
 Hint Rewrite plus_zero_r plus_zero_l minus_zero_r
+  plus_succ minus_zero succ_minus_succ minus_same plus_minus_same
   mult_zero_l mult_zero_r mult_one_l mult_one_r : rew_nat.
 
 Tactic Notation "rew_nat" :=
@@ -219,4 +239,22 @@ Tactic Notation "rew_nat" "~" "in" hyp(H) :=
   rew_nat in H; auto_tilde.
 Tactic Notation "rew_nat" "*" "in" hyp(H) :=
   rew_nat in H; auto_star.
+
+
+(* ********************************************************************** *)
+(** * Executable functions *)
+
+Fixpoint beq (x y : nat) :=
+  match x, y with
+  | O, O => true
+  | S x', S y' => beq x' y'
+  | _, _ => false
+  end.
+
+Lemma beq_eq : forall n1 n2,
+  beq n1 n2 = isTrue (n1 = n2).
+Proof using.
+  intros n1. induction n1; intros; destruct n2; simpl; rew_bool_eq; auto_false.
+  rewrite IHn1. extens. rew_istrue. nat_math.
+Qed.
 

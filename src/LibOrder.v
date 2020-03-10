@@ -22,12 +22,12 @@ Arguments preorder_trans [A] [R] [p] y [x] [z].
 (** Transformations *)
 
 Lemma preorder_inverse : forall A (R:binary A),
-  preorder R -> 
+  preorder R ->
   preorder (inverse R).
 Proof using. hint trans_inverse. introv [Re Tr]. constructor~. Qed.
 
 Lemma preorder_rclosure : forall A (R:binary A),
-  preorder R -> 
+  preorder R ->
   preorder (rclosure R).
 Proof using. hint refl_rclosure, trans_rclosure. introv [Re Tr]. constructor~. Qed.
 
@@ -46,7 +46,7 @@ Arguments total_preorder_trans [A] [R] t y [x] [z].
 (** Conversion to preorder *)
 
 Lemma total_preorder_refl : forall A (le:binary A),
-  total_preorder le -> 
+  total_preorder le ->
   refl le.
 Proof using. introv [Tr To]. intros x. destruct~ (To x x). Qed.
 
@@ -61,26 +61,26 @@ Hint Resolve total_preorder_to_preorder.
 (** Transformations *)
 
 Lemma total_preorder_inverse : forall A (R:binary A),
-  total_preorder R -> 
+  total_preorder R ->
   total_preorder (inverse R).
 Proof using. hint trans_inverse, total_inverse. introv [Tr To]. constructor~. Qed.
 
 Lemma total_preorder_rclosure : forall A (R:binary A),
-  total_preorder R -> 
+  total_preorder R ->
   total_preorder (rclosure R).
 Proof using. hint trans_rclosure, total_rclosure. introv [Re Tr]. constructor~. Qed.
 
 (** Properties *)
 
 Lemma inverse_of_not : forall A (R:binary A) x y,
-  total R -> 
-  ~ R x y -> 
+  total R ->
+  ~ R x y ->
   inverse R x y.
 Proof using. introv T H. destruct (T x y); auto_false~. Qed.
 
 Lemma inverse_strict_of_not : forall A (R:binary A) x y,
-  total R -> 
-  ~ R x y -> 
+  total R ->
+  ~ R x y ->
   inverse (strict R) x y.
 Proof using.
   introv T H. destruct (T x y). auto_false~.
@@ -112,15 +112,15 @@ Hint Resolve order_to_preorder.
 (** Transformations *)
 
 Lemma order_inverse : forall A (R:binary A),
-  order R -> 
+  order R ->
   order (inverse R).
 Proof using.
   hint trans_inverse, antisym_inverse.
-  introv [Re Tr An]. constructor~. 
+  introv [Re Tr An]. constructor~.
 Qed.
 
 Lemma order_rclosure : forall A (R:binary A),
-  order R -> 
+  order R ->
   order (rclosure R).
 Proof using.
   hint refl_rclosure, trans_rclosure, antisym_rclosure.
@@ -154,15 +154,15 @@ Hint Resolve order_wrt_to_preorder.
 (** Transformations *)
 
 Lemma order_wrt_inverse : forall A (E:binary A) (R:binary A),
-  order_wrt E R -> 
+  order_wrt E R ->
   order_wrt E (inverse R).
 Proof using.
   hint trans_inverse, antisym_wrt_inverse.
-  introv [Re Tr An]. constructor~. 
+  introv [Re Tr An]. constructor~.
 Qed.
 
 Lemma order_wrt_rclosure : forall A (E:binary A) (R:binary A),
-  order_wrt E R -> 
+  order_wrt E R ->
   order_wrt (rclosure E) (rclosure R).
 Proof using.
   hint refl_rclosure, trans_rclosure, antisym_wrt_rclosure.
@@ -193,9 +193,9 @@ Arguments total_order_antisym [A] [R] [o] [x] [y].
 (** Construction *)
 
 Lemma total_order_intro : forall A (R:binary A),
-   trans R -> 
-   antisym R -> 
-   total R -> 
+   trans R ->
+   antisym R ->
+   total R ->
    total_order R.
 Proof using.
   introv Tra Ant Tot. constructor~. constructor~.
@@ -215,7 +215,7 @@ Hint Resolve total_order_to_order total_order_to_total_preorder.
 (** Transformations *)
 
 Lemma total_order_inverse : forall A (R:binary A),
-  total_order R -> 
+  total_order R ->
   total_order (inverse R).
 Proof using.
   hint total_inverse, order_inverse.
@@ -223,7 +223,7 @@ Proof using.
 Qed.
 
 Lemma total_order_rclosure : forall A (R:binary A),
-  total_order R -> 
+  total_order R ->
   total_order (rclosure R).
 Proof using.
   hint total_rclosure, order_rclosure.
@@ -231,12 +231,12 @@ Proof using.
 Qed.
 
 (** Properties *)
-   
+
 Section TotalOrderProp.
 Variables (A:Type) (R : binary A).
 
-(** WARNING: notations here are not typeclass operators 
-    -- TODO: is this really what we want? 
+(** WARNING: notations here are not typeclass operators
+    -- TODO: is this really what we want?
     perhaps it would be clearer to inline these notations. *)
 
 Notation "'le'" := (R).
@@ -286,7 +286,7 @@ Proof using.
   introv H. intros. total_order_normalize. tests: (x = y).
     branch~ 2.
     destruct (total_order_total H x y).
-     branch~ 1. 
+     branch~ 1.
      branch~ 3.
 Qed.
 
@@ -334,7 +334,7 @@ Proof using.
 Qed.
 
 Lemma strict_order_strict : forall A (R:binary A),
-  order R -> 
+  order R ->
   strict_order (strict R).
 Proof using.
   introv [Re As Tr]. unfold strict. constructor; intros_all; simpls.
@@ -344,7 +344,7 @@ Proof using.
 Qed.
 
 Lemma order_rclosure_of_strict_order : forall A (R:binary A),
-  strict_order R -> 
+  strict_order R ->
   order (rclosure R).
 Proof using.
   introv [Re As Tr]. rewrite rclosure_eq_fun. constructor; simpl.
@@ -370,12 +370,12 @@ Arguments strict_total_order_trans [A] [R] [s] y [x] [z].
 (** Conversion to strict order and back *)
 
 Lemma strict_total_order_irrefl : forall A (R:binary A),
-  strict_total_order R -> 
+  strict_total_order R ->
   irrefl R.
 Proof using. introv [Tr Tk]. intros x. lets: (Tk x x). inverts~ H. Qed.
 
 Lemma strict_total_order_asym : forall A (R:binary A),
-  strict_total_order R -> 
+  strict_total_order R ->
   asym R.
 Proof using. introv [Tr Tk]. intros x y. lets: (Tk x y). inverts~ H. Qed.
 
@@ -391,7 +391,7 @@ Hint Resolve strict_total_order_to_strict_order.
 (** Transformation *)
 
 Lemma strict_total_order_inverse : forall A (R:binary A),
-  strict_total_order R -> 
+  strict_total_order R ->
   strict_total_order (inverse R).
 Proof using.
   introv [Tr Tk]. constructor. apply~ trans_inverse.
@@ -400,7 +400,7 @@ Qed.
 (** From total order *)
 
 Lemma strict_total_order_of_total_order : forall A (R:binary A),
-  total_order R -> 
+  total_order R ->
   strict_total_order (strict R).
 Proof using.
   introv [[Re Tr As] To]. constructor.
@@ -509,29 +509,29 @@ Hint Rewrite @ge_is_inverse_le @gt_is_inverse_lt : rew_to_le_lt.
 Tactic Notation "rew_to_le_lt" :=
   autorewrite with rew_to_le_lt in *.
 
-Lemma gt_is_strict_inverse_le : forall `{Le A}, 
+Lemma gt_is_strict_inverse_le : forall `{Le A},
   gt = strict (inverse le).
 Proof using. intros. rew_to_le. apply inverse_strict. Qed.
 
 Lemma le_is_rclosure_lt : forall `{Le A},
-  refl le -> 
+  refl le ->
   le = rclosure lt.
 Proof using. intros. rew_to_le. rewrite~ rclosure_strict. Qed.
 
-Lemma le_is_inverse_ge : forall `{Le A}, 
+Lemma le_is_inverse_ge : forall `{Le A},
   le = inverse ge.
 Proof using. intros. rew_to_le. rewrite~ inverse_inverse. Qed.
 
-Lemma lt_is_inverse_gt : forall `{Le A}, 
+Lemma lt_is_inverse_gt : forall `{Le A},
   lt = inverse gt.
 Proof using. intros. rew_to_le. rewrite~ inverse_inverse. Qed.
 
-Lemma gt_is_strict_ge : forall `{Le A}, 
+Lemma gt_is_strict_ge : forall `{Le A},
   gt = strict ge.
 Proof using. intros. rew_to_le. apply inverse_strict. Qed.
 
 Lemma ge_is_rclosure_gt : forall `{Le A},
-  refl le -> 
+  refl le ->
   ge = rclosure gt.
 Proof using. intros. rewrite gt_is_strict_ge. rewrite~ rclosure_strict. Qed.
 
@@ -715,27 +715,27 @@ Ltac auto_star ::= try solve [ dauto ].
 (** derived structures *)
 
 Global Instance Le_preorder_of_Le_order :
-  Le_order -> 
+  Le_order ->
   Le_preorder.
 Proof using. constructor. intros. apply* order_to_preorder. Qed.
 
 Global Instance Le_total_preorder_of_Le_total_order :
-  Le_total_order -> 
+  Le_total_order ->
   Le_total_preorder.
 Proof using. constructor. intros. apply* total_order_to_total_preorder. Qed.
 
 Global Instance Le_preorder_of_Total_preorder :
-  Le_total_preorder -> 
+  Le_total_preorder ->
   Le_preorder.
 Proof using. constructor. intros. apply* total_preorder_to_preorder. Qed.
 
 Global Instance Le_order_of_Le_total_order :
-  Le_total_order -> 
+  Le_total_order ->
   Le_order.
 Proof using. constructor. intros. apply* total_order_to_order. Qed.
 
 Global Instance lt_strict_order_of_lt_strict_total_order :
-  Lt_strict_total_order -> 
+  Lt_strict_total_order ->
   Lt_strict_order.
 Proof using. constructor. intros. apply* strict_total_order_to_strict_order. Qed.
 
@@ -745,61 +745,61 @@ Global Instance Lt_strict_order_of_Le_order :
 Proof using. constructor. intros. rew_to_le. apply* strict_order_strict. Qed.
 
 Global Instance Lt_strict_total_order_of_Le_total_order :
-  Le_total_order -> 
+  Le_total_order ->
   Lt_strict_total_order.
 Proof using. constructor. intros. rew_to_le. apply* strict_total_order_of_total_order. Qed.
 
 (** symmetric structures *)
 
 Global Instance Ge_preorder_of_Le_order :
-  Le_order -> 
+  Le_order ->
   Ge_preorder.
 Proof using. constructor. rew_to_le. apply preorder_inverse. apply le_preorder. Qed.
 
 Global Instance Ge_total_preorder_of_Le_total_order :
-  Le_total_order -> 
+  Le_total_order ->
   Ge_total_preorder.
 Proof using. constructor. rew_to_le. apply total_preorder_inverse. apply le_total_preorder. Qed.
 
 Global Instance Ge_preorder_of_Total_preorder :
-  Le_total_preorder -> 
+  Le_total_preorder ->
   Ge_preorder.
 Proof using. constructor. rew_to_le. apply preorder_inverse. apply le_preorder. Qed.
 
 Global Instance Ge_order_of_Le_total_order :
-  Le_total_order -> 
+  Le_total_order ->
   Ge_order.
 Proof using. constructor. rew_to_le. apply order_inverse. apply le_order. Qed.
 
 Global Instance Gt_strict_order_of_lt_strict_total_order :
-  Lt_strict_total_order -> 
+  Lt_strict_total_order ->
   Gt_strict_order.
 Proof using. constructor. rewrite gt_is_inverse_lt. apply strict_order_inverse. apply lt_strict_order. Qed.
 
 Global Instance Gt_strict_order_of_Le_order :
-  Le_order -> 
+  Le_order ->
   Gt_strict_order.
 Proof using. constructor. rewrite gt_is_inverse_lt. apply strict_order_inverse. apply lt_strict_order. Qed.
 
 Global Instance Gt_strict_total_order_of_Le_total_order :
-  Le_total_order -> 
+  Le_total_order ->
   Gt_strict_total_order.
 Proof using. constructor. rewrite gt_is_inverse_lt. apply strict_total_order_inverse. apply lt_strict_total_order. Qed.
 
 (** properties of le *)
 
 Global Instance Le_refl_of_Le_preorder :
-  Le_preorder -> 
+  Le_preorder ->
   Le_refl.
 Proof using. intros [[Re Tr]]. constructor~. Qed.
 
 Global Instance Le_trans_of_Le_preorder :
-  Le_preorder -> 
+  Le_preorder ->
   Le_trans.
 Proof using. intros [[Re Tr]]. constructor~. Qed.
 
 Global Instance Le_antisym_of_Le_order :
-  Le_order -> 
+  Le_order ->
   Le_antisym.
 Proof using. constructor. intros. apply* order_antisym. Qed.
 
@@ -811,12 +811,12 @@ Proof using. constructor. intros. apply* total_order_total. Qed.
 (** properties of ge *)
 
 Global Instance Ge_refl_of_Le_preorder :
-  Le_preorder -> 
+  Le_preorder ->
   Ge_refl.
 Proof using. constructor. rew_to_le. apply refl_inverse. apply le_refl. Qed.
 
 Global Instance Ge_trans_of_Le_preorder :
-  Le_preorder -> 
+  Le_preorder ->
   Ge_trans.
 Proof using. constructor. rew_to_le. apply trans_inverse. apply le_trans. Qed.
 
@@ -833,31 +833,31 @@ Proof using. constructor. rew_to_le. apply total_inverse. apply le_total. Qed.
 (** properties of lt *)
 
 Global Instance Lt_irrefl_of_Le_order :
-  Le_order -> 
+  Le_order ->
   Lt_irrefl.
 Proof using. constructor. apply strict_order_irrefl. apply lt_strict_order. Qed.
 
 Global Instance Lt_trans_of_Le_order :
-  Le_order -> 
+  Le_order ->
   Lt_trans.
 Proof using. constructor. apply strict_order_trans. apply lt_strict_order. Qed.
 
 (** properties of gt *)
 
 Global Instance Gt_irrefl_of_Le_order :
-  Le_order -> 
+  Le_order ->
   Gt_irrefl.
 Proof using. constructor. apply strict_order_irrefl. apply gt_strict_order. Qed.
 
 Global Instance Gt_trans_of_Le_order :
-  Le_order -> 
+  Le_order ->
   Gt_trans.
 Proof using. constructor. apply strict_order_trans. apply gt_strict_order. Qed.
 
 (** mixed transitivity results *)
 
-Global Instance Lt_le_trans_of_Le_order : 
-  Le_order -> 
+Global Instance Lt_le_trans_of_Le_order :
+  Le_order ->
   Lt_le_trans.
 Proof using.
   constructor. introv K L. rew_to_le. destruct K as [U V].
@@ -873,30 +873,30 @@ Proof using.
 Qed.
 
 Global Instance gt_ge_trans_of_Le_order :
-  Le_order -> 
+  Le_order ->
   Gt_ge_trans.
 Proof using.
   constructor. introv K L. rew_to_le_lt. hnf in *. apply* le_lt_trans.
 Qed.
 
-Global Instance ge_gt_trans_of_Le_order : 
-  Le_order -> 
+Global Instance ge_gt_trans_of_Le_order :
+  Le_order ->
   Ge_gt_trans.
 Proof using.
   constructor. introv K L. rew_to_le_lt. hnf in *. apply* lt_le_trans.
 Qed.
 (** conversion between operators *)
 
-Global Instance Ge_as_sle_of : 
+Global Instance Ge_as_sle_of :
   Ge_as_sle.
 Proof using. constructor. intros. rew_to_le. auto. Qed.
 
-Global Instance Gt_as_slt_of : 
+Global Instance Gt_as_slt_of :
   Gt_as_slt.
 Proof using. constructor. intros. rew_to_le. auto. Qed.
 
 Global Instance Ngt_as_sle_of_Le_total_order :
-  Le_total_order -> 
+  Le_total_order ->
   Ngt_as_sle.
 Proof using.
   constructor. intros. rew_to_le. unfold strict. rew_logic. iff M.
@@ -907,8 +907,8 @@ Proof using.
   apply or_classic_l. intros P Q. apply P. apply* le_antisym.
 Qed.
 
-Global Instance Nlt_as_ge_of_Le_total_order : 
-  Le_total_order -> 
+Global Instance Nlt_as_ge_of_Le_total_order :
+  Le_total_order ->
   Nlt_as_ge.
 Proof using. constructor. intros. rew_to_le_lt. unfold inverse. apply ngt_as_sle. Qed.
 
@@ -917,7 +917,7 @@ Global Instance Ngt_as_le_of_Le_total_order :
   Ngt_as_le.
 Proof using. constructor. intros. rew_to_le_lt. unfold inverse. apply ngt_as_sle. Qed.
 
-Global Instance Nle_as_gt_of_Le_total_order : 
+Global Instance Nle_as_gt_of_Le_total_order :
   Le_total_order ->
   Nle_as_gt.
 Proof using.
@@ -925,8 +925,8 @@ Proof using.
   rewrite <- ngt_as_sle. rewrite~ not_not_eq.
 Qed.
 
-Global Instance Nge_as_lt_of_Le_total_order : 
-  Le_total_order -> 
+Global Instance Nge_as_lt_of_Le_total_order :
+  Le_total_order ->
   Nge_as_lt.
 Proof using.
   constructor. intros. rew_to_le_lt. unfold inverse.
@@ -935,24 +935,24 @@ Qed.
 
 (** inclusion between operators *)
 
-Global Instance Lt_to_le_of : 
+Global Instance Lt_to_le_of :
   Lt_to_le.
 Proof using. constructor. intros. rew_to_le. unfolds* strict. Qed.
 
-Global Instance Gt_to_ge_of : 
+Global Instance Gt_to_ge_of :
   Gt_to_ge.
 Proof using. constructor. intros. rew_to_le. unfolds* inverse, strict. Qed.
 
-Global Instance Nle_to_sle_of_Le_total_order : 
-  Le_total_order -> 
+Global Instance Nle_to_sle_of_Le_total_order :
+  Le_total_order ->
   Nle_to_sle.
 Proof using.
   constructor. introv K. rewrite nle_as_gt in K.
   rew_to_le. unfolds* inverse, strict.
 Qed.
 
-Global Instance Nle_to_slt_of_Le_total_order : 
-  Le_total_order -> 
+Global Instance Nle_to_slt_of_Le_total_order :
+  Le_total_order ->
   Nle_to_slt.
 Proof using.
   constructor. introv K. rewrite nle_as_gt in K.
@@ -961,8 +961,8 @@ Qed.
 
 (** case analysis under no assumption *)
 
-Global Instance Case_eq_lt_gt_of_Le_total_order : 
-  Le_total_order -> 
+Global Instance Case_eq_lt_gt_of_Le_total_order :
+  Le_total_order ->
   Case_eq_lt_gt.
 Proof using.
   introv K. constructor. intros.
@@ -973,15 +973,15 @@ Proof using.
 Qed.
 
 Global Instance Case_eq_lt_slt_of_Le_total_order :
-  Le_total_order -> 
+  Le_total_order ->
   Case_eq_lt_slt.
 Proof using.
   constructor. intros. pattern lt at 2. rewrite lt_is_inverse_gt.
   apply case_eq_lt_gt.
 Qed.
 
-Global Instance Case_le_gt_of_Le_total_order : 
-  Le_total_order -> 
+Global Instance Case_le_gt_of_Le_total_order :
+  Le_total_order ->
   Case_le_gt.
 Proof using.
   constructor. intros.
@@ -989,8 +989,8 @@ Proof using.
   branches (total_order_lt_or_eq_or_gt le_total_order x y); eauto.
 Qed.
 
-Global Instance Case_eq_lt_ge_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Case_eq_lt_ge_of_Le_total_order :
+  Le_total_order ->
   Case_lt_ge.
 Proof using.
   constructor. intros.
@@ -998,65 +998,65 @@ Proof using.
   branches (total_order_lt_or_eq_or_gt le_total_order x y); eauto.
 Qed.
 
-Global Instance Case_le_slt_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Case_le_slt_of_Le_total_order :
+  Le_total_order ->
   Case_le_slt.
 Proof using. constructor. intros. rewrite lt_is_inverse_gt. apply case_le_gt. Qed.
 
-Global Instance Case_eq_lt_sle_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Case_eq_lt_sle_of_Le_total_order :
+  Le_total_order ->
   Case_lt_sle.
 Proof using. constructor. intros. rewrite le_is_inverse_ge. apply case_lt_ge. Qed.
 
 
 (** case analysis under one assumption *)
 
-Global Instance Neq_case_lt_gt_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Neq_case_lt_gt_of_Le_total_order :
+  Le_total_order ->
   Neq_case_lt_gt.
 Proof using. constructor. intros. destruct* (case_eq_lt_gt x y). Qed.
 
-Global Instance Neq_case_lt_slt_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Neq_case_lt_slt_of_Le_total_order :
+  Le_total_order ->
   Neq_case_lt_slt.
 Proof using. constructor. intros. destruct* (case_eq_lt_gt x y). Qed.
 
-Global Instance Le_case_eq_lt_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Le_case_eq_lt_of_Le_total_order :
+  Le_total_order ->
   Le_case_eq_lt.
 Proof using. constructor. intros. rew_to_le. unfold strict. tests*: (x = y). Qed.
 
-Global Instance Ge_case_eq_gt_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Ge_case_eq_gt_of_Le_total_order :
+  Le_total_order ->
   Ge_case_eq_gt.
 Proof using. constructor. intros. rew_to_le. unfold inverse, strict. tests*: (x = y). Qed.
 
 (** case analysis under two assumptions *)
 
-Global Instance Le_neq_to_lt_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Le_neq_to_lt_of_Le_total_order :
+  Le_total_order ->
   Le_neq_to_lt.
 Proof using. constructor. intros. rew_to_le. hnfs*. Qed.
 
-Global Instance Ge_neq_to_gt_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Ge_neq_to_gt_of_Le_total_order :
+  Le_total_order ->
   Ge_neq_to_gt.
 Proof using. constructor. intros. rew_to_le. hnfs*. Qed.
 
-Global Instance Nlt_nslt_to_eq_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Nlt_nslt_to_eq_of_Le_total_order :
+  Le_total_order ->
   Nlt_nslt_to_eq.
 Proof using. constructor. intros. branches* (case_eq_lt_gt x y). Qed.
 
 (** contradiction from case analysis *)
 
-Global Instance Lt_ge_false_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Lt_ge_false_of_Le_total_order :
+  Le_total_order ->
   Lt_ge_false.
 Proof using. constructor. introv H1 H2. rewrite~ <- nlt_as_ge in H2. Qed.
 
-Global Instance Lt_gt_false_of_Le_total_order :  
-  Le_total_order ->  
+Global Instance Lt_gt_false_of_Le_total_order :
+  Le_total_order ->
   Lt_gt_false.
 Proof using.
   constructor. introv H1 H2. rewrite~ <- nle_as_gt in H2.
@@ -1064,7 +1064,7 @@ Proof using.
 Qed.
 
 Global Instance Lt_slt_false_of_Le_total_order :
-  Le_total_order ->  
+  Le_total_order ->
   Lt_slt_false.
 Proof using.
   constructor. introv H1 H2. rewrite <- gt_as_slt in H2.
@@ -1079,6 +1079,8 @@ End Instances.
 
 (* ********************************************************************** *)
 (** * Boolean comparison *)
+
+Module BooleanComparison.
 
 Open Scope comp_scope.
 
@@ -1096,6 +1098,7 @@ Notation "x ''<' y" := (isTrue (@lt _ _ x y))
 Notation "x ''>' y" := (isTrue (@gt _ _ x y))
   (at level 70, no associativity) : comp_scope_reflect.
 
+End BooleanComparison.
 
 
 (* ********************************************************************** *)
@@ -1103,15 +1106,48 @@ Notation "x ''>' y" := (isTrue (@gt _ _ x y))
 
 Lemma order_rel_incl : forall A B,
   order (@rel_incl A B).
-Proof using. 
+Proof using.
   hint refl_rel_incl, antisym_rel_incl, trans_rel_incl.
   constructors*.
 Qed.
 
 Lemma order_pred_incl : forall A B,
   order (@rel_incl A B).
-Proof using. 
+Proof using.
   hint refl_rel_incl, antisym_rel_incl, trans_rel_incl.
   constructors*.
 Qed.
 
+
+(* ********************************************************************** *)
+(* * Min and max *)
+
+Definition min `{Le A} (n m:A) : A :=
+  If n <= m then n else m.
+
+Lemma min_l : forall `{Le A} (n m:A),
+  antisym le ->
+  n <= m ->
+  min n m = n.
+Proof using. introv T M. unfold min. case_if*. Qed.
+
+Lemma min_r : forall `{Le A} (n m:A),
+  antisym le ->
+  m <= n ->
+  min n m = m.
+Proof using. introv T M. unfold min. case_if*. Qed.
+
+Definition max `{Le A} (n m:A) : A :=
+  If n <= m then m else n.
+
+Lemma max_l : forall `{Le A} (n m:A),
+  antisym le ->
+  n >= m ->
+  max n m = n.
+Proof using. introv T M. unfold max. case_if*. Qed.
+
+Lemma max_r : forall `{Le A} (n m:A),
+  antisym le ->
+  n <= m ->
+  max n m = m.
+Proof using. introv T M. unfold max. case_if*. Qed.

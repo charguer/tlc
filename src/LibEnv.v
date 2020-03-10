@@ -261,7 +261,7 @@ Lemma env_ind : forall (P : env A -> Prop),
   (forall E, P E).
 Proof using.
   rew_env_defs. induction E as [|(x,v)].
-  auto. forwards*: H0 IHE.
+  auto. applys_eq* H0 1. rew_list*.
 Qed.
 
 Lemma map_empty : forall f,
@@ -314,7 +314,7 @@ Lemma get_concat : forall k E F,
                   | Some v => Some v
                   end.
 Proof using.
-  intros. rew_env_defs. induction F as [|(x,v)].
+  intros. rew_env_defs. induction F as [|(x,v)]; rew_list.
   auto.
   simpl. case_if~.
 Qed.
@@ -397,7 +397,7 @@ Lemma dom_singles : forall xs vs,
   dom (xs ~* vs) = from_list xs.
 Proof using.
   intros. rew_env_defs. gen vs.
-  induction xs; destruct vs; introv E; tryfalse.
+  induction xs; destruct vs; introv E; tryfalse; rew_listx.
   simpl. rewrite~ from_list_nil.
   simpl. rew_env_defs. rew_list. rewrite from_list_cons. fequals.
    applys IHxs. inverts~ E.
@@ -429,7 +429,7 @@ Lemma concat_singles : forall xs1 xs2 vs1 vs2,
   (xs2 ~* vs2) & (xs1 ~* vs1) = (xs1 ++ xs2) ~* (vs1 ++ vs2).
 Proof using.
   introv E1 E2. rew_env_defs. gen vs1.
-  induction xs1; destruct vs1; intros; tryfalse.
+  induction xs1; destruct vs1; intros; tryfalse; rew_listx.
   rew_list~.
   rew_list. simpl. rew_list. fequals~.
 Qed.
@@ -899,9 +899,10 @@ Lemma binds_map : forall x v (f : A -> B) E,
   binds x v E -> binds x (f v) (map f E).
 Proof using.
   introv H. unfolds binds. rew_env_defs.
-  induction E as [|[x' v'] E']; simpls.
+  induction E as [|[x' v'] E']; rew_listx; simpls.
   false.
-  case_if~. inverts~ H.
+  simpls.
+  case_if~; rew_listx. inverts~ H.
 Qed.
 
 (** Basic forms *)

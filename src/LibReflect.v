@@ -34,11 +34,11 @@ Lemma istrue_eq_eq_true : forall b,
   istrue b = (b = true).
 Proof using. reflexivity. Qed.
 
-Lemma istrue_true_eq : 
+Lemma istrue_true_eq :
   istrue true = True.
 Proof using. rewrite istrue_eq_eq_true. extens*. Qed.
 
-Lemma istrue_false_eq : 
+Lemma istrue_false_eq :
   istrue false = False.
 Proof using. rewrite istrue_eq_eq_true. extens. iff; auto_false. Qed.
 
@@ -54,13 +54,13 @@ Proof using. rewrite istrue_false_eq. intuition. Qed.
 
 (** Equivalence of [false] and [False] *)
 
-Lemma false_of_False : 
-  False -> 
+Lemma false_of_False :
+  False ->
   false.
 Proof using. intros K. false. Qed.
 
-Lemma False_of_false : 
-  false -> 
+Lemma False_of_false :
+  false ->
   False.
 Proof using. intros K. rewrite~ istrue_false_eq in K. Qed.
 
@@ -90,11 +90,11 @@ Lemma isTrue_eq_if : forall P,
   isTrue P = If P then true else false.
 Proof using. reflexivity. Qed.
 
-Lemma isTrue_True : 
+Lemma isTrue_True :
   isTrue True = true.
 Proof using. unfolds. case_if; auto_false~. Qed.
 
-Lemma isTrue_False : 
+Lemma isTrue_False :
   isTrue False = false.
 Proof using. unfolds. case_if; auto_false~. Qed.
 
@@ -103,12 +103,12 @@ Global Opaque isTrue.
 (** Lemmas *)
 
 Lemma isTrue_eq_true : forall P,
-  P -> 
+  P ->
   isTrue P = true.
 Proof using. intros. rewrite isTrue_eq_if. case_if*. Qed.
 
 Lemma isTrue_eq_false : forall P,
-  ~ P -> 
+  ~ P ->
   isTrue P = false.
 Proof using. intros. rewrite isTrue_eq_if. case_if*. Qed.
 
@@ -117,7 +117,7 @@ Proof using. intros. rewrite isTrue_eq_if. case_if*. Qed.
 (** ** Extensionality for boolean equality, stated using [istrue] *)
 
 Lemma bool_ext : forall b1 b2,
-  (b1 <-> b2) -> 
+  (b1 <-> b2) ->
   b1 = b2.
 Proof using.
   destruct b1; destruct b2; intros; auto_false.
@@ -133,6 +133,13 @@ Qed.
 
 Instance Extensionality_bool : Extensionality bool.
 Proof using. apply (Extensionality_make bool_ext). Defined.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Specification of boolean equality *)
+
+Definition is_beq A (beq:A->A->bool) :=
+  forall x y, beq x y = isTrue (x = y).
 
 
 (* ********************************************************************** *)
@@ -166,17 +173,17 @@ Proof using. intros. rewrite istrue_neg_eq. rewrite~ istrue_isTrue_eq. Qed.
 (** [istrue] and conditionals *)
 
 Lemma If_istrue : forall b A (x y : A),
-    (If istrue b then x else y) 
+    (If istrue b then x else y)
   = (if b then x else y).
 Proof using. intros. case_if as C; case_if as D; auto. Qed.
 
 Lemma istrue_If_eq : forall P b1 b2,
-    istrue (If P then b1 else b2) 
+    istrue (If P then b1 else b2)
   = (If P then istrue b1 else istrue b2).
 Proof using. extens. case_if*. Qed.
 
 Lemma istrue_if_eq : forall b1 b2 b3,
-    istrue (if b1 then b2 else b3) 
+    istrue (if b1 then b2 else b3)
   = (If istrue b1 then istrue b2 else istrue b3).
 Proof using. intros. do 2 case_if; auto. Qed.
 
@@ -241,21 +248,21 @@ End IsTrueEqualities.
 (** [isTrue] and conditionals *)
 
 Lemma if_isTrue : forall P A (x y : A),
-    (if isTrue P then x else y) 
+    (if isTrue P then x else y)
   = (If P then x else y).
 Proof using.
   intros. case_if as C; case_if as D; auto.
-  { rewrite* isTrue_eq_true_eq in C. } 
-  { rewrite* isTrue_eq_false_eq in C. } 
+  { rewrite* isTrue_eq_true_eq in C. }
+  { rewrite* isTrue_eq_false_eq in C. }
 Qed.
 
 Lemma isTrue_If : forall P1 P2 P3,
-    isTrue (If P1 then P2 else P3) 
+    isTrue (If P1 then P2 else P3)
   = If P1 then isTrue P2 else isTrue P3.
 Proof using. extens. case_if*. Qed.
 
 Lemma isTrue_If_eq_if_isTrue : forall P1 P2 P3,
-    isTrue (If P1 then P2 else P3) 
+    isTrue (If P1 then P2 else P3)
   = (if isTrue P1 then isTrue P2 else isTrue P3).
 Proof using. intros. rewrite if_isTrue. rewrite~ isTrue_If. Qed.
 
@@ -272,7 +279,7 @@ Lemma bool_inv_or_eq : forall b,
 Proof using. tautob. Qed.
 
 Lemma xor_inv_or : forall b1 b2,
-  xor b1 b2 -> 
+  xor b1 b2 ->
      (b1 = true /\ b2 = false)
   \/ (b1 = false /\ b2 = true).
 Proof using. tautob; auto_false*. Qed.
@@ -310,7 +317,7 @@ Proof using. extens. tautob. Qed.
     boolean operators with corresponding logical operators. *)
 
 Hint Rewrite istrue_true_eq istrue_false_eq istrue_isTrue_eq
-  istrue_neg_eq istrue_and_eq istrue_or_eq 
+  istrue_neg_eq istrue_and_eq istrue_or_eq
   If_istrue istrue_If_eq istrue_if_eq: rew_istrue.
 
 Tactic Notation "rew_istrue" :=
@@ -339,12 +346,12 @@ Tactic Notation "rew_istrue" "*" "in" "*" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics [rew_isTrue] to distribute [isTrue] *)
 
-(** [rew_isTrue] distributes [isTrue]. 
+(** [rew_isTrue] distributes [isTrue].
     This tactic is probably much less useful than [rew_istrue], since logical
     operators are often simpler to work with. *)
 
 Hint Rewrite isTrue_True isTrue_False isTrue_istrue
-  isTrue_not isTrue_and isTrue_or 
+  isTrue_not isTrue_and isTrue_or
   if_isTrue isTrue_If : rew_isTrue.
 
 Tactic Notation "rew_isTrue" :=
@@ -371,8 +378,8 @@ Tactic Notation "rew_isTrue" "*" "in" "*" :=
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Tactics useful for program verification, when reasoning about 
-       the result of if-statements over boolean expressions, i.e. 
+(** ** Tactics useful for program verification, when reasoning about
+       the result of if-statements over boolean expressions, i.e.
        an expression of the form [b = ..] or [.. = b], which produces
        hypotheses of the form [true = ..] and [false = ..] or symmetric.
        It is used as post-treatment for tactic [case_if]. *)
@@ -414,14 +421,14 @@ Tactic Notation "rew_bool_eq" "*" "in" "*" :=
 (** ** Tactics extended for reflection *)
 
 (** Extension of the tactic [case_if] to automatically performs
-    simplification using [logics]. 
-    
+    simplification using [logics].
+
     For less aggressive introduction of [istrue], consider rewriting
     without the lemmas:
     [bool_eq_true_eq bool_eq_false_eq true_eq_bool_eq false_eq_bool_eq]
 *)
 
-Ltac case_if_post H ::= 
+Ltac case_if_post H ::=
   rew_bool_eq in H; tryfalse.
 
 (** Extension of the tactic [test_dispatch] from LibLogic.v, so as to

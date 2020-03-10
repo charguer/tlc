@@ -684,7 +684,7 @@ Proof using.
      destruct (classicT (family_r M j x)); congruence.
   (* the sequence [v] is locally-coherent up to any index *)
   asserts LocCohv: (forall i, locally_coherent M i v).
-    intros i. induction_wf: (ofe_wf Ofem) i.
+    intros i. induction_wf IH: (ofe_wf Ofem) i.
     intros j' j Rij' Rij Rjj'. unfolds inverse.
     destruct (classicT (K j')) as [Kj'|NKj'].
       forwards~ Kj: (>> Down j' j).
@@ -798,7 +798,7 @@ Lemma invariant_on_fixed_point :
   invariant M F Q ->
   similar M x (F x) -> forall i, Q i x.
 Proof using.
-  introv Cofe Cont Inv Fixx. intros i. induction_wf: (ofe_wf Cofe) i.
+  introv Cofe Cont Inv Fixx. intros i. induction_wf IH: (ofe_wf Cofe) i.
   applys~ (Cont (rclosure (inverse (family_r M)) i) (fun _:I => (F x))).
     intros_all. apply~ sym_inv.
     intros j Le. apply Inv. intros k Rkj.
@@ -869,7 +869,7 @@ Proof using.
      applys~ (Conti (predecessor i) v).
   (* prove of local-coherence, together with the invariant *)
   asserts LocCohQv: (forall i, locally_coherent M i v /\ Q i (v i)).
-    intros i. induction_wf: (ofe_wf Cofe) i.
+    intros i. induction_wf IH: (ofe_wf Cofe) i.
     lets [IH1 IH2]: (forall_conj_inv_2 IH). clear IH.
     logic (forall (U V : Prop), U -> (U -> V) -> U /\ V).
     (* locally coherent *)
@@ -901,7 +901,7 @@ Proof using.
   (* 2- uniqueness *)
   intros Fixl l' Fixl'. unfold fixed_point in Fixl, Fixl'.
   specializes Fixl l __. intros j. apply~ refl_inv. apply~ sym_inv.
-  intros i. induction_wf: (ofe_wf Cofe) i.
+  intros i. induction_wf IH: (ofe_wf Cofe) i.
   applys~ (@trans_inv _ (F l)). apply~ sym_inv.
   applys~ (@trans_sym_lr _ (F l')). apply Fixl'. intros j. apply* refl_inv.
   apply (proj1 (forall_conj_inv_4 Contr)). intros j Rji. splits.
@@ -1075,7 +1075,7 @@ Proof using.
    intros x [Px P'x]. simpls.
    cuts Ind: (forall x, P x -> E (f x) (f'' x)).
      apply~ (trans_inv (f'' x)). unfold f''. destruct_if. apply~ refl_inv.
-   clears x. intros x. induction_wf: Wf x. intros Px.
+   clears x. intros x. induction_wf IH: Wf x. intros Px.
    destruct (prop_inv (P' x)) as [P'x|NP'x];
      [| unfold f''; destruct_if; apply~ refl_inv ].
    apply~ (trans_sym_lr (F f'' x)). apply~ (trans_inv (F f x)).
@@ -1106,7 +1106,7 @@ Proof using.
    intros x [Px P'x]. simpls.
    cuts Ind: (forall x, P x -> E (f x) (f'' x)).
      apply~ (trans_inv (f'' x)). unfold f''. destruct_if. apply~ refl_inv.
-   clears x. intros x. induction_wf: Wf x. intros Px.
+   clears x. intros x. induction_wf IH: Wf x. intros Px.
    destruct (prop_inv (P' x)) as [P'x|NP'x];
      [| unfold f''; destruct_if; apply~ refl_inv ].
    apply~ (trans_sym_lr (F f'' x)). apply~ (trans_inv (F f x)).
@@ -1210,7 +1210,7 @@ Lemma mixed_contractive_as_contractive :
 Proof using.
   introv Ofe WfR Cont.
   sets Q: (fun p f => let (i,x) :=p:I*A in P x -> S i x (f x)).
-  intros p f1 f2. induction_wf: (wf_lexico2 (ofe_wf Ofe) (wf_tclosure WfR)) p.
+  intros p f1 f2. induction_wf IH: (wf_lexico2 (ofe_wf Ofe) (wf_tclosure WfR)) p.
   destruct p as [i x]. intros H.
   split.
   intros j y Le Px. rewrite rclosure_eq in Le. destruct Le as [Le|Eq].
@@ -1304,7 +1304,7 @@ Proof using.
      intros i. apply~ (trans_inv (f'' x)).
        apply~ (Ind (i,x)).
        unfold f''. destruct_if. apply~ refl_inv.
-   clears x. intros p. induction_wf: (wf_lexico2 (ofe_wf Cofe) (wf_tclosure WfR)) p.
+   clears x. intros p. induction_wf IH: (wf_lexico2 (ofe_wf Cofe) (wf_tclosure WfR)) p.
    destruct p as [i x]. intros Px.
    destruct (prop_inv (P' x)) as [P'x|NP'x];
      [| unfold f''; destruct_if; apply~ refl_inv ].
@@ -1372,7 +1372,7 @@ Proof using.
   specializes L j. unfold v in L. case_if~; try false.
   (* global completeness *)
   introv Cohu. forwards [l L]: (Comp u). intros i.
-  induction_wf: wf_lt i. apply~ Cohu. simpl; math.
+  induction_wf IH: wf_lt i. apply~ Cohu. simpl; math.
   exists l. introv _. apply L.
 Qed.
 
@@ -1414,7 +1414,7 @@ Proof using.
   specializes L j. unfold v in L. case_if~; try false.
   (* global completeness *)
   introv Cohu. forwards [l L]: (Comp u). intros i.
-  induction_wf: lt_wf i. intros. apply~ Cohu.
+  induction_wf IH: lt_wf i. intros. apply~ Cohu.
   exists l. introv _. apply L.
 Qed.
 
@@ -2255,7 +2255,7 @@ Lemma mixed_ind : forall I A B (E:binary B)
 Proof using.
   introv Eqf Equiv Cofe Wfr Cont Inv. intros  i x.
   sets_eq p: (i, x). gen i x.
-  induction_wf: (wf_lexico2 (ofe_wf Cofe) (wf_tclosure Wfr)) p.
+  induction_wf IH: (wf_lexico2 (ofe_wf Cofe) (wf_tclosure Wfr)) p.
   intros i x Eix. destruct p. inversions Eix. intros Px.
   eapply Cont with (y1 := F f x). apply Inv. intros.
     apply* IH.

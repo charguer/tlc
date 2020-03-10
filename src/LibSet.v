@@ -880,7 +880,7 @@ Lemma fold_induction:
 Proof using. (* --todo: cleanup proof *)
   introv Hm Hbase Hstep Hfinite.
   assert (forall xs, P (LibList.fold m f xs)).
-  { induction xs; unfold LibList.fold; simpl; eauto. }
+  { induction xs; rew_listx; eauto. }
   forwards: list_repr_to_list_of_finite Hfinite.
   erewrite fold_eq_fold_list_repr by eauto.
   eauto.

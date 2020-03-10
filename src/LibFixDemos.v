@@ -520,7 +520,7 @@ Proof using.
   asserts L: (nb_unmarked m0 < N).
     subst N m0. applys* add_mark_nb_unmarked.
   clears m i. gen m0. induction v as [|i v]. simple*.
-  intros m Lt. simpl.
+  intros m Lt. rew_listx. simpl.
   asserts [E F]: (aux1 i m = aux2 i m /\ nb_unmarked (aux1 i m) < N).
     rewrite EQaux1, EQaux2. case_if as C.
       auto.

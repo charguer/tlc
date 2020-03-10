@@ -105,34 +105,14 @@ Hint Resolve wf_measure2 : wf.
 (* ---------------------------------------------------------------------- *)
 (** Extension of LibTactic's [induction_wf] tactic for [measure] *)
 
-(** -- LATER: introduce a hook in LibTactics to reduce copy-paste *)
-
-Ltac induction_wf_core_then IH E X cont ::=
-  let T := type of E in
-  let T := eval hnf in T in
-  let clearX tt :=
-    first [ clear X | fail 3 "the variable on which the induction is done appears in the hypotheses" ] in
-  match T with
-  (* To support for [measure] from LibWf, we add the next two lines: *)
-  | ?A -> nat =>
-     induction_wf_core_then IH (wf_measure E) X cont
-  (* End of modification *)
-  | ?A -> ?A -> Prop =>
-     pattern X;
-     first [
-       applys well_founded_ind E;
-       clearX tt;
-       [ (* Support for [wf] from LibWf *)
-         change well_founded with wf; auto with wf
-       | intros X IH; cont tt ]
-     | fail 2 ]
-  | _ =>
-    pattern X;
-    applys well_founded_ind E;
-    clearX tt;
-    intros X IH;
-    cont tt
+Ltac induction_wf_process_wf_hyp tt ::= (* original in LibTactics *)
+  match goal with
+  | |- wf _ => auto with wf
+  | |- well_founded _ => change well_founded with wf; auto with wf
   end.
+
+Ltac induction_wf_process_measure E ::= (* original in LibTactics *)
+  applys well_founded_ind (wf_measure E).
 
 
 (* ********************************************************************** *)
@@ -211,7 +191,7 @@ Lemma wf_nat_upto : forall (b:nat),
   wf (nat_upto b).
 Proof using.
   intros b n.
-  induction_wf: (wf_measure (fun n => (b-n)%nat)) n.
+  induction_wf IH: (wf_measure (fun n => (b-n)%nat)) n.
   apply Acc_intro. introv [H1 H2]. apply IH.
   hnf. nat_math.
 Qed.
@@ -241,7 +221,7 @@ Lemma wf_downto : forall (b:Z),
   wf (downto b).
 Proof using.
   intros b n.
-  induction_wf: (wf_measure (fun n => Z.abs_nat (n-b))) n.
+  induction_wf IH: (wf_measure (fun n => Z.abs_nat (n-b))) n.
   apply Acc_intro. introv [H1 H2]. apply IH.
   unfolds. applys lt_abs_abs; math.
 Qed.
@@ -272,7 +252,7 @@ Lemma wf_upto : forall n,
   wf (upto n).
 Proof using.
   intros b n.
-  induction_wf: (wf_measure (fun n => Z.abs_nat (b-n))) n.
+  induction_wf IH: (wf_measure (fun n => Z.abs_nat (b-n))) n.
   apply Acc_intro. introv [H1 H2]. apply IH.
   applys lt_abs_abs; math.
 Qed.
@@ -496,7 +476,7 @@ Lemma wf_rel_preimage : forall A B (R:binary B) (f:A->B),
   wf (rel_preimage R f).
 Proof using.
   introv W. intros x. gen_eq a: (f x). gen x.
-  induction_wf: W a. introv E. constructors.
+  induction_wf IH: W a. introv E. constructors.
   intros y Hy. subst a. hnf in Hy. applys* IH.
 Qed.
 
