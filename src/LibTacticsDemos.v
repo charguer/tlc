@@ -1140,7 +1140,7 @@ Qed.
 
 
 (* ********************************************************************** *)
-(** ** Introduction of equalities to enable [apply] to work *)
+(** ** [equates]: introduction of equalities to enable [apply] to work *)
 
 Lemma demo_ereplace_working : forall (P:nat->nat->Prop) x y,
   (forall n, P n n) -> (x > 0 -> x = y) -> (x > 0) -> P x y.
@@ -1156,7 +1156,7 @@ Proof using.
      evars should be introduced in place of arguments;
      the indices are to be counted from the right. *)
   equates 2. demo. demo.
-Admitted. (* demo *)
+Abort.
 
 Lemma demo_equates_non_dep : forall (P:nat->nat->nat->Prop) x y z,
   P x y z.
@@ -1168,7 +1168,7 @@ Proof using.
   (* multiple [equates] are allowed *)
   equates 1 2. demo. demo. demo.
   equates (>> 1 2). demo. demo. demo.
-Admitted. (* demo *)
+Abort.
 
 Lemma demo_equates_dep : forall (P:nat->forall A, A->Prop) x (T:Type) z,
   P x T z.
@@ -1179,7 +1179,46 @@ Proof using.
   try equates 2.
   equates 3. demo. demo.
   equates 1 3. demo. demo. demo.
-Admitted. (* demo *)
+Abort.
+
+
+(* ********************************************************************** *)
+(** ** [applys_eq]: application of lemma up to equality *)
+
+Lemma demo_applys_eq : forall (P:nat->nat->nat->Prop) x x' y y' z z',
+     (P x y z -> P x y z')
+  /\ (P x y z -> P x' y z)
+  /\ (P x y z -> P x' y' z)
+  /\ (P x y z -> P x' y' z').
+Proof using.
+  intros. splits; intros M.
+  { applys_eq_core M. skip. }
+  { applys_eq_core M. skip. }
+  { applys_eq_core M. skip. skip. }
+  { applys_eq_core M. skip. skip. skip. }
+Abort.
+
+Lemma demo_applys_eq_dep : forall (P:forall A, A->nat->Prop) T x x' y y',
+     (P T x y-> P T x y')
+  /\ (P T x y -> P T x' y)
+  /\ (P T x y -> P T x' y').
+Proof using.
+  intros. splits; intros M.
+  { applys_eq_core M. skip. }
+  { applys_eq_core M. skip. }
+  { applys_eq_core M. skip. skip. }
+Abort.
+
+Lemma demo_applys_eq_dep_middle : forall (P:nat->forall A, A->Prop) x x' (T:Type) y y',
+     (P x T y -> P x T y')
+  /\ (P x T y -> P x' T y)
+  /\ (P x T y -> P x' T y').
+Proof using.
+  intros. splits; intros M.
+  { applys_eq_core M. skip. }
+  { applys_eq_core M. skip. }
+  { applys_eq_core M. skip. skip. }
+Abort.
 
 
 (* ********************************************************************** *)
@@ -1271,7 +1310,7 @@ Proof using.
   (* [exists___] without arguments is the same as [exists __ ... __].
      Contrary to [exists ___], it does not unfold definitions. *)
   exists___. demo.
-Admitted. (* demo *)
+Abort.
 
 
 (* ********************************************************************** *)
