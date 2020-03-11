@@ -2850,6 +2850,15 @@ Proof using. introv H. rewrite* Forall_last_eq in H. Qed.
 
 (* Others *)
 
+Lemma Forall_make : forall n v P,
+  P v ->
+  Forall P (make n v).
+Proof using.
+  introv N. induction n as [|n'].
+  { rewrite make_zero. applys* Forall_nil. }
+  { rewrite make_succ. applys* Forall_cons. }
+Qed.
+
 Lemma Forall_eq_forall_mem : forall P l,
   Forall P l = (forall x, mem x l -> P x).
 Proof using.
