@@ -261,7 +261,7 @@ Lemma env_ind : forall (P : env A -> Prop),
   (forall E, P E).
 Proof using.
   rew_env_defs. induction E as [|(x,v)].
-  auto. applys_eq* H0 1. rew_list*.
+  auto. applys_eq* H0. rew_list*.
 Qed.
 
 Lemma map_empty : forall f,
@@ -374,7 +374,7 @@ Lemma keys_singles : forall xs vs,
   length xs = length vs ->
   keys (xs ~* vs) = xs.
 Proof using.
-  intros. rew_env_defs. gen vs. induction xs; destruct vs; 
+  intros. rew_env_defs. gen vs. induction xs; destruct vs;
    introv E; rew_list in E; tryfalse.
   rew_list~.
   simpl. rew_env_defs. rew_listx. fequals.
@@ -908,8 +908,8 @@ Qed.
 (** Basic forms *)
 
 Lemma binds_functional : forall x v1 v2 E,
-  binds x v1 E -> 
-  binds x v2 E -> 
+  binds x v1 E ->
+  binds x v2 E ->
   v1 = v2.
 Proof using.
   introv H1 H2. unfolds binds.
@@ -1005,7 +1005,7 @@ Qed.
   very common operation we provide a lemma for it. *)
 
 Lemma binds_weaken : forall x a E F G,
-  binds x a (E & G) -> 
+  binds x a (E & G) ->
   ok (E & F & G) ->
   binds x a (E & F & G).
 Proof using.

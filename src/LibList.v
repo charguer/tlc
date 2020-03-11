@@ -870,8 +870,8 @@ Lemma Nth_app_r : forall n x l1 l2,
   Nth (n + length l1)%nat (l1 ++ l2) x.
 Proof using.
   intros. gen n. induction l1; introv H; rew_list.
-  { applys_eq~ H 3. }
-  { applys_eq* Nth_succ 3. }
+  { applys_eq~ H. }
+  { applys_eq* Nth_succ. }
 Qed.
 
 Lemma Nth_app_r' : forall n m x l1 l2,
@@ -1247,7 +1247,7 @@ Proof using.
       { constructors. }
       { rewrite length_rev. rewrite length_cons in E. math. } }
     { rew_list in E. lets K: IHN I. { math. }
-      apply Nth_app_l. applys_eq K 3. math. } }
+      apply Nth_app_l. applys_eq K. math. } }
 Qed.
 
 Lemma Nth_rev' : forall n x l,
@@ -1255,7 +1255,7 @@ Lemma Nth_rev' : forall n x l,
   Nth (length l - 1 - n) l x ->
   Nth n (rev l) x.
 Proof using.
-  introv L M. applys_eq (>> Nth_rev M) 3. math.
+  introv L M. applys_eq (>> Nth_rev M). math.
 Qed.
 
 Lemma Nth_rev_inv : forall n x l,

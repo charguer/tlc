@@ -24,7 +24,7 @@ export COQFLAGS
 
 .PHONY: all clean
 
-all depend clean _CoqProject depend vo vod vos vok:
+all depend clean _CoqProject vo vod vos vok:
 	$(MAKE) -f Makefile.coq $@
 
 ############################################################################

@@ -490,7 +490,7 @@ Proof using.
   rew_permut_simpl.
   permut_conclude.
   (* short *)
-  permut_simpl. applys_eq H 1. permut_simpl.
+  permut_simpl. applys_eq H. permut_simpl.
 Qed.
 
 End DemoSetUnion.

@@ -590,7 +590,7 @@ Qed.
 Lemma stream_cofe : forall A {IA:Inhab A}, COFE (stream_family A).
 Proof using. intros. apply~ stream_mod_cofe. Qed.
 
-Hint Resolve @stream_cofe.
+Hint Resolve stream_cofe.
 
 
 (* ********************************************************************** *)

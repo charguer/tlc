@@ -118,13 +118,13 @@ Proof using. intros. apply (Inhab_of_val (@empty_impl A B)). Qed.
 
 (* Note: we may check that [update] is derivable via [bag_update_as_union_single]
       Instance update_inst : forall A B, BagUpdate A B (map A B).
-      Proof. typeclass. Qed. 
+      Proof. typeclass. Qed.
 *)
 
 (* ---------------------------------------------------------------------- *)
 (** ** TEMPORARY *)
 
-(*-- LATER: make [finite] a typeclass, define [finite_impl]  
+(*-- LATER: make [finite] a typeclass, define [finite_impl]
      using [dom_impl], and prove a lemma [finite_eq] of type
      [finite M = finite (dom M)].
  *)
@@ -210,7 +210,7 @@ Hint Extern 1 (None <> Some _) => congruence.
 (** index *)
 
 Lemma index_of_indom : forall A B (M:map A B) k,
-  k \indom M -> 
+  k \indom M ->
   index M k.
 Proof using. intros. rewrite~ index_eq_indom. Qed.
 
@@ -249,7 +249,7 @@ Lemma indom_empty_inv : forall A B (x:A),
   x \indom (\{} : map A B) ->
   False.
 Proof using.
-  introv M. rewrite dom_empty in *. applys @in_empty M; typeclass. 
+  introv M. rewrite dom_empty in *. applys @in_empty M; typeclass.
 Qed.
 
 (* TODO CLEAN UP after migration *)
@@ -263,7 +263,7 @@ Qed.
 (** prove empty *)
 
 Lemma eq_empty_of_not_binds : forall (A B : Type) (M : map A B),
-  (forall x k, ~ binds M x k) -> 
+  (forall x k, ~ binds M x k) ->
   M = \{}.
 Proof using.
   intros A B M. simpl. unfold empty_impl, binds_impl.
@@ -271,7 +271,7 @@ Proof using.
 Qed.
 
 Lemma dom_empty_inv : forall A B (M : map A B),
-  dom M = \{} -> 
+  dom M = \{} ->
   M = \{}.
 Proof using.
   introv H. simpls. unfold dom_impl, empty_impl in *.
@@ -304,7 +304,7 @@ Lemma dom_update_at_indom : forall A i `{IB:Inhab B} v (M:map A B),
   dom (M[i:=v]) = dom M.
 Proof using.
   introv IB H. rewrite dom_update.
-  set_prove_setup true. tests*: (x = i). 
+  set_prove_setup true. tests*: (x = i).
   (* --LATER: improve "set_prove" ? *)
 Qed.
 
@@ -316,7 +316,7 @@ Lemma dom_update_at_index : forall A i `{IB:Inhab B} v (M:map A B),
   dom (M[i:=v]) = dom M.
 Proof using.
   introv IB H. rewrite index_eq_indom in H. rewrite dom_update.
-  set_prove_setup true. tests*: (x = i). 
+  set_prove_setup true. tests*: (x = i).
 Qed.
 
 Arguments dom_update_at_index [A] i [B] {IB}.
@@ -328,18 +328,18 @@ Lemma indom_update_eq : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
 Proof using. intros. rewrite dom_update. rew_set. extens*. Qed.
 
 Lemma indom_update_inv : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  j \indom (m[i:=v]) -> 
+  j \indom (m[i:=v]) ->
   (j = i \/ j \indom m).
 Proof using. introv IB H. rewrite~ indom_update_eq in H. Qed.
 
 Lemma indom_of_indom_update_at_indom : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  j \indom (m[i:=v]) -> 
-  i \indom m -> 
+  j \indom (m[i:=v]) ->
+  i \indom m ->
   j \indom m.
 Proof using. introv IB H F. rewrite~ indom_update_eq in H. destruct~ H. subst~. Qed.
 
 Lemma indom_update_of_indom : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  j \indom m -> 
+  j \indom m ->
   j \indom (m[i:=v]).
 Proof using. intros. rewrite~ indom_update_eq. Qed.
 
@@ -362,7 +362,7 @@ Lemma read_update_same : forall A `{Inhab B} (m:map A B) (i:A) (v:B),
 Proof using. intros. rewrite read_update. case_if~. Qed.
 
 Lemma read_update_neq : forall A `{Inhab B} (m:map A B) (i j:A) (v:B),
-  i <> j -> 
+  i <> j ->
   (m[i:=v])[j] = m[j].
 Proof using. intros. rewrite read_update. case_if~. Qed.
 
@@ -381,8 +381,8 @@ Qed.
             because [binds M i v] with [M:map A B] entails {Inhab B}. *)
 
 Lemma binds_inj : forall A i `{Inhab B} v1 v2 (M:map A B),
-  binds M i v1 -> 
-  binds M i v2 -> 
+  binds M i v1 ->
+  binds M i v2 ->
   v1 = v2.
 Proof using.
   introv IB H1 H2.
@@ -391,31 +391,31 @@ Proof using.
 Qed.
 
 Lemma binds_of_indom_read : forall A `{Inhab B} (M:map A B) x v,
-  x \indom M -> 
-  M[x] = v -> 
+  x \indom M ->
+  M[x] = v ->
   binds M x v.
 Proof using.
   intros. rewrite~ (@binds_eq_indom_read A B H). (* why need explicit args? *)
 Qed.
 
 Lemma indom_of_binds : forall A `{Inhab B} (M:map A B) x v,
-  binds M x v -> 
+  binds M x v ->
   x \indom M.
 Proof using. introv IB K. rewrite* (@binds_eq_indom_read A B IB) in K. Qed.
 
 Lemma index_of_binds : forall A i `{Inhab B} v (M:map A B),
-  binds M i v -> 
+  binds M i v ->
   index M i.
 Proof using. introv IB K. rewrite* (@binds_eq_indom_read A B IB) in K. Qed.
 
 Lemma read_of_binds : forall A `{Inhab B} (M:map A B) x v,
-  binds M x v -> 
+  binds M x v ->
   M[x] = v.
 Proof using. introv K. rewrite* (@binds_eq_indom_read A B H) in K. Qed.
 
 Lemma binds_update_neq : forall A B i j v w (M:map A B),
-  i <> j -> 
-  binds M i v -> 
+  i <> j ->
+  binds M i v ->
   binds (M[j:=w]) i v.
 Proof using.
   introv N K. asserts IB: (Inhab B). constructor. exists* v.
@@ -433,7 +433,7 @@ Proof using.
 Qed.
 
 Lemma binds_update_same_inv : forall A B i v w (M:map A B),
-  binds (M[i:=w]) i v -> 
+  binds (M[i:=w]) i v ->
   v = w.
 Proof using.
   introv H.
@@ -443,8 +443,8 @@ Proof using.
 Qed.
 
 Lemma binds_update_neq_inv : forall A B i j v w (M:map A B),
-  binds (M[j:=w]) i v -> 
-  i <> j -> 
+  binds (M[j:=w]) i v ->
+  i <> j ->
   binds M i v.
 Proof using.
   introv H N.
@@ -493,7 +493,7 @@ Lemma union_read_r : forall A `{Inhab B} (m1 m2:map A B) (i:A),
 Proof.
   introv M D. rewrite set_disjoint_eq in D.
   simpl. unfold read_impl, union_impl. cases (m2 i).
-  { auto. } 
+  { auto. }
   { cases (m1 i) as C.
     { false D M. applys~ indom_of_binds. simpl. unfolds* binds_impl. }
     (* --LATER: simplify line above *)
@@ -521,8 +521,8 @@ Lemma dom_remove_one : forall A B i (M:map A B),
 Proof using. intros. applys~ dom_remove. Qed. (* --TODO: needed ? *)
 
 Lemma index_remove_one_in : forall A B i j (M:map A B),
-  index M j -> 
-  i <> j -> 
+  index M j ->
+  i <> j ->
   index (M\--i) j.
 Proof using.
   introv R N. rewrite index_eq_indom in *. rewrite dom_remove_one.
@@ -618,7 +618,7 @@ Qed.
 
 (* internal use *)
 Lemma binds_impl_dom_impl : forall A `{Inhab B} (M:map A B) x v,
-  binds_impl M x v -> 
+  binds_impl M x v ->
   x \in dom_impl M.
 Proof using. introv IB K. unfolds binds_impl, dom_impl. rew_set. congruence. Qed.
 
@@ -633,7 +633,7 @@ Proof using.
   applys finite_of_list_covers (LibList.map (fun x => (x, M[x])) L).
   intros (k',x') Hk. rew_set. destruct Hk as (k&x&EQ&R). inverts EQ.
   forwards~: binds_impl_dom_impl R. forwards~ V: E k.
-  lets U: LibList.mem_map (fun x => (x, M[x])) V. applys_eq U 2.
+  lets U: LibList.mem_map (fun x => (x, M[x])) V. applys_eq U.
   simpl. unfold read_impl. hnf in R. rewrite~ R.
 Qed.
 
@@ -641,7 +641,7 @@ Qed.
 Lemma fold_union : forall A `{Inhab B} C (m:monoid_op C) (f:A->B->C) (M N : map A B),
   Comm_monoid m ->
   finite M ->
-  finite N -> 
+  finite N ->
   M \# N ->
   fold m f (M \u N) = monoid_oper m (fold m f M) (fold m f N).
 Proof using.

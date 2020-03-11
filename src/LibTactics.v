@@ -1604,7 +1604,9 @@ Tactic Notation "equates" constr(n1) constr(n2) constr(n3) constr(n4) :=
 
 (** [applys_eq H i1 .. iK] is the same as
     [equates i1 .. iK] followed by [applys H]
-    on the first subgoal. *)
+    on the first subgoal.
+
+    DEPRECATED: use [applys_eq H] instead. *)
 
 Tactic Notation "applys_eq" constr(H) constr(E) :=
   equates_several E ltac:(fun _ => sapply H).
