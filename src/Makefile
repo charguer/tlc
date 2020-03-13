@@ -33,7 +33,7 @@ all depend clean _CoqProject vo vod vos vok:
 CONTRIB := $(shell $(COQBIN)coqc -where)/user-contrib
 TARGET  := $(CONTRIB)/TLC
 
-COQFLAGS=-W -implicit-core-hint-db
+COQFLAGS=-w -implicit-core-hint-db
 
 .PHONY: install uninstall
 

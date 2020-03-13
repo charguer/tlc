@@ -155,6 +155,17 @@ Hint Rewrite rem_nil rem_cons rem_app rem_last : rew_listx.
 Global Opaque rem.
 
 
+(* ---------------------------------------------------------------------- *)
+(* ** Membership of keys *)
+
+(* LATER: 
+
+Definition mem_assoc A B (x:A) (l:list (A*B)) : Prop :=
+  LibList.mem x (LibList.map fst l). 
+
+*)
+
+(* LATER: keys function *)
 
 (* ---------------------------------------------------------------------- *)
 (* ** Association list: membership as a relation *)
@@ -183,5 +194,6 @@ Inductive Assoc A B (x:A) (v:B) : list (A*B) -> Prop :=
   Proof using.
   Qed.
 *)
+
 
 

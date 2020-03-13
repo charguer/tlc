@@ -1384,6 +1384,8 @@ End Make.
 
 Global Opaque make.
 
+Hint Rewrite make_zero make_succ length_make : rew_listx.
+
 
 (* ---------------------------------------------------------------------- *)
 (** * Update as a function *)
@@ -1535,6 +1537,8 @@ Qed.
 End Update.
 
 Global Opaque update.
+
+Hint Rewrite length_update update_nil update_zero update_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -3605,12 +3609,28 @@ Fixpoint nat_seq (start:nat) (nb:nat) :=
   | S nb' => start :: nat_seq (S start) nb'
   end.
 
+Lemma nat_seq_zero : forall o,
+  nat_seq o 0 = nil.
+Proof using. auto. Qed.
+
+Lemma nat_seq_succ : forall o k,
+  nat_seq o (S k) = o :: (nat_seq (S o) k).
+Proof using. auto. Qed.
+
+Lemma nat_seq_succ' : forall o k,
+  nat_seq o (1+k) = o :: (nat_seq (o+1) k).
+Proof using. intros. simpl. fequals_rec. math. Qed.
+
 Lemma length_nat_seq : forall start nb,
   length (nat_seq start nb) = nb.
 Proof using.
   intros. gen start. induction nb; simpl; intros.
   { auto. } { rew_list. rewrite~ IHnb. }
 Qed.
+
+Global Opaque nat_seq.
+
+Hint Rewrite nat_seq_zero nat_seq_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
