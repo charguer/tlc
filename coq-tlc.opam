@@ -1,3 +1,4 @@
+name: "coq-tlc"
 opam-version: "2.0"
 maintainer: "arthur.chargueraud@inria.fr"
 
@@ -14,8 +15,7 @@ Provides an alternative to the core of the Coq standard library, using classic d
 build: [make "-j%{jobs}%"]
 install: [make "install"]
 depends: [
-  "ocaml"
-  "coq" {= "dev"}
+  "coq" { >= "8.8" }
 ]
 
 tags: [
