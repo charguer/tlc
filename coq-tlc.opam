@@ -20,6 +20,7 @@ depends: [
 
 tags: [
   "category:Miscellaneous/Coq Extensions"
+  "date:DATEDASH"
   "keyword:library"
   "keyword:classic"
   "logpath:TLC"

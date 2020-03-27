@@ -59,9 +59,18 @@ release:
 
 .PHONY: opam
 opam:
+# Check the current package description.
 	@ opam lint
+# Patch coq-tlc.opam.
+# We replace the string DATEDASH with $(DATEDASH).
+# We replace the string DATE with $(DATE).
+	@ cat $(THIS).opam \
+	  | sed -e 's/DATEDASH/$(DATEDASH)/g' \
+	  | sed -e 's/DATE/$(DATE)/g' \
+	  > $(THIS).patched.opam
 	@ opam publish \
 	    -v $(DATE) \
 	    --repo coq/opam-coq-archive \
 	    --packages-directory released/packages \
-	    $(THIS) $(ARCHIVE)
+	    $(THIS).patched.opam $(ARCHIVE)
+	@ rm $(THIS).patched.opam
