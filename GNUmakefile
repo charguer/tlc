@@ -6,6 +6,7 @@ include Makefile
 
 # The date becomes the version number.
 DATE     := $(shell /bin/date +%Y%m%d)
+DATEDASH := $(shell /bin/date +%Y-%m-%d)
 
 # An abbreviation.
 THIS     := coq-tlc
