@@ -25,8 +25,8 @@ TLC is a general-purpose library that provides an alternative to Coq's standard 
 
 Status:
 
-   - There are various branches for the various versions of Coq.
-     (e.g. v8.8, v8.10, and master should compile with Coq-master).
+   - The master branch compiles with Coq v8.10, v8.11, v8.12, and generally compiles also with coq-master.
+   - There is a branch called "v8.9" that compiles with v8.8 and v8.9.
 
 Compatibility:
 

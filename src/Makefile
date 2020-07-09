@@ -22,6 +22,10 @@ export COQINCLUDE := -R $(shell pwd) TLC
 export COQBIN
 export COQFLAGS
 
+ifndef COQFLAGS
+COQFLAGS=-w -implicit-core-hint-db,-omega-is-deprecated
+endif
+
 .PHONY: all clean
 
 all depend clean _CoqProject vo vod vos vok:
@@ -32,8 +36,6 @@ all depend clean _CoqProject vo vod vos vok:
 
 CONTRIB := $(shell $(COQBIN)coqc -where)/user-contrib
 TARGET  := $(CONTRIB)/TLC
-
-COQFLAGS=-w -implicit-core-hint-db
 
 .PHONY: install uninstall
 
