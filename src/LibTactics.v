@@ -3260,14 +3260,14 @@ Tactic Notation "induction_wf" ident(IH) ":" constr(E) ident(X) :=
     (see LibTacticsDemos for an example) *)
 
 Require Import Coq.Arith.Compare_dec.
-Require Import Coq.omega.Omega.
+Require Import Coq.micromega.Lia.
 
 Lemma induct_height_max2 : forall n1 n2 : nat,
   exists n, n1 < n /\ n2 < n.
 Proof using.
   intros. destruct (lt_dec n1 n2).
-  exists (S n2). omega.
-  exists (S n1). omega.
+  exists (S n2). lia.
+  exists (S n1). lia.
 Qed.
 
 Ltac induct_height_step x :=
@@ -3305,8 +3305,8 @@ Ltac clear_coind :=
 
 (** Tactic [abstracts tac] is like [abstract tac] except that
     it clears the coinduction hypotheses so that the productivity
-    check will be happy. For example, one can use [abstracts omega]
-    to obtain the same behavior as [omega] but with an auxiliary
+    check will be happy. For example, one can use [abstracts lia]
+    to obtain the same behavior as [lia] but with an auxiliary
     lemma being generated. *)
 
 Tactic Notation "abstracts" tactic(tac) :=

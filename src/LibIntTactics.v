@@ -4,14 +4,14 @@
 **************************************************************************)
 
 (** --IMPORTANT: requires the CSDP package to be installed on the system
-    [sudo apt get install ubuntu package coinor-csdp] 
+    [sudo apt get install ubuntu package coinor-csdp]
 *)
 
-(** For documentation, see the Micromega chapter from Coq reference manual:
-    "Micromega: tactics for solving arithmetic goals over ordered rings" *)
+(** For documentation, see the Micrlia chapter from Coq reference manual:
+    "Micrlia: tactics for solving arithmetic goals over ordered rings" *)
 
 
-(** --DISCLAIMER: WORK IN PROGRESS *) 
+(** --DISCLAIMER: WORK IN PROGRESS *)
 
 
 Set Implicit Arguments.
@@ -26,13 +26,15 @@ From TLC Require Export LibInt.
 (* ---------------------------------------------------------------------- *)
 (** ** [math_lia] tactic *)
 
+(* TODO: DEPRECATED, simply use [math] *)
+
 (** [math_lia] supports linear arithmetic; it roughly provides the
-    combined power of [ring_simplify] and [omega]. *)
+    combined power of [ring_simplify] and [lia]. *)
 
 Ltac math_lia_core tt :=
   math_setup; lia.
 
-Tactic Notation "math_lia" := 
+Tactic Notation "math_lia" :=
   math_lia_core tt.
 
 (** Binding for [nat] --TODO: is it useful? *)
@@ -118,7 +120,7 @@ Tactic Notation "math_dia" :=
 (* ********************************************************************** *)
 (** * Demos *)
 
-(** --Commented out so that the compilation does not fail in the absence 
+(** --Commented out so that the compilation does not fail in the absence
       of the CSDP package...
 
 Lemma math_nia_demo_1 : forall (a b N : Z),

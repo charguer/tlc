@@ -12,6 +12,7 @@ From TLC Require Import LibTactics LibLogic LibReflect
   LibRelation LibList LibInt LibNat LibOperation
   LibEpsilon LibSet LibMonoid.
 From TLC Require Export LibContainer.
+Open Scope nat_scope.
 
 
 (* ********************************************************************** *)

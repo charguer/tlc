@@ -29,17 +29,17 @@ Hint Resolve equiv_eq equiv_list_equiv.
 Lemma div2_lt : forall n m, m <= n -> n > 0 -> Nat.div2 m < n.
 Proof using. (* using stdlib *)
   nat_comp_to_peano. introv Le Gt.
-  forwards: Nat.div2_decr m (n-1). omega. omega.
+  forwards: Nat.div2_decr m (n-1). lia. lia.
 Qed.
 
 Lemma div2_grows : forall n m, m <= n -> Nat.div2 m <= Nat.div2 n.
 Proof using.
   nat_comp_to_peano.
   induction n using peano_induction. introv Le.
-  destruct~ m. simpl. omega.
-  destruct~ n. simpl. omega.
-  destruct~ m. simpl. omega.
-  destruct~ n. simpl. omega.
+  destruct~ m. simpl. lia.
+  destruct~ n. simpl. lia.
+  destruct~ m. simpl. lia.
+  destruct~ n. simpl. lia.
   simpl. forwards~: H n m. nat_math. nat_math. nat_math.
 Qed.
 
@@ -366,7 +366,7 @@ Proof using.
 Qed.
 
 Lemma div_spec : forall n m q r,
-  n >= 0 -> 
+  n >= 0 ->
   m > 0 ->
   (q,r) = div n m ->
   n = q*m + r /\ r < m.
@@ -375,8 +375,7 @@ Proof using.
   rewrite* fix_div in Eq. unfolds Div. case_if.
   { inverts* Eq. }
   { gen Eq. case_eq (div (n-m) m) ;=> q' r' E Eq. inverts Eq.
-    symmetry in E. forwards* (Hq',Hr'): IH E. { hnfs*. } 
-    { rewrite* Z.mul_add_distr_r. } }
+    symmetry in E. forwards* (Hq',Hr'): IH E. { hnfs*. } }
 Qed.
 
 End DivInt.
