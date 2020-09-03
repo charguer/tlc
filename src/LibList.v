@@ -1384,6 +1384,8 @@ End Make.
 
 Global Opaque make.
 
+Hint Rewrite make_zero make_succ length_make : rew_listx.
+
 
 (* ---------------------------------------------------------------------- *)
 (** * Update as a function *)
@@ -1535,6 +1537,8 @@ Qed.
 End Update.
 
 Global Opaque update.
+
+Hint Rewrite update_nil update_zero update_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
