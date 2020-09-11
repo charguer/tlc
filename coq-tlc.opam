@@ -1,6 +1,6 @@
-name: "coq-tlc"
 opam-version: "2.0"
 maintainer: "arthur.chargueraud@inria.fr"
+version: "dev"
 
 homepage: "https://github.com/charguer/tlc"
 dev-repo: "git+https://github.com/charguer/tlc.git"
