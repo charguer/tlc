@@ -176,20 +176,20 @@ Proof using. intros. subst*. Qed.
     corresponding left-properties *)
 
 Lemma neutral_r_of_comm_neutral_l : forall f e,
-  comm f -> 
-  neutral_l f e -> 
+  comm f ->
+  neutral_l f e ->
   neutral_r f e.
 Proof using. introv C N. intros_all. rewrite* C. Qed.
 
 Lemma inverse_r_of_comm_inverse_l : forall f e i,
-  comm f -> 
-  inverse_l f e i -> 
+  comm f ->
+  inverse_l f e i ->
   inverse_r f e i.
 Proof using. introv C I. intros_all. rewrite* C. Qed.
 
 Lemma distrib_r_of_comm_distrib_l : forall f g,
-  comm f -> 
-  distrib_l f g -> 
+  comm f ->
+  distrib_l f g ->
   distrib_r f g.
 Proof using.
   introv C N. intros_all. unfolds distrib_l.
@@ -197,8 +197,8 @@ Proof using.
 Qed.
 
 Lemma comm_assoc_of_comm_and_assoc : forall f,
-  comm f -> 
-  assoc f -> 
+  comm f ->
+  assoc f ->
   comm_assoc f.
 Proof using.
   introv C S. intros_all. rewrite C.

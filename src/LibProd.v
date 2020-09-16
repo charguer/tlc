@@ -26,12 +26,12 @@ Generalizable Variables A B.
     Notation "x * y" := (prod x y) : type_scope.
     Notation "( x , y , .. , z )" := (pair .. (pair x y) .. z) : core_scope.
 
-    Definition fst A B (p:A*B) : A := 
+    Definition fst A B (p:A*B) : A :=
       match p with (x,y) => x end.
 
-    Definition snd A B (p:A*B) : B := 
+    Definition snd A B (p:A*B) : B :=
       match p with (x,y) => y end.
- 
+
   Remark: to follow conventions [pair] should be renamed to [prod_intro].
 
 *)
@@ -57,23 +57,23 @@ Proof using. intros. destruct~ x. Qed.
 Section Properties.
 Variables (A1 A2 A3 A4 : Type).
 Lemma eq_prod2 : forall (x1 y1:A1) (x2 y2:A2),
-  x1 = y1 -> 
-  x2 = y2 -> 
+  x1 = y1 ->
+  x2 = y2 ->
   (x1, x2) = (y1, y2).
 Proof using. intros. subst~. Qed.
 
 Lemma eq_prod3 : forall (x1 y1:A1) (x2 y2:A2) (x3 y3:A3),
-  x1 = y1 -> 
-  x2 = y2 -> 
-  x3 = y3 -> 
+  x1 = y1 ->
+  x2 = y2 ->
+  x3 = y3 ->
   (x1, x2, x3) = (y1, y2, y3).
 Proof using. intros. subst~. Qed.
 
 Lemma eq_prod4 : forall (x1 y1:A1) (x2 y2:A2) (x3 y3:A3) (x4 y4:A4),
-  x1 = y1 -> 
-  x2 = y2 -> 
-  x3 = y3 -> 
-  x4 = y4 -> 
+  x1 = y1 ->
+  x2 = y2 ->
+  x3 = y3 ->
+  x4 = y4 ->
   (x1, x2, x3, x4) = (y1, y2, y3, y4).
 Proof using. intros. subst~. Qed.
 
@@ -89,12 +89,12 @@ Hint Immediate eq_prod2 eq_prod3 eq_prod4.
 (* ---------------------------------------------------------------------- *)
 (** ** Definition of projections *)
 
-(** [fst] and [snd] are defined in the Prelude 
+(** [fst] and [snd] are defined in the Prelude
 
-  Definition fst A B (p:A*B) : A := 
+  Definition fst A B (p:A*B) : A :=
     match p with (x,y) => x end.
 
-  Definition snd A B (p:A*B) : B := 
+  Definition snd A B (p:A*B) : B :=
     match p with (x,y) => y end.
 
 *)

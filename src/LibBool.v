@@ -84,7 +84,7 @@ Definition xor (x y:bool) : bool :=
 (** Notations *)
 
 Declare Scope Bool_scope.
-Bind Scope Bool_scope with bool. 
+Bind Scope Bool_scope with bool.
 Open Scope Bool_scope.
 
 Notation "! x" := (neg x)
@@ -110,11 +110,11 @@ Infix "||" := or
 (** ** Tactic [tautob] *)
 
 (** [tautob] introduces all variables that it can, performs a
-    case analysis on all the boolean variables, then splits 
+    case analysis on all the boolean variables, then splits
     all subgoals and attempts resolution using intuition *)
 
 Ltac tautob_post tt :=
-  simpls; try split; intros; try discriminate; 
+  simpls; try split; intros; try discriminate;
   try solve [ intuition auto_false ].
 
 Ltac tautob_core tt :=
@@ -135,7 +135,7 @@ Tactic Notation "tautob" :=
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of [eqb] *)
 
-Lemma eqb_same : forall x, 
+Lemma eqb_same : forall x,
   eqb x x = true.
 Proof using. tautob. Qed.
 
@@ -146,11 +146,11 @@ Proof using. tautob. Qed.
 Lemma eqb_true_r : neutral_r eqb true.
 Proof using. tautob. Qed.
 
-Lemma eqb_false_l : forall x, 
+Lemma eqb_false_l : forall x,
   eqb false x = neg x.
 Proof using. tautob. Qed.
 
-Lemma eqb_false_r : forall x, 
+Lemma eqb_false_r : forall x,
   eqb x false = neg x.
 Proof using. tautob. Qed.
 
@@ -239,7 +239,7 @@ Lemma neg_and : automorphism neg and or.
 (* forall x y, ! (x && y) = (! x) || (! y) *)
 Proof using. tautob. Qed.
 
-Lemma neg_or : automorphism neg or and. 
+Lemma neg_or : automorphism neg or and.
 (* forall x y, ! (x || y) = (! x) && (! y) *)
 Proof using. tautob. Qed.
 
@@ -297,7 +297,7 @@ End PropertiesIf.
 (** ** Properties of [impl] and [xor] *)
 
 (** We do not provide lemmas for [impl] and [xor]
-   because these functions can be easily expressed 
+   because these functions can be easily expressed
    in terms of the other operators. *)
 
 
@@ -346,12 +346,12 @@ Tactic Notation "rew_neg_neg" "*" "in" "*" :=
     lemmas in the database [rew_bool] defined below. *)
 
 Hint Rewrite
-  eqb_same eqb_true_l eqb_true_r eqb_false_l eqb_false_r 
+  eqb_same eqb_true_l eqb_true_r eqb_false_l eqb_false_r
   neg_false neg_true neg_neg neg_and neg_or
   and_true_l and_true_r and_false_l and_false_r
   or_false_l or_false_r or_true_l or_true_r
-  if_true if_false if_then_else_same 
-  if_then_true_else_false if_then_false_else_true 
+  if_true if_false if_then_else_same
+  if_then_true_else_false if_then_false_else_true
   if_then_true if_else_false
   if_then_false if_else_true
   : rew_bool.

@@ -108,7 +108,7 @@ Notation "x === y" := (bisimilar x y) (at level 68).
 (** Bisimilarity is an equivalence *)
 
 Lemma equiv_bisimilar_mod : forall A (E:binary A),
-  equiv E -> 
+  equiv E ->
   equiv (bisimilar_mod E).
 Proof using.
   introv Equiv. constructor.
@@ -137,7 +137,7 @@ Section ListEquiv.
 Hint Constructors Forall2.
 
 Lemma equiv_list_equiv : forall A (E:binary A),
-  equiv E -> 
+  equiv E ->
   equiv (list_equiv E).
 Proof using.
   introv Equiv. unfold list_equiv. constructor.
@@ -165,7 +165,7 @@ Hint Constructors Forall2.
 (** This relation is an equivalence *)
 
 Lemma equiv_bisimilar_mod_upto : forall A (E:binary A) n,
-  equiv E -> 
+  equiv E ->
   equiv (bisimilar_mod_upto E n).
 Proof using.
   introv Equiv. unfold bisimilar_mod_upto.
@@ -259,8 +259,8 @@ Fixpoint first_st_at A (P:A->Prop) (s:stream A) (n:nat) :=
     one index [n] such that [first_st_at P s n] holds *)
 
 Lemma first_st_at_inj : forall n1 n2 A (P:A->Prop) s,
-  first_st_at P s n1 -> 
-  first_st_at P s n2 -> 
+  first_st_at P s n1 ->
+  first_st_at P s n2 ->
   n1 = n2.
 Proof using.
   induction n1; destruct n2; destruct s; simpl; introv H1 H2.
