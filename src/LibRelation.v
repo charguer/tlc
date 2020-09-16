@@ -30,11 +30,11 @@ Proof using. intros. apply (Inhab_of_val (fun _ _ => True)). Qed.
 (** ** Extensionality *)
 
 Lemma binary_ext : forall A (R1 R2:binary A),
-  (forall x y, R1 x y <-> R2 x y) -> 
+  (forall x y, R1 x y <-> R2 x y) ->
   R1 = R2.
 Proof using. extens*. Qed.
 
-Instance Extensionality_binary : forall A, 
+Instance Extensionality_binary : forall A,
   Extensionality (binary A).
 Proof using. intros. apply (Extensionality_make (@binary_ext A)). Defined.
 
@@ -53,7 +53,7 @@ Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma refl_inv : forall x y R,
-  refl R -> 
+  refl R ->
   x = y ->
   R x y.
 Proof using. intros_all. subst~. Qed.
@@ -73,21 +73,21 @@ Implicit Types R : binary A.
 
 Lemma irrefl_inv : forall x R,
   irrefl R ->
-  R x x -> 
+  R x x ->
   False.
 Proof using. introv H P. apply* H. Qed.
 
 Lemma irrefl_eq_forall_neq : forall R,
   irrefl R = (forall x y, R x y -> x <> y).
-Proof using. 
+Proof using.
   unfold irrefl. extens. iff M.
-  { introv H E. subst*. } 
+  { introv H E. subst*. }
   { autos*. }
 Qed.
 
 Lemma irrefl_inv_neq : forall x y R,
   irrefl R ->
-  R x y -> 
+  R x y ->
   x <> y.
 Proof using. introv H M. rewrite* irrefl_eq_forall_neq in H. Qed.
 
@@ -105,8 +105,8 @@ Variables (A : Type).
 Implicit Types R : binary A.
 
 Lemma sym_inv : forall x y R,
-  sym R -> 
-  R x y -> 
+  sym R ->
+  R x y ->
   R y x.
 Proof using. introv Sy R1. apply* Sy. Qed.
 
@@ -141,8 +141,8 @@ Lemma asym_eq_forall_false : forall R,
 Proof using. unfold asym. extens*. Qed.
 
 Lemma asym_inv : forall x y R,
-  asym R -> 
-  R x y -> 
+  asym R ->
+  R x y ->
   R y x ->
   False.
 Proof using. introv H M1 M2. apply* H. Qed.
@@ -165,10 +165,10 @@ Lemma antisym_eq_forall_eq : forall R,
 Proof using. unfold antisym. extens*. Qed.
 
 Lemma antisym_inv : forall x y R,
-  antisym R -> 
-  R x y -> 
-  R y x -> 
-  x <> y -> 
+  antisym R ->
+  R x y ->
+  R y x ->
+  x <> y ->
   False.
 Proof using. intros_all*. Qed.
 
@@ -199,16 +199,16 @@ Lemma trans_eq_forall_impl : forall R,
 Proof using. unfold trans. extens*. Qed.
 
 Lemma trans_inv : forall y x z R,
-  trans R -> 
-  R x y -> 
-  R y z -> 
+  trans R ->
+  R x y ->
+  R y z ->
   R x z.
 Proof using. introv Tr R1 R2. apply* Tr. Qed.
 
 Lemma trans_inv_swap : forall y x z R,
-  trans R -> 
-  R y z -> 
-  R x y -> 
+  trans R ->
+  R y z ->
+  R x y ->
   R x z.
 Proof using. introv Tr R1 R2. apply* Tr. Qed.
 
@@ -217,26 +217,26 @@ Proof using. introv Tr R1 R2. apply* Tr. Qed.
 Definition trans_sym_ll := trans_inv.
 
 Lemma trans_sym_lr : forall y x z R,
-  trans R -> 
-  sym R -> 
-  R x y -> 
-  R z y -> 
+  trans R ->
+  sym R ->
+  R x y ->
+  R z y ->
   R x z.
 Proof using. introv Tr Sy R1 R2. apply* Tr. Qed.
 
 Lemma trans_sym_rr : forall y x z R,
-  trans R -> 
-  sym R -> 
-  R y x -> 
-  R z y -> 
+  trans R ->
+  sym R ->
+  R y x ->
+  R z y ->
   R x z.
 Proof using. introv Tr Sy R1 R2. apply* Tr. Qed.
 
 Lemma trans_sym_rl : forall y x z R,
-  trans R -> 
-  sym R -> 
-  R y x -> 
-  R y z -> 
+  trans R ->
+  sym R ->
+  R y x ->
+  R y z ->
   R x z.
 Proof using. introv Tr Sy R1 R2. apply* Tr. Qed.
 
@@ -282,7 +282,7 @@ Lemma rel_incl_eq_forall_impl : forall R1 R2,
   rel_incl R1 R2 = (forall x y, R1 x y -> R2 x y).
 Proof using. auto. Qed.
 
-Lemma refl_rel_incl : 
+Lemma refl_rel_incl :
   refl (@rel_incl A B).
   (* forall (R:A->B->Prop), rel_incl R R *)
 Proof using. unfolds refl, rel_incl. autos*. Qed.
@@ -293,15 +293,15 @@ Proof using. intros. applys refl_rel_incl. Qed.
 
 Hint Resolve refl_rel_incl refl_rel_incl'.
 
-Lemma antisym_rel_incl : 
+Lemma antisym_rel_incl :
   antisym (@rel_incl A B).
   (* forall R1 R2, rel_incl R1 R2 -> rel_incl R2 R1 -> R1 = R2. *)
 Proof using. unfolds rel_incl. extens*. Qed.
   (* See also extensionality_pred_2 from LibEqual *)
 
-Lemma trans_rel_incl : 
+Lemma trans_rel_incl :
   trans (@rel_incl A B).
-Proof using. unfold trans, rel_incl. autos*. Qed.  
+Proof using. unfold trans, rel_incl. autos*. Qed.
   (* forall R1 R2 R3, rel_incl R1 R2 -> rel_incl R2 R3 ->  rel_incl R1 R3. *)
 
 End Incl.
@@ -322,18 +322,18 @@ Lemma total_eq_forall_or : forall R,
 Proof using. auto. Qed.
 
 Lemma total_inv : forall x y R,
-  total R -> 
+  total R ->
   R x y \/ R y x.
 Proof using. introv H. apply* H. Qed.
 
 Lemma total_inv_not_l : forall x y R,
-  total R -> 
+  total R ->
   ~ R x y ->
   R y x.
 Proof using. introv H N. destruct* (H x y). Qed.
 
 Lemma total_inv_not_r : forall x y R,
-  total R -> 
+  total R ->
   ~ R y x ->
   R x y.
 Proof using. introv H N. destruct* (H x y). Qed.
@@ -346,17 +346,17 @@ End Total.
 
 Inductive trichotomy A (R:binary A) : binary A :=
   | trichotomy_left : forall x y,
-      R x y -> 
-      x <> y -> 
-      ~ R y x -> 
+      R x y ->
+      x <> y ->
+      ~ R y x ->
       trichotomy R x y
   | trichotomy_eq : forall x,
-      ~ R x x -> 
+      ~ R x x ->
       trichotomy R x x
   | trichotomy_right : forall x y,
-      ~ R x y -> 
-      x <> y -> 
-      R y x -> 
+      ~ R x y ->
+      x <> y ->
+      R y x ->
       trichotomy R x y.
 
 Definition trichotomous A (R:binary A) :=
@@ -378,12 +378,12 @@ Lemma total_eq_forall_exists : forall R,
 Proof using. auto. Qed.
 
 Lemma defined_inv : forall x R,
-  defined R -> 
+  defined R ->
   exists y, R x y.
 Proof using. introv H. apply* H. Qed.
 
 Lemma defined_inv_not : forall x R,
-  defined R -> 
+  defined R ->
   (forall y, ~ R x y) ->
   False.
 Proof using. introv H N. forwards* (?&?): H. Qed.
@@ -406,9 +406,9 @@ Lemma functional_eq_forall_eq : forall R,
 Proof using. auto. Qed.
 
 Lemma functional_inv : forall x z y R,
-  functional R -> 
-  R x y -> 
-  R x z -> 
+  functional R ->
+  R x y ->
+  R x z ->
   y = z.
 Proof using. introv H N1 N2. apply* H. Qed.
 
@@ -478,23 +478,23 @@ End Eq.
 (** ** Properties of the equality relation *)
 
 (** These results are not in [LibLogic] because the definitions from
-    [LibRelation] are not yet available from that file. 
+    [LibRelation] are not yet available from that file.
     See also [LibOrder] for a package of these properties. *)
 
 Section Pred_incl.
 Variables (A : Type).
 
-Lemma refl_pred_incl : 
+Lemma refl_pred_incl :
   refl (@pred_incl A).
 Proof using. unfold refl, pred_incl. autos*. Qed.
 
-Lemma antisym_pred_incl : 
+Lemma antisym_pred_incl :
   antisym (@pred_incl A).
 Proof using. unfold antisym, pred_incl. extens*. Qed.
 
-Lemma trans_pred_incl : 
+Lemma trans_pred_incl :
   trans (@pred_incl A).
-Proof using. unfold trans, pred_incl. autos*. Qed.  
+Proof using. unfold trans, pred_incl. autos*. Qed.
 
 End Pred_incl.
 
@@ -503,22 +503,22 @@ End Pred_incl.
 (** ** Properties of the equivalence relation *)
 
 (** These results are not in [LibLogic] because the definitions from
-    [LibRelation] are not yet available from that file. 
+    [LibRelation] are not yet available from that file.
     See also [LibOrder] for a package of these properties. *)
 
 Section Iff.
 
-Lemma refl_iff : 
+Lemma refl_iff :
   refl iff.
 Proof using. unfold refl, iff. autos*. Qed.
 
-Lemma antisym_iff : 
+Lemma antisym_iff :
   antisym iff.
 Proof using. unfold antisym, iff. extens*. Qed.
 
-Lemma trans_iff : 
+Lemma trans_iff :
   trans iff.
-Proof using. unfold trans, iff. autos*. Qed.  
+Proof using. unfold trans, iff. autos*. Qed.
 
 End Iff.
 
@@ -562,7 +562,7 @@ Lemma empty_inv : forall x y,
   False.
 Proof using. auto. Qed.
 
-Lemma functional_empty : 
+Lemma functional_empty :
   functional (@empty A).
 Proof using. unfolds* empty, functional. Qed.
 
@@ -609,7 +609,7 @@ Lemma refl_union_r : forall R1 R2,
   refl (union R1 R2).
 Proof using. unfold refl, union. eauto. Qed.
 
-Lemma comm_union : 
+Lemma comm_union :
   comm (@union A).
   (* forall R1 R2, union R1 R2 = union R2 R1. *)
 Proof using. unfold union. extens*. Qed.
@@ -670,15 +670,15 @@ Section Inverse.
 Variables (A : Type).
 Implicit Types R : binary A.
 
-Lemma inverse_eq_fun : forall R,  
+Lemma inverse_eq_fun : forall R,
   inverse R = (fun x y => R y x).
 Proof using. auto. Qed.
 
-Lemma inverse_eq : forall R x y,  
+Lemma inverse_eq : forall R x y,
   inverse R x y = R y x.
 Proof using. auto. Qed.
 
-Lemma injective_inverse : 
+Lemma injective_inverse :
   injective (@inverse A).
 Proof using.
   intros R1 R2 E. extens. intros x y.
@@ -686,7 +686,7 @@ Proof using.
 Qed.
 
 Lemma inverse_sym : forall R,
-  sym R -> 
+  sym R ->
   inverse R = R.
 Proof using. intros. unfold inverse. extens*. Qed.
 
@@ -695,47 +695,47 @@ Lemma inverse_inverse : forall R,
 Proof using. extens*. Qed.
 
 Lemma inverse_eq_l : forall R2 R1,
-  R1 = inverse R2 -> 
+  R1 = inverse R2 ->
   inverse R1 = R2.
 Proof using. intros. apply injective_inverse. rewrite~ inverse_inverse. Qed.
 
 Lemma inverse_eq_r : forall R2 R1,
-  inverse R1 = R2 -> 
+  inverse R1 = R2 ->
   R1 = inverse R2.
 Proof using. intros. apply injective_inverse. rewrite~ inverse_inverse. Qed.
 
 Lemma refl_inverse : forall R,
-  refl R -> 
+  refl R ->
   refl (inverse R).
 Proof using. intros_all. unfolds inverse. auto. Qed.
 
 Lemma trans_inverse : forall R,
-  trans R -> 
+  trans R ->
   trans (inverse R).
 Proof using. intros_all. unfolds inverse. eauto. Qed.
 
 Lemma antisym_inverse : forall R,
-  antisym R -> 
+  antisym R ->
   antisym (inverse R).
 Proof using. intros_all. unfolds inverse. auto. Qed.
 
 Lemma antisym_wrt_inverse : forall E R,
-  antisym_wrt E R -> 
+  antisym_wrt E R ->
   antisym_wrt E (inverse R).
 Proof using. intros_all. unfolds inverse. auto. Qed.
 
 Lemma asym_inverse : forall R,
-  asym R -> 
+  asym R ->
   asym (inverse R).
 Proof using. intros_all. unfolds inverse. apply* H. Qed.
 
 Lemma total_inverse : forall R,
-  total R -> 
+  total R ->
   total (inverse R).
 Proof using. intros_all. unfolds inverse. auto. Qed.
 
 Lemma trichotomous_inverse : forall R,
-  trichotomous R -> 
+  trichotomous R ->
   trichotomous (inverse R).
 Proof using.
   introv H. intros x y. destruct (H x y).
@@ -746,7 +746,7 @@ Qed.
 
 (* TODO rename to equiv_inverse *)
 Lemma inverse_equiv : forall A (E:binary A),
-  equiv E -> 
+  equiv E ->
   equiv (inverse E).
 Proof using.
   introv Equi. unfold inverse. constructor; intros_all;
@@ -815,8 +815,8 @@ End Rel_fun.
 (* ---------------------------------------------------------------------- *)
 (** ** Pointwise product *)
 
-Definition prod2 (A1 A2:Type) 
-  (R1:binary A1) (R2:binary A2) 
+Definition prod2 (A1 A2:Type)
+  (R1:binary A1) (R2:binary A2)
    : binary (A1*A2) :=
   fun p1 p2 : A1*A2 => match p1,p2 with (x1,x2),(y1,y2) =>
     R1 x1 y1 /\ R2 x2 y2 end.
@@ -842,7 +842,7 @@ Tactic Notation "unfolds_prod" :=
 
 Lemma prod2_equiv : forall A1 A2 (E1:binary A1) (E2:binary A2),
   equiv E1 ->
-  equiv E2 -> 
+  equiv E2 ->
   equiv (prod2 E1 E2).
 Proof using.
   introv [R1 S1 T1] [R2 S2 T2]. constructor.
@@ -890,7 +890,7 @@ Lemma lexico2_1 : forall x1 x2 y1 y2,
 Proof using. intros. left~. Qed.
 
 Lemma lexico2_2 : forall x1 x2 y1 y2,
-  x1 = y1 -> 
+  x1 = y1 ->
   R2 x2 y2 ->
   lexico2 R1 R2 (x1,x2) (y1,y2).
 Proof using. intros. right~. Qed.
@@ -901,14 +901,14 @@ Lemma lexico3_1 : forall x1 x2 x3 y1 y2 y3,
 Proof using. intros. left. left~. Qed.
 
 Lemma lexico3_2 : forall x1 x2 x3 y1 y2 y3,
-  x1 = y1 -> 
+  x1 = y1 ->
   R2 x2 y2 ->
   lexico3 R1 R2 R3 (x1,x2,x3) (y1,y2,y3).
 Proof using. intro. left. right~. Qed.
 
 Lemma lexico3_3 : forall x1 x2 x3 y1 y2 y3,
-  x1 = y1 -> 
-  x2 = y2 -> 
+  x1 = y1 ->
+  x2 = y2 ->
   R3 x3 y3 ->
   lexico3 R1 R2 R3 (x1,x2,x3) (y1,y2,y3).
 Proof using. intros. right~. Qed.
@@ -919,22 +919,22 @@ Lemma lexico4_1 : forall x1 x2 x3 x4 y1 y2 y3 y4,
 Proof using. intros. left. left. left~. Qed.
 
 Lemma lexico4_2 : forall x1 x2 x3 x4 y1 y2 y3 y4,
-  x1 = y1 -> 
+  x1 = y1 ->
   R2 x2 y2 ->
   lexico4 R1 R2 R3 R4 (x1,x2,x3,x4) (y1,y2,y3,y4).
 Proof using. intros. left. left. right~. Qed.
 
 Lemma lexico4_3 : forall x1 x2 x3 x4 y1 y2 y3 y4,
-  x1 = y1 -> 
-  x2 = y2 -> 
+  x1 = y1 ->
+  x2 = y2 ->
   R3 x3 y3 ->
   lexico4 R1 R2 R3 R4 (x1,x2,x3,x4) (y1,y2,y3,y4).
 Proof using. intros. left. right~. Qed.
 
 Lemma lexico4_4 : forall x1 x2 x3 x4 y1 y2 y3 y4,
-  x1 = y1 -> 
-  x2 = y2 -> 
-  x3 = y3 -> 
+  x1 = y1 ->
+  x2 = y2 ->
+  x3 = y3 ->
   R4 x4 y4 ->
   lexico4 R1 R2 R3 R4 (x1,x2,x3,x4) (y1,y2,y3,y4).
 Proof using. intros. right~. Qed.
@@ -945,8 +945,8 @@ End Lexico.
 
 Lemma trans_lexico2 : forall A1 A2
    (R1:binary A1) (R2:binary A2),
-  trans R1 -> 
-  trans R2 -> 
+  trans R1 ->
+  trans R2 ->
   trans (lexico2 R1 R2).
 Proof using.
   introv Tr1 Tr2. intros [x1 x2] [y1 y2] [z1 z2] Rxy Ryz.
@@ -956,9 +956,9 @@ Qed.
 
 Lemma trans_lexico3 : forall A1 A2 A3
    (R1:binary A1) (R2:binary A2) (R3:binary A3),
-  trans R1 -> 
-  trans R2 -> 
-  trans R3 -> 
+  trans R1 ->
+  trans R2 ->
+  trans R3 ->
   trans (lexico3 R1 R2 R3).
 Proof using.
   introv Tr1 Tr2 Tr3. applys~ trans_lexico2. applys~ trans_lexico2.
@@ -968,8 +968,8 @@ Lemma trans_lexico4 : forall A1 A2 A3 A4
    (R1:binary A1) (R2:binary A2) (R3:binary A3) (R4:binary A4),
   trans R1 ->
   trans R2 ->
-  trans R3 -> 
-  trans R4 -> 
+  trans R3 ->
+  trans R4 ->
   trans (lexico4 R1 R2 R3 R4).
 Proof using.
   introv Tr1 Tr2 Tr3. applys~ trans_lexico3. applys~ trans_lexico2.
@@ -979,8 +979,8 @@ Qed.
 
 Lemma rel_incl_lexico2 : forall A1 A2
    (R1 R1':binary A1) (R2 R2':binary A2),
-  rel_incl R1 R1' -> 
-  rel_incl R2 R2' -> 
+  rel_incl R1 R1' ->
+  rel_incl R2 R2' ->
   rel_incl (lexico2 R1 R2) (lexico2 R1' R2').
 Proof using.
   introv I1 I2. intros [x1 x2] [y1 y2] [H1|[H1 H2]].
@@ -1002,7 +1002,7 @@ Qed.
 
 Inductive rclosure A (R:binary A) : binary A :=
   | rclosure_once : forall x y,
-      R x y -> 
+      R x y ->
       rclosure R x y
   | rclosure_refl : forall x,
       rclosure R x x.
@@ -1014,15 +1014,15 @@ Hint Constructors rclosure.
 
 (** Equivalent definition *)
 
-Lemma rclosure_eq_fun : forall R,  
+Lemma rclosure_eq_fun : forall R,
   rclosure R = (fun x y => R x y \/ x = y).
 Proof using. extens. iff M; destruct M; subst*. Qed.
 
-Lemma rclosure_eq : forall R x y,  
+Lemma rclosure_eq : forall R x y,
   rclosure R x y = (R x y \/ x = y).
 Proof using. extens. iff M; destruct M; subst*. Qed.
 
-Lemma rclosure_inv : forall R x y,  
+Lemma rclosure_inv : forall R x y,
   rclosure R x y ->
   R x y \/ x = y.
 Proof using. introv M; rewrite* rclosure_eq in M. Qed.
@@ -1039,18 +1039,18 @@ Lemma sym_rclosure : forall R,
 Proof using. unfolds sym. introv M N. destruct* N. Qed.
 
 Lemma antisym_rclosure : forall R,
-  antisym R -> 
+  antisym R ->
   antisym (rclosure R).
-Proof using. 
-  unfolds antisym. introv M N1 N2. 
+Proof using.
+  unfolds antisym. introv M N1 N2.
   destruct N1; destruct N2; subst*.
 Qed.
 
 Lemma antisym_wrt_rclosure : forall E R,
-  antisym_wrt E R -> 
+  antisym_wrt E R ->
   antisym_wrt (rclosure E) (rclosure R).
-Proof using. 
-  unfolds antisym_wrt. introv M N1 N2. 
+Proof using.
+  unfolds antisym_wrt. introv M N1 N2.
   destruct N1; destruct N2; subst*.
 Qed.
 
@@ -1063,9 +1063,9 @@ Proof using.
 Qed.
 
 Lemma total_rclosure : forall R,
-  total R -> 
+  total R ->
   total (rclosure R).
-Proof using. 
+Proof using.
   unfolds total. introv H. intros x y. destruct* (H x y).
 Qed.
 
@@ -1084,36 +1084,36 @@ Proof using. unfold inverse. extens. iff M; destruct* M. Qed.
 (** Constructors *)
 
 (** -- TODO: rename to
-   rclosure_of_rclosure_step 
+   rclosure_of_rclosure_step
    rclosure_of_step_rclosure
    trans_inv_rclosure_step
    trans_inv_step_rclosure *)
 
 Lemma rclosure_trans_l : forall y x z R,
-  trans R -> 
-  rclosure R x y -> 
-  R y z -> 
+  trans R ->
+  rclosure R x y ->
+  R y z ->
   rclosure R x z.
 Proof using. introv T M N. rewrite rclosure_eq in *. destruct M; subst*. Qed.
 
 Lemma rclosure_trans_r : forall y x z R,
-  trans R -> 
-  R x y -> 
-  rclosure R y z -> 
+  trans R ->
+  R x y ->
+  rclosure R y z ->
   rclosure R x z.
 Proof using. introv T M N. rewrite rclosure_eq in *. destruct N; subst*. Qed.
 
 Lemma trans_rclosure_l : forall y x z R,
-  trans R -> 
-  rclosure R x y -> 
-  R y z -> 
+  trans R ->
+  rclosure R x y ->
+  R y z ->
   R x z.
 Proof using. introv T M H. rewrite rclosure_eq in *. destruct M; subst*. Qed.
 
 Lemma trans_rclosure_r : forall y x z R,
-  trans R -> 
-  R x y -> 
-  rclosure R y z -> 
+  trans R ->
+  R x y ->
+  rclosure R y z ->
   R x z.
 Proof using. introv T M N. rewrite rclosure_eq in *. destruct N; subst*. Qed.
 
@@ -1166,7 +1166,7 @@ Hint Constructors rclosure : rclosure.
 
 Inductive sclosure A (R:binary A) : binary A :=
   | sclosure_once : forall x y,
-      R x y -> 
+      R x y ->
       sclosure R x y
   | sclosure_sym : forall x y,
       sclosure R y x ->
@@ -1179,15 +1179,15 @@ Hint Constructors sclosure.
 
 (** Equivalent definition *)
 
-Lemma sclosure_eq : forall R x y,  
+Lemma sclosure_eq : forall R x y,
   sclosure R x y = (R x y \/ R y x).
 Proof using.
   extens. iff M.
-  { induction* M. } 
+  { induction* M. }
   { destruct M; subst*. }
 Qed.
 
-Lemma sclosure_inv : forall R x y,  
+Lemma sclosure_inv : forall R x y,
   sclosure R x y ->
   R x y \/ R y x.
 Proof using. introv M; rewrite* sclosure_eq in M. Qed.
@@ -1206,7 +1206,7 @@ Proof using. unfolds sym. introv N. destruct* N. Qed.
 Lemma total_sclosure : forall R,
   total R ->
   total (sclosure R).
-Proof using. 
+Proof using.
   unfolds total. introv H. intros x y. destruct* (H x y).
 Qed.
 
@@ -1220,7 +1220,7 @@ Qed.
 
 Lemma sclosure_inverse_eq : forall R,
   sclosure (inverse R) = sclosure R.
-Proof using. 
+Proof using.
   unfolds inverse. extens. intros. do 2 rewrite sclosure_eq. autos*.
 Qed.
 
@@ -1273,7 +1273,7 @@ Hint Constructors sclosure : sclosure.
 
 Inductive rsclosure A (R:binary A) : binary A :=
   | rsclosure_once : forall x y,
-      R x y -> 
+      R x y ->
       rsclosure R x y
   | rsclosure_refl : forall x,
       rsclosure R x x
@@ -1288,15 +1288,15 @@ Hint Constructors rsclosure.
 
 (** Equivalent definition *)
 
-Lemma rsclosure_eq : forall R x y,  
+Lemma rsclosure_eq : forall R x y,
   rsclosure R x y = (R x y \/ R y x \/ x = y).
 Proof using.
   extens. iff M.
-  { induction* M. } 
+  { induction* M. }
   { destruct M as [M|[M|M]]; subst*. }
 Qed.
 
-Lemma rsclosure_inv : forall R x y,  
+Lemma rsclosure_inv : forall R x y,
   rsclosure R x y ->
   R x y \/ R y x \/ x = y.
 Proof using. introv M; rewrite* rsclosure_eq in M. Qed.
@@ -1378,11 +1378,11 @@ Hint Constructors rsclosure : rsclosure.
 
 Inductive tclosure A (R:binary A) : binary A :=
   | tclosure_once : forall x y,
-      R x y -> 
+      R x y ->
       tclosure R x y
   | tclosure_trans : forall y x z,
-      tclosure R x y -> 
-      tclosure R y z -> 
+      tclosure R x y ->
+      tclosure R y z ->
       tclosure R x z.
 
 Section Tclosure.
@@ -1409,7 +1409,7 @@ Proof using. unfolds* trans. Qed.
 Lemma total_tclosure : forall R,
   total R ->
   total (tclosure R).
-Proof using. 
+Proof using.
   unfolds total. introv H. intros x y. destruct* (H x y).
 Qed.
 
@@ -1424,21 +1424,21 @@ Qed.
 
 Lemma tclosure_inverse_eq : forall R,
   tclosure (inverse R) = inverse (tclosure R).
-Proof using. 
-  unfolds inverse. extens. intros x y. iff M; induction* M. 
+Proof using.
+  unfolds inverse. extens. intros x y. iff M; induction* M.
 Qed.
 
 (** Constructors *)
 
 Lemma tclosure_l : forall R y x z,
-  R x y -> 
-  tclosure R y z -> 
+  R x y ->
+  tclosure R y z ->
   tclosure R x z.
 Proof using. autos*. Qed.
 
 Lemma tclosure_r : forall R y x z,
-  tclosure R x y -> 
-  R y z -> 
+  tclosure R x y ->
+  R y z ->
   tclosure R x z.
 Proof using. autos*. Qed.
 
@@ -1464,11 +1464,11 @@ Section Ind.
 
 Inductive tclosure'l A (R:binary A) : binary A :=
   | tclosure'l_once : forall x y,
-      R x y -> 
+      R x y ->
       tclosure'l R x y
   | tclosure'l_step : forall y x z,
-      R x y -> 
-      tclosure'l R y z -> 
+      R x y ->
+      tclosure'l R y z ->
       tclosure'l R x z.
 
 Lemma trans_tclosure'l : forall R,
@@ -1476,13 +1476,13 @@ Lemma trans_tclosure'l : forall R,
 Proof using.
   Hint Constructors tclosure'l.
   intros R y x z M1. gen z. induction M1; introv M2; autos*.
-Qed.  
+Qed.
 
 Lemma tclosure_eq_tclosure'l : forall R,
   tclosure R = tclosure'l R.
   (* --LATER: tclosure'l = tclosure. *)
 Proof using.
-  extens. intros x y. iff M.  
+  extens. intros x y. iff M.
   { induction* M. applys* trans_tclosure'l y. }
   { induction* M. }
 Qed.
@@ -1497,10 +1497,10 @@ Qed.
 
 Inductive tclosure'r A (R:binary A) : binary A :=
   | tclosure'r_once : forall x y,
-      R x y -> 
+      R x y ->
       tclosure'r R x y
   | tclosure'r_step : forall y x z,
-      tclosure'r R x y -> 
+      tclosure'r R x y ->
       R y z ->
       tclosure'r R x z.
 
@@ -1509,13 +1509,13 @@ Lemma trans_tclosure'r : forall R,
 Proof using.
   Hint Constructors tclosure'r.
   intros R y x z M1 M2. gen x. induction M2; introv M1; autos*.
-Qed.  
+Qed.
 
 Lemma tclosure_eq_tclosure'r : forall R,
   tclosure R = tclosure'r R.
   (* --LATER: tclosure'l = tclosure. *)
 Proof using.
-  extens. intros x y. iff M.  
+  extens. intros x y. iff M.
   { induction* M. applys* trans_tclosure'r y. }
   { induction* M. }
 Qed.
@@ -1560,8 +1560,8 @@ Inductive rtclosure A (R:binary A) : binary A :=
   | rtclosure_refl : forall x,
       rtclosure R x x
   | rtclosure_trans : forall y x z,
-      rtclosure R x y -> 
-      rtclosure R y z -> 
+      rtclosure R x y ->
+      rtclosure R y z ->
       rtclosure R x z.
 
 Section Rtclosure.
@@ -1587,7 +1587,7 @@ Proof using. unfolds* trans. Qed.
 Lemma total_rtclosure : forall R,
   total R ->
   total (rtclosure R).
-Proof using. 
+Proof using.
   unfolds total. introv H. intros x y. destruct* (H x y).
 Qed.
 
@@ -1608,21 +1608,21 @@ Proof using. unfold inverse. extens. iff M; induction* M. Qed.
 (** Constructors *)
 
 Lemma rtclosure_l : forall R y x z,
-  R x y -> 
-  rtclosure R y z -> 
+  R x y ->
+  rtclosure R y z ->
   rtclosure R x z.
 Proof using. autos*. Qed.
 
 Lemma rtclosure_r : forall R y x z,
-  rtclosure R x y -> 
-  R y z -> 
+  rtclosure R x y ->
+  R y z ->
   rtclosure R x z.
 Proof using. autos*. Qed.
 
 (* Same as above, reformulated to make [eauto] faster *)
 Lemma rtclosure_r' : forall R y x z,
-  R y z -> 
-  rtclosure R x y -> 
+  R y z ->
+  rtclosure R x y ->
   rtclosure R x z.
 Proof using. autos*. Qed.
 
@@ -1667,8 +1667,8 @@ Inductive rtclosure'l A (R:binary A) : binary A :=
   | rtclosure'l_refl : forall x,
       rtclosure'l R x x
   | rtclosure'l_step : forall y x z,
-      R x y -> 
-      rtclosure'l R y z -> 
+      R x y ->
+      rtclosure'l R y z ->
       rtclosure'l R x z.
 
 Lemma trans_rtclosure'l : forall R,
@@ -1676,13 +1676,13 @@ Lemma trans_rtclosure'l : forall R,
 Proof using.
   Hint Constructors rtclosure'l.
   intros R y x z M1. gen z. induction M1; introv M2; autos*.
-Qed.  
+Qed.
 
 Lemma rtclosure_eq_rtclosure'l : forall R,
   rtclosure R = rtclosure'l R.
   (* --LATER: tclosure'l = tclosure. *)
 Proof using.
-  extens. intros x y. iff M.  
+  extens. intros x y. iff M.
   { induction* M. applys* trans_rtclosure'l y. }
   { induction* M. }
 Qed.
@@ -1699,7 +1699,7 @@ Inductive rtclosure'r A (R:binary A) : binary A :=
   | rtclosure'r_refl : forall x,
       rtclosure'r R x x
   | rtclosure'r_step : forall y x z,
-      rtclosure'r R x y -> 
+      rtclosure'r R x y ->
       R y z ->
       rtclosure'r R x z.
 
@@ -1708,13 +1708,13 @@ Lemma trans_rtclosure'r : forall R,
 Proof using.
   Hint Constructors rtclosure'r.
   intros R y x z M1 M2. gen x. induction M2; introv M1; autos*.
-Qed.  
+Qed.
 
 Lemma rtclosure_eq_rtclosure'r : forall R,
   rtclosure R = rtclosure'r R.
   (* --LATER: tclosure'l = tclosure. *)
 Proof using.
-  extens. intros x y. iff M.  
+  extens. intros x y. iff M.
   { induction* M. applys* trans_rtclosure'r y. }
   { induction* M. }
 Qed.
@@ -1743,7 +1743,7 @@ Proof using. intros R. applys* rtclosure_ind_r. Qed.
 
 End Rtclosure.
 
-Hint Resolve rtclosure_refl rtclosure_once 
+Hint Resolve rtclosure_refl rtclosure_once
   rtclosure_l rtclosure_r' : rtclosure.
 
 
@@ -1752,14 +1752,14 @@ Hint Resolve rtclosure_refl rtclosure_once
 
 Inductive stclosure A (R:binary A) : binary A :=
   | stclosure_once : forall x y,
-      R x y -> 
+      R x y ->
       stclosure R x y
   | stclosure_sym : forall x y,
-      stclosure R x y -> 
+      stclosure R x y ->
       stclosure R y x
   | stclosure_trans : forall y x z,
-      stclosure R x y -> 
-      stclosure R y z -> 
+      stclosure R x y ->
+      stclosure R y z ->
       stclosure R x z.
 
 Section Stclosure.
@@ -1785,7 +1785,7 @@ Proof using. unfolds* trans. Qed.
 Lemma total_stclosure : forall R,
   total R ->
   total (stclosure R).
-Proof using. 
+Proof using.
   unfolds total. introv H. intros x y. destruct* (H x y).
 Qed.
 
@@ -1801,21 +1801,21 @@ Qed.
 
 Lemma stclosure_inverse_eq : forall R,
   stclosure (inverse R) = inverse (stclosure R).
-Proof using. 
-  unfolds inverse. extens. intros x y. iff M; induction* M. 
+Proof using.
+  unfolds inverse. extens. intros x y. iff M; induction* M.
 Qed.
 
 (** Constructors *)
 
 Lemma stclosure_l : forall R y x z,
-  R x y -> 
-  stclosure R y z -> 
+  R x y ->
+  stclosure R y z ->
   stclosure R x z.
 Proof using. autos*. Qed.
 
 Lemma stclosure_r : forall R y x z,
-  stclosure R x y -> 
-  R y z -> 
+  stclosure R x y ->
+  R y z ->
   stclosure R x z.
 Proof using. autos*. Qed.
 
@@ -1826,7 +1826,7 @@ Lemma rel_incl_stclosure : forall R,
 Proof using. unfolds* rel_incl. Qed.
 
 Lemma covariant_stclosure : forall R1 R2,
-  rel_incl R1 R2 -> 
+  rel_incl R1 R2 ->
   rel_incl (stclosure R1) (stclosure R2).
 Proof using. introv H M. induction* M. Qed.
 
@@ -1845,7 +1845,7 @@ Hint Constructors stclosure : stclosure.
 
 Inductive rstclosure A (R:binary A) : binary A :=
   | rstclosure_once : forall x y,
-      R x y -> 
+      R x y ->
       rstclosure R x y
   | rstclosure_refl : forall x,
       rstclosure R x x
@@ -1853,8 +1853,8 @@ Inductive rstclosure A (R:binary A) : binary A :=
       rstclosure R x y ->
       rstclosure R y x
   | rstclosure_trans : forall y x z,
-      rstclosure R x y -> 
-      rstclosure R y z -> 
+      rstclosure R x y ->
+      rstclosure R y z ->
       rstclosure R x z.
 
 Section Rstclosure.
@@ -1879,7 +1879,7 @@ Proof using. unfolds* trans. Qed.
 Lemma total_rstclosure : forall R,
   total R ->
   total (rstclosure R).
-Proof using. 
+Proof using.
   unfolds total. introv H. intros x y. destruct* (H x y).
 Qed.
 
@@ -1896,21 +1896,21 @@ Qed.
 
 Lemma rstclosure_inverse_eq : forall R,
   rstclosure (inverse R) = rstclosure R.
-Proof using. 
-  unfolds inverse. extens. intros x y. iff M; induction* M. 
+Proof using.
+  unfolds inverse. extens. intros x y. iff M; induction* M.
 Qed.
 
 (** Constructors *)
 
 Lemma rstclosure_l : forall R y x z,
-  R x y -> 
-  rstclosure R y z -> 
+  R x y ->
+  rstclosure R y z ->
   rstclosure R x z.
 Proof using. autos*. Qed.
 
 Lemma rstclosure_r : forall R y x z,
-  rstclosure R x y -> 
-  R y z -> 
+  rstclosure R x y ->
+  R y z ->
   rstclosure R x z.
 Proof using. autos*. Qed.
 
@@ -1959,7 +1959,7 @@ Hint Constructors rtclosure rsclosure stclosure rstclosure.
 (** [rclosure] to [rtclosure] *)
 
 Lemma rtclosure_of_rclosure : forall R x y,
-  rclosure R x y -> 
+  rclosure R x y ->
   rtclosure R x y.
 Proof using. intros. destruct* H. Qed.
 
@@ -1970,7 +1970,7 @@ Proof using. intros. applys* rtclosure_of_rclosure. Qed.
 (** [tclosure] to [rtclosure] *)
 
 Lemma rtclosure_of_tclosure : forall R x y,
-  tclosure R x y -> 
+  tclosure R x y ->
   rtclosure R x y.
 Proof using. intros. induction* H. Qed.
 
@@ -1981,7 +1981,7 @@ Proof using. intros. applys* rtclosure_of_tclosure. Qed.
 (** [rclosure] to [rsclosure] *)
 
 Lemma rsclosure_of_rclosure : forall R x y,
-  rclosure R x y -> 
+  rclosure R x y ->
   rsclosure R x y.
 Proof using. intros. destruct* H. Qed.
 
@@ -1992,7 +1992,7 @@ Proof using. intros. applys* rsclosure_of_rclosure. Qed.
 (** [sclosure] to [rsclosure] *)
 
 Lemma rsclosure_of_sclosure : forall R x y,
-  sclosure R x y -> 
+  sclosure R x y ->
   rsclosure R x y.
 Proof using. intros. induction* H. Qed.
 
@@ -2003,7 +2003,7 @@ Proof using. intros. applys* rsclosure_of_sclosure. Qed.
 (** [sclosure] to [stclosure] *)
 
 Lemma stclosure_of_sclosure : forall R x y,
-  sclosure R x y -> 
+  sclosure R x y ->
   stclosure R x y.
 Proof using. intros. induction* H. Qed.
 
@@ -2014,7 +2014,7 @@ Proof using. intros. applys* stclosure_of_sclosure. Qed.
 (** [tclosure] to [stclosure] *)
 
 Lemma stclosure_of_tclosure : forall R x y,
-  tclosure R x y -> 
+  tclosure R x y ->
   stclosure R x y.
 Proof using. intros. induction* H. Qed.
 
@@ -2025,7 +2025,7 @@ Proof using. intros. applys* stclosure_of_tclosure. Qed.
 (** [rclosure] to [rstclosure] *)
 
 Lemma rstclosure_of_rclosure : forall R x y,
-  rclosure R x y -> 
+  rclosure R x y ->
   rstclosure R x y.
 Proof using. intros. destruct* H. Qed.
 
@@ -2036,7 +2036,7 @@ Proof using. intros. applys* rstclosure_of_rclosure. Qed.
 (** [sclosure] to [rstclosure] *)
 
 Lemma rstclosure_of_sclosure : forall R x y,
-  sclosure R x y -> 
+  sclosure R x y ->
   rstclosure R x y.
 Proof using. intros. induction* H. Qed.
 
@@ -2047,7 +2047,7 @@ Proof using. intros. applys* rstclosure_of_sclosure. Qed.
 (** [tclosure] to [tstclosure] *)
 
 Lemma rstclosure_of_tclosure : forall R x y,
-  tclosure R x y -> 
+  tclosure R x y ->
   rstclosure R x y.
 Proof using. intros. induction* H. Qed.
 
@@ -2058,7 +2058,7 @@ Proof using. intros. applys* rstclosure_of_tclosure. Qed.
 (** [rsclosure] to [rstclosure] *)
 
 Lemma rstclosure_of_rsclosure : forall R x y,
-  rsclosure R x y -> 
+  rsclosure R x y ->
   rstclosure R x y.
 Proof using. intros. induction* H. Qed.
 
@@ -2069,7 +2069,7 @@ Proof using. intros. applys* rstclosure_of_rsclosure. Qed.
 (** [rtclosure] to [rstclosure] *)
 
 Lemma rstclosure_of_rtclosure : forall R x y,
-  rtclosure R x y -> 
+  rtclosure R x y ->
   rstclosure R x y.
 Proof using. intros. induction* H. Qed.
 
@@ -2080,7 +2080,7 @@ Proof using. intros. applys* rstclosure_of_rtclosure. Qed.
 (** [stclosure] to [rstclosure] *)
 
 Lemma rstclosure_of_stclosure : forall R x y,
-  stclosure R x y -> 
+  stclosure R x y ->
   rstclosure R x y.
 Proof using. intros. induction* H. Qed.
 
@@ -2097,7 +2097,7 @@ End ClosuresRel.
 Section IterClosures.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rclosure sclosure tclosure 
+Hint Constructors rclosure sclosure tclosure
   rtclosure rsclosure stclosure rstclosure.
 Hint Resolve sym_tclosure sym_sclosure sym_rclosure
   sym_rtclosure sym_rsclosure sym_rtclosure sym_rstclosure.
@@ -2210,7 +2210,7 @@ Proof using.
 Qed.
 
 Lemma rtclosure_inv_rclosure_or_tclosure : forall R x y,
-  rtclosure R x y -> 
+  rtclosure R x y ->
   x = y \/ tclosure R x y.
 Proof using.
   introv M. rewrite rtclosure_eq_union_rclosure_tclosure in M.
@@ -2226,7 +2226,7 @@ Proof using.
   { induction* M. }
 Qed.
 
-(* --LATER: many lemmas like the above? *) 
+(* --LATER: many lemmas like the above? *)
 
 (* --TODO: rename this lemma *)
 Lemma rel_incl_tclosure_stclosure_l : forall R1 R2,
@@ -2248,39 +2248,39 @@ Implicit Types R : binary A.
 Hint Constructors tclosure.
 
 Lemma tclosure_of_rtclosure_l : forall R x y z,
-  rtclosure R x y -> 
-  R y z -> 
+  rtclosure R x y ->
+  R y z ->
   tclosure R x z.
 Proof using.
-  introv H M. destruct (rtclosure_inv_rclosure_or_tclosure H). 
+  introv H M. destruct (rtclosure_inv_rclosure_or_tclosure H).
   { subst*. }
   { applys* tclosure_r. }
 Qed.
 
 Lemma tclosure_of_rtclosure_r : forall R x y z,
-  R x y -> 
-  rtclosure R y z -> 
+  R x y ->
+  rtclosure R y z ->
   tclosure R x z.
 Proof using.
-  introv M H. destruct (rtclosure_inv_rclosure_or_tclosure H). 
+  introv M H. destruct (rtclosure_inv_rclosure_or_tclosure H).
   { subst*. }
   { applys* tclosure_l. }
 Qed.
 
 Lemma tclosure_of_rtclosure_tclosure : forall R y x z,
-  rtclosure R x y -> 
-  tclosure R y z -> 
+  rtclosure R x y ->
+  tclosure R y z ->
   tclosure R x z.
 Proof using.
-  introv H M. destruct (rtclosure_inv_rclosure_or_tclosure H); subst*. 
+  introv H M. destruct (rtclosure_inv_rclosure_or_tclosure H); subst*.
 Qed.
 
 Lemma tclosure_of_tclosure_rtclosure : forall R y x z,
-  tclosure R x y -> 
-  rtclosure R y z -> 
+  tclosure R x y ->
+  rtclosure R y z ->
   tclosure R x z.
 Proof using.
-  introv M H. destruct (rtclosure_inv_rclosure_or_tclosure H); subst*. 
+  introv M H. destruct (rtclosure_inv_rclosure_or_tclosure H); subst*.
 Qed.
 
 End MixedClosures.
@@ -2298,12 +2298,12 @@ Section Strict.
 Variables (A : Type).
 Implicit Types R : binary A.
 Hint Unfold strict.
- 
-Lemma strict_eq_fun : forall R,  
+
+Lemma strict_eq_fun : forall R,
   strict R = (fun x y => R x y /\ x <> y).
 Proof using. auto. Qed.
 
-Lemma strict_eq : forall R x y,  
+Lemma strict_eq : forall R x y,
   strict R x y = (R x y /\ x <> y).
 Proof using. auto. Qed.
 
@@ -2312,16 +2312,16 @@ Lemma inverse_strict : forall R,
 Proof using. intros. unfold inverse, strict. extens*. Qed.
 
 Lemma trans_strict_l : forall y x z R,
-  trans R -> 
-  strict R x y -> 
-  R y z -> 
+  trans R ->
+  strict R x y ->
+  R y z ->
   R x z.
 Proof using. introv T (E&H) H'; subst*. Qed.
 
 Lemma trans_strict_r : forall y x z R,
-  trans R -> 
-  R x y -> 
-  strict R y z -> 
+  trans R ->
+  R x y ->
+  strict R y z ->
   R x z.
 Proof using. introv T H (E&H'); subst*. Qed.
 
@@ -2330,13 +2330,13 @@ Lemma irrefl_strict : forall R,
 Proof using. unfold strict, irrefl. intros. rew_logic*. Qed.
 
 Lemma antisym_strict : forall R,
-  antisym R -> 
+  antisym R ->
   antisym (strict R).
 Proof using. unfolds* antisym, strict. Qed.
 
 Lemma trans_strict : forall R,
-  trans R -> 
-  antisym R -> 
+  trans R ->
+  antisym R ->
   trans (strict R).
 Proof using.
   introv T S. unfold strict. introv [H1 H2] [H3 H4]. split.
@@ -2345,7 +2345,7 @@ Proof using.
 Qed.
 
 Lemma strict_rclosure : forall R,
-  irrefl R -> 
+  irrefl R ->
   strict (rclosure R) = R.
 Proof using.
   unfold strict. extens. intros x y. iff (K1&K2) K.
@@ -2354,10 +2354,10 @@ Proof using.
 Qed.
 
 Lemma rclosure_strict : forall R,
-  refl R -> 
+  refl R ->
   rclosure (strict R) = R.
 Proof using.
-  Hint Constructors rclosure. 
+  Hint Constructors rclosure.
   unfold strict. extens. intros x y. iff K.
   { destruct K; subst*. }
   { tests: (x = y); subst*. }
@@ -2372,7 +2372,7 @@ End Strict.
 (* ---------------------------------------------------------------------- *)
 (** ** Inclusion of a function in a relation *)
 
-(** [fun_in_rel f R] asserts that input-output pairs of [f] are 
+(** [fun_in_rel f R] asserts that input-output pairs of [f] are
     included in the relation [R]. *)
 
 Definition fun_in_rel A B (f:A->B) (R:A->B->Prop) :=
@@ -2388,8 +2388,8 @@ Lemma defined_of_fun_in_rel : forall f R,
   defined R.
 Proof using. unfolds* fun_in_rel, defined. Qed.
 
-(** The relation built from a function [f] is included in a relation  
-    [R] iff the function [f] is included in [R] *)
+(** The relation built from a function [f] is included in a relation
+    [R] iff the function [f] is included in [R] *)
 
 Lemma rel_incl_rel_fun_eq_fun_in_rel : forall f R,
   rel_incl (rel_fun f) R = fun_in_rel f R.
@@ -2405,7 +2405,7 @@ End Fun_in_rel.
 (* ---------------------------------------------------------------------- *)
 (** ** Inclusion of a relation in a function *)
 
-(** [rel_in_fun R f] asserts that input-output pairs of [R] 
+(** [rel_in_fun R f] asserts that input-output pairs of [R]
     are input-output for [f]. *)
 
 Definition rel_in_fun A B (R:A->B->Prop) (f:A->B) :=
@@ -2420,7 +2420,7 @@ Lemma functional_of_rel_in_fun : forall R f,
   rel_in_fun R f ->
   functional R.
 Proof using.
-  unfold rel_in_fun, functional. introv M N1 N2. 
+  unfold rel_in_fun, functional. introv M N1 N2.
   lets: M N1. lets: M N2. congruence.
 Qed.
 

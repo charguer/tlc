@@ -25,7 +25,7 @@ Generalizable Variables A B.
 
   Remark: ideally, constructors would be renamed to [sum_l] and [sum_r];
   to follow conventions.
- 
+
 *)
 
 Arguments inl {A} {B}.

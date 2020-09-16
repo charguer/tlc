@@ -254,18 +254,15 @@ Notation "'>>' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13" :=
    v12 at level 0, v13 at level 0)
   : ltac_scope.
 
-
 (** The tactic [list_boxer_of] inputs a term [E] and returns a term
     of type "list boxer", according to the following rules:
     - if [E] is already of type "list Boxer", then it returns [E];
     - otherwise, it returns the list [(boxer E)::nil]. *)
-
 Ltac list_boxer_of E :=
   match type of E with
   | List.list Boxer => constr:(E)
   | _ => constr:((boxer E)::nil)
   end.
-
 
 (* ---------------------------------------------------------------------- *)
 (** ** Databases of lemmas  *)
@@ -3126,10 +3123,9 @@ Ltac find_head_match T :=
   end.
 
 Ltac destruct_head_match_core cont :=
-  match goal with
-  | |- ?T1 = ?T2 => first [ let E := find_head_match T1 in cont E
-		          | let E := find_head_match T2 in cont E ]
-  | |- ?T1 => let E := find_head_match T1 in cont E
+  match goal with | |- ?T1 = ?T2 => first [ let E := find_head_match T1 in cont E
+                  | let E := find_head_match T2 in cont E ]
+                  | |- ?T1 => let E := find_head_match T1 in cont E
   end;
   destruct_if_post.
 
@@ -5271,7 +5267,7 @@ Tactic Notation "let_name_all" "as" ident(x) :=
 
 
 (* ---------------------------------------------------------------------- *)
-(* Bugfix for [f_equal] and [fequals]; only supports up to arity 5 *)
+(* Bugfix for [f_equal] and [fequals]; only supports up to arity 5 *)
 
 Section FuncEq.
 Variables (A1 A2 A3 A4 A5 B : Type).
@@ -5325,7 +5321,7 @@ Ltac fequal_base ::=
 
 
 (* ---------------------------------------------------------------------- *)
-(* Bugfix for [autorewrite in *], which is currently inefficient *)
+(* Bugfix for [autorewrite in *], which is currently inefficient *)
 
 (** Generalize all propositions into the goal.
     Naive implementation:

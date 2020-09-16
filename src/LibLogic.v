@@ -35,6 +35,8 @@ Definition sig_proof (A : Type) (P : A->Prop) (e : sig P) : P (sig_val e) :=
 Class Inhab (A:Type) : Prop :=
   { Inhab_intro : (exists (x:A), True) }.
 
+Hint Mode Inhab + : typeclass_instances.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics taking into account *)
@@ -208,13 +210,13 @@ Qed.
 (** Independence of general premises *)
 
 Lemma indep_general_premises :
-  forall `{Inhab A} (P : A -> Prop) (Q : Prop),
+  forall A `{Inhab A} (P : A -> Prop) (Q : Prop),
   (Q -> exists x, P x) ->
   (exists x, Q -> P x).
 Proof using.
   introv I M. destruct (prop_inv Q).
   destruct* (M H).
-  exists arbitrary. auto_false.
+  exists (arbitrary (A:=A)). auto_false.
 Qed.
 
 (** Small drinker's paradox *)
@@ -224,7 +226,7 @@ Lemma small_drinker_paradox : forall `{Inhab A} (P : A -> Prop),
 Proof using.
   intros A I P. destruct (prop_inv (exists x, P x)).
   destruct H. exists x. auto.
-  exists arbitrary. auto_false.
+  exists (arbitrary (A:=A)). auto_false.
 Qed.
 
 

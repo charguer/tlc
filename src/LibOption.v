@@ -70,7 +70,7 @@ Definition unsome_default A d (o:option A) :=
     value in case the option in [None]. *)
 
 Definition unsome `{Inhab A} :=
-  unsome_default arbitrary.
+  unsome_default (arbitrary (A:=A)).
 
 
 (* ---------------------------------------------------------------------- *)
@@ -109,7 +109,7 @@ Definition map_on A B (o : option A) (f : A -> B) : option B :=
   map f o.
 
 Lemma map_on_eq_none_inv : forall A B (f : A -> B) o,
-  map f o = None -> 
+  map f o = None ->
   o = None.
 Proof using. introv H. destruct~ o; tryfalse. Qed.
 
@@ -145,7 +145,7 @@ Definition apply_on A B (o : option A) (f : A->option B) : option B:=
 
 Lemma apply_on_eq_none_inv : forall A B (f : A->option B) o,
   apply_on o f = None ->
-     (o = None) 
+     (o = None)
   \/ (exists x, o = Some x /\ f x = None).
 Proof using. introv H. destruct o; simpl; inverts* H. Qed.
 

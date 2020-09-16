@@ -1583,25 +1583,25 @@ Definition FixFun2Mod B {IB:Inhab B} (E:binary B)
    A1 A2 (F:(A1->A2->B)->(A1->A2->B)) :=
   curry2 (FixFunMod E (fun f' => uncurry2 (F (curry2 f')))).
 
-Definition FixFun2 B {IB:Inhab B} := FixFun2Mod eq.
+Definition FixFun2 B {IB:Inhab B} := FixFun2Mod (B:=B) eq.
 
 Definition FixFun3Mod B {IB:Inhab B} (E:binary B)
   A1 A2 A3 (F:(A1->A2->A3->B)->(A1->A2->A3->B)) :=
   curry3 (FixFunMod E (fun f' => uncurry3 (F (curry3 f')))).
 
-Definition FixFun3 B {IB:Inhab B} := FixFun3Mod eq.
+Definition FixFun3 B {IB:Inhab B} := FixFun3Mod (B:=B) eq.
 
 Definition FixFun4Mod B {IB:Inhab B} (E:binary B)
   A1 A2 A3 A4 (F:(A1->A2->A3->A4->B)->(A1->A2->A3->A4->B)) :=
   curry4 (FixFunMod E (fun f' => uncurry4 (F (curry4 f')))).
 
-Definition FixFun4 B {IB:Inhab B} := FixFun4Mod eq.
+Definition FixFun4 B {IB:Inhab B} := FixFun4Mod (B:=B) eq.
 
 Definition FixFun5Mod B {IB:Inhab B} (E:binary B)
   A1 A2 A3 A4 A5 (F:(A1->A2->A3->A4->A5->B)->(A1->A2->A3->A4->A5->B)) :=
   curry5 (FixFunMod E (fun f' => uncurry5 (F (curry5 f')))).
 
-Definition FixFun5 B {IB:Inhab B} := FixFun5Mod eq.
+Definition FixFun5 B {IB:Inhab B} := FixFun5Mod (B:=B) eq.
 
 
 (* ---------------------------------------------------------------------- *)
