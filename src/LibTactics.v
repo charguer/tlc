@@ -3794,9 +3794,31 @@ Tactic Notation "autos" "~" :=
 Tactic Notation "autos" "~" constr(E1) :=
   lets: E1; auto_tilde.
 Tactic Notation "autos" "~" constr(E1) constr(E2) :=
-  lets: E1; lets: E2; auto_tilde.
+  lets: E1; autos~ E2.
 Tactic Notation "autos" "~" constr(E1) constr(E2) constr(E3) :=
-  lets: E1; lets: E2; lets: E3; auto_tilde.
+  lets: E1; autos~ E2 E3.
+Tactic Notation "autos" "~" constr(E1) constr(E2) constr(E3) constr(E4) :=
+  lets: E1; autos~ E2 E3 E4.
+Tactic Notation "autos" "~" constr(E1) constr(E2) constr(E3) constr(E4)
+ constr(E5):=
+  lets: E1; autos~ E2 E3 E4 E5.
+
+(* New syntax using coma *)
+Tactic Notation "autos" :=
+  auto_tilde.
+Tactic Notation "autos" "~" :=
+  auto_tilde.
+Tactic Notation "autos" "~" constr(E1) :=
+  lets: E1; auto_tilde.
+Tactic Notation "autos" "~" constr(E1) "," constr(E2) :=
+  lets: E1; autos~ E2.
+Tactic Notation "autos" "~" constr(E1) "," constr(E2) "," constr(E3) :=
+  lets: E1; autos~ E2 E3.
+Tactic Notation "autos" "~" constr(E1) "," constr(E2) "," constr(E3) "," constr(E4) :=
+  lets: E1; autos~ E2 E3 E4.
+Tactic Notation "autos" "~" constr(E1) "," constr(E2) "," constr(E3) "," constr(E4) ","
+ constr(E5):=
+  lets: E1; autos~ E2 E3 E4 E5.
 
 (** [autos*] is a notation for tactic [auto_star]. It may be followed
     by lemmas (or proofs terms) which auto will be able to use
@@ -3807,9 +3829,30 @@ Tactic Notation "autos" "*" :=
 Tactic Notation "autos" "*" constr(E1) :=
   lets: E1; auto_star.
 Tactic Notation "autos" "*" constr(E1) constr(E2) :=
-  lets: E1; lets: E2; auto_star.
+  lets: E1; autos* E2.
 Tactic Notation "autos" "*" constr(E1) constr(E2) constr(E3) :=
-  lets: E1; lets: E2; lets: E3; auto_star.
+  lets: E1; autos* E2 E3.
+Tactic Notation "autos" "*" constr(E1) constr(E2) constr(E3) constr(E4) :=
+  lets: E1; autos* E2 E3 E4.
+Tactic Notation "autos" "*" constr(E1) constr(E2) constr(E3) constr(E4)
+ constr(E5):=
+  lets: E1; autos* E2 E3 E4 E5.
+
+(* New syntax using coma *)
+
+Tactic Notation "autos" "*" :=
+  auto_star.
+Tactic Notation "autos" "*" constr(E1) :=
+  lets: E1; auto_star.
+Tactic Notation "autos" "*" constr(E1) "," constr(E2) :=
+  lets: E1; autos* E2.
+Tactic Notation "autos" "*" constr(E1) "," constr(E2) "," constr(E3) :=
+  lets: E1; autos* E2 E3.
+Tactic Notation "autos" "*" constr(E1) "," constr(E2) "," constr(E3) "," constr(E4) :=
+  lets: E1; autos* E2 E3 E4.
+Tactic Notation "autos" "*" constr(E1) "," constr(E2) "," constr(E3) "," constr(E4) ","
+ constr(E5):=
+  lets: E1; autos* E2 E3 E4 E5.
 
 (** [auto_false] is a version of [auto] able to spot some contradictions.
     There is an ad-hoc support for goals in [<->]: split is called first.
