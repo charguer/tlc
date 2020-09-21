@@ -1316,7 +1316,7 @@ Abort.
 (* ********************************************************************** *)
 (** ** ['let]-binding *)
 
-Definition let_binding_test_1 :
+Definition demo_let_binding_test_1 :
   ('let x := 3 in 'let y := x + x in y + y) = 12.
 Proof using.
   dup 3.
@@ -1333,7 +1333,7 @@ Proof using.
   subst x. subst z. reflexivity.
 Qed.
 
-Definition let_binding_test_2 :
+Definition demo_let_binding_test_2 :
   ('let x := 3 in 'let y := x + x in y + y) = 12 -> True.
 Proof using.
   dup 2; intros H.
@@ -1347,3 +1347,28 @@ Proof using.
   let_name in H as z.
   subst x. subst z. auto.
 Qed.
+
+
+(* ********************************************************************** *)
+(** ** On-the-fly hints *)
+
+Parameter P Q : Prop.
+Parameter P_is_true : P.
+Parameter P_implies_Q : P -> Q.
+
+Lemma demo_auto_tilde : P.
+Proof using.
+  autos~ P_is_true.
+Qed.
+
+Lemma demo_auto_star : P.
+Proof using.
+  autos* P_is_true, P_implies_Q.
+Qed.
+
+
+
+
+
+
+
