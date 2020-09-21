@@ -804,6 +804,22 @@ Tactic Notation "tests_basic" ":" constr(E) :=
 
 
 (* ---------------------------------------------------------------------- *)
+(** ** Tactic [case_classic] *)
+
+(** [case_classic] performs a case analysis on the first expression of the
+    form [classicT ?E] that appears in the goal. *)
+
+Tactic Notation "case_classic" "as" simple_intropattern(C) :=
+  match goal with
+  | |- context [ classicT ?E ] => destruct (classicT E) as [C|C]
+  | H: context [ classicT ?E ] |- _ => destruct (classicT E) as [C|C]
+  end; tryfalse.
+
+Tactic Notation "case_classic" :=
+  let C := fresh "C" in case_classic as C.
+
+
+(* ---------------------------------------------------------------------- *)
 (** ** Tactic [absurds] *)
 
 (** [absurds] applies to a goal [G] and replaces it with [(~ G) -> False].
