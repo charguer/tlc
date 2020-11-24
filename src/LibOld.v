@@ -1439,8 +1439,8 @@ Lemma ZNth_cons_inv : forall i x l,
 Proof using.
   introv [H P]. forwards~: (@abs_pos i).
   destruct (Nth_cons_inv H); unpack.
-  left. exists___. split~.
-  right. exists___. splits~.
+  left. exists. split~.
+  right. exists. splits~.
    split. rewrite* abs_pos_nat. math.
    math.
 Qed.
@@ -1642,6 +1642,33 @@ Export TakeInt.
 (************************************************************)
 (************************************************************)
 (************************************************************)
+
+
+
+(* DEPRECATED: use [do 3 exists] instead of [exists___ 3].
+   The tactic [exists___ N] is short for [exists __ ... __]
+   with [N] double-underscores. The tactic [exists] is equivalent
+   to calling [exists___ N], where the value of [N] is obtained
+   by counting the number of existentials syntactically present
+   at the head of the goal. The behaviour of [exists] differs
+   from that of [exists ___] is the case where the goal is a
+   definition which yields an existential only after unfolding. *)
+
+Tactic Notation "exists___" constr(N) :=
+  let rec aux N :=
+    match N with
+    | 0 => idtac
+    | S ?N' => esplit; aux N'
+    end in
+  let N := number_to_nat N in aux N.
+
+(* DEPRECATED, [exists___] syntax remains for backward compatilibity *)
+Tactic Notation "exists___" :=
+  exists.
+
+(* DEPRECATED: [exists_all] syntax remains for backward compatibility *)
+Tactic Notation "exists_all" := exists___.
+
 
 *)
 

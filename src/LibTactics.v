@@ -3531,30 +3531,6 @@ Tactic Notation "branches" :=
 (* ---------------------------------------------------------------------- *)
 (** N-ary Existentials *)
 
-(* Underlying implementation of [exists]. *)
-
-Ltac get_term_existential_arity T :=
-  match T with
-  | exists x1 x2 x3 x4 x5 x6 x7 x8, _ => constr:(8)
-  | exists x1 x2 x3 x4 x5 x6 x7, _ => constr:(7)
-  | exists x1 x2 x3 x4 x5 x6, _ => constr:(6)
-  | exists x1 x2 x3 x4 x5, _ => constr:(5)
-  | exists x1 x2 x3 x4, _ => constr:(4)
-  | exists x1 x2 x3, _ => constr:(3)
-  | exists x1 x2, _ => constr:(2)
-  | exists x1, _ => constr:(1)
-  | _ -> ?T' => get_term_existential_arity T'
-  | _ => let P := get_head T in
-         let T' := eval unfold P in T in
-         match T' with
-         | T => fail 1
-         | _ => get_term_existential_arity T'
-         end
-  end.
-
-Ltac get_goal_existential_arity :=
-  match goal with |- ?T => get_term_existential_arity T end.
-
 (** [exists T1 ... TN] is a shorthand for [exists T1; ...; exists TN].
     It is intended to prove goals of the form [exist X1 .. XN, P].
     If an argument provided is [__] (double underscore), then an
@@ -3597,33 +3573,41 @@ Tactic Notation "exists" constr(T1) "," constr(T2) "," constr(T3) "," constr(T4)
  constr(T5) "," constr(T6) :=
   exists T1 T2 T3 T4 T5 T6.
 
-(* The tactic [exists___ N] is short for [exists __ ... __]
-   with [N] double-underscores. The tactic [exists] is equivalent
-   to calling [exists___ N], where the value of [N] is obtained
-   by counting the number of existentials syntactically present
-   at the head of the goal. The behaviour of [exists] differs
-   from that of [exists ___] is the case where the goal is a
-   definition which yields an existential only after unfolding. *)
+(** The tactic [exists], without arguments, repeats [esplit]
+    as many times as there are visible existentials at the
+    head of the goal. In there are zero existentials visible,
+    the tactic [hnf] is called once. If there are still zero
+    existentials visible, the tactic fails.
 
-Tactic Notation "exists___" constr(N) :=
-  let rec aux N :=
-    match N with
-    | 0 => idtac
-    | S ?N' => esplit; aux N'
-    end in
-  let N := number_to_nat N in aux N.
+    To obtain a tactic that supports arbitrary number of
+    existentials including the possibility of having zero
+    existentials, use [try exists]. *)
 
-  (* --TODO: deprecated *)
-Tactic Notation "exists___" :=
-  let N := get_goal_existential_arity in
-  exists___ N.
+Ltac exists_noarg_positive tt :=
+  match goal with
+  | |- exists _, _ => esplit; try exists_noarg_positive tt
+  end.
 
-  (* --TODO: does not seem to work *)
+Ltac exists_noarg tt :=
+  match goal with
+  | |- exists _, _ => exists_noarg_positive tt
+  | _ => hnf; exists_noarg_positive tt
+  end.
+
 Tactic Notation "exists" :=
-  exists___.
+  exists_noarg tt.
 
-  (* --TODO: [exists_all] is the new syntax for [exists___] *)
-Tactic Notation "exists_all" := exists___.
+Definition def_with_exists (n:nat) : Prop :=
+  exists x, x = n.
+
+(** The tactic [exists_nounfold] is similar to [exists],
+    except that it does nothing if there are no existentials
+    visible in the goal. This tactic may be useful for programming
+    other tactics in a robust way. *)
+
+Tactic Notation "exists_nounfold" :=
+  try exists_noarg_positive tt.
+
 
 (* ---------------------------------------------------------------------- *)
 (** Existentials and Conjunctions in Hypotheses *)
@@ -4219,8 +4203,6 @@ Tactic Notation "branches" "~" constr(N) constr(T) :=
 
 Tactic Notation "exists" "~" :=
   exists; auto_tilde.
-Tactic Notation "exists___" "~" :=
-  exists___; auto_tilde.
 Tactic Notation "exists" "~" constr(T1) :=
   exists T1; auto_tilde.
 Tactic Notation "exists" "~" constr(T1) constr(T2) :=
@@ -4616,8 +4598,6 @@ Tactic Notation "branches" "*" constr(N) constr(T) :=
 
 Tactic Notation "exists" "*" :=
   exists; auto_star.
-Tactic Notation "exists___" "*" :=
-  exists___; auto_star.
 Tactic Notation "exists" "*" constr(T1) :=
   exists T1; auto_star.
 Tactic Notation "exists" "*" constr(T1) constr(T2) :=

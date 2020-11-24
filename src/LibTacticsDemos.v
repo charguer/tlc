@@ -1290,11 +1290,11 @@ End IndHeight.
 (* ********************************************************************** *)
 (** ** Notation for exists *)
 
-Lemma demo_exist :
+Lemma demo_exist_1 :
   exists x1 x2 x3, x1 = x2 /\ x2 = x3 /\ x3 = 0.
 Proof using.
   (* dup N makes N copies of the current goal, which is useful for demos *)
-  dup 7.
+  dup 6.
   (* N-ary existentials are displayed in a packed way,
      and they can be instantiated at once *)
   exists 0 0 0. auto.
@@ -1305,11 +1305,22 @@ Proof using.
   (* if a double wild-card is provided, as many existential as possible
      are introduced *)
   exists 0 ___.
-  (* a shorthand for [exists __ __ __] is [exists___ 3] *)
-  exists___ 3. demo.
-  (* [exists___] without arguments is the same as [exists __ ... __].
-     Contrary to [exists ___], it does not unfold definitions. *)
-  exists___. demo.
+  (* [exists] without arguments is the same as [exists __ ... __],
+     for the number of visible existentials in the goal (with hnf. *)
+  exists. demo.
+Abort.
+
+Lemma demo_exists_2 :
+     (exists n, n = 0)
+  /\ (exists n m, n = m /\ n = 0)
+  /\ (exists n, def_with_exists n)
+  /\ (0 = 0).
+Proof using.
+  splits.
+  { exists. admit. }
+  { exists. admit. }
+  { exists. admit. }
+  { try exists. (* failure expected *) admit. }
 Abort.
 
 
