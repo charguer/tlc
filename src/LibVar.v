@@ -67,7 +67,7 @@ Fixpoint var_compare (x y : nat) :=
 Lemma var_compare_eq : forall (x y:var),
   var_compare x y = isTrue (x = y).
 Proof using.
-  unfold var. intros x; induction x; intros y; destruct y; 
+  unfold var. intros x; induction x; intros y; destruct y;
    simpl; rew_bool_eq; try nat_math.
   rewrite IHx. rew_bool_eq. nat_math.
 Qed.

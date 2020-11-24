@@ -77,7 +77,7 @@ Set Implicit Arguments.
 (** From Prelude:
 
     Inductive or (P Q : Prop) : Prop :=
-      | or_introl : P -> or P Q  
+      | or_introl : P -> or P Q
       | or_intror : Q -> or P Q.
 
     Notation "A \/ B" := (or A B) : type_scope.
@@ -152,7 +152,7 @@ Set Implicit Arguments.
 (** [forall] and [->] are builtin in the logic.
     [P -> Q] is short for [forall (_:P), Q]. *)
 
-(** From Prelude: 
+(** From Prelude:
 
     Definition all (A : Type) (P : A->Prop) := forall (x:A), P x.
 
@@ -162,7 +162,7 @@ Set Implicit Arguments.
 (* ---------------------------------------------------------------------- *)
 (** ** Definition of [{x | P}] (subset type) *)
 
-(** From Prelude: 
+(** From Prelude:
 
     Inductive sig (A : Type) (P : A->Prop) : Type :=
       | exist : forall x, P x -> sig P.
@@ -179,7 +179,7 @@ Set Implicit Arguments.
 (* ---------------------------------------------------------------------- *)
 (** ** Definition of [{x & P}] (subset type in Type) *)
 
-(** From Prelude: 
+(** From Prelude:
 
     Inductive sigT (A : Type) (P : A -> Type) : Type :=
       | existT : forall x, P x -> sigT P.

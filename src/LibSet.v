@@ -805,7 +805,7 @@ Qed.
 Lemma card_ge_one : forall A (E:set A) x,
   x \in E ->
   finite E ->
-  1 <= card E.
+  1%nat <= card E.
 Proof using.
   intros.
   rewrite <- (card_single x).
@@ -828,7 +828,7 @@ Lemma card_disjoint_union_single : forall A (E:set A) x,
   (card (E \u \{x}) = card E + 1)%nat.
 Proof using.
   intros.
-  replace 1 with (card \{x}) by eauto using card_single.
+  replace 1%nat with (card \{x}) by eauto using card_single.
   applys~ card_disjoint_union. applys finite_single.
   rewrite disjoint_single_r_eq. auto.
 Qed.

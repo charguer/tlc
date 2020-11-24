@@ -35,6 +35,8 @@ Definition sig_proof (A : Type) (P : A->Prop) (e : sig P) : P (sig_val e) :=
 Class Inhab (A:Type) : Prop :=
   { Inhab_intro : (exists (x:A), True) }.
 
+Hint Mode Inhab + : typeclass_instances.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics taking into account *)
@@ -208,13 +210,13 @@ Qed.
 (** Independence of general premises *)
 
 Lemma indep_general_premises :
-  forall `{Inhab A} (P : A -> Prop) (Q : Prop),
+  forall A `{Inhab A} (P : A -> Prop) (Q : Prop),
   (Q -> exists x, P x) ->
   (exists x, Q -> P x).
 Proof using.
   introv I M. destruct (prop_inv Q).
   destruct* (M H).
-  exists arbitrary. auto_false.
+  exists (arbitrary (A:=A)). auto_false.
 Qed.
 
 (** Small drinker's paradox *)
@@ -224,7 +226,7 @@ Lemma small_drinker_paradox : forall `{Inhab A} (P : A -> Prop),
 Proof using.
   intros A I P. destruct (prop_inv (exists x, P x)).
   destruct H. exists x. auto.
-  exists arbitrary. auto_false.
+  exists (arbitrary (A:=A)). auto_false.
 Qed.
 
 
@@ -801,6 +803,22 @@ Tactic Notation "tests_basic" simple_intropattern(I1) ":" constr(E) :=
   tests_basic I1 I1: E.
 Tactic Notation "tests_basic" ":" constr(E) :=
   let C := fresh "C" in tests_basic C: E.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Tactic [case_classic] *)
+
+(** [case_classic] performs a case analysis on the first expression of the
+    form [classicT ?E] that appears in the goal. *)
+
+Tactic Notation "case_classic" "as" simple_intropattern(C) :=
+  match goal with
+  | |- context [ classicT ?E ] => destruct (classicT E) as [C|C]
+  | H: context [ classicT ?E ] |- _ => destruct (classicT E) as [C|C]
+  end; tryfalse.
+
+Tactic Notation "case_classic" :=
+  let C := fresh "C" in case_classic as C.
 
 
 (* ---------------------------------------------------------------------- *)

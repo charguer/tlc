@@ -24,7 +24,7 @@ Generalizable Variables A B.
     every input to at least one output. *)
 
 Lemma functional_choice : forall A B (R:A->B->Prop),
-  (forall x, exists y, R x y) -> 
+  (forall x, exists y, R x y) ->
   (exists f, forall x, R x (f x)).
 Proof using.
   intros. exists (fun x => sig_val (indefinite_description (H x))).
@@ -72,7 +72,7 @@ Lemma guarded_functional_choice : forall A `{Inhab B} (P : A->Prop) (R : A->B->P
   (exists f, forall x, P x -> R x (f x)).
 Proof using.
   intros. apply (functional_choice (fun x y => P x -> R x y)).
-  intros. apply~ indep_general_premises.
+  intros. applys* indep_general_premises.
 Qed.
 
 
@@ -135,7 +135,7 @@ Lemma guarded_functional_unique_choice :
   (exists f, forall x, P x -> R x (f x)).
 Proof using.
   introv I M. apply (functional_choice (fun x y => P x -> R x y)).
-  intros. apply indep_general_premises.
+  intros. apply* indep_general_premises.
   introv H. destruct* (M _ H) as (y&Hy&_).
 Qed.
 

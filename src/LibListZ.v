@@ -237,7 +237,7 @@ Lemma read_middle : forall i l1 l2 x,
 Proof.
   introv M. rewrite length_eq in M. unfold read, read_inst, read_impl.
   case_if. { false; math. }
-  rewrite~ nth_middle. subst. rewrite~ abs_nat.
+  rewrite~ nth_middle.
 Qed.
 
 Lemma read_app : forall i l1 l2,
@@ -318,9 +318,8 @@ Proof using.
     read_inst, read_impl. simpl. introv N. rewrite int_index_eq in N.
   case_if. math.
   case_if. case_if. auto. case_if.
-    subst. rewrite~ nth_update_same. apply lt_nat_of_lt_int. rewrite abs_nonneg; try math.
-    rewrite~ nth_update_neq. apply neq_nat_of_neq_int. rewrite abs_nonneg; try math.
-     rewrite abs_nonneg; try math.
+    subst. rewrite~ nth_update_same.
+    rewrite~ nth_update_neq.
 Qed.
 
 Lemma read_update_same : forall l i v,
@@ -358,7 +357,6 @@ Proof using.
   do 2 (case_if; try solve [ false; math ]).
   rewrite~ update_cons_pos.
   { fequals_rec. rewrite <- abs_gt_minus_nat. fequals. math. }
-  { applys gt_nat_of_gt_int. rewrite abs_nonneg; math. }
 Qed.
 
 Lemma update_update_same : forall l i v w,
@@ -392,7 +390,6 @@ Proof using.
   introv N. asserts IA: (Inhab A). typeclass.
   unfold LibContainer.update, update_inst, update_impl.
   rewrite length_eq in N. case_if~. rewrite~ update_app_l.
-  applys lt_nat_of_lt_int. rewrite~ abs_nonneg.
 Qed.
 
 Lemma update_app_r : forall l2 j l1 i ij v,
@@ -692,7 +689,6 @@ Lemma take_cons_pos : forall x l n,
 Proof using.
   intros. unfold take. rew_to_nat_nonneg~.
   rewrite~ LibList.take_cons_pos.
-  forwards~: lt_to_nat_to_nat 0 n.
 Qed.
 
 Lemma take_neg : forall n l,
@@ -705,7 +701,6 @@ Lemma take_ge : forall n l,
   take n l = l.
 Proof using.
   intros. unfold take, length in *. applys~ LibList.take_ge.
-  rewrites~ to_nat_ge_nat_ge.
 Qed.
 
 Lemma take_is_prefix : forall n l,
@@ -720,7 +715,7 @@ Lemma take_app_l : forall n l l',
 Proof using.
   intros. tests: (0 <= n).
   { unfold take, length in *.
-    applys~ LibList.take_app_l. rewrites~ to_nat_le_nat_le. }
+    applys~ LibList.take_app_l. }
   { rewrite !take_neg; auto; math. }
 Qed.
 
@@ -729,7 +724,7 @@ Lemma take_app_r : forall n l l',
   take n (l ++ l') = l ++ take (n - length l) l'.
 Proof using.
   intros. unfold take, length in *. rew_to_nat_nonneg~.
-  applys~ LibList.take_app_r. rewrites~ to_nat_ge_nat_ge.
+  applys~ LibList.take_app_r.
 Qed.
 
 Lemma take_prefix_length : forall l l',
@@ -797,7 +792,6 @@ Lemma drop_cons_pos : forall x l n,
 Proof using.
   intros. unfold drop. rew_to_nat_nonneg~.
   apply~ LibList.drop_cons_pos.
-  forwards~: lt_to_nat_to_nat 0 n.
 Qed.
 
 Lemma drop_is_suffix : forall n l,
@@ -868,13 +862,7 @@ Lemma take_app_drop_spec : forall n l f r,
 Proof using.
   introv ? ?. split.
   { intros (? & Hn). unfold take, drop, length in *.
-    forwards~ (? & ? & Hlenrest): @LibList.take_app_drop_spec (to_nat n) l f r.
-    { rewrites~ to_nat_le_nat_le. }
-    splits~.
-    { symmetry. rewrite~ <-to_nat_eq_nat_eq. }
-    { rewrites~ <-(>> to_nat_to_int n). rewrite Hlenrest.
-      rewrite~ minus_nat_eq_minus_int.
-      rewrite~ <-to_nat_le_nat_le in Hn. } }
+    forwards~ (? & ? & Hlenrest): @LibList.take_app_drop_spec (to_nat n) l f r. }
   { intros. rewrites~ take_neg in *. rewrites~ drop_neg in *. }
 Qed.
 
@@ -894,7 +882,7 @@ Lemma length_take : forall n l,
   length (take n l) = Z.max 0 n.
 Proof using.
   intros. tests: (0 <= n).
-  { rewrite~ length_take_nonneg. rewrite~ Z.max_r. }
+  { rewrite~ length_take_nonneg. }
   { rewrite~ take_neg. rewrite~ Z.max_l. }
 Qed.
 
@@ -917,8 +905,8 @@ Lemma length_drop : forall n l,
   length (drop n l) = Z.min (length l) (length l - n).
 Proof using.
   intros. tests: (0 <= n).
-  { rewrite~ length_drop_nonneg. rewrite~ Z.min_r. }
-  { rewrite~ drop_neg. rewrite~ Z.min_l. }
+  { rewrite~ length_drop_nonneg. }
+  { rewrite~ drop_neg. }
 Qed.
 
 Lemma list_eq_take_app_drop : forall n l,

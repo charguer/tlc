@@ -40,7 +40,7 @@ Proof using. intros. apply (Inhab_of_val 0%Z). Qed.
       Coercion Z_of_nat : nat >-> Z.
    because otherwise when we try to make the coercion opaque using:
       Opaque Z_of_nat.
-   the omega fails to work.
+   the lia fails to work.
    Thus, we introduce an alias, called [nat_to_Z] for [Z_of_nat],
    and we register [nat_to_Z] as coercion.
 *)
@@ -99,10 +99,10 @@ Ltac number_to_nat N ::=
 (* ********************************************************************** *)
 (** * Decision procedure *)
 
-(** A lot of hacks to allow calling the [omega] tactic *)
+(** A lot of hacks to allow calling the [lia] tactic *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Translation from typeclass order to ZArith, for using [omega] *)
+(** ** Translation from typeclass order to ZArith, for using [lia] *)
 
 Lemma le_zarith : le = Z.le.
 Proof using. extens*. Qed.
@@ -112,19 +112,19 @@ Global Opaque le_int_inst.
 Lemma lt_zarith : lt = Z.lt.
 Proof using.
   extens. rew_to_le. rewrite le_zarith.
-  unfold strict. intros. omega.
+  unfold strict. intros. lia.
 Qed.
 
 Lemma ge_zarith : ge = Z.ge.
 Proof using.
   extens. rew_to_le. rewrite le_zarith.
-  unfold inverse. intros. omega.
+  unfold inverse. intros. lia.
 Qed.
 
 Lemma gt_zarith : gt = Z.gt.
 Proof using.
   extens. rew_to_le. rewrite le_zarith.
-  unfold strict, inverse. intros. omega.
+  unfold strict, inverse. intros. lia.
 Qed.
 
 Hint Rewrite le_zarith lt_zarith ge_zarith gt_zarith : rew_int_comp.
@@ -216,7 +216,7 @@ Ltac split_if_eq_bool :=
 (* ---------------------------------------------------------------------- *)
 (** ** Normalization of arithmetic expressions *)
 
-(** Two lemmas to help omega out *)
+(** Two lemmas to help lia out *)
 
 Lemma Z_of_nat_O :
   Z_of_nat O = 0.
@@ -240,7 +240,7 @@ Ltac rew_maths :=
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Setting up the goal for [omega] *)
+(** ** Setting up the goal for [lia] *)
 
 (** [math_setup_goal] does introduction, splits, and replace
     the goal by [False] if it is not arithmetic. If the goal
@@ -277,12 +277,12 @@ Hint Rewrite int_nat_plus : int_nat_conv.
 *)
 
 (** [math] tactics performs several preprocessing step,
-    selects all arithmetic hypotheses, and the call omega. *)
+    selects all arithmetic hypotheses, and the call lia. *)
 (* --TODO: autorewrite with int_nat_conv in *. after int_comp_to_zarith *)
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Main driver for the set up process to goal [omega] *)
+(** ** Main driver for the set up process to goal [lia] *)
 
 (* --TODO: this probably is no longer necessary, since
      LibTactic version seems equivalent *)
@@ -299,7 +299,7 @@ Ltac math_2 := instantiate; check_noevar_goal; intros.
 Ltac math_3 := rew_maths; nat_comp_to_peano; int_comp_to_zarith.
 *)
 Ltac math_4 := math_setup_goal.
-Ltac math_5 := omega.
+Ltac math_5 := lia.
 
 Ltac math_setup := math_0; math_1; math_2; math_3; math_4.
 Ltac math_base := math_setup; math_5.
@@ -331,11 +331,11 @@ Tactic Notation "math_only_if_arith" :=
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Elimination of multiplication, to call omega *)
+(** ** Elimination of multiplication, to call lia *)
 
 (* In order to use [math] with simple multiplications, add the command:
      Hint Rewrite mult_2_eq_plus mult_3_eq_plus : rew_maths.
-   TEMPORARY: these lemmas should go away as [omega] is able to inline
+   TEMPORARY: these lemmas should go away as [lia] is able to inline
    trivial multiplication by itself
 *)
 
@@ -603,7 +603,7 @@ Hint Rewrite plus_nat_eq_plus_int : rew_maths.
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of comparison *)
 
-Lemma antisym_le_int : 
+Lemma antisym_le_int :
   antisym (le (A:=int)).
 Proof using. intros x y L1 L2. math. Qed.
 
@@ -725,8 +725,6 @@ Lemma abs_eq_succ_abs_minus_one : forall (x:int),
 Proof using.
   intros. apply eq_nat_of_eq_int.
   rewrite abs_nonneg; try math.
-  rewrite succ_abs_eq_abs_one_plus; try math.
-  rewrite abs_nonneg; math.
 Qed.
 
 

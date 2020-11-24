@@ -60,7 +60,7 @@ Lemma inverse_per_single : forall A (a b:A),
   inverse (per_single a b) = per_single b a.
 Proof using.
   intros. applys pred_ext_2. intros. unfold inverse, per_single. autos*.
-Qed.  
+Qed.
 
 
 (** Extension of an per [B] with a node [z] *)
@@ -156,7 +156,7 @@ Qed.
 Lemma per_add_edge_symmetric : forall A (B : binary A) x y,
   per_add_edge B y x = per_add_edge B x y.
 Proof using.
-  unfold per_add_edge. intros. 
+  unfold per_add_edge. intros.
   (* If two relations have the same symmetric closure, then
      they have the same symmetric-transitive closure. *)
   do 2 rewrite <- tclosure_sclosure_eq_stclosure. f_equal.

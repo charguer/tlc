@@ -76,12 +76,12 @@ Lemma compose_assoc : forall (f:C->D) (g:B->C) (h:A->B),
 Proof using. intros. apply~ fun_ext_1. Qed.
 
 Lemma compose_eq_l : forall (f:B->C) (g1 g2:A->B),
-  g1 = g2 -> 
+  g1 = g2 ->
   f \o g1 = f \o g2.
 Proof using. intros. subst~. Qed.
 
 Lemma compose_eq_r : forall (f:A->B) (g1 g2:B->C),
-  g1 = g2 -> 
+  g1 = g2 ->
   g1 \o f = g2 \o f.
 Proof using. intros. subst~. Qed.
 

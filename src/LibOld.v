@@ -1,4 +1,4 @@
-(* TEMPORARY FOR BACKWARD COMPATIBILITY 
+(* TEMPORARY FOR BACKWARD COMPATIBILITY
 
 (************************************************************)
 (************************************************************)
@@ -139,42 +139,42 @@ Fixpoint factorial (n:nat) : nat :=
 (** --TODO: remove lemma below with comparisons in %nat *)
 
 Lemma le_nat_of_le_int' : forall (n m:nat),
-  (n:int) <= (m:int) -> 
+  (n:int) <= (m:int) ->
   (n <= m)%nat.
 Proof using. math. Qed.
 
 Lemma le_int_of_le_nat' : forall (n m:nat),
-  (n <= m)%nat -> 
+  (n <= m)%nat ->
   (n:int) <= (m:int).
 Proof using. math. Qed.
 
 Lemma lt_nat_of_lt_int' : forall (n m:nat),
-  (n:int) < (m:int) -> 
+  (n:int) < (m:int) ->
   (n < m)%nat.
 Proof using. math. Qed.
 
 Lemma lt_int_of_lt_nat' : forall (n m:nat),
-  (n < m)%nat -> 
+  (n < m)%nat ->
   (n:int) < (m:int).
 Proof using. math. Qed.
 
 Lemma ge_nat_of_ge_int' : forall (n m:nat),
-  (n:int) >= (m:int) -> 
+  (n:int) >= (m:int) ->
   (n >= m)%nat.
 Proof using. math. Qed.
 
 Lemma ge_int_of_ge_nat' : forall (n m:nat),
-  (n >= m)%nat -> 
+  (n >= m)%nat ->
   (n:int) >= (m:int).
 Proof using. math. Qed.
 
 Lemma gt_nat_of_gt_int' : forall (n m:nat),
-  (n:int) > (m:int) -> 
+  (n:int) > (m:int) ->
   (n > m)%nat.
 Proof using. math. Qed.
 
 Lemma gt_int_of_gt_nat' : forall (n m:nat),
-  (n > m)%nat -> 
+  (n > m)%nat ->
   (n:int) > (m:int).
 Proof using. math. Qed.
 
@@ -185,7 +185,7 @@ Lemma abs_eq_nat_inv : forall (x:int) (y:nat),
   abs x = y :> nat ->
   x >= 0 ->
   x = y :> int.
-  
+
 
 Lemma abs_neq_nat_inv : forall (x:int) (y:nat),
   abs x <> y :> nat ->
@@ -367,7 +367,7 @@ Lemma min_self : forall x,
 Proof using. intros. unfolds min. case_if~. Qed.
 
 Lemma min_left : forall x y,
-  x <= y -> 
+  x <= y ->
   min x y = x.
 Proof using. intros. unfolds min. case_if~. false*. Qed.
 
@@ -377,9 +377,9 @@ Lemma min_right : forall x y,
 Proof using. intros. unfolds min. case_if~. apply~ le_antisym. Qed.
 
 Lemma min_trans_inv : forall a b x y : int,
-  min a b <= x -> 
-  y < a -> 
-  y < b -> 
+  min a b <= x ->
+  y < a ->
+  y < b ->
   y < x.
 Proof using. intros. unfolds min. case_if; math. Qed.
 
@@ -429,13 +429,13 @@ Hint Rewrite plus_le_r plus_ge_r plus_lt_r plus_gt_r : rew_int.
 (* --TODO: document and explain when this is needed *)
 
 Definition eq_gt_implies (P : (nat->Prop) -> Prop) :=
-  forall n, 
-  (forall m, n > m -> P (eq m)) -> 
+  forall n,
+  (forall m, n > m -> P (eq m)) ->
   P (gt n).
 
 Definition eq_lt_implies (P : (nat->Prop) -> Prop) :=
-  forall n, 
-  (forall m, n < m -> P (eq m)) -> 
+  forall n,
+  (forall m, n < m -> P (eq m)) ->
   P (gt n).
 
 Hint Unfold eq_lt_implies eq_gt_implies. (* --TODO: rename *)
@@ -453,10 +453,10 @@ Lemma eq_gt_induction : forall (P : (nat->Prop) -> Prop),
 Proof using. intros. induction n using peano_induction. auto. Qed.
 
 Lemma eq_gt_induction_2 : forall (P1 P2 : (nat->Prop) -> Prop),
-  eq_gt_implies P1 -> 
+  eq_gt_implies P1 ->
   eq_gt_implies P2 ->
   (forall n, P1 (gt n) -> P2 (gt n) -> P1 (eq n) /\ P2 (eq n)) ->
-     (forall n, P1 (eq n)) 
+     (forall n, P1 (eq n))
   /\ (forall n, P2 (eq n)).
 Proof using.
   introv H1 H2 R.
@@ -470,17 +470,17 @@ Qed.
 (* --TODO add missing arities *)
 
 Lemma eq_gt_induction_5 : forall (P1 P2 P3 P4 P5 : (nat->Prop) -> Prop),
-  eq_gt_implies P1 -> 
-  eq_gt_implies P2 -> 
+  eq_gt_implies P1 ->
+  eq_gt_implies P2 ->
   eq_gt_implies P3 ->
-  eq_gt_implies P4 -> 
+  eq_gt_implies P4 ->
   eq_gt_implies P5 ->
   (forall n, P1 (gt n) -> P2 (gt n) -> P3 (gt n) -> P4 (gt n) -> P5 (gt n) ->
     P1 (eq n) /\ P2 (eq n) /\ P3 (eq n) /\ P4 (eq n) /\ P5 (eq n)) ->
      (forall n, P1 (eq n))
-  /\ (forall n, P2 (eq n)) 
+  /\ (forall n, P2 (eq n))
   /\ (forall n, P3 (eq n))
-  /\ (forall n, P4 (eq n))  
+  /\ (forall n, P4 (eq n))
   /\ (forall n, P5 (eq n)).
 Proof using.
   introv H1 H2 H3 H4 H5 R.
@@ -559,17 +559,17 @@ Ltac rew_parity :=
 (** ** Comparison lifted *)
 
 Lemma nat_int_lt : forall (n m:nat),
-  n < m -> 
+  n < m ->
   (n:int) < (m:int).
 Proof using. math. Qed.
 
 Lemma nat_int_le : forall (x y:nat),
-  x <= y -> 
+  x <= y ->
   ((x:int) <= (y:int)).
 Proof using. math. Qed.
 
 Lemma nat_int_ge : forall (x y:nat),
-  x >= y -> 
+  x >= y ->
   (x:int) >= (y:int).
 Proof using. math. Qed.
 
@@ -615,7 +615,7 @@ Qed.
     combinators used in definitions related to well-foundedness. *)
 
 Ltac unfold_wf_base :=
-  unfold_unproj; unfold_uncurryp; 
+  unfold_unproj; unfold_uncurryp;
   unfold lexico4, lexico3, lexico2.
 
 Ltac unfolds_wf_base :=
@@ -687,13 +687,13 @@ Hint Resolve foreach_empty foreach_single foreach_union.
 
 Hint Rewrite foreach_union_eq : rew_foreach.
 
-Tactic Notation "rew_foreach" := 
+Tactic Notation "rew_foreach" :=
   autorewrite with rew_foreach.
 Tactic Notation "rew_foreach" "~" constr(H) :=
   rew_foreach H; auto_tilde.
 Tactic Notation "rew_foreach" "*" constr(H) :=
   rew_foreach H; auto_star.
-Tactic Notation "rew_foreach" hyp(H) := 
+Tactic Notation "rew_foreach" hyp(H) :=
   autorewrite with rew_foreach in H.
 
 (* -- TODO: share [rew_foreach] tactics in LibContainer *)
@@ -718,19 +718,19 @@ Tactic Notation "rew_foreach" hyp(H) :=
 
 (* Documentation appears further on *)
 
-Lemma for_set_union_assoc : forall A, 
+Lemma for_set_union_assoc : forall A,
   assoc (union (T:=set A)).
 Proof using. intros. apply union_assoc. Qed.
 
-Lemma for_set_union_comm : forall A,  
+Lemma for_set_union_comm : forall A,
   comm (union (T:=set A)).
 Proof using. intros. apply union_comm. Qed.
 
-Lemma for_set_union_empty_l : forall A (E:set A), 
+Lemma for_set_union_empty_l : forall A (E:set A),
   \{} \u E = E.
 Proof using. intros. apply union_empty_l. Qed.
 
-Lemma for_set_union_empty_r : forall A (E:set A), 
+Lemma for_set_union_empty_r : forall A (E:set A),
   E \u \{} = E.
 Proof using. intros. apply union_empty_r. Qed.
 
@@ -947,7 +947,7 @@ Qed.
 
 Lemma demo_set_union_permut_simpl_3 : forall (x y:A) l1 l1' l2 l3,
   l1 = l1' ->
-    (l1 \u (\{x} \u l2) \u \{x} \u (\{y} \u l3)) 
+    (l1 \u (\{x} \u l2) \u \{x} \u (\{y} \u l3))
   = (\{y} \u (l1' \u l2) \u (\{x} \u l3)).
 Proof using.
   intros.
@@ -1236,7 +1236,7 @@ Tactic Notation "eq_set" "*" :=
 Lemma binds_update_indom_eq :
   forall A B (M : map A B) a1 a2 b1 b2,
   binds (M[a1:=b1]) a2 b2 =
-  (    (a2 <> a1 /\ binds M a2 b2) 
+  (    (a2 <> a1 /\ binds M a2 b2)
     \/ (a2 = a1 /\ b2 = b1)).
 Proof using.
   split. introv [ [ ? ? ] | [ ? ? ] ].
@@ -1270,8 +1270,8 @@ Qed.
 
 
 Lemma binds_update_neq' : forall A i j `{Inhab B} v w (M:map A B), (* --TODO: needed? *)
-  i <> j -> 
-  binds M i v -> 
+  i <> j ->
+  binds M i v ->
   binds (M[j:=w]) i v.
 Proof using. intros. applys* binds_update_neq. Qed.
 
@@ -1311,7 +1311,7 @@ Qed.
 
 
 Lemma foreach_remove_of_foreach_pred_incl : forall P Q E F,
-  foreach P E -> 
+  foreach P E ->
   pred_incl P (fun (x:A) => x \notin F -> Q x) ->
   foreach Q (E \- F).
 Proof using. introv M H Px. rewrite in_remove_eq in Px. applys* H. Qed.
@@ -1439,8 +1439,8 @@ Lemma ZNth_cons_inv : forall i x l,
 Proof using.
   introv [H P]. forwards~: (@abs_pos i).
   destruct (Nth_cons_inv H); unpack.
-  left. exists___. split~.
-  right. exists___. splits~.
+  left. exists. split~.
+  right. exists. splits~.
    split. rewrite* abs_pos_nat. math.
    math.
 Qed.
@@ -1642,6 +1642,33 @@ Export TakeInt.
 (************************************************************)
 (************************************************************)
 (************************************************************)
+
+
+
+(* DEPRECATED: use [do 3 exists] instead of [exists___ 3].
+   The tactic [exists___ N] is short for [exists __ ... __]
+   with [N] double-underscores. The tactic [exists] is equivalent
+   to calling [exists___ N], where the value of [N] is obtained
+   by counting the number of existentials syntactically present
+   at the head of the goal. The behaviour of [exists] differs
+   from that of [exists ___] is the case where the goal is a
+   definition which yields an existential only after unfolding. *)
+
+Tactic Notation "exists___" constr(N) :=
+  let rec aux N :=
+    match N with
+    | 0 => idtac
+    | S ?N' => esplit; aux N'
+    end in
+  let N := number_to_nat N in aux N.
+
+(* DEPRECATED, [exists___] syntax remains for backward compatilibity *)
+Tactic Notation "exists___" :=
+  exists.
+
+(* DEPRECATED: [exists_all] syntax remains for backward compatibility *)
+Tactic Notation "exists_all" := exists___.
+
 
 *)
 

@@ -12,7 +12,7 @@ From TLC Require Import LibTactics LibLogic LibReflect.
 (* ---------------------------------------------------------------------- *)
 (** ** Definition *)
 
-(** From the Prelude. 
+(** From the Prelude.
 
   Inductive unit : Type :=
     | tt : unit.

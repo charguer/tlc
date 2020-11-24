@@ -6,7 +6,7 @@
 
 Set Implicit Arguments.
 From TLC Require Import LibTactics.
-Require Import Coq.omega.Omega.
+Require Import Coq.micromega.Lia.
 
 
 (* ********************************************************************** *)
@@ -1261,7 +1261,7 @@ Inductive bigredh : nat -> trm -> trm -> Prop :=
       bigredh n (subst x v2 t3) v ->
       bigredh (S n) (trm_app t1 t2) v.
 
-Hint Extern 1 ((_ < _)%nat) => omega.
+Hint Extern 1 ((_ < _)%nat) => lia.
 
 Hint Constructors bigred bigredh.
 
@@ -1269,7 +1269,7 @@ Lemma bigredh_lt : forall n n' t v,
   bigredh n t v -> (n < n')%nat -> bigredh n' t v.
 Proof using.
   introv H. gen n'. induction H; introv L;
-   (destruct n' as [|n']; [ false; omega | autos* ]).
+   (destruct n' as [|n']; [ false; lia | autos* ]).
 Qed.
 
 Lemma bigredh_bigred : forall n t v, (* optional *)
@@ -1290,11 +1290,11 @@ End IndHeight.
 (* ********************************************************************** *)
 (** ** Notation for exists *)
 
-Lemma demo_exist :
+Lemma demo_exist_1 :
   exists x1 x2 x3, x1 = x2 /\ x2 = x3 /\ x3 = 0.
 Proof using.
   (* dup N makes N copies of the current goal, which is useful for demos *)
-  dup 7.
+  dup 6.
   (* N-ary existentials are displayed in a packed way,
      and they can be instantiated at once *)
   exists 0 0 0. auto.
@@ -1305,18 +1305,29 @@ Proof using.
   (* if a double wild-card is provided, as many existential as possible
      are introduced *)
   exists 0 ___.
-  (* a shorthand for [exists __ __ __] is [exists___ 3] *)
-  exists___ 3. demo.
-  (* [exists___] without arguments is the same as [exists __ ... __].
-     Contrary to [exists ___], it does not unfold definitions. *)
-  exists___. demo.
+  (* [exists] without arguments is the same as [exists __ ... __],
+     for the number of visible existentials in the goal (with hnf. *)
+  exists. demo.
+Abort.
+
+Lemma demo_exists_2 :
+     (exists n, n = 0)
+  /\ (exists n m, n = m /\ n = 0)
+  /\ (exists n, def_with_exists n)
+  /\ (0 = 0).
+Proof using.
+  splits.
+  { exists. admit. }
+  { exists. admit. }
+  { exists. admit. }
+  { try exists. (* failure expected *) admit. }
 Abort.
 
 
 (* ********************************************************************** *)
 (** ** ['let]-binding *)
 
-Definition let_binding_test_1 :
+Definition demo_let_binding_test_1 :
   ('let x := 3 in 'let y := x + x in y + y) = 12.
 Proof using.
   dup 3.
@@ -1333,7 +1344,7 @@ Proof using.
   subst x. subst z. reflexivity.
 Qed.
 
-Definition let_binding_test_2 :
+Definition demo_let_binding_test_2 :
   ('let x := 3 in 'let y := x + x in y + y) = 12 -> True.
 Proof using.
   dup 2; intros H.
@@ -1347,3 +1358,28 @@ Proof using.
   let_name in H as z.
   subst x. subst z. auto.
 Qed.
+
+
+(* ********************************************************************** *)
+(** ** On-the-fly hints *)
+
+Parameter P Q : Prop.
+Parameter P_is_true : P.
+Parameter P_implies_Q : P -> Q.
+
+Lemma demo_auto_tilde : P.
+Proof using.
+  autos~ P_is_true.
+Qed.
+
+Lemma demo_auto_star : P.
+Proof using.
+  autos* P_is_true, P_implies_Q.
+Qed.
+
+
+
+
+
+
+

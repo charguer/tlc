@@ -18,7 +18,7 @@ From TLC Require Import LibTactics LibLogic LibRelation LibWf LibList
 (** ** Definition *)
 
 (** We consider a particular definition of [permut], but there would
-    be many other equivalent definitions. Users of this library should 
+    be many other equivalent definitions. Users of this library should
     not manipulate the definition directly, but instead work exclusively
     using the properties of [permut], established in this file. *)
 
@@ -48,7 +48,7 @@ Lemma permut_refl : forall l,
 Proof using. intros. apply rtclosure_refl. Qed.
 
 Lemma permut_sym : forall l1 l2,
-  permut l1 l2 -> 
+  permut l1 l2 ->
   permut l2 l1.
 Proof using.
   intros. induction H.
@@ -61,8 +61,8 @@ Lemma permut_sym_eq : forall l1 l2,
 Proof using. intros. hint permut_sym. extens*. Qed.
 
 Lemma permut_trans : forall l2 l1 l3,
-  permut l1 l2 -> 
-  permut l2 l3 -> 
+  permut l1 l2 ->
+  permut l2 l3 ->
   permut l1 l3.
 Proof using. intros. apply* rtclosure_trans. Qed.
 
@@ -91,7 +91,7 @@ Proof using.
 Qed.
 
 Lemma permut_app_lr : forall l1 l1' l2 l2',
-  permut l1 l1' -> 
+  permut l1 l1' ->
   permut l2 l2' ->
   permut (l1 ++ l2) (l1' ++ l2').
 Proof using.
@@ -130,8 +130,8 @@ Lemma mem_permut_inv_l : forall l1 l2 x,
   permut l2 l1 ->
   mem x l2.
 Proof using.
-  introv M K. hint permut_sym, mem_permut_inv_r. autos*. 
-Qed. 
+  introv M K. hint permut_sym, mem_permut_inv_r. autos*.
+Qed.
 
 Lemma permut_flip : forall l1 l2,
   permut (l1 ++ l2) (l2 ++ l1).
@@ -149,8 +149,8 @@ Proof using.
 Qed.
 
 Lemma Forall_permut_inv : forall P l1 l2,
-  Forall P l1 -> 
-  permut l1 l2 -> 
+  Forall P l1 ->
+  permut l1 l2 ->
   Forall P l2.
 Proof using.
   introv F K. rewrite Forall_eq_forall_mem in *.
@@ -158,8 +158,8 @@ Proof using.
 Qed.  (* COQBUG? why [applys* mem_permut_inv_l] does not work *)
 
 Lemma Exists_permut_inv : forall P l1 l2,
-  Exists P l1 -> 
-  permut l1 l2 -> 
+  Exists P l1 ->
+  permut l1 l2 ->
   Exists P l2.
 Proof using.
   introv. do 2 rewrite Exists_eq_exists_mem. intros (x&M&Px) K.
@@ -319,7 +319,7 @@ Ltac permut_simpl :=
 (* ---------------------------------------------------------------------- *)
 (** ** [heads_le] *)
 
-(** [head_le x l] asserts that the head of [l], if any, is smaller 
+(** [head_le x l] asserts that the head of [l], if any, is smaller
     than [x] w.r.t. [le]. It will be useful to state lemmas about [sorted]. *)
 
 Definition head_le A (le : binary A) x l :=
@@ -342,7 +342,7 @@ Proof using.
 Qed.
 
 Lemma Forall_le_head_le : forall x l,
-  Forall (le x) l -> 
+  Forall (le x) l ->
   head_le le x l.
 Proof using. introv H. destruct l; simpls. auto. inverts~ H. Qed.
 
@@ -355,12 +355,12 @@ End HeadLe.
 (** [sorted le l] asserts that [l] is sorted w.r.t. [le] *)
 
 Inductive sorted A (le : binary A) : list A -> Prop :=
-  | sorted_nil : 
+  | sorted_nil :
       sorted le nil
-  | sorted_one : forall x, 
+  | sorted_one : forall x,
       sorted le (x::nil)
   | sorted_two : forall x y l,
-      sorted le (y::l) -> 
+      sorted le (y::l) ->
       le x y ->
       sorted le (x::y::l).
 
@@ -372,25 +372,25 @@ Hint Constructors sorted.
    of [l], then [x::l] is sorted. *)
 
 Lemma sorted_cons : forall l x,
-  sorted le l -> 
-  head_le le x l -> 
+  sorted le l ->
+  head_le le x l ->
   sorted le (x::l).
 Proof using. introv S Hd. inverts~ S. Qed.
 
 (** Inversion *)
 
 Lemma sorted_cons_inv : forall x l,
-  sorted le (x::l) -> 
+  sorted le (x::l) ->
   head_le le x l /\ sorted le l.
 Proof using. introv H. inverts H; simpls~. Qed.
 
 Lemma sorted_cons_inv_head_le : forall x l,
-  sorted le (x::l) -> 
+  sorted le (x::l) ->
   head_le le x l.
 Proof using. introv H. inverts H; simpls~. Qed.
 
 Lemma sorted_cons_inv_sorted : forall x l,
-  sorted le (x::l) -> 
+  sorted le (x::l) ->
   sorted le l.
 Proof using. introv H. inverts~ H. Qed.
 
@@ -435,12 +435,12 @@ Implicit Types le : binary A.
 Hint Resolve sorted_nil sorted_one.
 
 Lemma sorts_refl : forall le l,
-  sorted le l -> 
+  sorted le l ->
   sorts le l l.
 Proof using. split. apply permut_refl. auto. Qed.
 
 Lemma sorts_permut : forall l1 l2 l' le,
-  sorts le l1 l' -> 
+  sorts le l1 l' ->
   permut l2 l1 ->
   sorts le l2 l'.
 Proof using.
@@ -449,7 +449,7 @@ Proof using.
 Qed.
 
 Lemma sorts_cons : forall le l l' x,
-  sorts le l l' -> 
+  sorts le l l' ->
   head_le le x l' ->
   sorts le (x::l) (x::l').
 Proof using.
@@ -458,7 +458,7 @@ Proof using.
 Qed.
 
 Lemma sorts_length_lt_2 : forall le l,
-  length l < 2 -> 
+  length l < 2 ->
   sorts le l l.
 Proof using.
   intros. apply sorts_refl. destruct~ l.
@@ -476,13 +476,13 @@ Qed.
 
 Lemma sorts_3 : forall le l x1 x2 x3,
   permut l (x1::x2::x3::nil) ->
-  le x1 x2 -> 
+  le x1 x2 ->
   le x2 x3 ->
   sorts le l (x1::x2::x3::nil).
 Proof using.
   intros. apply~ (@sorts_permut (x1::x2::x3::nil)).
-  apply sorts_refl. apply~ sorted_cons. 
-  apply~ sorted_cons. 
+  apply sorts_refl. apply~ sorted_cons.
+  apply~ sorted_cons.
 Qed.
 
 End Sorts.
@@ -495,7 +495,7 @@ End Sorts.
 (* ---------------------------------------------------------------------- *)
 (** ** [heads_le] *)
 
-(** [heads_le l1 l2] asserts that the head of [l1], if any, is smaller 
+(** [heads_le l1 l2] asserts that the head of [l1], if any, is smaller
     than the head of [l2], if any. This auxiliary definition is very
     useful for reasoning about merge-sort style algorithms,
     especially those involving lists sorted in reverse order (see below). *)
@@ -537,12 +537,12 @@ Lemma heads_le_flip_eq : forall l1 l2,
 Proof using. destruct l1; destruct l2; auto. Qed.
 
 Lemma heads_le_flip : forall l1 l2,
-  heads_le le l2 l1 -> 
+  heads_le le l2 l1 ->
   heads_le (flip le) l1 l2.
 Proof using. intros. rewrite~ heads_le_flip_eq. Qed.
 
 Lemma heads_le_flip_inv : forall l1 l2,
-  heads_le (flip le) l1 l2 -> 
+  heads_le (flip le) l1 l2 ->
   heads_le le l2 l1.
 Proof using. intros. rewrite~ <- heads_le_flip_eq. Qed.
 
@@ -552,7 +552,7 @@ End HeadsLe.
 (* ---------------------------------------------------------------------- *)
 (** ** [rsorted] *)
 
-(** [rsorted le l] asserts that [l] is sorted in reverse order 
+(** [rsorted le l] asserts that [l] is sorted in reverse order
     w.r.t. [le]. *)
 
 Definition rsorted A (le : binary A) := sorted (flip le).
@@ -574,7 +574,7 @@ Lemma rsorted_one : forall x,
 Proof using. intros. applys sorted_one. Qed.
 
 Lemma rsorted_two : forall x y l,
-  rsorted le (y::l) -> 
+  rsorted le (y::l) ->
   le y x ->
   rsorted le (x::y::l).
 Proof using. intros. applys* sorted_two. Qed.
@@ -588,7 +588,7 @@ Proof using. introv S H. inverts~ S. Qed.
 (** Inversion *)
 
 Lemma rsorted_cons_inv : forall x l,
-  rsorted le (x::l) -> 
+  rsorted le (x::l) ->
   head_le (flip le) x l /\ rsorted le l.
 Proof using. introv H. inverts H; simpls~. Qed.
 
@@ -602,8 +602,8 @@ End RSorted.
 (** Append of a the reverse of a [rsorted] list and a [sorted] list. *)
 
 Lemma sorted_app_rev : forall (A : Type) (le : binary A) l1 l2,
-  heads_le le l1 l2 -> 
-  rsorted le l1 -> 
+  heads_le le l1 l2 ->
+  rsorted le l1 ->
   sorted le l2 ->
   sorted le ((rev l1) ++ l2).
 Proof using.
@@ -617,8 +617,8 @@ Qed.
 (** Append of a the reverse of a [sorted] list and a [rsorted] list. *)
 
 Lemma rsorted_app_rev : forall (A : Type) (le : binary A) l1 l2,
-  heads_le le l2 l1 -> 
-  sorted le l1 -> 
+  heads_le le l2 l1 ->
+  sorted le l1 ->
   rsorted le l2 ->
   rsorted le ((rev l1) ++ l2).
 Proof using.
@@ -641,12 +641,12 @@ Implicit Types le : binary A.
 Hint Resolve sorted_nil sorted_one.
 
 Lemma rsorts_refl : forall le l,
-  rsorted le l -> 
+  rsorted le l ->
   rsorts le l l.
 Proof using. intros. apply~ sorts_refl. Qed.
 
 Lemma rsorts_cons : forall le l l' x,
-  rsorts le l l' -> 
+  rsorts le l l' ->
   head_le (flip le) x l' ->
   rsorts le (x::l) (x::l').
 Proof using. intros. applys~ sorts_cons. Qed.
@@ -659,13 +659,13 @@ Proof using. intros. applys~ sorts_2. Qed.
 
 Lemma rsorts_3 : forall le l x1 x2 x3,
   permut l (x1::x2::x3::nil) ->
-  le x2 x1 -> 
+  le x2 x1 ->
   le x3 x2 ->
   rsorts le l (x1::x2::x3::nil).
 Proof using. intros. applys~ sorts_3. Qed.
 
 Lemma rsorts_permut : forall l1 l2 l' le,
-  rsorts le l1 l' -> 
+  rsorts le l1 l' ->
   permut l2 l1 ->
   rsorts le l2 l'.
 Proof using. intros. applys* sorts_permut. Qed.
@@ -681,8 +681,8 @@ Variables (A : Type).
 Implicit Types le : binary A.
 
 Lemma sorts_app_rev : forall le l1 l2,
-  heads_le le l1 l2 -> 
-  rsorted le l1 -> 
+  heads_le le l1 l2 ->
+  rsorted le l1 ->
   sorted le l2 ->
   sorts le (l1 ++ l2) (rev l1 ++ l2).
 Proof using.
@@ -692,8 +692,8 @@ Proof using.
 Qed.
 
 Lemma rsorts_app_rev : forall le l1 l2,
-  heads_le le l2 l1 -> 
-  sorted le l1 -> 
+  heads_le le l2 l1 ->
+  sorted le l1 ->
   rsorted le l2 ->
   rsorts le (l1 ++ l2) (rev l1 ++ l2).
 Proof using.

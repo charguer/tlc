@@ -12,14 +12,14 @@ From TLC Require Import LibLogic LibEqual LibList LibRelation LibWf LibList LibL
 (** ** Demo of extens tactics *)
 
 Lemma test_extensionality_1 : forall A1 (P Q :  A1->Prop),
-  (forall x1, P x1 <-> Q x1) -> 
+  (forall x1, P x1 <-> Q x1) ->
   P = Q.
-Proof using. 
+Proof using.
   intros. applys extensionality. hnf.
 Abort.
-  
+
 Lemma test_extensionality_2 : forall A1 (A2: A1->Type) (P Q : forall (x1:A1) (x2:A2 x1), Prop),
-  (forall x1 x2, P x1 x2 <-> Q x1 x2) -> 
+  (forall x1 x2, P x1 x2 <-> Q x1 x2) ->
   P = Q.
   intros. applys extensionality. hnf.
 Abort.
@@ -31,26 +31,26 @@ Variables (A3 : forall (x1 : A1) (x2 : A2 x1), Type).
 Variables (A4 : forall (x1 : A1) (x2 : A2 x1) (x3 : A3 x2), Type).
 
 Lemma test_fun_ext_3 : forall (f g : forall (x1:A1) (x2:A2 x1) (x3:A3 x2), A4 x3),
-  (forall x1 x2 x3, f x1 x2 x3 = g x1 x2 x3) -> 
+  (forall x1 x2 x3, f x1 x2 x3 = g x1 x2 x3) ->
   f = g.
 Proof using. intros. applys extensionality. hnf. Abort.
 
 End FuncExtDepTest.
 
 Lemma prop_ext_1_test : forall (P Q : Prop),
-  (P <-> Q) -> 
+  (P <-> Q) ->
   P = Q.
-Proof using. 
-  intros. applys extensionality. simpl extensionality_hyp. 
+Proof using.
+  intros. applys extensionality. simpl extensionality_hyp.
 Abort.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Demo of LibLogic tactics *)
-Lemma absurds_demo : forall (P Q : Prop),  
+Lemma absurds_demo : forall (P Q : Prop),
   P /\ (~ P) /\ (Q \/ ~ P).
 Proof using.
-  intros. splits. 
+  intros. splits.
   { absurds ;=> H. admit. }
   { absurds ;=> H. admit. }
   { absurds ;=> (H1&H2). admit. }

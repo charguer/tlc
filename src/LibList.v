@@ -997,7 +997,7 @@ Hint Rewrite nth_default_nil nth_default_zero nth_default_succ : rew_listx.
 (** ** [nth] as a partial function *)
 
 Definition nth `{IA:Inhab A} :=
-  nth_default arbitrary.
+  nth_default (arbitrary (A:=A)).
 
 Section NthFunc.
 Context (A:Type) {IA: Inhab A}.

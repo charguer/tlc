@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Export Coq.Arith.Arith Coq.omega.Omega.
+Require Export Coq.Arith.Arith Coq.micromega.Lia.
 From TLC Require Import LibTactics LibReflect LibBool LibOperation LibRelation LibOrder.
 From TLC Require Export LibOrder.
 Global Close Scope positive_scope.
@@ -54,7 +54,7 @@ Instance le_nat_inst : Le nat := Build_Le Peano.le.
 (** ** Translating typeclass instances to Peano relations *)
 
 (** These lemmas and tactics are useful to transform arithmetic goals
-    into a form on which the [omega] decision procedure may apply. *)
+    into a form on which the [lia] decision procedure may apply. *)
 
 Lemma le_peano : le = Peano.le.
 Proof using. extens*. Qed.
@@ -64,19 +64,19 @@ Global Opaque le_nat_inst.
 Lemma lt_peano : lt = Peano.lt.
 Proof using.
   extens. rew_to_le. rewrite le_peano.
-  unfold strict. intros. omega.
+  unfold strict. intros. lia.
 Qed.
 
 Lemma ge_peano : ge = Peano.ge.
 Proof using.
   extens. rew_to_le. rewrite le_peano.
-  unfold inverse. intros. omega.
+  unfold inverse. intros. lia.
 Qed.
 
 Lemma gt_peano : gt = Peano.gt.
 Proof using.
   extens. rew_to_le. rewrite le_peano.
-  unfold strict, inverse. intros. omega.
+  unfold strict, inverse. intros. lia.
 Qed.
 
 Hint Rewrite le_peano lt_peano ge_peano gt_peano : rew_nat_comp.
@@ -84,7 +84,7 @@ Hint Rewrite le_peano lt_peano ge_peano gt_peano : rew_nat_comp.
 Ltac nat_comp_to_peano :=
   autorewrite with rew_nat_comp in *.
 
-(** [nat_math] calls [omega] after basic pre-processing
+(** [nat_math] calls [lia] after basic pre-processing
     ([intros] and [split]) and after replacing comparison
     operators with the ones defined in [Peano] library. *)
 
@@ -95,7 +95,7 @@ Ltac nat_math_setup :=
   nat_comp_to_peano.
 
 Ltac nat_math :=
-  nat_math_setup; omega.
+  nat_math_setup; lia.
 
 
 (* ---------------------------------------------------------------------- *)

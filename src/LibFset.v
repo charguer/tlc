@@ -286,7 +286,7 @@ Proof using.
       { case_if*. } } }
   { clear H. induction L'.
     { rewrite filter_nil in M. inverts M. }
-    { rewrite filter_cons in M. cases_if~. 
+    { rewrite filter_cons in M. cases_if~.
       { inverts~ M. } } }
 Qed.
 
@@ -307,7 +307,7 @@ Implicit Types E : fset A.
 (** Properties of [in] *)
 
 Lemma in_empty_inv : forall x,
-  x \in \{} -> 
+  x \in \{} ->
   False.
 Proof using. introv H. rewrite~ in_empty in H. Qed.
 
