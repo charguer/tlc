@@ -1,0 +1,8 @@
+# The following files and directories are excluded from the release archive.
+.*          export-ignore
+GNUmakefile export-ignore
+*.opam      export-ignore
+*.nix       export-ignore
+*.yml       export-ignore
+dev         export-ignore
+old         export-ignore
