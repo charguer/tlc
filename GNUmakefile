@@ -29,6 +29,22 @@ unpin:
 
 # -------------------------------------------------------------------------
 
+# Simulating the creation of an archive by git.
+
+.PHONY: archive
+archive:
+	@ git archive HEAD --format=tar.gz -o $(DATE).tar.gz --prefix=$(THIS)/
+
+# This creates an archive and checks that it can be compiled.
+
+.PHONY: archive-check
+archive-check: archive
+	@ tar xvfz $(DATE).tar.gz
+	@ make -C $(THIS)
+	@ rm -rf $(THIS) $(DATE).tar.gz
+
+# -------------------------------------------------------------------------
+
 # Making a release.
 
 # It is recommended to pin the package first, so as to make sure that it
@@ -46,6 +62,8 @@ release:
 	  else \
 	    echo "Now making a release..." ; \
 	  fi
+# Create an archive and make sure that it compiles.
+	make archive-check
 # Create a git tag.
 	@ git tag -a $(DATE) -m "Release $(DATE)."
 # Upload. (This automatically makes a .tar.gz archive available on github.)
