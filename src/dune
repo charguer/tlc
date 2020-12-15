@@ -1,0 +1,4 @@
+(coq.theory
+  ;; This determines the -R flag:
+  (name TLC)
+)

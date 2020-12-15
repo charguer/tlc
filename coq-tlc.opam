@@ -16,6 +16,7 @@ build: [make "-j%{jobs}%"]
 install: [make "install"]
 depends: [
   "coq" { >= "8.10" }
+  "dune" { >= "2.2" }
 ]
 
 tags: [

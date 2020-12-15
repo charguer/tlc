@@ -1,15 +1,4 @@
-*.vo
-*.vio
-*.vq
-*.glob
-*.v.d
-*.vok
-*.vos
-.*.aux
-.depend
-.coq-native
-.coqide
-_CoqProject
+_build
+.merlin
 *~
-*#
 README.html

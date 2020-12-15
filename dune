@@ -1,0 +1,4 @@
+(library
+  (name TLC)
+  (public_name coq-tlc)
+)
