@@ -6,6 +6,7 @@
 *.vok
 *.vos
 .*.aux
+.lia.cache
 .depend
 .coq-native
 .coqide
