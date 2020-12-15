@@ -7,7 +7,7 @@ dev-repo: "git+https://github.com/charguer/tlc.git"
 bug-reports: "https://github.com/charguer/tlc/issues"
 license: "MIT"
 
-synopsis: "TLC: A Library for Classical Coq "
+synopsis: "TLC: A Library for Classical Coq"
 description: """
 Provides an alternative to the core of the Coq standard library, using classic definitions.
 """
