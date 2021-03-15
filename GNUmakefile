@@ -39,8 +39,9 @@ archive:
 
 .PHONY: archive-check
 archive-check: archive
+	@ rm -rf $(THIS)
 	@ tar xvfz $(DATE).tar.gz
-	@ make -C $(THIS)
+	@ make -C $(THIS) -j
 	@ rm -rf $(THIS) $(DATE).tar.gz
 
 # -------------------------------------------------------------------------
