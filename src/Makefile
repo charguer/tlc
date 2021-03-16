@@ -16,6 +16,8 @@ ifneq (,$(COQBIN))
 COQBIN:=$(COQBIN)/
 endif
 
+export COQBIN
+
 # The desired warnings are set in _CoqProject.
 
 ############################################################################
