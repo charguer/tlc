@@ -1,3 +1,3 @@
-.PHONY: all clean install
-all clean install:
+.PHONY: all clean install uninstall
+all clean install uninstall:
 	@ make -C src $@

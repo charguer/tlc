@@ -1,1 +1,3 @@
-settings.sh
+.Makefile.generated.d
+Makefile.generated
+Makefile.generated.conf
