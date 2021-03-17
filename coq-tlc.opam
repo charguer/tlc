@@ -21,8 +21,7 @@ depends: [
 tags: [
   "category:Miscellaneous/Coq Extensions"
   "date:DATEDASH"
-  "keyword:library"
-  "keyword:classic"
+  "keyword:classical logic"
   "logpath:TLC"
 ]
 authors: [
