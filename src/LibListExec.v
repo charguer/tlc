@@ -57,7 +57,7 @@ Hint Rewrite is_nil_eq is_not_nil_eq : rew_list_exec.
 (* ** [length] *)
 
 Definition length : forall A, list A -> nat :=
-  List.length.
+  @List.length.
 
 Lemma length_eq :
   length = LibList.length.
@@ -70,7 +70,7 @@ Hint Rewrite length_eq : rew_list_exec.
 (* ** [app] *)
 
 Definition app : forall A, list A -> list A -> list A :=
-  List.app.
+  @List.app.
 
 Lemma app_eq :
   app = LibList.app.
@@ -85,7 +85,7 @@ Hint Rewrite app_eq : rew_list_exec.
 (* ** [rev] *)
 
 Definition rev : forall A, list A -> list A :=
-  List.rev.
+  @List.rev.
 
 Lemma rev_eq : forall A, (* --LATER: why fails if A is not quantified here? *)
   @List.rev A = @LibList.rev A.
@@ -101,7 +101,7 @@ Hint Rewrite rev_eq : rew_list_exec.
 (* ** [fold_right] *)
 
 Definition fold_right : forall A B, (B->A->A) -> A -> list B -> A :=
-  List.fold_right.
+  @List.fold_right.
 
 Lemma fold_right_eq : forall A B (f:B->A->A) (a:A) (l:list B),
   fold_right f a l = LibList.fold_right f a l.
@@ -114,7 +114,7 @@ Hint Rewrite fold_right_eq : rew_list_exec.
 (* ** [map] *)
 
 Definition map : forall A B, (A->B) -> list A -> list B :=
-  List.map.
+  @List.map.
 
 Lemma map_eq :
   map = LibList.map.
@@ -129,7 +129,7 @@ Hint Rewrite map_eq : rew_list_exec.
 (* ** [combine] *)
 
 Definition combine : forall A B, list A -> list B -> list (A*B) :=
-  List.combine.
+  @List.combine.
 
 Lemma combine_eq : forall A B (L1:list A) (L2:list B),
   LibList.length L1 = LibList.length L2 ->
