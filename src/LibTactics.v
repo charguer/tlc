@@ -633,6 +633,7 @@ Ltac jauto_set_hyps :=
   repeat match goal with H: ?T |- _ =>
     match T with
     | _ /\ _ => destruct H
+    | iff _ _ => destruct H
     | exists a, _ => destruct H
     | _ => generalize H; clear H
     end
