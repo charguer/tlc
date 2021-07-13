@@ -642,6 +642,7 @@ Ltac jauto_set_goal :=
   repeat match goal with
   | |- exists a, _ => esplit
   | |- _ /\ _ => split
+  | |- iff _ _ => split
   end.
 
 Ltac jauto_set :=
@@ -5192,4 +5193,3 @@ Ltac autorewrite_in_star_patch cont :=
   intro_until_mark.
 
 (* End of experimental features *)
-
