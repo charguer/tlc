@@ -41,7 +41,7 @@ archive:
 archive-check: archive
 	@ rm -rf $(THIS)
 	@ tar xvfz $(DATE).tar.gz
-	@ make -C $(THIS) -j
+	@ $(MAKE) -C $(THIS) -j
 	@ rm -rf $(THIS) $(DATE).tar.gz
 
 # -------------------------------------------------------------------------
@@ -64,7 +64,7 @@ release:
 	    echo "Now making a release..." ; \
 	  fi
 # Create an archive and make sure that it compiles.
-	make archive-check
+	$(MAKE) archive-check
 # Create a git tag.
 	@ git tag -a $(DATE) -m "Release $(DATE)."
 # Upload. (This automatically makes a .tar.gz archive available on github.)
