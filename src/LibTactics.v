@@ -3215,7 +3215,7 @@ Ltac induction_wf_process_wf_hyp tt := (* refined in LibWf *)
 Ltac induction_wf_process_measure E := (* refined in LibWf *)
   fail.
 
-Ltac induction_wf_core_then IH E X cont :=
+Ltac induction_wf_core_then E X cont :=
   let clearX tt :=
     first [ clear X | fail 3 "the variable on which the induction is done appears in the hypotheses" ] in
   pattern X;
@@ -3227,10 +3227,10 @@ Ltac induction_wf_core_then IH E X cont :=
         | applys well_founded_ind E ];
   clearX tt;
   first [ induction_wf_process_wf_hyp tt
-        | intros X IH; cont tt ].
+        | intros X; cont tt ].
 
 Ltac induction_wf_core IH E X :=
-  induction_wf_core_then IH E X ltac:(fun _ => idtac).
+  induction_wf_core_then E X ltac:(fun _ => intros IH).
 
 Tactic Notation "induction_wf" ident(IH) ":" constr(E) ident(X) :=
   induction_wf_core IH E X.

@@ -18,6 +18,118 @@ Ltac auto_tilde ::= eauto with maths.
 
 
 (* ********************************************************************** *)
+(** * Tactics *)
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** [rew_listp] for operations with preconditions *)
+
+Tactic Notation "rew_listp" :=
+  autorewrite with rew_listp.
+Tactic Notation "rew_listp" "~" :=
+  rew_listp; auto_tilde.
+Tactic Notation "rew_listp" "*" :=
+  rew_listp; auto_star.
+Tactic Notation "rew_listp" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_listp).
+  (* autorewrite with rew_list in *. *)
+Tactic Notation "rew_listp" "~" "in" "*" :=
+  rew_listp in *; auto_tilde.
+Tactic Notation "rew_listp" "*" "in" "*" :=
+  rew_listp in *; auto_star.
+Tactic Notation "rew_listp" "in" hyp(H) :=
+  autorewrite with rew_listp in H.
+Tactic Notation "rew_listp" "~" "in" hyp(H) :=
+  rew_listp in H; auto_tilde.
+Tactic Notation "rew_listp" "*" "in" hyp(H) :=
+  rew_listp in H; auto_star.
+
+(* ---------------------------------------------------------------------- *)
+(** ** [rew_index] for operations on indices *)
+
+Tactic Notation "rew_index" :=
+  autorewrite with rew_index.
+Tactic Notation "rew_index" "in" hyp(H) :=
+  autorewrite with rew_index in H.
+Tactic Notation "rew_index" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_index).
+(* autorewrite with rew_index in *. *)
+Tactic Notation "rew_index" "~" :=
+  rew_index; auto_tilde.
+Tactic Notation "rew_index" "*" :=
+  rew_index; auto_star.
+Tactic Notation "rew_index" "~" "in" hyp(H) :=
+  rew_index in H; auto_tilde.
+Tactic Notation "rew_index" "*" "in" hyp(H) :=
+  rew_index in H; auto_star.
+Tactic Notation "rew_index" "~" "in" "*" :=
+  rew_index in *; auto_tilde.
+Tactic Notation "rew_index" "*" "in" "*" :=
+  rew_index in *; auto_star.
+
+(* ---------------------------------------------------------------------- *)
+(** ** [rew_array] for case-analysis free rewriting *)
+
+Tactic Notation "rew_array_nocase" :=
+  autorewrite with rew_array_nocase.
+Tactic Notation "rew_array_nocase" "in" hyp(H) :=
+  autorewrite with rew_array_nocase in H.
+Tactic Notation "rew_array_nocase" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_array_nocase).
+  (* autorewrite with rew_array_nocase in *. *)
+Tactic Notation "rew_array_nocase" "~" :=
+  rew_array_nocase; auto_tilde.
+Tactic Notation "rew_array_nocase" "*" :=
+  rew_array_nocase; auto_star.
+Tactic Notation "rew_array_nocase" "~" "in" hyp(H) :=
+  rew_array_nocase in H; auto_tilde.
+Tactic Notation "rew_array_nocase" "*" "in" hyp(H) :=
+  rew_array_nocase in H; auto_star.
+Tactic Notation "rew_array_nocase" "~" "in" "*" :=
+  rew_array_nocase in *; auto_tilde.
+Tactic Notation "rew_array_nocase" "*" "in" "*" :=
+  rew_array_nocase in *; auto_star.
+
+(* ---------------------------------------------------------------------- *)
+(** ** [rew_array] for case-analysis aware rewriting *)
+
+Tactic Notation "rew_array" :=
+  autorewrite with rew_array.
+Tactic Notation "rew_array" "in" hyp(H) :=
+  autorewrite with rew_array in H.
+Tactic Notation "rew_array" "in" "*" :=
+  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_array).
+  (* autorewrite with rew_array in *. *)
+Tactic Notation "rew_array" "~" :=
+  rew_array; auto_tilde.
+Tactic Notation "rew_array" "*" :=
+  rew_array; auto_star.
+Tactic Notation "rew_array" "~" "in" hyp(H) :=
+  rew_array in H; auto_tilde.
+Tactic Notation "rew_array" "*" "in" hyp(H) :=
+  rew_array in H; auto_star.
+Tactic Notation "rew_array" "~" "in" "*" :=
+  rew_array in *; auto_tilde.
+Tactic Notation "rew_array" "*" "in" "*" :=
+  rew_array in *; auto_star.
+
+Hint Rewrite int_index_eq : rew_array.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** [index_prove] for automating proofs on indices *)
+
+Ltac index_prove tt :=
+  rew_index; repeat case_if; rew_list in *; math.
+
+(* Use [Import IndexHints] for loading hints *)
+
+Module IndexHints.
+  Hint Extern 1 (index _ _) => index_prove tt.
+End IndexHints.
+
+
+(* ********************************************************************** *)
 (** * List operations using indices in Z *)
 
 (* ---------------------------------------------------------------------- *)
@@ -73,6 +185,13 @@ Proof using. intros. unfold length. rew_list~. Qed.
 
 End Length.
 
+(* other inversion lemmas *)
+
+Lemma Forall2_inv_length : forall A B (P:A->B->Prop) r s,
+  Forall2 P r s ->
+  length r = length s.
+Proof using. introv E. unfold length. lets*: Forall2_inv_length E. Qed.
+
 Hint Rewrite length_nil length_cons length_app
  length_last : rew_list.
 Hint Rewrite length_nil length_cons length_app
@@ -82,7 +201,8 @@ Hint Rewrite length_nil length_cons length_app
 (** Automation for [math], to unfold [length] *)
 
 Hint Rewrite length_eq : rew_maths.
-
+Hint Rewrite length_cons : rew_index.
+Hint Rewrite length_app : rew_index.
 
 (** Demo of automation with maths *)
 
@@ -147,6 +267,8 @@ Definition index_impl A (l:list A) (i:int) : Prop :=
 Instance index_inst : forall A, BagIndex int (list A).
 Proof using. constructor. rapply (@index_impl A). Defined.
 
+Global Opaque index_inst.
+
 Section Index.
 Variables (A : Type).
 Implicit Types l : list A.
@@ -170,6 +292,23 @@ Lemma index_of_index_length : forall l i,
   index l i.
 Proof using. introv H. rewrite* index_eq_index_length. Qed.
 
+Hint Rewrite index_eq_index_length int_index_eq : rew_index.
+
+Lemma index_app_l : forall l l' i,
+  index l i ->
+  index (l++l') i.
+Proof using. introv. rew_index. math. Qed.
+
+Lemma index_app_r : forall l l' i,
+  index l' (i - length l) ->
+  i >= length l ->
+  index (l++l') i.
+Proof using. introv. rew_index. math. Qed.
+
+Lemma index_app_eq : forall l l' i,
+  index (l++l') i = (If i < length l then index l i else index l' (i - length l)).
+Proof using. intros. extens. rew_index. iff; case_if; math. Qed.
+
 (** Reformulation of above, helpful for automation *)
 
 Lemma index_of_index_length' : forall l n i,
@@ -180,7 +319,7 @@ Proof using. intros. subst. rewrite~ index_eq_index_length. Qed.
 
 End Index.
 
-Global Opaque index_inst.
+Hint Rewrite index_eq_index_length int_index_eq index_app_eq : rew_index.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -193,14 +332,14 @@ Instance read_inst : forall `{Inhab A}, BagRead int A (list A).
 Proof using. constructor. rapply (@read_impl A H). Defined.
 
 Section Read.
-Context (A : Type) `{Inhab A}.
+Context (A : Type) (IA:Inhab A).
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types n i : int.
 
 Lemma read_cons_case : forall l i v,
   (v::l)[i] = (If i = 0 then v else l[i-1]).
-Proof using.
+Proof using IA.
   introv. simpl. unfold read_impl. case_if.
   { case_if. math. case_if~. math. }
   { case_if~.
@@ -209,23 +348,28 @@ Proof using.
       case_if. math. auto. } }
 Qed.
 
+Lemma read_cons_pos : forall x l i,
+  i > 0 ->
+  (x::l)[i] = l[i-1].
+Proof using IA. introv P. rewrite read_cons_case. case_if; try math. auto. Qed.
+
 Lemma read_zero : forall x l,
   (x::l)[0] = x.
-Proof using.
+Proof using IA.
   intros. rewrite read_cons_case. case_if. auto.
 Qed.
 
 Lemma read_succ : forall x l i,
   0 <= i < length l ->
   (x::l)[i+1] = l[i].
-Proof using.
+Proof using IA.
   introv M. rewrite read_cons_case. case_if. { math. }
   fequals. math.
 Qed.
 
 Lemma read_last_case : forall l i v,
   (l & v)[i] = (If i = length l then v else l[i]).
-Proof using.
+Proof using IA.
   introv. simpl. unfold read_impl. case_if.
   { case_if~; math. }
   { rewrite nth_last_case. rewrite~ abs_eq_nat_eq. }
@@ -234,7 +378,7 @@ Qed.
 Lemma read_middle : forall i l1 l2 x,
   i = length l1 ->
   (l1 ++ x :: l2)[i] = x.
-Proof.
+Proof using IA.
   introv M. rewrite length_eq in M. unfold read, read_inst, read_impl.
   case_if. { false; math. }
   rewrite~ nth_middle.
@@ -242,7 +386,7 @@ Qed.
 
 Lemma read_app : forall i l1 l2,
   (l1 ++ l2)[i] = (If i < length l1 then l1[i] else l2[i - length l1]).
-Proof using.
+Proof using IA.
   intros. rewrite length_eq. unfold read, read_inst, read_impl. case_if.
   { case_if. { auto. } { false; math. } }
   case_if as C'.
@@ -259,7 +403,7 @@ Lemma eq_of_extens_range : forall l1 l2,
   length l1 = length l2 ->
   (forall i, 0 <= i < length l1 -> l1[i] = l2[i]) ->
   l1 = l2.
-Proof using.
+Proof using IA.
   introv HL HR. do 2 rewrite length_eq in HL.
   unfold read, read_inst, read_impl in HR.
   applys~ LibList.eq_of_extens l1 l2.
@@ -271,11 +415,47 @@ Lemma eq_of_extens : forall l1 l2,
   length l1 = length l2 ->
   (forall i, index l1 i -> l1[i] = l2[i]) ->
   l1 = l2.
-Proof using. intros. applys~ eq_of_extens_range. Qed.
+Proof using IA. intros. applys~ eq_of_extens_range. Qed.
+
+(** [mem] *)
+
+Lemma mem_read : forall l i,
+  index l i ->
+  mem l[i] l.
+Proof using IA.
+  intros l. induction l; introv Hi.
+  { rew_index in Hi. rew_list* in Hi. math. }
+  { rewrite read_cons_case. case_if*. applys mem_cons_r.
+    applys IHl. rew_index in *. math. }
+Qed.
 
 End Read.
 
+Lemma mem_inv_read : forall A (IA:Inhab A) (l:list A) x,
+  mem x l ->
+  exists i, index l i /\ x = l[i].
+Proof using.
+  intros. gen x. induction l; introv Hx; inversion Hx; subst.
+  { exists 0. (* list_cases *) splits*. rewrite* read_zero. }
+  { lets* (i,(Hi&->)): (IHl x). (* list_cases *) 
+    rew_index in *. exists (i+1). split*. rewrite* read_succ. }
+Qed.
+
+Lemma Forall2_inv_read : forall A (IA:Inhab A) B (IB:Inhab B) P (xs:list A) (ys:list B) i,
+  Forall2 P xs ys ->
+  index xs i ->
+  P xs[i] ys[i].
+Proof using.
+  induction xs; introv HF Hi; rew_index in Hi; rew_list in Hi.
+  { math. }
+  { lets (x&xs'&M1&M2&M3) : Forall2_cons_l_inv HF. (* list_cases *)
+    subst. do 2 rewrite read_cons_case. case_if. { auto. } { applys* IHxs. } }
+Qed.
+
 Global Opaque read_inst.
+
+Hint Rewrite read_zero : rew_list.
+Hint Rewrite read_zero : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -359,11 +539,31 @@ Proof using.
   { fequals_rec. rewrite <- abs_gt_minus_nat. fequals. math. }
 Qed.
 
+Lemma update_cons_case : forall x l i z,
+  index (x::l) i ->
+  (x::l)[i:=z] = If i = 0 then z::l else x::(l[i-1:=z]).
+Proof using.
+  introv H. case_if.
+  { subst. rewrite* update_zero. }
+  { rewrite* update_cons_pos. rew_index in H. math. }
+Qed.
+
+Lemma update_same : forall (IA:Inhab A) l i,
+  index l i ->
+  l[i:=l[i]] = l.
+Proof using.
+  intros IA l. induction l; intros i Hi.
+  { rew_index in Hi. rew_list in Hi. false. math. }
+  { rew_index in *. rewrite* update_cons_case. case_if.
+    { fequals. (* list_cases*. *) subst. rewrite* read_zero. }
+    { fequals. rewrite* read_cons_pos. math. } }
+Qed.
+
 Lemma update_update_same : forall l i v w,
   index l i ->
   l[i:=v][i:=w] = l[i:=w].
 Proof using.
-  intros. asserts IA: (Inhab A). typeclass.
+  intros. asserts IA2: (Inhab A). typeclass.
   eapply eq_of_extens; repeat rewrite length_update. { auto. }
   intros k Hk. repeat rewrite index_update_eq in Hk.
   repeat rewrite read_update_case by eauto using index_update.
@@ -414,10 +614,25 @@ Proof using.
   rewrite update_zero. rew_list~.
 Qed.
 
+Lemma Forall_update : forall P l i x,
+  Forall P l ->
+  P x ->
+  index l i ->
+  Forall P (l[i:=x]).
+Proof using.
+  introv. gen i. induction l; introv HL Hx Hi; rew_listx.
+  { (* TODO: lemma *) rew_index in Hi. rew_list in *. false. math. }
+  { rew_index in *. rew_listx* in HL. destruct HL.
+    rewrite* update_cons_case. case_if*; rew_listx*. }
+Qed.
+
 End UpdateNoInhab.
 
-Global Opaque update_inst.
+Hint Rewrite update_same length_update : rew_listx.
+Hint Rewrite index_update_eq : rew_array.
+Hint Rewrite index_update_eq : rew_index.
 
+Global Opaque update_inst.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -449,6 +664,14 @@ Proof using.
   introv H. rewrite index_eq_index_length.
   rewrite int_index_eq in H.
   rewrite~ length_make.
+Qed.
+
+Lemma index_make_eq : forall n i v,
+  n >= 0 ->
+  index (make n v) i = index n i.
+Proof using.
+  intros. rewrite index_eq_index_length.
+  rewrite* length_make.
 Qed.
 
 Lemma read_make : forall i n v,
@@ -514,7 +737,12 @@ Qed.
 
 End MakeNoInhab.
 
+Hint Rewrite length_make read_make : rew_listp.
+Hint Rewrite index_make_eq : rew_array.
+Hint Rewrite length_make index_make_eq : rew_index.
+
 Global Opaque make.
+
 
 (* ---------------------------------------------------------------------- *)
 (** * [LibList.rev] interactions with [LibListZ] operations *)
@@ -528,13 +756,21 @@ Lemma length_rev : forall l,
   length (rev l) = length l.
 Proof using. intros. unfold length. rew_list~. Qed.
 
+Lemma index_rev_eq : forall l i,
+  index (rev l) i = index l i.
+Proof using.
+  extens. intros.
+  now rewrite index_eq_index_length, length_rev, index_eq_index_length.
+Qed.
+
 End Rev.
 
 Hint Rewrite length_rev : rew_list.
 Hint Rewrite length_rev : rew_listx.
+Hint Rewrite index_rev_eq : rew_index.
 
 (* ---------------------------------------------------------------------- *)
-(** * [LibList.map] interactions with [LibListZ] operations *)
+(** * [LibList.map]: [map] interactions with [LibListZ] operations *)
 
 Section Map.
 Transparent index_inst read_inst update_inst.
@@ -590,6 +826,7 @@ Qed.
 End Map.
 
 Hint Rewrite length_map index_map_eq : rew_listx.
+Hint Rewrite length_map index_map_eq : rew_index.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -691,6 +928,30 @@ Proof using.
   rewrite~ LibList.take_cons_pos.
 Qed.
 
+Lemma take_cons_case : forall x l n, 
+  n >= 0 ->
+  take n (x::l) = If n = 0 then nil else x :: (take (n-1) l).
+Proof using.
+  introv Hn. case_if.
+  { subst. applys take_zero. }
+  { applys* take_cons_pos. math. }
+Qed.
+
+(* TODO: add take_pos_cons *)
+
+Lemma take_pos_last : forall (IA:Inhab A) l i,
+  index l (i-1) -> (* TODO: check if this is the right precondition *)
+  take i l = take (i-1) l & l[i-1].
+Proof using. (* TOCLEAN *)
+  introv Hi. gen i. induction l; intros; rew_index in Hi; rew_list in Hi.
+  { math. }
+  { rewrite take_cons_pos; try math.
+    rewrite take_cons_case; try math. case_if as C.
+    { rew_list. rewrite C. rewrite take_zero. rewrite* read_zero. }
+    { rew_list. fequals. rewrite IHl; [|rew_index;math].
+       fequals. rewrite* read_cons_pos. math. } }
+Qed.
+
 Lemma take_neg : forall n l,
   n <= 0 ->
   take n l = nil.
@@ -748,6 +1009,8 @@ End Take.
 (* Arguments take [A] : simpl never. *)
 
 Hint Rewrite take_nil take_zero take_succ : rew_listx.
+Hint Rewrite length_take : rew_listp.
+
 (* Note: [take_prefix_length] and [take_full_length]
    may be safely added to [rew_listx]. *)
 
@@ -832,13 +1095,27 @@ Proof using.
   apply LibList.drop_at_length.
 Qed.
 
+Lemma drop_drop : forall l n m,
+  n >= 0 ->
+  m >= 0 ->
+  drop n (drop m l) = drop (n+m) l.
+Proof using.
+  introv Hn Hm.
+  rewrite* <- (to_nat_nonneg Hn).
+  rewrite* <- (to_nat_nonneg Hm).
+  unfold drop.
+  applys_eq LibList.drop_drop. fequals. math.
+Qed.
+
 (* See below for [length_drop] and other properties *)
 
 End Drop.
 
 (* Arguments drop [A] : simpl never. *)
 
-Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
+Hint Rewrite drop_at_length drop_nil drop_zero drop_succ : rew_listx.
+Hint Rewrite length_drop drop_drop : rew_listp.
+
 (* Note: [drop_prefix_length] and [drop_full_length]
    may be safely added to [rew_list]. *)
 
@@ -886,11 +1163,33 @@ Proof using.
   { rewrite~ take_neg. rewrite~ Z.max_l. }
 Qed.
 
+Lemma read_take : forall (IA:Inhab A) l s i,
+  s <= length l ->
+  index s i ->
+  (take s l)[i] = l[i].
+Proof using. (* TODO: could be proved without take_spec *)
+  introv Hs Hi. rew_index in *.
+  lets (l'&Hl&Hl'): take_spec s l. { math. }
+  rewrite Hl' at 2. rewrite read_app. case_if*.
+  { false. rewrite length_take_nonneg in C; try math. }
+Qed.
+
 Lemma drop_spec : forall n l,
   0 <= n <= length l ->
   exists l', length l' = n
           /\ l = l' ++ (drop n l).
 Proof using. introv E. forwards* (E1&_): take_app_drop_spec. forwards*: E1. Qed.
+
+Lemma read_drop : forall (IA:Inhab A) l (s i:int),
+  0 <= s <= length l ->
+  index (length l - s) i ->
+  (drop s l)[i] = l[s+i].
+Proof using. 
+  introv Hs Hi. rew_index in *.
+  lets (l'&Hl&Hl'): drop_spec s l. { math. }
+  rewrite Hl' at 2. rewrite read_app. case_if*.
+  { false. math. } { fequals. math. }
+Qed.
 
 Lemma length_drop_nonneg : forall n l,
   0 <= n <= length l ->
@@ -918,11 +1217,54 @@ Proof using.
   { rewrite~ take_neg. rewrite~ drop_neg. }
 Qed.
 
+Lemma mem_drop_inv : forall l i x,
+  mem x (drop i l) ->
+  0 <= i <= length l ->
+  mem x l.
+Proof using.
+  introv Hx Hi. rewrites* <- (>> list_eq_take_app_drop i). 
+  apply* mem_app_r.
+Qed.
+
 End TakeAndDrop.
 
 Arguments take_app_drop_spec [A].
 Arguments take_spec [A].
 Arguments drop_spec [A].
+
+Hint Rewrite read_take read_drop : rew_listp.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** [sum], for lists of int values *)
+
+Definition sum (l:list int) : int :=
+  fold_right Z.add 0 l.
+
+Lemma sum_nil :
+  sum nil = 0.
+Proof using. rew_listx*. Qed.
+
+Lemma sum_cons : forall (l:list int) (x:int),
+  sum (x::l) = x + sum l.
+Proof using. rew_listx*. Qed.
+
+Hint Rewrite sum_nil sum_cons : rew_listx.
+
+Lemma sum_app : forall (l1 l2:list int),
+  sum (l1 ++ l2) = sum l1 + sum l2.
+Proof using. (* TOCLEAN: hints should come at the end of the section *)
+  induction l1; intros l2; unfold sum; rew_listx*.
+  rewrite* IHl1. unfold sum. math.
+Qed.
+
+Hint Rewrite sum_nil sum_cons sum_app : rew_listx.
+
+(* Use of [sum] for [concat] *)
+
+Lemma length_concat_eq_sum : forall A (l:list (list A)),
+  length (concat l) = sum (map (length (A:=A)) l).
+Proof using. intros. induction l; rew_listx; math. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1086,58 +1428,18 @@ Global Opaque card_inst.
 
 
 (* ---------------------------------------------------------------------- *)
-(** * Normalization tactics *)
+(** * Hints for [rew_array] and [rew_array_nocase] *)
 
 (** [rew_array_nocase] is a light normalization tactic for array *)
 
 Hint Rewrite @read_make @length_make @length_update @read_update_same
   : rew_array_nocase.
 
-Tactic Notation "rew_array_nocase" :=
-  autorewrite with rew_array_nocase.
-Tactic Notation "rew_array_nocase" "in" hyp(H) :=
-  autorewrite with rew_array_nocase in H.
-Tactic Notation "rew_array_nocase" "in" "*" :=
-  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_array_nocase).
-  (* autorewrite with rew_array_nocase in *. *)
-Tactic Notation "rew_array_nocase" "~" :=
-  rew_array_nocase; auto_tilde.
-Tactic Notation "rew_array_nocase" "*" :=
-  rew_array_nocase; auto_star.
-Tactic Notation "rew_array_nocase" "~" "in" hyp(H) :=
-  rew_array_nocase in H; auto_tilde.
-Tactic Notation "rew_array_nocase" "*" "in" hyp(H) :=
-  rew_array_nocase in H; auto_star.
-Tactic Notation "rew_array_nocase" "~" "in" "*" :=
-  rew_array_nocase in *; auto_tilde.
-Tactic Notation "rew_array_nocase" "*" "in" "*" :=
-  rew_array_nocase in *; auto_star.
-
 (** [rew_array] is a normalization tactic for array, which introduces
     case analyses for all read-on-update operations. *)
 
 Hint Rewrite @read_make @length_make @length_update @read_update_same
   @read_update_case @read_cons_case @read_last_case : rew_array.
-
-Tactic Notation "rew_array" :=
-  autorewrite with rew_array.
-Tactic Notation "rew_array" "in" hyp(H) :=
-  autorewrite with rew_array in H.
-Tactic Notation "rew_array" "in" "*" :=
-  autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_array).
-  (* autorewrite with rew_array in *. *)
-Tactic Notation "rew_array" "~" :=
-  rew_array; auto_tilde.
-Tactic Notation "rew_array" "*" :=
-  rew_array; auto_star.
-Tactic Notation "rew_array" "~" "in" hyp(H) :=
-  rew_array in H; auto_tilde.
-Tactic Notation "rew_array" "*" "in" hyp(H) :=
-  rew_array in H; auto_star.
-Tactic Notation "rew_array" "~" "in" "*" :=
-  rew_array in *; auto_tilde.
-Tactic Notation "rew_array" "*" "in" "*" :=
-  rew_array in *; auto_star.
 
 
 

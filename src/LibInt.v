@@ -466,6 +466,21 @@ Lemma mult_one_r : forall n,
   n * 1 = n.
 Proof using. math. Qed.
 
+Lemma minus_self : forall n,
+  n - n = 0.
+Proof using. math. Qed.
+
+Lemma one_plus_minus_one_r : forall n,
+  1 + (n - 1) = n.
+Proof using. math. Qed.
+
+Lemma plus_one_minus_one_l : forall n,
+  (n + 1) - 1 = n.
+Proof using. math. Qed.
+
+Lemma one_plus_minus_one_l : forall n,
+  (1 + n) - 1 = n.
+Proof using. math. Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Simplification tactic *)
@@ -474,7 +489,9 @@ Proof using. math. Qed.
     expressions involving integers *)
 
 Hint Rewrite plus_zero_r plus_zero_l minus_zero_r minus_zero_l
-  mult_zero_l mult_zero_r mult_one_l mult_one_r : rew_int.
+  mult_zero_l mult_zero_r mult_one_l mult_one_r
+  minus_self one_plus_minus_one_r plus_one_minus_one_l
+  one_plus_minus_one_l : rew_int.
 
 Tactic Notation "rew_int" :=
   autorewrite with rew_int.

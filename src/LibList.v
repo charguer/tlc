@@ -34,11 +34,12 @@ Bind Scope liblist_scope with list.
 
 Infix "::" := cons (at level 60, right associativity) : liblist_scope.
 
-(* Not loaded by default
+(* Notations are not loaded by default *)
+Module LibListNotation.
 Notation "[ ]" := nil (format "[ ]") : liblist_scope.
 Notation "[ x ]" := (cons x nil) : liblist_scope.
 Notation "[ x ; y ; .. ; z ]" :=  (cons x (cons y .. (cons z nil) ..)) : liblist_scope.
-*)
+End LibListNotation.
 
 
 (* ********************************************************************** *)
@@ -486,7 +487,41 @@ Lemma self_eq_app_r_inv : forall l1 l2,
   l1 = nil.
 Proof using. intros. applys* app_r_eq_self_inv. Qed.
 
+Lemma app_cancel_same_length_l : forall l1 l2 t1 t2,
+  l1 ++ l2 = t1 ++ t2 ->
+  length l1 = length t1 ->
+  l1 = t1 /\ l2 = t2.
+Proof using.
+  intros l1. induction l1; introv He Hl; rew_list in *.
+  { forwards* ->: length_zero_inv t1. }
+  { destruct t1; rew_list in *; try math.
+    inverts He. forwards* (->&->): IHl1 H1. }
+Qed.
 
+(* TODO: state and prove consequences of 
+    He : l2 = t1 ++ t2
+    Hl : length l2 = length t2
+*) 
+
+Lemma app_cancel_same_length_r : forall l1 l2 t1 t2,
+  l1 ++ l2 = t1 ++ t2 ->
+  length l2 = length t2 ->
+  l1 = t1 /\ l2 = t2.
+Proof using.
+  intros l1. induction l1; introv He Hl; rew_list in *.
+  { gen l2. destruct t1; rew_list; intros.
+    { autos*. }
+    { destruct l2 as [|x l2']; inverts He. rew_list in Hl. math. } }
+  { destruct t1; rew_list in *.
+    { subst t2; rew_list in*; try math. }
+    { inverts He. forwards* (->&->): IHl1 H1. } }
+  (* Alternative proof script using [rev]
+  introv E L. apply (f_equal (@rev A)) in E. rew_list in E.
+  apply app_cancel_same_length_l in E; rew_list*.
+  destruct E. split; apply* rev_inj. *)
+Qed.
+
+(* TODO: prove app_cancel_l using app_cancel_same_length_l *)
 Lemma app_cancel_l : forall l1 l2 l3,
   l1 ++ l2 = l1 ++ l3 ->
   l2 = l3.
@@ -494,6 +529,7 @@ Proof using.
   introv E. induction l1; rew_list in *. auto. inverts* E.
 Qed.
 
+(* TODO: prove app_cancel_r using app_cancel_same_length_r *)
 Lemma app_cancel_r : forall l1 l2 l3,
   l1 ++ l3 = l2 ++ l3 ->
   l1 = l2.
@@ -2609,6 +2645,16 @@ Proof using.
   intros. lets H: (@drop_app_length l nil). rew_list~ in H.
 Qed.
 
+Lemma drop_drop : forall n m l,
+  drop n (drop m l) = drop (n+m) l.
+Proof using.
+  intros n. induction m; simpl; intros.
+  { rew_nat*. }
+  { destruct l as [|x l'].
+    { repeat rewrite drop_nil. auto. }
+    { rewrite drop_cons_pos; try math. rew_nat*. } }
+Qed.
+
 (* See below for [length_drop] and other properties *)
 
 End Drop.
@@ -2910,6 +2956,14 @@ Proof using.
   { applys~ Forall_rev. }
 Qed.
 
+Lemma Forall_map_eq : forall (B:Type) (P:B->Prop) l (f:A -> B),
+  Forall P (map f l) = Forall (fun x => P (f x)) l.
+Proof using.
+  intros. extens. induction l; intros; rew_listx.
+  { autos*. }
+  { iff M; inverts* M. }
+Qed.
+
 Lemma Forall_take : forall P n l,
   Forall P l ->
   Forall P (take n l).
@@ -2962,7 +3016,7 @@ Hint Rewrite Forall_nil_eq Forall_cons_eq Forall_app_eq Forall_last_eq
 
 
 (* ---------------------------------------------------------------------- *)
-(* ** Forall2 *)
+(* **    *)
 
 (** [Forall2 P L1 L2] asserts that the lists [L1] and [L2]
     have the same length and that elements at corresponding
@@ -3042,6 +3096,16 @@ Proof using.
 Qed.
 
 (* Inversion *)
+
+Lemma Forall2_nil_l_inv : forall P s,
+  Forall2 P nil s ->
+  s = nil.
+Proof using. introv E. inverts* E. Qed.
+
+Lemma Forall2_nil_r_inv : forall P r,
+  Forall2 P r nil ->
+  r = nil.
+Proof using. introv E. inverts* E. Qed.
 
 Lemma Forall2_cons_inv : forall P r s x y,
   Forall2 P (x::r) (y::s) ->

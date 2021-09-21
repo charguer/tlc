@@ -697,6 +697,15 @@ Lemma streicher_K :
   forall (p : x = x), P p.
 Proof using. intros. rewrite~ (reflexive_identity_proofs_unique p). Qed.
 
+(** Coercion for rewriting a type equality in a term *)
+
+Definition rewrite_type (A B:Type) (E:A=B) (V:A) : B :=
+  eq_rect A (fun T => T) V B E.
+
+Lemma rewrite_type_self : forall A (E:A=A) (V:A),
+  rewrite_type E V = V.
+Proof using. intros. unfold rewrite_type. rewrite* eq_rect_refl_eq. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Injectivity of equality on dependent pairs *)

@@ -210,6 +210,19 @@ Qed.
 
 (* [prefix] and [length]. See also [LibListZ]. *)
 
+Lemma prefix_full_inv : forall xs ys,
+  length xs = length ys ->
+  prefix xs ys ->
+  xs = ys.
+Proof using. (* TOCLEAN *)
+  introv Hl (zs,Hzs).
+  asserts E : (zs = nil).
+  { destruct zs; try easy.
+    apply (f_equal (length (A:=A))) in Hzs.
+    rew_list in Hzs. math. }
+  subst. rew_list*.
+Qed.
+
 Lemma prefix_length:
   forall ys xs,
   prefix ys xs ->
