@@ -1192,10 +1192,10 @@ Lemma demo_applys_eq : forall (P:nat->nat->nat->Prop) x x' y y' z z',
   /\ (P x y z -> P x' y' z').
 Proof using.
   intros. splits; intros M.
-  { applys_eq_core M. skip. }
-  { applys_eq_core M. skip. }
-  { applys_eq_core M. skip. skip. }
-  { applys_eq_core M. skip. skip. skip. }
+  { applys_eq_core M. demo. }
+  { applys_eq_core M. demo. }
+  { applys_eq_core M. demo. demo. }
+  { applys_eq_core M. demo. demo. demo. }
 Abort.
 
 Lemma demo_applys_eq_dep : forall (P:forall A, A->nat->Prop) T x x' y y',
@@ -1204,9 +1204,9 @@ Lemma demo_applys_eq_dep : forall (P:forall A, A->nat->Prop) T x x' y y',
   /\ (P T x y -> P T x' y').
 Proof using.
   intros. splits; intros M.
-  { applys_eq_core M. skip. }
-  { applys_eq_core M. skip. }
-  { applys_eq_core M. skip. skip. }
+  { applys_eq_core M. demo. }
+  { applys_eq_core M. demo. }
+  { applys_eq_core M. demo. demo. }
 Abort.
 
 Lemma demo_applys_eq_dep_middle : forall (P:nat->forall A, A->Prop) x x' (T:Type) y y',
@@ -1215,9 +1215,9 @@ Lemma demo_applys_eq_dep_middle : forall (P:nat->forall A, A->Prop) x x' (T:Type
   /\ (P x T y -> P x' T y').
 Proof using.
   intros. splits; intros M.
-  { applys_eq_core M. skip. }
-  { applys_eq_core M. skip. }
-  { applys_eq_core M. skip. skip. }
+  { applys_eq_core M. demo. }
+  { applys_eq_core M. demo. }
+  { applys_eq_core M. demo. demo. }
 Abort.
 
 
