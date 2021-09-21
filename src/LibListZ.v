@@ -437,7 +437,7 @@ Lemma mem_inv_read : forall A (IA:Inhab A) (l:list A) x,
 Proof using.
   intros. gen x. induction l; introv Hx; inversion Hx; subst.
   { exists 0. (* list_cases *) splits*. rewrite* read_zero. }
-  { lets* (i,(Hi&->)): (IHl x). (* list_cases *) 
+  { lets* (i,(Hi&->)): (IHl x). (* list_cases *)
     rew_index in *. exists (i+1). split*. rewrite* read_succ. }
 Qed.
 
@@ -928,7 +928,7 @@ Proof using.
   rewrite~ LibList.take_cons_pos.
 Qed.
 
-Lemma take_cons_case : forall x l n, 
+Lemma take_cons_case : forall x l n,
   n >= 0 ->
   take n (x::l) = If n = 0 then nil else x :: (take (n-1) l).
 Proof using.
@@ -1009,7 +1009,6 @@ End Take.
 (* Arguments take [A] : simpl never. *)
 
 Hint Rewrite take_nil take_zero take_succ : rew_listx.
-Hint Rewrite length_take : rew_listp.
 
 (* Note: [take_prefix_length] and [take_full_length]
    may be safely added to [rew_listx]. *)
@@ -1114,7 +1113,7 @@ End Drop.
 (* Arguments drop [A] : simpl never. *)
 
 Hint Rewrite drop_at_length drop_nil drop_zero drop_succ : rew_listx.
-Hint Rewrite length_drop drop_drop : rew_listp.
+Hint Rewrite drop_drop : rew_listp.
 
 (* Note: [drop_prefix_length] and [drop_full_length]
    may be safely added to [rew_list]. *)
@@ -1184,7 +1183,7 @@ Lemma read_drop : forall (IA:Inhab A) l (s i:int),
   0 <= s <= length l ->
   index (length l - s) i ->
   (drop s l)[i] = l[s+i].
-Proof using. 
+Proof using.
   introv Hs Hi. rew_index in *.
   lets (l'&Hl&Hl'): drop_spec s l. { math. }
   rewrite Hl' at 2. rewrite read_app. case_if*.
@@ -1222,7 +1221,7 @@ Lemma mem_drop_inv : forall l i x,
   0 <= i <= length l ->
   mem x l.
 Proof using.
-  introv Hx Hi. rewrites* <- (>> list_eq_take_app_drop i). 
+  introv Hx Hi. rewrites* <- (>> list_eq_take_app_drop i).
   apply* mem_app_r.
 Qed.
 
@@ -1232,8 +1231,7 @@ Arguments take_app_drop_spec [A].
 Arguments take_spec [A].
 Arguments drop_spec [A].
 
-Hint Rewrite read_take read_drop : rew_listp.
-
+Hint Rewrite read_take read_drop length_take length_drop : rew_listp.
 
 (* ---------------------------------------------------------------------- *)
 (** ** [sum], for lists of int values *)
