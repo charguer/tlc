@@ -889,6 +889,21 @@ Qed. (* --TODO: cleanup proof *)
 
 End Properties.
 
+Lemma fold_induction :
+  forall A B (IB:Inhab B) C (m : monoid_op C) (f : A -> B -> C) (P : C -> Prop) (M : map A B),
+  Comm_monoid m ->
+  P (monoid_neutral m) ->
+  (forall x i, P x -> P (monoid_oper m (f i (M[i])) x)) ->
+  finite M ->
+  P (fold m f M).
+Proof using.
+  introv Hm Hbase Hstep Hfinite. rewrite fold_eq_fold_pairs.
+  apply* fold_induction.
+  { intros x (i,v) Hx Px. rew_set in Hx. destruct Hx as (i'&v'&E&HB).
+    inverts E. rewrite <- (read_of_binds HB). applys* Hstep. }
+  { applys* finite_to_finite_fold_support. } 
+Qed.
+
 
 (* -- LATER: equivalent definition of fold
   Lemma fold_def_dom : forall A `{Inhab B} C (m:monoid_def C) (f:A->B->C) (M:map A B),
