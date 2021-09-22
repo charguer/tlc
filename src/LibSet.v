@@ -471,6 +471,23 @@ Proof using.
   rewrite* mem_app_eq.
 Qed.
 
+Lemma finite_union_inv : forall E F,
+  finite (E \u F) ->
+  finite E /\ finite F.
+Proof using.
+  introv H. lets (L&HL): finite_inv_list_covers H. split.
+  { apply finite_of_ex_list_covers. exists L.
+    unfolds list_covers. intros x M. applys HL. apply in_union_l. auto. }
+  { apply finite_of_ex_list_covers. exists L.
+    unfolds list_covers. intros x M. applys HL. apply in_union_r. auto. }
+Qed.
+
+Lemma finite_union_eq : forall E F,
+  finite (E \u F) = (finite E /\ finite F).
+Proof using.
+  extens. iff. applys* finite_union_inv. applys* finite_union.
+Qed.
+
 Lemma finite_inter : forall E F,
   finite E \/ finite F ->
   finite (E \n F).
@@ -479,6 +496,16 @@ Proof using.
   lets (L&EQ): finite_inv_list_covers H. exists L. unfold list_covers. set_unf. autos*.
   lets (L&EQ): finite_inv_list_covers H. exists L. unfold list_covers. set_unf. autos*.
 Qed.
+
+Lemma finite_inter_l : forall E F,
+  finite E ->
+  finite (E \n F).
+Proof using. intros. applys* finite_inter. Qed.
+
+Lemma finite_inter_r : forall E F,
+  finite F ->
+  finite (E \n F).
+Proof using. intros. applys* finite_inter. Qed.
 
 Lemma finite_incl : forall E F,
   E \c F ->

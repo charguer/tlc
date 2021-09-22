@@ -57,7 +57,14 @@ Definition disjoint_impl M N :=
 Definition index_impl M k :=
   k \in (dom_impl M : set A).
 
-(* -- TODO: incl_impl *)
+Definition incl_impl M N :=
+  forall k v, M k = Some v -> N k = Some v.
+  (* same as:
+     forall k,
+     match M k with
+     | None => True
+     | Some v => N k = Some v
+     end. *)
 
 End Operations.
 
@@ -87,6 +94,9 @@ Instance binds_inst : forall A B, BagBinds A B (map A B).
 Instance union_inst : forall A B, BagUnion (map A B).
   constructor. rapply (@union_impl A B). Defined.
 
+Instance incl_inst : forall A B, BagIncl (map A B).
+  constructor. rapply (@incl_impl A B). Defined.
+
 Instance remove_inst : forall A B, BagRemove (map A B) (set A).
   constructor. rapply (@remove_impl A B). Defined.
 
@@ -108,8 +118,8 @@ Instance index_inst : forall A B, BagIndex A (map A B).
 Instance fold_inst : forall A B C, BagFold C (A->B->C) (map A B).
   constructor. rapply (@fold_impl A B C). Defined.
 
-Global Opaque map empty_inst single_bind_inst binds_inst
- union_inst restrict_inst remove_inst read_inst
+Global Opaque map empty_inst dom_inst single_bind_inst binds_inst
+ union_inst incl_inst restrict_inst remove_inst read_inst
  dom_inst disjoint_inst index_inst fold_inst.
 
 Instance Inhab_map : forall A B, Inhab (map A B).
@@ -126,8 +136,7 @@ Proof using. intros. apply (Inhab_of_val (@empty_impl A B)). Qed.
 
 (*-- LATER: make [finite] a typeclass, define [finite_impl]
      using [dom_impl], and prove a lemma [finite_eq] of type
-     [finite M = finite (dom M)].
- *)
+     [finite M = finite (dom M)]. *)
 
 Definition finite A B (M:map A B) :=
   finite (dom M).
@@ -204,7 +213,22 @@ Hint Extern 1 (None <> Some _) => congruence.
 (* ---------------------------------------------------------------------- *)
 (** extens *)
 
-(* --LATER: state some extensionality *)
+Lemma extensionality : forall A B (IB:Inhab B) (M1 M2:map A B),
+  (forall (k:A), k \indom M1 <-> k \indom M2) ->
+  (forall (k:A), k \indom M1 -> M1[k] = M2[k]) ->
+  M1 = M2.
+Proof using.
+  introv HD HE. extens. intros k.
+  specializes HD k. specializes HE k. 
+  unfold dom_inst, dom_impl, read_inst, read_impl in *. simpls.
+  repeat rewrite in_set_st_eq in *.
+  case_eq (M1 k); introv Hv1; rewrite Hv1 in HE,HD;
+  case_eq (M2 k); introv Hv2; try rewrite Hv2 in HE,HD.
+  { forwards* ->: HE. }
+  { false. forwards: (proj1 HD); auto_false. }
+  { false. forwards: (proj2 HD); auto_false. }
+  { auto. }
+Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** index *)
@@ -217,6 +241,9 @@ Proof using. intros. rewrite~ index_eq_indom. Qed.
 
 (* ---------------------------------------------------------------------- *)
 (** dom *)
+
+Section Dom.
+Transparent dom_inst incl_inst.
 
 Lemma dom_empty : forall A B,
   dom (\{} : map A B) = (\{} : set A).
@@ -241,9 +268,96 @@ Proof using.
   rew_set. intros x. rew_set. iff R; destruct* (N x).
 Qed.
 
+Lemma dom_remove : forall A B (M : map A B) (E : set A),
+  dom (M \- E) = dom M \- E.
+Proof using.
+  intros. simpl. unfold dom_impl, remove_impl.
+  rew_set. intros x. rew_set. iff R; case_if*.
+Qed.
+
+Lemma dom_restrict : forall A B (M : map A B) (E : set A),
+  dom (M \| E) = dom M \n E.
+Proof using.
+  intros. simpl. unfold dom_impl, restrict_impl.
+  rew_set. intros x. rew_set. iff R; case_if*.
+Qed.
+
+Lemma dom_incl : forall A B (M N : map A B),
+  M \c N ->
+  dom M \c dom N.
+Proof using.
+  introv. simpl. unfold dom_impl, incl_inst, incl_impl.
+  rew_set. intros HI x Hx. rew_set in *. specializes HI x.
+  destruct (M x) as [v|]; tryfalse.
+  specializes HI v. destruct (N x) as [v'|]; auto_false*.
+Qed.
+
+End Dom.
+
+
+(* ---------------------------------------------------------------------- *)
+(** finite *)
+
+Lemma finite_empty : forall A B,
+  finite (\{} : map A B).
+Proof using.
+  intros. unfold finite. rewrite dom_empty. apply finite_empty.
+Qed.
+
+Lemma finite_single : forall A B (k : A) (x : B),
+  finite (k\:=x).
+Proof using.
+  intros. unfold finite. rewrite dom_single. apply finite_single.
+Qed.
+
+Lemma finite_union_eq : forall A B (M N : map A B),
+  finite (M \u N) = (finite M /\ finite N).
+Proof using.
+  intros. unfold finite. rewrite dom_union. apply finite_union_eq.
+Qed.
+
+Lemma finite_union : forall A B (M N : map A B),
+  finite M ->
+  finite N ->
+  finite (M \u N).
+Proof using. intros. rewrite* finite_union_eq. Qed.
+
+Lemma finite_union_inv : forall A B (M N : map A B),
+  finite (M \u N) ->
+  finite M /\ finite N.
+Proof using. introv H. rewrite* finite_union_eq in H. Qed.
+
+Lemma finite_remove : forall A B (M : map A B) (E : set A),
+  finite M ->
+  finite (M \- E).
+Proof using.
+  introv. unfold finite. rewrite dom_remove. apply finite_remove.
+Qed.
+
+Lemma finite_restrict : forall A B (M : map A B) (E : set A),
+  finite M ->
+  finite (M \| E).
+Proof using.
+  introv. unfold finite. rewrite dom_restrict. apply finite_inter_l.
+Qed.
+
+Lemma finite_incl : forall A B (M N : map A B),
+  M \c N ->
+  finite N ->
+  finite M.
+Proof using.
+  introv HI HM. unfold finite. lets HD: dom_incl HI. applys* finite_incl.
+Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** indom *)
+
+Lemma indom_empty_eq : forall A B x,
+  x \indom (\{}:map A B) = False.
+Proof using.
+  intros. rewrite dom_empty. rewrite in_empty_eq. auto.
+Qed.
 
 Lemma indom_empty_inv : forall A B (x:A),
   x \indom (\{} : map A B) ->
@@ -252,11 +366,17 @@ Proof using.
   introv M. rewrite dom_empty in *. applys @in_empty M; typeclass.
 Qed.
 
-(* TODO CLEAN UP after migration *)
-  (* old proof:
-  intros. rewrite dom_empty in *. eapply in_empty; typeclasses eauto with typeclass_instances. *)
-  (* new proof:
-  introv M. rewrite dom_empty in *. eapply @in_empty. 2: eapply M. typeclasses eauto with typeclass_instances. *)
+Lemma indom_single_eq : forall A B (x1 x2:A) (v:B),
+  x2 \indom (x1\:=v) = (x1 = x2).
+Proof using.
+  intros. rewrite dom_single. rewrite in_single_eq. extens*.
+Qed.
+
+Lemma indom_union_eq : forall A B (IB:Inhab B) (M1 M2:map A B) x,
+  x \indom (union M1 M2) = (x \indom M1 \/ x \indom M2).
+Proof using.
+  intros. rewrite dom_union. rewrite in_union_eq. auto.
+Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -278,6 +398,55 @@ Proof using.
   extens ;=> k. absurds ;=> G.
   lets R: @is_empty_inv k H. typeclass.
   false R. rewrite~ in_set_st_eq.
+Qed.
+
+Lemma eq_empty_of_not_indom : forall A B (IB:Inhab B) (M:map A B),
+  (forall x, ~ x \indom M) ->
+  M = \{}.
+Proof using.
+  introv IB H. applys extensionality.
+  { intros x. rewrite indom_empty_eq. iff*. }
+  { intros x Dx. false* H. }
+Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** disjoint *)
+
+Lemma disjoint_eq_not_indom_both : forall A B (M1 M2:map A B),
+  disjoint M1 M2 = (forall k, k \indom M1 -> k \indom M2 -> False).
+Proof using.
+  extens. unfold disjoint_impl. rewrite* set_disjoint_eq.
+Qed.
+
+Lemma disjoint_of_not_indom_both : forall A B (M1 M2:map A B),
+  (forall k, k \indom M1 -> k \indom M2 -> False) ->
+  disjoint M1 M2.
+Proof using. introv M. rewrite~ disjoint_eq_not_indom_both. Qed.
+
+Lemma disjoint_inv_not_indom_both : forall A B (M1 M2:map A B) k,
+  disjoint M1 M2 ->
+  k \indom M1 ->
+  k \indom M2 ->
+  False.
+Proof using. introv. rewrite* disjoint_eq_not_indom_both. Qed.
+
+Lemma disjoint_single_of_not_indom : forall A B (M:map A B) x (v:B),
+  ~ x \indom M ->
+  disjoint (x\:=v) M.
+Proof using.
+  introv N. unfold disjoint, disjoint_inst, disjoint_impl.
+  unfold single_bind, single_bind_inst, single_bind_impl, dom_impl.
+  rewrite set_disjoint_eq. intros x'.
+  repeat rewrite in_set_st_eq. case_if; subst; auto_false.
+Qed.
+
+Lemma not_indom_of_indom_disjoint : forall A B (M1 M2:map A B) x,
+  x \indom M1 ->
+  disjoint M1 M2 ->
+  ~ x \indom M2.
+Proof using.
+  introv H1 D H2. rewrite* disjoint_eq_not_indom_both in D.
 Qed.
 
 
@@ -370,7 +539,19 @@ Lemma update_update : forall A i `{Inhab B} v v' (M:map A B),
   M[i:=v][i:=v'] = M[i:=v'].
 Proof using.
   intros. applys fun_ext_1.
-  intros k. do 3 rewrite update_impl_eq. case_if~.
+  intros k. do 3 rewrite update_impl_eq. case_if*.
+Qed.
+
+(* update same *)
+
+Lemma update_same : forall A B (IA:Inhab B) (M:map A B) (x:A),
+  x \indom M ->
+  M[x:=M[x]] = M.
+Proof using.
+  introv Dx. applys extensionality.
+  { intros k. rewrite* dom_update_at_indom. }
+  { intros k Hk. rewrite* dom_update_at_indom in Hk.
+    rewrite read_update. case_if*. subst*. }
 Qed.
 
 
@@ -472,7 +653,38 @@ Proof using. introv H. rewrite~ binds_update_eq in H. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
+(** incl *)
+
+Section Incl.
+Transparent read_inst incl_inst.
+
+Lemma read_incl : forall A B (IB:Inhab B) (M N:map A B) i,
+  i \indom M ->
+  M \c N ->
+  N[i] = M[i].
+Proof using.
+  introv Hi HI. simpls. unfolds read_impl, incl_impl, dom_impl.
+  rew_set in *. specializes HI i. destruct (N i) as [v|].
+  { destruct (M i) as [w|]; tryfalse. specializes HI w __. inverts* HI. } 
+  { destruct (M i) as [w|]; tryfalse. specializes HI w __. inverts* HI. }  
+Qed.
+
+End Incl.
+
+(* ---------------------------------------------------------------------- *)
 (* union *)
+
+(* TODO: this is convenient, though it reveals non commutativity.
+   TODO: change the priority of the union: left argument should be read first *)
+
+Lemma read_union_cases : forall A B (IB:Inhab B) (M1 M2:map A B) x,
+  read (union M1 M2) x = (If x \indom M2 then M2[x] else M1[x]).
+Proof using.
+  intros. unfold read, read_inst, read_impl.
+  unfold dom, dom_inst, dom_impl. rewrite in_set_st_eq.
+  unfold union, union_inst, union_impl.
+  case_eq (M2 x); introv Hv2; case_if; congruence.
+Qed.
 
 Lemma union_read_l : forall A `{Inhab B} (m1 m2:map A B) (i:A),
   i \indom m1 ->
@@ -498,18 +710,6 @@ Proof.
     { false D M. applys~ indom_of_binds. simpl. unfolds* binds_impl. }
     (* --LATER: simplify line above *)
     { auto. } }
-Qed.
-
-
-(* ---------------------------------------------------------------------- *)
-(** remove *)
-
-Lemma dom_remove : forall A B (M:map A B) E,
-  dom (M\-E) = (dom M \- E).
-Proof using.
-  intros. simpl. unfold remove_impl, dom_impl in *.
-  apply in_extens.  (* "extens" should work directly *)
-  intros x. rew_set. iff R (R1&R2); case_if~.
 Qed.
 
 
@@ -559,6 +759,9 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** restrict *)
 
+Section Restrict.
+Transparent read_inst incl_inst restrict_inst.
+
 Lemma restrict_single : forall A (x:A) `{Inhab B} (M:map A B),
   x \indom M ->
   M \| \{x} = (x \:= (M[x])).
@@ -567,6 +770,18 @@ Proof using.
   intros k. simpls. unfolds dom_impl, restrict_impl, single_bind_impl, read_impl.
   rew_set in *. do 2 case_if~. subst. destruct (M x); auto_false.
 Qed.
+
+Lemma restrict_incl : forall A B (M N : map A B),
+  M \c N ->
+  N \| (dom M) = M.
+Proof using.
+  introv HI. applys fun_ext_1. simpls. intros k.
+  unfolds dom_impl, restrict_impl, read_impl, incl_impl.
+  specializes HI k. rew_set. case_if*.
+  { destruct (M k) as [v|]; tryfalse. applys* HI. }
+Qed.
+
+End Restrict.
 
 
 (* ---------------------------------------------------------------------- *)

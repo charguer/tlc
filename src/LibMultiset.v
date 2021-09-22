@@ -125,10 +125,15 @@ Proof using.
   iff. tests: (E x = 0). right~. left~. destruct H; math.
 Qed.
 
+Global Instance incl_refl_inst : Incl_refl (T:=multiset A).
+Proof using.
+  constructor. intros x. unfold incl_inst, incl_impl, incl. intros. math.
+Qed.
+
 Global Instance incl_inv_inst : Incl_inv (A:=A) (T:=multiset A).
 Proof using.
   constructor. intros x. introv M N.
-  unfold incl_inst, incl_impl,incl, in_inst, in_impl, is_in in *.
+  unfold incl_inst, incl_impl, incl, in_inst, in_impl, is_in in *.
   specializes M x. math.
 Qed.
 
@@ -166,14 +171,19 @@ Proof using.
   unfold empty_impl, multiset. math.
 Qed.
 
+Global Instance union_incl_union_inst : Union_incl_union (T:=multiset A).
+Proof using.
+  constructor.
+  unfold incl_inst, incl_impl, union_inst, union_impl, multiset. simpl.
+  introv H1 H2. intros x. specializes H1 x. specializes H2 x. math.
+Qed.
+
+
+(* TODO: will be proved with respect to the new version of list_repr_impl
 Global Instance card_empty_inst : Card_empty (T:=multiset A).
-Proof using. admit. (*-- TODO: under construction *) Admitted.
-
 Global Instance card_single_inst : Card_single (A:=A) (T:=multiset A).
-Proof using. admit. (*-- TODO: under construction *) Admitted.
-
 Global Instance card_union_inst : Card_union (T:=multiset A).
-Proof using. admit. (*-- TODO: under construction *) Admitted.
+*)
 
 End Instances.
 
@@ -419,8 +429,11 @@ Proof using. intros. subst. apply permut_get_2. Qed.
 Lemma permut_tactic_simpl_incl : forall A (l1 l2 l3 l4:multiset A),
   (l1 \u l3) \c l4 ->
   (l1 \u (l2 \u l3)) \c (l2 \u l4).
-Admitted. (* --TODO URGENT: reason on this tedious inclusion... *)
-
+Proof using.
+  introv H. rewrites (>> union_comm l2 l3). rewrite union_assoc. 
+  sets l0: (l1 \u l3). rewrite union_comm. apply union_incl_union.
+  { apply incl_refl. } { auto. }
+Qed.
 
 Ltac get_premut_tactic_simpl tt :=
   match goal with

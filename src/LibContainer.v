@@ -310,6 +310,12 @@ Class Union_incl :=
   { union_incl : forall E F G, E \c G -> F \c G -> (E \u F) \c G }.
 Class Union_incl_inv :=
   { union_incl_inv : forall E F G, (E \u F) \c G -> E \c G /\ F \c G }.
+Class Union_incl_union :=
+  { union_incl_union : forall E1 F1 E2 F2, E1 \c F1 -> E2 \c F2 -> (E1 \u E2) \c (F1 \u F2) }.
+Class Union_incl_union_same_l :=
+  { union_incl_union_same_l : forall E F1 F2, F1 \c F2 -> (E \u F1) \c (E \u F2) }.
+Class Union_incl_union_same_r :=
+  { union_incl_union_same_r : forall E F1 F2, F1 \c F2 -> (F1 \u E) \c (F2 \u E) }.
 
 Class Incl_inter_eq :=
   { incl_inter_eq : forall E F G, E \c (F \n G) = (E \c F /\ E \c G) }.
@@ -423,6 +429,10 @@ Arguments incl_union_l {T} {BU} {BL} {Incl_union_l} [E] [F] [G].
 Arguments incl_union_r {T} {BU} {BL} {Incl_union_r} [E] [F] [G].
 Arguments incl_inter {T} {BN} {BL} {Incl_inter} [E] [F] [G].
 Arguments incl_inter_inv {T} {BN} {BL} {Incl_inter_inv} [E] [F] [G].
+
+Arguments union_incl_union {T} {BU} {BL} {Union_incl_union} [E1] [F1] [E2] [F2].
+Arguments union_incl_union_same_l {T} {BU} {BL} {Union_incl_union_same_l} [E] [F1] [F2].
+Arguments union_incl_union_same_r {T} {BU} {BL} {Union_incl_union_same_r} [E] [F1] [F2].
 
 Arguments union_empty_inv {T} {BE} {BU} {Union_empty_inv} [E] [F].
 
@@ -688,6 +698,34 @@ Proof using.
     split. intros x N. specializes M x. rewrite* in_union_eq in M.
            intros x N. specializes M x. rewrite* in_union_eq in M.
     intros x N. specializes M1 x. specializes M2 x. rewrite* in_union_eq in N.
+Qed.
+
+Global Instance union_incl_union_of_union_incl_and_incl_union_l_and_incl_union_r :
+  Union_incl ->
+  Incl_union_l ->
+  Incl_union_r ->
+  Union_incl_union.
+Proof using.
+  constructor. intros. apply union_incl.
+  { applys* incl_union_l. } { applys* incl_union_r. }
+Qed.
+
+Global Instance union_incl_union_same_l_of_union_incl_union_and_incl_refl :
+  Union_incl_union ->
+  Incl_refl ->
+  Union_incl_union_same_l.
+Proof using.
+  constructor. intros. apply union_incl_union. 
+  { applys* incl_refl. } { auto. }
+Qed.
+
+Global Instance union_incl_union_same_r_of_union_incl_union_same_l_and_union_comm :
+  Union_incl_union_same_l ->
+  Union_comm ->
+  Union_incl_union_same_r.
+Proof using.
+  constructor. intros. rewrite (union_comm F1). rewrite (union_comm F2).
+  apply union_incl_union_same_l. auto.
 Qed.
 
 Global Instance incl_union_l_of_incl_in_eq_and_in_union_eq :

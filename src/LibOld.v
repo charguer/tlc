@@ -338,7 +338,6 @@ Tactic Notation "rew_pow" "*" constr(b) constr(min_e) "in" hyp(H) :=
 (*   intros. *)
 (*   skip_asserts: (3 = 2 ^ (n+3)). rew_pow 2 n in H. *)
 (*   rew_pow 2 n. *)
-(* Admitted. *)
 
 
 

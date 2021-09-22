@@ -229,7 +229,7 @@ Class Union_empty_r (T:Type) {BE: BagEmpty T} {BU: BagUnion T} :=
 
 Global Instance union_empty_r_of_union_empty_l (T:Type) {BE: BagEmpty T} {BU: BagUnion T} :
   Union_empty_l -> Union_comm -> Union_empty_r.
-Admitted.
+Abort.
 
 (** The proof that [map] validates [union_empty_l] is itself derived
     from another lemma, called [union_empty_l_of_in_union_eq_and_in_empty_eq].
