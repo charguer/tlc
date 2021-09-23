@@ -412,9 +412,9 @@ Tactic Notation "rew_bool_eq" "in" "*" :=
   autorewrite_in_star_patch ltac:(fun tt => autorewrite with rew_bool_eq).
   (* autorewrite with rew_bool_eq in *. *)
 Tactic Notation "rew_bool_eq" "~" "in" "*" :=
-  rew_bool_eq; auto_tilde.
+  rew_bool_eq in *; auto_tilde.
 Tactic Notation "rew_bool_eq" "*" "in" "*" :=
-  rew_bool_eq; auto_star.
+  rew_bool_eq in *; auto_star.
 
 
 (* ---------------------------------------------------------------------- *)
