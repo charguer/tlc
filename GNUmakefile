@@ -46,6 +46,23 @@ archive-check: archive
 
 # -------------------------------------------------------------------------
 
+# Compiling under various versions of Coq.
+
+# This assumes that the opam switches coq812, coq813, etc. exist.
+
+VERSIONS := \
+  coq814 \
+  coq813 \
+  coq812 \
+
+.PHONY: versions
+versions:
+	for v in $(VERSIONS) ; do \
+	  opam switch $$v && eval $$(opam env) && make clean && make -j ; \
+	done
+
+# -------------------------------------------------------------------------
+
 # Making a release.
 
 # It is recommended to pin the package first, so as to make sure that it
