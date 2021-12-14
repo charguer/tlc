@@ -5038,12 +5038,12 @@ Declare Scope let_scope.
 Definition let_binding (A B:Type) (v:A) (K:A->B) := K v.
 
 Notation "''let' x ':=' v 'in' e" := (let_binding v (fun x => e))
-  (at level 69, x ident, right associativity,
+  (at level 69, x binder, right associativity,
   format "'[v' '[' ''let'  x  ':='  v  'in' ']'  '/'  '[' e ']' ']'")
   : let_scope.
 
 Notation "''let' x ':' A ':=' v 'in' e" := (let_binding (v:A) (fun x:A => e))
-  (at level 69, x ident, right associativity,
+  (at level 69, x binder, right associativity,
   format "'[v' '[' ''let'  x  ':'  A  ':='  v  'in' ']'  '/'  '[' e ']' ']'")
   : let_scope.
 
