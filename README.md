@@ -23,10 +23,6 @@ TLC is a general-purpose library that provides an alternative to Coq's standard 
      provided by Coq. These tactics help construct more concise and more
      robust proof scripts.
 
-Status:
-
-   - The master branch compiles with Coq v8.12.
-
 Compatibility:
 
    - Disclaimer: to allow improving the design of TLC, backward compatibility is not guaranteed.
@@ -36,11 +32,11 @@ Compatibility:
 Using TLC
 =========
 
-There are released versions of TLC are available via `opam`:
+The released versions of TLC are available via `opam`:
 
 ```
     opam repo add coq-released http://coq.inria.fr/opam/released
-    opam install -j4 coq-tlc
+    opam install coq-tlc
 ```
 
 For a local checkout of TLC:
@@ -49,11 +45,8 @@ For a local checkout of TLC:
     # obtain the sources
     git clone git@github.com:charguer/tlc.git
 
-    # optionally, select a branch for a specific version of Coq
-    git checkout -b v8.10
-
     # compile the library files
-    make -j4
+    make -j
 
     # install the files in Coq's user-contrib folder
     make install
