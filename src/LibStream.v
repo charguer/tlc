@@ -107,6 +107,8 @@ Notation "x === y" := (bisimilar x y) (at level 68).
 
 (** Bisimilarity is an equivalence *)
 
+Set Lax CoInductive Match.
+
 Lemma equiv_bisimilar_mod : forall A (E:binary A),
   equiv E ->
   equiv (bisimilar_mod E).
@@ -118,6 +120,8 @@ Proof using.
   unfolds. cofix IH. destruct x; destruct y; destruct z; introv M1 M2.
    inversions M1. inversions M2. constructor; dauto.
 Qed.
+
+Unset Lax CoInductive Match.
 
 Lemma equiv_bisimilar : forall A,
   equiv (@bisimilar A).
@@ -174,6 +178,8 @@ Qed.
 
 (** Bisimilarity implies bisimilarity at any index *)
 
+Set Lax CoInductive Match.
+
 Lemma bisimilar_mod_to_upto : forall A (E:binary A) n s1 s2,
   bisimilar_mod E s1 s2 -> bisimilar_mod_upto E n s1 s2.
 Proof using.
@@ -194,6 +200,8 @@ Proof using.
     apply IH. intros i. lets_inverts (H (S i)). auto.
 Qed.
 
+Unset Lax CoInductive Match.
+
 (** Bisimilarity up to index zero always holds *)
 
 Lemma bisimilar_mod_upto_zero : forall A (E:binary A) s1 s2,
@@ -202,6 +210,8 @@ Proof using. intros; hnf; simple~. Qed.
 
 (** Bisimilarity up to [S n] from bisimilarity up to [n]
     and equality between n-th elements *)
+
+Set Lax CoInductive Match.
 
 Lemma bisimilar_mod_upto_succ : forall A (E:binary A) n s1 s2,
   equiv E ->
@@ -215,6 +225,8 @@ Proof using.
   set_eq m: (S n). simpls.
   inversions Bis. constructor~. apply~ IHn.
 Qed.
+
+Unset Lax CoInductive Match.
 
 End Bisimilar.
 
@@ -258,6 +270,8 @@ Fixpoint first_st_at A (P:A->Prop) (s:stream A) (n:nat) :=
 (** [first_st] is a functional relation; there is at most
     one index [n] such that [first_st_at P s n] holds *)
 
+Set Lax CoInductive Match.
+
 Lemma first_st_at_inj : forall n1 n2 A (P:A->Prop) s,
   first_st_at P s n1 ->
   first_st_at P s n2 ->
@@ -267,6 +281,8 @@ Proof using.
   auto. destruct H2. false. destruct H1. false.
   destruct H1. destruct H2. fequals. apply* IHn1.
 Qed.
+
+Unset Lax CoInductive Match.
 
 Arguments first_st_at_inj [n1] [n2] [A] [P] [s].
 

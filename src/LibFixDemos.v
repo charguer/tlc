@@ -729,6 +729,8 @@ Definition Filter filter s :=
 
 Definition filter := FixFunMod (@bisimilar A) Filter.
 
+Set Lax CoInductive Match.
+
 Lemma filter_fix : forall s,
   infinitely_often P s ->
   filter s === Filter filter s.
@@ -748,6 +750,7 @@ Proof using.
          forwards~: eventually_dist_cons Ev C.
 Qed.
 
+Unset Lax CoInductive Match.
 
 End MyFilters.
 
@@ -784,6 +787,8 @@ Fixpoint itree_similar_upto (i:nat) (m1 m2: itree) :=
 
 (** Similarity upto is an equivalence *)
 
+Set Lax CoInductive Match.
+
 Lemma itree_similar_upto_equiv :
   forall i, equiv (itree_similar_upto i).
 Proof using.
@@ -792,6 +797,8 @@ Proof using.
   induction i; intros; simple~. destruct x; destruct y; simpls*.
   induction i; intros; simple~. destruct x; destruct y; destruct z; simpls*.
 Qed.
+
+Unset Lax CoInductive Match.
 
 Hint Resolve itree_similar_upto_equiv.
 Hint Extern 1 (itree_similar_upto ?i _ _) =>
@@ -823,6 +830,8 @@ CoFixpoint itree_diagonal (u:nat->itree) : itree :=
       itree_node (itree_diagonal (itree_left \o shifts u))
                  (itree_diagonal (itree_right \o shifts u))
   end.
+
+Set Lax CoInductive Match.
 
 Lemma itree_family_COFE : COFE itree_family.
 Proof using.
@@ -867,6 +876,8 @@ Proof using.
   simpl in Ssi. destruct (u i''); destruct (u j''); auto_false*.
 Qed.
 
+Unset Lax CoInductive Match.
+
 (** Two equivalent definitions of similarity between two trees,
     one using an coinductive predicate and another constructed
     as the intersection of the "similarity-upto" relations. *)
@@ -881,6 +892,8 @@ CoInductive itree_similar : binary itree :=
 
 Hint Constructors itree_similar.
 
+Set Lax CoInductive Match.
+
 Lemma itree_similar_eq : itree_similar = similar itree_family.
 Proof using.
   extens. intros t1 t2. iff H.
@@ -893,6 +906,7 @@ Proof using.
       apply IH. intros i. lets_simpl HSi: (H (S i)). autos*.
 Qed.
 
+Unset Lax CoInductive Match.
 
 (** A first corecursive operation: the "product" of two trees.
    Note that it always add a head element. *)
@@ -907,6 +921,8 @@ Definition Product product m1 m2 :=
 Definition product := FixFun2Mod itree_similar Product.
 
 (** We prove that [product] satisfies the fixed point equation *)
+
+Set Lax CoInductive Match.
 
 Lemma product_fixpoint : forall m1 m2,
   itree_similar (product m1 m2) (Product product m1 m2).
@@ -940,6 +956,8 @@ Proof using.
     simpl in K1, K2. destruct K1. destruct K2. auto with maths.
 Qed.
 
+Unset Lax CoInductive Match.
+
 (** A second corecursive function, which is not guarded:
     it is productive only because the function [product]
     is productive. *)
@@ -954,6 +972,8 @@ Definition makeitree := FixFunMod itree_similar Makeitree.
 
 (** Still, we can establish the fixed point equation for our function *)
 
+Set Lax CoInductive Match.
+
 Lemma makeitree_fixpoint : forall m,
   itree_similar (makeitree m) (Makeitree makeitree m).
 Proof using.
@@ -966,6 +986,7 @@ Proof using.
     apply H; simpl; auto with maths.
 Qed.
 
+Unset Lax CoInductive Match.
 
 
 (* ********************************************************************** *)
