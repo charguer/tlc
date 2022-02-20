@@ -7,84 +7,7 @@ Declare Scope maths_scope.
 Open Scope maths_scope.
 
 
-(**************************************************************************)
-(** * Properties of operators *)
 
-(** This material from this section is an excerpt from TLC's [LibOperation.v] *)
-
-Section Definitions.
-Variables (A : Type).
-Implicit Types f g : A -> A -> A.
-Implicit Types i : A -> A.
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Commutativity, associativity *)
-
-(** Commutativity *)
-
-Definition comm f := forall x y,
-  f x y = f y x.
-
-(** Associativity *)
-
-Definition assoc f := forall x y z,
-  f x (f y z) = f (f x y) z.
-
-(** Combined associativity commutativity *)
-
-Definition comm_assoc f := forall x y z,
-  f x (f y z) = f y (f x z).
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Distributivity *)
-
-(** Distributivity of unary operator *)
-
-Definition distrib i f := forall x y,
-  i (f x y) = f (i x) (i y).
-
-(** comm distributivity of unary operator *)
-
-Definition distrib_comm i f := forall x y,
-  i (f x y) = f (i y) (i x).
-
-(** Left distributivity *)
-
-Definition distrib_l f g := forall x y z,
-  f x (g y z) = g (f x y) (f x z).
-
-(** Right distributivity *)
-
-Definition distrib_r f g := forall x y z,
-  f (g y z) x = g (f y x) (f z x).
-
-
-(* ---------------------------------------------------------------------- *)
-(** ** Neutral and absorbant *)
-
-(** Left Neutral *)
-
-Definition neutral_l f e:= forall x,
-  f e x = x.
-
-(** Right Neutral *)
-
-Definition neutral_r f e := forall x,
-  f x e = x.
-
-(** Left Absorbant *)
-
-Definition absorb_l f a := forall x,
-  f a x = a.
-
-(** Right Absorbant *)
-
-Definition absorb_r f a := forall x,
-  f x a = a.
-
-End Definitions.
 
 
 (**************************************************************************)
@@ -158,6 +81,8 @@ Definition example_list_poly :=
 
 Parameter set : Type -> Type. 
  (* e.g. [A -> Prop] *)
+Parameter set_st : forall A, (A -> Prop) -> set A. 
+ (* e.g. identity function *)
 Parameter mem : forall A, A -> set A -> Prop. 
  (* e.g. [fun x E => E x] *)
 Parameter finite : forall A, set A -> Prop.
@@ -166,6 +91,8 @@ Parameter card : forall A, set A -> nat.
  (* e.g., defined using [epsilon], and returning arbitrary values for nonfinite sets;
    it is not the more general function with meaningful return values for infinite sets *)
 
+Parameter mem_set_st_eq : forall A (P:A->Prop) (x:A), 
+  (mem x (set_st P)) = (P x).
 
 (** Let us introduce two notations (not overloaded, for simplicity)
     to help us state lemmas. *)
@@ -176,6 +103,14 @@ Notation "x '\in' E" := (mem x E)
 Notation "'forall_' x '\in' E ',' P" :=
   (forall x, mem x E -> P)
   (at level 200, x ident) : maths_scope.
+
+Notation "'forall_' x y '\in' E ',' P" :=
+  (forall x y, mem x E -> P)
+  (at level 200, x ident, y ident) : maths_scope.
+
+Notation "'forall_' x y z '\in' E ',' P" :=
+  (forall x y z, mem x E -> P)
+  (at level 200, x ident, y ident, z ident) : maths_scope.
 
 (** "Let [E] be a set" (without presuming finiteness)
     should be translated just like lists. *)
@@ -221,11 +156,29 @@ Definition function (A B:Type) (E:set A) (F:set B) (f:A->B) : Prop :=
     and translate the statement as: *)
 
 Definition internal_binop (A:Type) (E:set A) (f:A->A->A) : Prop :=
-   forall_ x \in E, forall_ y \in E, (f x y) \in E.
+   forall_ x y \in E, (f x y) \in E.
+
+(** Properties of binary operators over sets *)
+
+Definition comm (A:Type) (E:set A) (f:A->A->A) : Prop := 
+  forall_ x y \in E, f x y = f y x.
+
+Definition assoc (A:Type) (E:set A) (f:A->A->A) : Prop := 
+  forall_ x y z \in E, f x (f y z) = f (f x y) z.
+
+Definition neutral_l (A:Type) (E:set A) (f:A->A->A) (e:A) : Prop :=
+  forall_ x \in E, f e x = x.
+
+Definition neutral_r (A:Type) (E:set A) (f:A->A->A) (e:A) : Prop :=
+  forall_ x \in E, f x e = x.
+
+Definition neutral_lr (A:Type) (E:set A) (f:A->A->A) (e:A) :=
+  neutral_l E f e /\ neutral_r E f e.
 
 
 (**************************************************************************)
 (** * Algebraic structures *)
+
 
 (* ---------------------------------------------------------------------- *)
 (** Definitions *)
@@ -252,18 +205,17 @@ Record monoid_str (A:Type) : Type := monoid_ {
 
 Record monoid (A:Type) (M:monoid_str A) : Type := monoid_make {
    monoid_op_internal : let (E,id,op) := M in internal_binop E op;
-   monoid_assoc_prop : let (E,id,op) := M in assoc op;
-   monoid_neutral_l_prop : let (E,id,op) := M in neutral_l op id;
-   monoid_neutral_r_prop : let (E,id,op) := M in neutral_r op id }.
+   monoid_assoc_prop : let (E,id,op) := M in assoc E op;
+   monoid_neutral_lr_prop : let (E,id,op) := M in neutral_lr E op id }.
 
 (** "A monoid whose operation is commutative is called a commutative monoid".
     We translate that as follows. *)
 
 Record comm_monoid (A:Type) (M:monoid_str A) : Type := comm_monoid_make {
    comm_monoid_monoid : monoid M;
-   comm_monoid_comm : let (E,id,op) := M in comm op }.
+   comm_monoid_comm : let (E,id,op) := M in comm E op }.
 
-(** "Let M(op,id) be a commutative monoid. We have [op id id = id]."
+(** "Let M(id,op) be a commutative monoid. We have [op id id = id]."
     is translated as: *)
 
 Definition example_comm_monoid :=
@@ -272,15 +224,104 @@ Definition example_comm_monoid :=
   op id id = id.
 
 (** See further on for the version with notation:
-   "Let M(+,0) be a commutative monoid. We have ['0 '+ '0 = '0]." *)
-
-Definition example_comm_monoid_notations :=
-  forall (A : Type) (M : monoid_str A), comm_monoid M ->
-  let (E,id,op) := M in 
-  op id id = id.
+   "Let M(0,+) be a commutative monoid. We have ['0 '+ '0 = '0]." *)
 
 
+(* ---------------------------------------------------------------------- *)
+(** Properties *)
 
+(** Extract a monoid from a comm_monoid *)
+
+Lemma monoid_of_comm_monoid : forall (A : Type) (M : monoid_str A),
+  comm_monoid M ->
+  monoid M.
+Proof using. introv []. auto. Qed.
+
+(** Extract associativity from a monoid *)
+
+Lemma assoc_of_monoid : forall (A : Type) (E : set A) (op : A->A->A) (id:A),
+  monoid (monoid_ E id op) ->
+  assoc E op.
+Proof using. introv []. auto. Qed.
+
+
+(* ---------------------------------------------------------------------- *)
+(** Monoid over full types *)
+
+(** [Z] is a communative monoid for [0] and [+]. In this monoid, the type [A] of elements
+    is [Z], and the set [E] is all of [Z]. This pattern of having a structure
+    over a full type is common, so it is worth introducing simplified, derived
+    definitions for this case. *)
+
+Record monoid_full_str (A:Type) : Type := monoid_full_ {
+   monoid_full_id : A;
+   monoid_full_op : A -> A -> A; }.
+
+Coercion monoid_of_monoid_full (A:Type) (M:monoid_full_str A) : monoid_str A :=
+  {| monoid_set := set_st (fun _ => True);
+     monoid_id := monoid_full_id M;
+     monoid_op := monoid_full_op M |}.
+
+(** Properties for full operators *)
+
+Definition comm_full (A:Type) (f:A->A->A) : Prop := 
+  forall x y, f x y = f y x.
+
+Definition assoc_full (A:Type) (f:A->A->A) : Prop := 
+  forall x y z, f x (f y z) = f (f x y) z.
+
+Definition neutral_l_full (A:Type) (f:A->A->A) (e:A) : Prop :=
+  forall x, f e x = x.
+
+Definition neutral_r_full (A:Type) (f:A->A->A) (e:A) : Prop :=
+  forall x, f x e = x.
+
+Definition neutral_lr_full (A:Type) (f:A->A->A) (e:A) :=
+  neutral_l_full f e /\ neutral_r_full f e.
+
+(** Smart constructors *)
+
+Lemma monoid_full : forall (A:Type) (op : A->A->A) (id:A),
+  assoc_full op ->
+  neutral_lr_full op id ->
+  monoid (monoid_full_ id op).
+Admitted.
+
+Lemma comm_monoid_full : forall (A:Type) (op : A->A->A) (id:A),
+  let M := monoid_full_ id op in
+  monoid M ->
+  comm_full op ->
+  comm_monoid M.
+Admitted.
+
+(** Demo: [Z] additive monoid *)
+
+Lemma example_monoid_Z :
+  comm_monoid (monoid_full_ 0%Z Z.add).
+Proof using.
+  apply comm_monoid_full.
+  { apply monoid_full; try split; intros_all; try omega. }
+  { intros_all; try omega. }
+Qed.
+
+(** Extract associativity from a full monoid *)
+
+Lemma assoc_of_full_monoid : forall (A : Type) (op : A->A->A) (id:A),
+  monoid (monoid_full_ id op) ->
+  assoc_full op.
+Proof using.
+  introv [? HA ?]. simpls. intros x y z. applys HA. rewrite* mem_set_st_eq.
+Qed.
+
+(** Demo: associativity [Z] additive monoid *)
+
+Hint Resolve example_monoid_Z monoid_of_comm_monoid.
+
+Lemma example_monoid_Z_assoc : forall x y z,
+  Z.add x (Z.add y z) = Z.add (Z.add x y) z.
+Proof using.
+  intros. rewrite assoc_of_full_monoid; eauto.
+Qed.
 
 
 (**************************************************************************)
@@ -337,9 +378,32 @@ Proof using.
   over. intros.
 Abort.
 
+(** Instances and printing for monoids *)
 
+Instance Zero_monoid : forall (A:Type) (M:monoid_str A),
+  Zero A.
+Proof using. constructor. apply (monoid_id M). Defined.
 
+Instance Plus_monoid : forall (A:Type) (M:monoid_str A),
+  Plus A A A.
+Proof using. constructor. apply (monoid_op M). Defined.
 
+Definition ZeroPlus_of_monoid (A:Type) (M:monoid_str A) : Zero A * Plus A A A :=
+  (Zero_monoid M, Plus_monoid M).
+
+Notation "'0" := (monoid_id _) (at level 0, only printing) : maths_scope.
+Notation "n '+ m" := (monoid_op _ n m) (at level 40, only printing) : maths_scope.
+
+(** "Let M(+,0) be a commutative monoid. We have ['0 '+ '0 = '0]." *)
+
+Lemma example_comm_monoid_notations :
+  forall (A : Type) (x : A) (M : monoid_str A), comm_monoid M ->
+  let '(zero_inst,plus_inst) := ZeroPlus_of_monoid M in
+  x '+ '0 = x.
+Proof using. over. intros.
+ (* prints as [x '+ '0 = x] *)
+ (* stands for [monoid_op M x (monoid_id M) = x] *)
+Abort.
 
 
 
