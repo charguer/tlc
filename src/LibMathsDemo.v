@@ -230,6 +230,13 @@ Definition example_comm_monoid :=
 (* ---------------------------------------------------------------------- *)
 (** Properties *)
 
+(** Smart constructor *)
+
+Lemma monoid_of_monoid_destruct : forall (A : Type) (M : monoid_str A),
+  monoid M ->
+  monoid {| monoid_set := monoid_set M; monoid_id := monoid_id M; monoid_op := monoid_op M |}.
+Proof using. intros ? []. auto. Qed.
+
 (** Extract a monoid from a comm_monoid *)
 
 Lemma monoid_of_comm_monoid : forall (A : Type) (M : monoid_str A),
@@ -237,12 +244,20 @@ Lemma monoid_of_comm_monoid : forall (A : Type) (M : monoid_str A),
   monoid M.
 Proof using. introv []. auto. Qed.
 
-(** Extract associativity from a monoid *)
+Hint Resolve monoid_of_monoid_destruct monoid_of_comm_monoid.
+
+(** Extract properties from a monoid *)
 
 Lemma assoc_of_monoid : forall (A : Type) (E : set A) (op : A->A->A) (id:A),
   monoid (monoid_ E id op) ->
   assoc E op.
 Proof using. introv []. auto. Qed.
+
+Lemma neutral_l_of_monoid : forall (A : Type) (E : set A) (op : A->A->A) (id:A),
+  monoid (monoid_ E id op) ->
+  neutral_l E op id.
+Proof using. introv [? ? [HN ?]]. auto. Qed.
+
 
 
 (* ---------------------------------------------------------------------- *)
@@ -304,7 +319,7 @@ Proof using.
   { intros_all; try omega. }
 Qed.
 
-(** Extract associativity from a full monoid *)
+(** Extract properties from a full monoid *)
 
 Lemma assoc_of_full_monoid : forall (A : Type) (op : A->A->A) (id:A),
   monoid (monoid_full_ id op) ->
@@ -313,9 +328,17 @@ Proof using.
   introv [? HA ?]. simpls. intros x y z. applys HA. rewrite* mem_set_st_eq.
 Qed.
 
+Lemma neutral_l_full_of_full_monoid : forall (A : Type) (op : A->A->A) (id:A),
+  monoid (monoid_full_ id op) ->
+  neutral_l_full op id.
+Proof using.
+  introv [? ? [HN ?]]. simpls. intros x. applys HN. rewrite* mem_set_st_eq.
+Qed.
+
+
 (** Demo: associativity [Z] additive monoid *)
 
-Hint Resolve example_monoid_Z monoid_of_comm_monoid.
+Hint Resolve example_monoid_Z.
 
 Lemma example_monoid_Z_assoc : forall x y z,
   Z.add x (Z.add y z) = Z.add (Z.add x y) z.
@@ -388,27 +411,28 @@ Instance Plus_monoid : forall (A:Type) (M:monoid_str A),
   Plus A A A.
 Proof using. constructor. apply (monoid_op M). Defined.
 
-Definition ZeroPlus_of_monoid (A:Type) (M:monoid_str A) : Zero A * Plus A A A :=
-  (Zero_monoid M, Plus_monoid M).
+Definition ZeroPlus_of_monoid (A:Type) (M:monoid_str A) : set A * Zero A * Plus A A A :=
+  (monoid_set M, Zero_monoid M, Plus_monoid M).
 
 Notation "'0" := (monoid_id _) (at level 0, only printing) : maths_scope.
 Notation "n '+ m" := (monoid_op _ n m) (at level 40, only printing) : maths_scope.
 
-(** "Let M(+,0) be a commutative monoid. We have ['0 '+ '0 = '0]." *)
+(** "Let M(E,+,0) be a commutative monoid. 
+    For any [x] in [E], we have ['0 '+ x = x]." *)
+
+Hint Resolve neutral_l_of_monoid.
 
 Lemma example_comm_monoid_notations :
-  forall (A : Type) (x : A) (M : monoid_str A), comm_monoid M ->
-  let '(zero_inst,plus_inst) := ZeroPlus_of_monoid M in
-  x '+ '0 = x.
-Proof using. over. intros.
+  forall (A : Type) (M : monoid_str A), comm_monoid M ->
+  let '(E,_,_) := ZeroPlus_of_monoid M in (* declare additive symbols for [M] *)
+  forall_ x \in E,  '0 '+ x = x.
+Proof using. over. introv HM Hx.
  (* prints as [x '+ '0 = x] *)
  (* stands for [monoid_op M x (monoid_id M) = x] *)
-Abort.
-
-
-
-
-
+  rewrites (>> neutral_l_of_monoid Hx).
+  { eauto. } (* monoid_of_comm_monoid *)
+  { auto. } (* solves [x = x]. *)
+Qed.
 
 
 
