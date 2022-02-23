@@ -355,14 +355,23 @@ Lemma Monoid : forall (A:Type) (op : A->A->A) (id:A),
   Assoc op ->
   Neutral_lr op id ->
   monoid (Monoid_ id op).
-Admitted.
+Proof using.
+  introv HA HN. constructor; simpls; unfold set_full.
+  { rewrite* mem_set_st_eq. }
+  { intros_all. rewrite mem_set_st_eq in *. auto. }
+  { intros_all. rewrite mem_set_st_eq in *. auto. }
+  { destruct HN as [HN1 HN2]. split; intros_all. rewrite* HN1. rewrite* HN2. }
+Qed.
 
 Lemma comm_Monoid : forall (A:Type) (op : A->A->A) (id:A),
   let M := Monoid_ id op in
   monoid M ->
   Comm op ->
   comm_monoid M.
-Admitted.
+Proof using.
+  introv HM HC. constructor. { auto. } 
+  { simpls. intros_all. rewrite* HC. }
+Qed.
 
 (** Demo: [Z] additive Monoid *)
 
@@ -487,13 +496,23 @@ Program Definition typ_monoid (A:Type) (M:monoid_str A) (H : monoid M)
   constructor. applys typ_elem HA. applys typ_op HB.
 Defined.
 
-(** If [M] is a monoid, then so is [typ_monoid M]. *)
+(** If [M] is a monoid, then so is [typ_monoid M]. The proof can probably be simplified. *)
+
 Lemma monoid_typ_monoid : forall (A:Type) (M:monoid_str A) (H : monoid M),
   monoid (typ_monoid H).
 Proof using.
-Admitted.
+  intros A [E id op] [HA HB HC [HD1 HD2]]. simpls. constructor; simpls; unfold set_full.
+  { rewrite* mem_set_st_eq. }
+  { intros_all. rewrite* mem_set_st_eq. }
+  { intros [x Ex] [y Ey] [z Ez] Hx Hy Hz. simpls.
+    apply LibEqual.exist_eq_exist. rewrite* HC. }
+  { split. 
+    { intros [x Ex] Hx. simpls. apply LibEqual.exist_eq_exist. rewrite* HD1. }
+    { intros [x Ex] Hx. simpls. apply LibEqual.exist_eq_exist. rewrite* HD2. } }
+Qed.
 
 (** If [M] is a commutative monoid, then so is [typ_monoid M]. *)
+
 Lemma comm_monoid_typ_monoid : forall (A:Type) (M:monoid_str A) (H : comm_monoid M),
   comm_monoid (typ_monoid (comm_monoid_monoid H)).
 Proof using.
@@ -502,7 +521,6 @@ Proof using.
   { destruct M as [E op id]. destruct HM as [? ? ? ?]. intros [x Ex] [y Ey] _ _. simpls.
     apply LibEqual.exist_eq_exist. rewrite* HC. }
 Qed.
-
 
 (** Let us show how a lemma proved about a [Monoid], that is, over a full type,
     can be translated into a lemma about all monoids. Consider the example
