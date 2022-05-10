@@ -49,7 +49,7 @@ End GetOpt.
 
 Global Opaque get_opt.
 
-Hint Rewrite get_opt_nil get_opt_cons get_opt_app : rew_listx.
+#[global] Hint Rewrite get_opt_nil get_opt_cons get_opt_app : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -150,7 +150,7 @@ Qed.
 
 End Rem.
 
-Hint Rewrite rem_nil rem_cons rem_app rem_last : rew_listx.
+#[global] Hint Rewrite rem_nil rem_cons rem_app rem_last : rew_listx.
 
 Global Opaque rem.
 

@@ -22,7 +22,7 @@ Definition binary (A : Type) := A -> A -> Prop.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance Inhab_binary : forall A, Inhab (binary A).
+#[global] Instance Inhab_binary : forall A, Inhab (binary A).
 Proof using. intros. apply (Inhab_of_val (fun _ _ => True)). Qed.
 
 
@@ -34,7 +34,7 @@ Lemma binary_ext : forall A (R1 R2:binary A),
   R1 = R2.
 Proof using. extens*. Qed.
 
-Instance Extensionality_binary : forall A,
+#[global] Instance Extensionality_binary : forall A,
   Extensionality (binary A).
 Proof using. intros. apply (Extensionality_make (@binary_ext A)). Defined.
 
@@ -291,7 +291,7 @@ Lemma refl_rel_incl' : forall R,
   rel_incl R R.
 Proof using. intros. applys refl_rel_incl. Qed.
 
-Hint Resolve refl_rel_incl refl_rel_incl'.
+#[local] Hint Resolve refl_rel_incl refl_rel_incl'.
 
 Lemma antisym_rel_incl :
   antisym (@rel_incl A B).
@@ -1010,7 +1010,7 @@ Inductive rclosure A (R:binary A) : binary A :=
 Section Rclosure.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rclosure.
+#[local] Hint Constructors rclosure.
 
 (** Equivalent definition *)
 
@@ -1157,7 +1157,7 @@ Proof using. introv H M. destruct* M. Qed.
 
 End Rclosure.
 
-Hint Constructors rclosure : rclosure.
+#[global] Hint Constructors rclosure : rclosure.
 (* --LATER: here and later, add more hints *)
 
 
@@ -1175,7 +1175,7 @@ Inductive sclosure A (R:binary A) : binary A :=
 Section Sclosure.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors sclosure.
+#[local] Hint Constructors sclosure.
 
 (** Equivalent definition *)
 
@@ -1265,7 +1265,7 @@ Proof using. introv H M. induction* M. Qed.
 
 End Sclosure.
 
-Hint Constructors sclosure : sclosure.
+#[global] Hint Constructors sclosure : sclosure.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1284,7 +1284,7 @@ Inductive rsclosure A (R:binary A) : binary A :=
 Section Rsclosure.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rsclosure.
+#[local] Hint Constructors rsclosure.
 
 (** Equivalent definition *)
 
@@ -1370,7 +1370,7 @@ Proof using. introv H M. induction* M. Qed.
 
 End Rsclosure.
 
-Hint Constructors rsclosure : rsclosure.
+#[global] Hint Constructors rsclosure : rsclosure.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1388,7 +1388,7 @@ Inductive tclosure A (R:binary A) : binary A :=
 Section Tclosure.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors tclosure.
+#[local] Hint Constructors tclosure.
 
 (** Properties *)
 
@@ -1474,7 +1474,7 @@ Inductive tclosure'l A (R:binary A) : binary A :=
 Lemma trans_tclosure'l : forall R,
   trans (tclosure'l R).
 Proof using.
-  Hint Constructors tclosure'l.
+  #[local] Hint Constructors tclosure'l.
   intros R y x z M1. gen z. induction M1; introv M2; autos*.
 Qed.
 
@@ -1507,7 +1507,7 @@ Inductive tclosure'r A (R:binary A) : binary A :=
 Lemma trans_tclosure'r : forall R,
   trans (tclosure'r R).
 Proof using.
-  Hint Constructors tclosure'r.
+  #[local] Hint Constructors tclosure'r.
   intros R y x z M1 M2. gen x. induction M2; introv M1; autos*.
 Qed.
 
@@ -1546,7 +1546,7 @@ Proof using. intros R. applys* tclosure_ind_r. Qed.
 
 End Tclosure.
 
-Hint Resolve tclosure_once tclosure_l tclosure_r
+#[global] Hint Resolve tclosure_once tclosure_l tclosure_r
   : rtclosure.
 
 
@@ -1567,7 +1567,7 @@ Inductive rtclosure A (R:binary A) : binary A :=
 Section Rtclosure.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rtclosure.
+#[local] Hint Constructors rtclosure.
 
 (** Properties *)
 
@@ -1674,7 +1674,7 @@ Inductive rtclosure'l A (R:binary A) : binary A :=
 Lemma trans_rtclosure'l : forall R,
   trans (rtclosure'l R).
 Proof using.
-  Hint Constructors rtclosure'l.
+  #[local] Hint Constructors rtclosure'l.
   intros R y x z M1. gen z. induction M1; introv M2; autos*.
 Qed.
 
@@ -1706,7 +1706,7 @@ Inductive rtclosure'r A (R:binary A) : binary A :=
 Lemma trans_rtclosure'r : forall R,
   trans (rtclosure'r R).
 Proof using.
-  Hint Constructors rtclosure'r.
+  #[local] Hint Constructors rtclosure'r.
   intros R y x z M1 M2. gen x. induction M2; introv M1; autos*.
 Qed.
 
@@ -1743,7 +1743,7 @@ Proof using. intros R. applys* rtclosure_ind_r. Qed.
 
 End Rtclosure.
 
-Hint Resolve rtclosure_refl rtclosure_once
+#[global] Hint Resolve rtclosure_refl rtclosure_once
   rtclosure_l rtclosure_r' : rtclosure.
 
 
@@ -1765,7 +1765,7 @@ Inductive stclosure A (R:binary A) : binary A :=
 Section Stclosure.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors stclosure.
+#[local] Hint Constructors stclosure.
 
 (** Properties *)
 
@@ -1837,7 +1837,7 @@ Proof using. introv H M. induction* M. Qed.
 
 End Stclosure.
 
-Hint Constructors stclosure : stclosure.
+#[global] Hint Constructors stclosure : stclosure.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1860,7 +1860,7 @@ Inductive rstclosure A (R:binary A) : binary A :=
 Section Rstclosure.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rstclosure.
+#[local] Hint Constructors rstclosure.
 
 (** Properties *)
 
@@ -1945,7 +1945,7 @@ Qed.
 
 End Rstclosure.
 
-Hint Constructors rstclosure : rstclosure.
+#[global] Hint Constructors rstclosure : rstclosure.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1954,7 +1954,7 @@ Hint Constructors rstclosure : rstclosure.
 Section ClosuresRel.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rtclosure rsclosure stclosure rstclosure.
+#[local] Hint Constructors rtclosure rsclosure stclosure rstclosure.
 
 (** [rclosure] to [rtclosure] *)
 
@@ -2097,9 +2097,9 @@ End ClosuresRel.
 Section IterClosures.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rclosure sclosure tclosure
+#[local] Hint Constructors rclosure sclosure tclosure
   rtclosure rsclosure stclosure rstclosure.
-Hint Resolve sym_tclosure sym_sclosure sym_rclosure
+#[local] Hint Resolve sym_tclosure sym_sclosure sym_rclosure
   sym_rtclosure sym_rsclosure sym_rtclosure sym_rstclosure.
 
 Lemma rclosure_sclosure_eq_rsclosure : forall R,
@@ -2185,7 +2185,7 @@ End IterClosures.
 Section EquivClosures.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors rclosure sclosure tclosure rsclosure stclosure.
+#[local] Hint Constructors rclosure sclosure tclosure rsclosure stclosure.
 
 Lemma rsclosure_eq_union_rclosure_sclosure : forall R,
   rsclosure R = union (rclosure R) (sclosure R).
@@ -2245,7 +2245,7 @@ End EquivClosures.
 Section MixedClosures.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Constructors tclosure.
+#[local] Hint Constructors tclosure.
 
 Lemma tclosure_of_rtclosure_l : forall R x y z,
   rtclosure R x y ->
@@ -2297,7 +2297,7 @@ Definition strict A (R:binary A) : binary A :=
 Section Strict.
 Variables (A : Type).
 Implicit Types R : binary A.
-Hint Unfold strict.
+#[local] Hint Unfold strict.
 
 Lemma strict_eq_fun : forall R,
   strict R = (fun x y => R x y /\ x <> y).
@@ -2357,7 +2357,7 @@ Lemma rclosure_strict : forall R,
   refl R ->
   rclosure (strict R) = R.
 Proof using.
-  Hint Constructors rclosure.
+  #[local] Hint Constructors rclosure.
   unfold strict. extens. intros x y. iff K.
   { destruct K; subst*. }
   { tests: (x = y); subst*. }

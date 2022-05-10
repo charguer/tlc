@@ -62,7 +62,7 @@ Fixpoint nth A (n:nat) (s:stream A) : A :=
 
 (** Streams are inhabited *)
 
-Instance Inhab_stream : forall `{Inhab A}, Inhab (stream A).
+#[global] Instance Inhab_stream : forall `{Inhab A}, Inhab (stream A).
 Proof using. intros. apply (Inhab_of_val (const arbitrary)). Qed.
 
 
@@ -134,7 +134,7 @@ Definition list_equiv (A:Type) (E:binary A) : binary (list A) :=
    Forall2 E.
 
 Section ListEquiv.
-Hint Constructors Forall2.
+#[local] Hint Constructors Forall2.
 
 Lemma equiv_list_equiv : forall A (E:binary A),
   equiv E ->
@@ -159,8 +159,8 @@ Definition bisimilar_mod_upto A (E:binary A) n s1 s2 :=
   list_equiv E (take n s1) (take n s2).
 
 Section Bisimilar.
-Hint Unfold list_equiv.
-Hint Constructors Forall2.
+#[local] Hint Unfold list_equiv.
+#[local] Hint Constructors Forall2.
 
 (** This relation is an equivalence *)
 
@@ -218,8 +218,8 @@ Qed.
 
 End Bisimilar.
 
-Hint Resolve equiv_bisimilar_mod_upto.
-Hint Resolve bisimilar_mod_upto_zero.
+#[global] Hint Resolve equiv_bisimilar_mod_upto.
+#[global] Hint Resolve bisimilar_mod_upto_zero.
 
 
 (* ********************************************************************** *)

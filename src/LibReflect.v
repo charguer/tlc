@@ -64,14 +64,14 @@ Lemma False_of_false :
   False.
 Proof using. intros K. rewrite~ istrue_false_eq in K. Qed.
 
-(** Hints for proving [false] and [False] *)
+(** #[global] Hints for proving [false] and [False] *)
 
-Hint Resolve istrue_true not_istrue_false.
+#[global] Hint Resolve istrue_true not_istrue_false.
 
-Hint Extern 1 (istrue false) =>
+#[global] Hint Extern 1 (istrue false) =>
   apply false_of_False.
 
-Hint Extern 1 (False) => match goal with
+#[global] Hint Extern 1 (False) => match goal with
   | H: istrue false |- _ => apply (not_istrue_false H) end.
 
 
@@ -131,7 +131,7 @@ Proof using.
   intros. extens. iff M. { subst*. } { applys* bool_ext. }
 Qed.
 
-Instance Extensionality_bool : Extensionality bool.
+#[global] Instance Extensionality_bool : Extensionality bool.
 Proof using. apply (Extensionality_make bool_ext). Defined.
 
 
@@ -316,7 +316,7 @@ Proof using. extens. tautob. Qed.
 (** [rew_istrue] distributes [istrue]. It is useful to replace all
     boolean operators with corresponding logical operators. *)
 
-Hint Rewrite istrue_true_eq istrue_false_eq istrue_isTrue_eq
+#[global] Hint Rewrite istrue_true_eq istrue_false_eq istrue_isTrue_eq
   istrue_neg_eq istrue_and_eq istrue_or_eq
   If_istrue istrue_If_eq istrue_if_eq: rew_istrue.
 
@@ -350,7 +350,7 @@ Tactic Notation "rew_istrue" "*" "in" "*" :=
     This tactic is probably much less useful than [rew_istrue], since logical
     operators are often simpler to work with. *)
 
-Hint Rewrite isTrue_True isTrue_False isTrue_istrue
+#[global] Hint Rewrite isTrue_True isTrue_False isTrue_istrue
   isTrue_not isTrue_and isTrue_or
   if_isTrue isTrue_If : rew_isTrue.
 
@@ -384,7 +384,7 @@ Tactic Notation "rew_isTrue" "*" "in" "*" :=
        hypotheses of the form [true = ..] and [false = ..] or symmetric.
        It is used as post-treatment for tactic [case_if]. *)
 
-Hint Rewrite
+#[global] Hint Rewrite
   true_eq_isTrue_eq isTrue_eq_true_eq
   false_eq_isTrue_eq isTrue_eq_false_eq
   isTrue_eq_isTrue_eq

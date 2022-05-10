@@ -13,7 +13,7 @@
 (** ** Addition and substraction *)
 
 
-Hint Rewrite plus_zero_r plus_zero_l minus_zero : rew_nat.
+#[global] Hint Rewrite plus_zero_r plus_zero_l minus_zero : rew_nat.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -66,9 +66,9 @@ End CompProp.
 (** [rew_nat] performs some basic simplification on
     expressions involving natural numbers *)
 
-Hint Rewrite le_SS ge_SS lt_SS gt_SS : rew_nat.
-Hint Rewrite plus_le_l plus_ge_l plus_lt_l plus_gt_l : rew_nat.
-Hint Rewrite plus_le_r plus_ge_r plus_lt_r plus_gt_r : rew_nat.
+#[global] Hint Rewrite le_SS ge_SS lt_SS gt_SS : rew_nat.
+#[global] Hint Rewrite plus_le_l plus_ge_l plus_lt_l plus_gt_l : rew_nat.
+#[global] Hint Rewrite plus_le_r plus_ge_r plus_lt_r plus_gt_r : rew_nat.
 
 Tactic Notation "rew_nat" :=
   autorewrite with rew_nat.
@@ -199,7 +199,7 @@ Lemma abs_neq_nat_inv : forall (x:int) (y:nat),
     able to deconstruct conjunctions, disjunctions,
     and negations, but as a consequence it might be slower. *)
 
-Hint Rewrite istrue_and istrue_or istrue_neg : rew_reflect_and_or_neg.
+#[global] Hint Rewrite istrue_and istrue_or istrue_neg : rew_reflect_and_or_neg.
 
 Ltac maths_core tt :=
   autorewrite with rew_reflect_and_or_neg in *; intuition math.
@@ -347,7 +347,7 @@ Tactic Notation "rew_pow" "*" constr(b) constr(min_e) "in" hyp(H) :=
 
 From TLC Require Import LibEpsilon.
 
-Instance int_le_total_order : Le_total_order (A:=int).
+#[global] Instance int_le_total_order : Le_total_order (A:=int).
 Proof using.
   constructor. constructor. constructor; unfolds.
   math. math. unfolds. math. unfolds.
@@ -417,8 +417,8 @@ Lemma plus_gt_r : forall a b c,
   (b + a > c + a) = (b > c).
 Proof using. math. Qed.
 
-Hint Rewrite plus_le_l plus_ge_l plus_lt_l plus_gt_l : rew_int.
-Hint Rewrite plus_le_r plus_ge_r plus_lt_r plus_gt_r : rew_int.
+#[global] Hint Rewrite plus_le_l plus_ge_l plus_lt_l plus_gt_l : rew_int.
+#[global] Hint Rewrite plus_le_r plus_ge_r plus_lt_r plus_gt_r : rew_int.
 
 
 
@@ -438,7 +438,7 @@ Definition eq_lt_implies (P : (nat->Prop) -> Prop) :=
   (forall m, n < m -> P (eq m)) ->
   P (gt n).
 
-Hint Unfold eq_lt_implies eq_gt_implies. (* --TODO: rename *)
+#[global] Hint Unfold eq_lt_implies eq_gt_implies. (* --TODO: rename *)
 
 Lemma eq_lt_induction : forall (P : (nat->Prop) -> Prop),
   (forall n, (forall m, n > m -> P (eq m)) -> P (lt n)) ->
@@ -548,7 +548,7 @@ Qed.
 Implicit Arguments div2_bounds [m n].
 
 
-Hint Rewrite mod2_zero mod2_odd mod2_even div2_odd div2_even : rew_parity.
+#[global] Hint Rewrite mod2_zero mod2_odd mod2_even div2_odd div2_even : rew_parity.
 
 Ltac rew_parity :=
   autorewrite with rew_parity.
@@ -683,9 +683,9 @@ Extract Constant Fix =>
 (* ********************************************************************** *)
 (* * LibMultiset *)
 
-Hint Resolve foreach_empty foreach_single foreach_union.
+#[global] Hint Resolve foreach_empty foreach_single foreach_union.
 
-Hint Rewrite foreach_union_eq : rew_foreach.
+#[global] Hint Rewrite foreach_union_eq : rew_foreach.
 
 Tactic Notation "rew_foreach" :=
   autorewrite with rew_foreach.
@@ -734,8 +734,8 @@ Lemma for_set_union_empty_r : forall A (E:set A),
   E \u \{} = E.
 Proof using. intros. apply union_empty_r. Qed.
 
-Hint Rewrite <- for_set_union_assoc : rew_permut_simpl.
-Hint Rewrite for_set_union_empty_l for_set_union_empty_r : rew_permut_simpl.
+#[global] Hint Rewrite <- for_set_union_assoc : rew_permut_simpl.
+#[global] Hint Rewrite for_set_union_empty_l for_set_union_empty_r : rew_permut_simpl.
 Ltac rew_per :=
   autorewrite with rew_permut_simpl; try typeclass.
 Ltac rews_permut_simpl :=
@@ -1015,7 +1015,7 @@ Ltac in_union_get :=
           go tt ]
   end end.
 
-Hint Extern 3 (_ \in _ \u _) => in_union_get.
+#[global] Hint Extern 3 (_ \in _ \u _) => in_union_get.
 
 Section InUnionExtract.
 Variables (A:Type).
@@ -1058,7 +1058,7 @@ Ltac in_union_extract :=
           go tt ]
   end end.
 
-Hint Extern 3 (_ \in _) => in_union_extract.
+#[global] Hint Extern 3 (_ \in _) => in_union_extract.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1080,7 +1080,7 @@ Lemma notin_empty : forall x,
   x \notin (\{}:set A).
 Proof using. intros. unfold notin. rewrite in_empty_eq. auto. Qed.
 End InversionsTactic.
-Hint Resolve notin_empty.
+#[global] Hint Resolve notin_empty.
 
 Ltac in_union_meta :=
   match goal with
@@ -1229,7 +1229,7 @@ Tactic Notation "eq_set" "*" :=
 (* --LATER: is this deprecated?
   Lemma binds_update_rem : forall A i j `{Inhab B} v w (M:map A B),
     j \notindom' M -> binds (M[j:=w]) i v -> binds M i v.
-  Hint Resolve binds_update_rem.
+  #[global] Hint Resolve binds_update_rem.
 *)
 
 

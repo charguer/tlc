@@ -50,13 +50,13 @@ Lemma total_preorder_refl : forall A (le:binary A),
   refl le.
 Proof using. introv [Tr To]. intros x. destruct~ (To x x). Qed.
 
-Hint Resolve total_preorder_refl.
+#[global] Hint Resolve total_preorder_refl.
 
 Coercion total_preorder_to_preorder A (R:binary A)
   (O:total_preorder R) : preorder R.
 Proof using. lets [M _]: O. constructor~. Qed.
 
-Hint Resolve total_preorder_to_preorder.
+#[global] Hint Resolve total_preorder_to_preorder.
 
 (** Transformations *)
 
@@ -107,7 +107,7 @@ Coercion order_to_preorder A (R:binary A)
   (O:order R) : preorder R.
 Proof using. destruct* O. constructors*. Qed.
 
-Hint Resolve order_to_preorder.
+#[global] Hint Resolve order_to_preorder.
 
 (** Transformations *)
 
@@ -149,7 +149,7 @@ Coercion order_wrt_to_preorder A (E:binary A) (R:binary A)
   (O:order_wrt E R) : preorder R.
 Proof using. destruct* O. constructors*. Qed.
 
-Hint Resolve order_wrt_to_preorder.
+#[global] Hint Resolve order_wrt_to_preorder.
 
 (** Transformations *)
 
@@ -210,7 +210,7 @@ Proof using. destruct* O. constructors*. applys* order_trans. Qed.
 
 Definition total_order_to_order := total_order_order.
 
-Hint Resolve total_order_to_order total_order_to_total_preorder.
+#[global] Hint Resolve total_order_to_order total_order_to_total_preorder.
 
 (** Transformations *)
 
@@ -386,7 +386,7 @@ Proof using.
   autos~ strict_total_order_irrefl strict_total_order_asym.
 Qed.
 
-Hint Resolve strict_total_order_to_strict_order.
+#[global] Hint Resolve strict_total_order_to_strict_order.
 
 (** Transformation *)
 
@@ -476,11 +476,11 @@ Notation "x < y < z" := (x < y /\ y < z)
 (* ---------------------------------------------------------------------- *)
 (** ** The operators [ge], [lt] and [gt] are deduced from [le] *)
 
-Instance ge_of_le : forall `{Le A}, Ge A.
+#[global] Instance ge_of_le : forall `{Le A}, Ge A.
   constructor. apply (inverse le). Defined.
-Instance lt_of_le : forall `{Le A}, Lt A.
+#[global] Instance lt_of_le : forall `{Le A}, Lt A.
   constructor. apply (strict le). Defined.
-Instance gt_of_le : forall `{Le A}, Gt A.
+#[global] Instance gt_of_le : forall `{Le A}, Gt A.
   constructor. apply (inverse lt). Defined.
 
 Lemma ge_is_inverse_le : forall `{Le A}, ge = inverse le.
@@ -499,12 +499,12 @@ Global Opaque ge_of_le lt_of_le gt_of_le.
 
 (** Local tactic [rew_to_le] *)
 
-Hint Rewrite @gt_is_inverse_strict_le @ge_is_inverse_le @lt_is_strict_le : rew_to_le.
+#[global] Hint Rewrite @gt_is_inverse_strict_le @ge_is_inverse_le @lt_is_strict_le : rew_to_le.
 
 Tactic Notation "rew_to_le" :=
   autorewrite with rew_to_le in *.
 
-Hint Rewrite @ge_is_inverse_le @gt_is_inverse_lt : rew_to_le_lt.
+#[global] Hint Rewrite @ge_is_inverse_le @gt_is_inverse_lt : rew_to_le_lt.
 
 Tactic Notation "rew_to_le_lt" :=
   autorewrite with rew_to_le_lt in *.
@@ -705,7 +705,7 @@ Class Lt_slt_false `{Le A} : Prop :=
 
 
 (* ********************************************************************** *)
-(* * Instances for comparison structures *)
+(* * #[global] Instances for comparison structures *)
 
 Section Instances.
 Context `{Le A}.

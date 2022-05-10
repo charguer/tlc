@@ -45,7 +45,7 @@ Class Decidable (P:Prop) := decidable_make {
   decide : bool;
   decide_spec : decide = isTrue P }.
 
-Hint Rewrite @decide_spec : rew_refl.
+#[global] Hint Rewrite @decide_spec : rew_refl.
 Implicit Arguments decide [[Decidable]].
 Extraction Inline decide.
 
@@ -229,7 +229,7 @@ Qed.
 Class Comparable (A:Type) := make_comparable {
   comparable : forall (x y:A), Decidable (x = y) }.
 
-Hint Resolve @comparable : typeclass_instances.
+#[global] Hint Resolve @comparable : typeclass_instances.
 Extraction Inline comparable.
 
 (** In classical logic, any type is comparable; of course,
@@ -269,7 +269,7 @@ Qed.
 
 (** Comparison for booleans *)
 
-Instance bool_comparable : Comparable bool.
+#[global] Instance bool_comparable : Comparable bool.
 Proof using.
   applys (comparable_beq Bool.eqb).
   destruct x; destruct y; simpl; rew_refl; auto_false*.
@@ -306,7 +306,7 @@ Class Pickable (A : Type) (P : A -> Prop) := pickable_make {
 Implicit Arguments pick [A [Pickable]].
 Extraction Inline pick.
 
-(** Instances of pickable *)
+(** #[global] Instances of pickable *)
 
 Global Instance eq_pickable : forall (A : Type) (a : A), (* --TODO: use `{Inhab A} *)
   Pickable (eq a).
@@ -331,7 +331,7 @@ Fixpoint nat_compare (x y : nat) :=
   | _, _ => false
   end.
 
-Instance nat_comparable : Comparable nat.
+#[global] Instance nat_comparable : Comparable nat.
 Proof using.
   applys (comparable_beq nat_compare).
   induction x; destruct y; simpl.
@@ -343,7 +343,7 @@ Proof using.
   autos*.
 Qed.
 
-Instance string_comparable : Comparable string.
+#[global] Instance string_comparable : Comparable string.
 Proof using. applys comparable_of_dec string_dec. Qed.
 
 

@@ -24,7 +24,7 @@ From TLC Require Import LibTactics LibLogic LibOperation.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance Inhab_bool : Inhab bool.
+#[global] Instance Inhab_bool : Inhab bool.
 Proof using. constructor. apply (Inhab_of_val true). Qed.
 
 
@@ -316,7 +316,7 @@ Opaque eqb neg and or.
 (** [rew_neg_neg] is a tactic that simplifies all double negations
     of booleans, i.e. replaces [!!b] with [b]. *)
 
-Hint Rewrite neg_neg : rew_neg_neg.
+#[global] Hint Rewrite neg_neg : rew_neg_neg.
 
 Tactic Notation "rew_neg_neg" :=
   autorewrite with rew_neg_neg.
@@ -345,7 +345,7 @@ Tactic Notation "rew_neg_neg" "*" "in" "*" :=
 (** [rew_bool] simplifies boolean expressions, using rewriting
     lemmas in the database [rew_bool] defined below. *)
 
-Hint Rewrite
+#[global] Hint Rewrite
   eqb_same eqb_true_l eqb_true_r eqb_false_l eqb_false_r
   neg_false neg_true neg_neg neg_and neg_or
   and_true_l and_true_r and_false_l and_false_r

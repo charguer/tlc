@@ -30,7 +30,7 @@ Parameter var_compare_eq : forall (x y:var),
 
   (* DEPRECATED
   Parameter var_comp : Comparable var.
-  Instance var_comparable : Comparable var := var_comp.
+  #[global] Instance var_comparable : Comparable var := var_comp.
   *)
 
 (** We can build sets of variables. *)
@@ -76,7 +76,7 @@ Qed.
   Lemma var_comp : Comparable var.
   Proof using. apply nat_comparable. Qed.
 
-  Instance var_comparable : Comparable var := var_comp.
+  #[global] Instance var_comparable : Comparable var := var_comp.
   *)
 
 Definition vars := fset var.
@@ -123,7 +123,7 @@ Fixpoint fresh (L : vars) (n : nat) (xs : list var) {struct xs} : Prop :=
   | _,_ => False
   end.
 
-Hint Extern 1 (fresh _ _ _) => simpl.
+#[global] Hint Extern 1 (fresh _ _ _) => simpl.
 
 (* It is possible to build a list of n fresh variables. *)
 
@@ -343,9 +343,9 @@ Ltac notin_solve :=
   first [ notin_simpl; try notin_solve_one
         | notin_false ].
 
-Hint Extern 1 (_ \notin _) => notin_solve.
-Hint Extern 1 (_ <> _ :> var) => notin_solve.
-Hint Extern 1 ((_ \notin _) /\ _) => splits.
+#[global] Hint Extern 1 (_ \notin _) => notin_solve.
+#[global] Hint Extern 1 (_ <> _ :> var) => notin_solve.
+#[global] Hint Extern 1 ((_ \notin _) /\ _) => splits.
 
 
 (* ********************************************************************** *)
@@ -492,7 +492,7 @@ Ltac fresh_solve :=
         | fresh_solve_by_notins
         | idtac ].
 
-Hint Extern 1 (fresh _ _ _) => fresh_solve.
+#[global] Hint Extern 1 (fresh _ _ _) => fresh_solve.
 
 (* --LATER: more automation of fresh_length properties *)
 

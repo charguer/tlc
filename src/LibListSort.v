@@ -37,7 +37,7 @@ Variables (A : Type).
 Implicit Types l : list A.
 Implicit Types P : A->Prop.
 
-Hint Constructors permut_one.
+#[global] Hint Constructors permut_one.
 
 (** Permutation is an equivalence *)
 
@@ -168,7 +168,7 @@ Qed.  (* COQBUG? why [applys* mem_permut_inv_l] does not work *)
 
 End PermutProp.
 
-Hint Resolve permut_refl permut_flip permut_app_lr permut_cons
+#[global] Hint Resolve permut_refl permut_flip permut_app_lr permut_cons
   permut_last permut_rev.
 
 
@@ -254,7 +254,7 @@ End PermutationTactic.
     (some of the lists [li] are put in the form [x::nil]). *)
 (* --TODO: improve so as to ensure no rewrite inside elements *)
 
-Hint Rewrite app_assoc app_nil_l app_nil_r : permut_rew.
+#[global] Hint Rewrite app_assoc app_nil_l app_nil_r : permut_rew.
 
 Ltac permut_lemma_get n :=
   match number_to_nat n with
@@ -366,7 +366,7 @@ Inductive sorted A (le : binary A) : list A -> Prop :=
 
 Section Sorted.
 Variables (A : Type) (le : binary A).
-Hint Constructors sorted.
+#[global] Hint Constructors sorted.
 
 (** Constructor: if [l] is sorted and [x] is smaller than the head
    of [l], then [x::l] is sorted. *)
@@ -432,7 +432,7 @@ Definition sorts A (le : binary A) (l l' : list A) : Prop :=
 Section Sorts.
 Variables (A : Type).
 Implicit Types le : binary A.
-Hint Resolve sorted_nil sorted_one.
+#[global] Hint Resolve sorted_nil sorted_one.
 
 Lemma sorts_refl : forall le l,
   sorted le l ->
@@ -510,7 +510,7 @@ Definition heads_le A (le : binary A) l1 l2 :=
 Section HeadsLe.
 Variables (A : Type).
 Variable le : binary A.
-Hint Resolve sorted_nil sorted_one.
+#[global] Hint Resolve sorted_nil sorted_one.
 
 (** Rewriting *)
 
@@ -560,9 +560,9 @@ Definition rsorted A (le : binary A) := sorted (flip le).
 Section RSorted.
 Variables (A : Type) (le : binary A).
 Implicit Types l : list A.
-Hint Constructors sorted.
-Hint Resolve sorted_nil sorted_one.
-Hint Unfold rsorted.
+#[global] Hint Constructors sorted.
+#[global] Hint Resolve sorted_nil sorted_one.
+#[global] Hint Unfold rsorted.
 
 (** Constructors *)
 
@@ -638,7 +638,7 @@ Definition rsorts A (le : binary A) := sorts (flip le).
 Section Rsorts.
 Variables (A : Type).
 Implicit Types le : binary A.
-Hint Resolve sorted_nil sorted_one.
+#[global] Hint Resolve sorted_nil sorted_one.
 
 Lemma rsorts_refl : forall le l,
   rsorted le l ->

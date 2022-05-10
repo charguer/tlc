@@ -102,7 +102,7 @@ End Combinators.
 (** Tactic for simplifying function compositions *)
 (* --TODO: not used; might become deprecated *)
 
-Hint Rewrite compose_id_l compose_id_r compose_assoc : rew_compose.
+#[global] Hint Rewrite compose_id_l compose_id_r compose_assoc : rew_compose.
 Tactic Notation "rew_compose" :=
   autorewrite with rew_compose.
 Tactic Notation "rew_compose" "in" "*" :=
@@ -177,7 +177,7 @@ Qed.
 Lemma image_union : forall A B (f : A -> B) (E F : set A),
   image f (E \u F) = image f E \u image f F.
 Proof using.
-  Hint Resolve in_image_prove.
+  #[local] Hint Resolve in_image_prove.
   introv. apply in_extens. intros x. iff N.
     lets (y&Hy&Ey): in_image_inv (rm N). rewrite in_union_eq in Hy.
      rewrite in_union_eq. destruct* Hy.
@@ -198,7 +198,7 @@ Qed.
 
 End FunctionImage.
 
-Hint Resolve finite_image : finite.
+#[global] Hint Resolve finite_image : finite.
 
 
 (* ********************************************************************** *)

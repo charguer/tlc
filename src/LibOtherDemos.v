@@ -191,7 +191,7 @@ Proof using.
   auto. auto. inverts H. inverts~ H1.
 Qed.
 
-Hint Constructors mem.
+#[global] Hint Constructors mem.
 
 (** Example of an inductive proof with Mem
     -- usually not as good as the one with [Forall] *)
@@ -217,7 +217,7 @@ Inductive subtree : binary tree :=
      mem t ts -> subtree t (node ts).
   (* there is typically more than one case here *)
 
-Hint Constructors subtree.
+#[global] Hint Constructors subtree.
 
 (** Proof of well-foundedness of the subtree relation *)
 
@@ -362,9 +362,9 @@ Qed.
 (** ** Demo of automation of [notin] *)
 
 (* LibVar exports the following hints:
-     Hint Extern 1 (_ \notin _) => notin_solve.
-     Hint Extern 1 (_ <> _ :> var) => notin_solve.
-     Hint Extern 1 ((_ \notin _) /\ _) => splits. *)
+     #[global] Hint Extern 1 (_ \notin _) => notin_solve.
+     #[global] Hint Extern 1 (_ <> _ :> var) => notin_solve.
+     #[global] Hint Extern 1 ((_ \notin _) /\ _) => splits. *)
 
 Lemma test_notin_by_auto : forall x E F G,
   x \notin E \u F -> x \notin G -> x \notin (E \u G).
@@ -378,7 +378,7 @@ Lemma test_notin_false_by_hand : forall x,
   ~ x \notin \{x}.
 Proof using. intros_all. notin_false. Qed.
 
-Hint Extern 1 (~ _ \notin _) => intros_all; notin_false.
+#[local] Hint Extern 1 (~ _ \notin _) => intros_all; notin_false.
 
 Lemma test_notin_false_by_auto : forall x,
   ~ x \notin \{x}.
@@ -386,7 +386,7 @@ Proof using. intros_all. notin_false. Qed.
 
 (* Comment: using the following hint is a bad idea because it will
             lead to very inefficient proof scripts.
-   Hint Extern 1 (False) => notin_false. *)
+   #[global] Hint Extern 1 (False) => notin_false. *)
 
 
 (* ---------------------------------------------------------------------- *)

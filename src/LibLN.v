@@ -210,7 +210,7 @@ Proof using. induction l; introv E; destruct n; rew_listx; simpl; auto. Qed.
 
 (** Property over lists of given length *)
 
-Hint Constructors Forall.
+#[global] Hint Constructors Forall.
 
 Definition list_for_n (A : Set) (P : A -> Prop) (n : nat) (L : list A) :=
   n = length L /\ Forall P L.
@@ -225,11 +225,11 @@ Proof using.
   apply* Forall_app.
 Qed.
 
-Hint Extern 1 (?n = length ?xs) =>
+#[global] Hint Extern 1 (?n = length ?xs) =>
  match goal with H: list_for_n _ ?n ?xs |- _ =>
   apply (proj1 H) end.
 
-Hint Extern 1 (length ?xs = ?n) =>
+#[global] Hint Extern 1 (length ?xs = ?n) =>
  match goal with H: list_for_n _ ?n ?xs |- _ =>
   apply (sym_eq (proj1 H)) end.
 

@@ -237,7 +237,7 @@ End MoreDefinitions.
 (* ---------------------------------------------------------------------- *)
 (** ** Basic Properties *)
 
-Hint Rewrite empty_def single_def concat_def singles_def keys_def values_def
+#[global] Hint Rewrite empty_def single_def concat_def singles_def keys_def values_def
   dom_def map_def map_keys_def get_def : env_defs.
 
 Ltac rew_env_defs := autorewrite with env_defs in *.
@@ -606,17 +606,17 @@ Qed.
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** Hints and rewriting tactics *)
+(** ** #[global] Hints and rewriting tactics *)
 
-Hint Constructors ok.
+#[global] Hint Constructors ok.
 
-Hint Rewrite dom_empty dom_single dom_concat : rew_env_dom.
-Hint Rewrite map_empty map_single map_concat : rew_env_map.
-Hint Rewrite map_keys_empty map_keys_single
+#[global] Hint Rewrite dom_empty dom_single dom_concat : rew_env_dom.
+#[global] Hint Rewrite map_empty map_single map_concat : rew_env_map.
+#[global] Hint Rewrite map_keys_empty map_keys_single
  map_keys_concat : rew_env_map_keys.
-Hint Rewrite get_empty get_single get_concat : rew_evn_get.
+#[global] Hint Rewrite get_empty get_single get_concat : rew_evn_get.
 
-Hint Rewrite concat_empty_r concat_empty_l concat_assoc : rew_env_concat.
+#[global] Hint Rewrite concat_empty_r concat_empty_l concat_assoc : rew_env_concat.
 
 Tactic Notation "rew_env_concat" :=
   autorewrite with rew_env_concat.
@@ -633,7 +633,7 @@ Ltac simpl_dom :=
   rewrite_all dom_single in *;
   rewrite_all dom_empty in *.
 
-Hint Extern 1 (_ # _) => simpl_dom; notin_solve.
+#[global] Hint Extern 1 (_ # _) => simpl_dom; notin_solve.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of well-formedness and freshness *)
@@ -783,26 +783,26 @@ Arguments ok_middle_inv [A] [E] [F] [x] [v].
 
 (** Automation *)
 
-Hint Resolve ok_middle_inv_l ok_map ok_concat_map ok_singles.
+#[global] Hint Resolve ok_middle_inv_l ok_map ok_concat_map ok_singles.
 
-Hint Extern 1 (ok (?E & ?G)) =>
+#[global] Hint Extern 1 (ok (?E & ?G)) =>
   match goal with H: ok (E & ?F & G) |- _ =>
     apply (ok_remove H) end.
 
-Hint Extern 1 (ok (?E)) =>
+#[global] Hint Extern 1 (ok (?E)) =>
   match goal with H: ok (E & _ ~ _) |- _ =>
     apply (ok_push_inv_ok H) end.
 
-Hint Extern 1 (ok (?E)) =>
+#[global] Hint Extern 1 (ok (?E)) =>
   match goal with H: ok (E & _) |- _ =>
     apply (ok_concat_inv_l H) end.
 
-Hint Extern 1 (ok (?E)) =>
+#[global] Hint Extern 1 (ok (?E)) =>
   match goal with H: ok (_ & E) |- _ =>
     apply (ok_concat_inv_r H) end.
 
 (* not used
-Hint Extern 1 (ok (_ & ?xs ~* ?vs)) =>
+#[global] Hint Extern 1 (ok (_ & ?xs ~* ?vs)) =>
   match goal with H: fresh _ ?n xs |- _ =>
   match type of vs with list ?A =>
     apply (@ok_concat_singles A n)
@@ -1108,7 +1108,7 @@ End BindsProperties.
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics *)
 
-Hint Resolve binds_push_eq binds_push_neq
+#[global] Hint Resolve binds_push_eq binds_push_neq
   binds_map binds_concat_left binds_concat_right.
 
 Tactic Notation "binds_mid" :=
@@ -1176,7 +1176,7 @@ Lemma extends_push_reoccur : forall E x v,
 
 End ExtendsProperties.
 
-Hint Resolve extends_refl extends_push.
+#[global] Hint Resolve extends_refl extends_push.
 
 
 (* ********************************************************************** *)

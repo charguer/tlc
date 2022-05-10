@@ -20,7 +20,7 @@ Generalizable Variables A B.
     Inductive prod A B : Type :=
       | pair : A -> B -> prod A B.
 
-    Hint Constructors prod : core.
+    #[global] Hint Constructors prod : core.
 
     Add Printing Let prod.
     Notation "x * y" := (prod x y) : type_scope.
@@ -79,7 +79,7 @@ Proof using. intros. subst~. Qed.
 
 End Properties.
 
-Hint Immediate eq_prod2 eq_prod3 eq_prod4.
+#[global] Hint Immediate eq_prod2 eq_prod3 eq_prod4.
 
 
 

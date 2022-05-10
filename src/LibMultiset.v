@@ -63,31 +63,31 @@ Definition card_impl A (E:multiset A) :=
 Lemma in_inst : forall A, BagIn A (multiset A).
 Proof using. constructor. exact (@in_impl A). Defined.
 
-Hint Extern 1 (BagIn _ (multiset _)) => apply in_inst
+#[global] Hint Extern 1 (BagIn _ (multiset _)) => apply in_inst
   : typeclass_instances.
 
-Instance empty_inst : forall A, BagEmpty (multiset A).
+#[global] Instance empty_inst : forall A, BagEmpty (multiset A).
   constructor. rapply (@empty_impl A). Defined.
 
-Instance single_inst : forall A, BagSingle A (multiset A) .
+#[global] Instance single_inst : forall A, BagSingle A (multiset A) .
   constructor. rapply (@single_impl A). Defined.
 
-Instance union_inst : forall A, BagUnion (multiset A).
+#[global] Instance union_inst : forall A, BagUnion (multiset A).
   constructor. rapply (@union_impl A). Defined.
 
-Instance incl_inst : forall A, BagIncl (multiset A).
+#[global] Instance incl_inst : forall A, BagIncl (multiset A).
   constructor. rapply (@incl_impl A). Defined.
 
-Instance fold_inst : forall A B, BagFold B (A->nat->B) (multiset A).
+#[global] Instance fold_inst : forall A B, BagFold B (A->nat->B) (multiset A).
   constructor. rapply (@fold_impl A B). Defined.
 
-Instance card_inst : forall A, BagCard (multiset A).
+#[global] Instance card_inst : forall A, BagCard (multiset A).
   constructor. rapply (@card_impl A). Defined.
 
 Global Opaque multiset empty_inst single_inst in_inst
  union_inst incl_inst fold_inst card_inst.
 
-Instance Inhab_multiset : forall A, Inhab (multiset A).
+#[global] Instance Inhab_multiset : forall A, Inhab (multiset A).
 Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 
 
@@ -99,9 +99,9 @@ Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 
 Section Instances.
 Variables (A:Type).
-Hint Extern 1 False => math.
-Hint Extern 1 (_ > _) => solve [ math | false ].
-Hint Extern 1 (_ = _) => math.
+#[local] Hint Extern 1 False => math.
+#[local] Hint Extern 1 (_ > _) => solve [ math | false ].
+#[local] Hint Extern 1 (_ = _) => math.
 
 Transparent multiset empty_inst single_inst in_inst
  union_inst incl_inst fold_inst card_inst.
@@ -204,7 +204,7 @@ Lemma foreach_union : forall P E F,
   foreach P E -> foreach P F -> foreach P (E \u F).
 Proof using. intros_all. destruct~ (in_union_inv H1). Qed.
 
-Hint Resolve foreach_empty foreach_single foreach_union.
+#[local] Hint Resolve foreach_empty foreach_single foreach_union.
 
 Lemma foreach_union_inv : forall P E F,
   foreach P (E \u F) ->
@@ -262,8 +262,8 @@ Proof using. intros. apply union_empty_r. Qed.
 Lemma for_multiset_empty_incl : forall A (E:multiset A), \{} \c E.
 Proof using. intros. apply empty_incl. Qed.
 
-Hint Rewrite <- for_multiset_union_assoc : rew_permut_simpl.
-Hint Rewrite for_multiset_union_empty_l for_multiset_union_empty_r : rew_permut_simpl.
+#[global] Hint Rewrite <- for_multiset_union_assoc : rew_permut_simpl.
+#[global] Hint Rewrite for_multiset_union_empty_l for_multiset_union_empty_r : rew_permut_simpl.
 Ltac rew_permut_simpl :=
   autorewrite with rew_permut_simpl.
 Ltac rews_permut_simpl :=
@@ -552,7 +552,7 @@ Ltac in_union_get :=
   end end.
 
 (* -- DEPRECATED Removed hint:
-      Hint Extern 3 (_\in _ \u _) => in_union_get. *)
+      #[global] Hint Extern 3 (_\in _ \u _) => in_union_get. *)
 
 Section InUnionExtract.
 Variables (A:Type).
@@ -623,7 +623,7 @@ Lemma notin_empty : forall x,
 Proof using. intros. unfold notin. rewrite in_empty_eq. auto. Qed.
 
 End InversionsTactic.
-Hint Resolve notin_empty.
+#[global] Hint Resolve notin_empty.
 
 Ltac in_union_meta :=
   match goal with

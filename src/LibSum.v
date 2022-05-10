@@ -20,7 +20,7 @@ Generalizable Variables A B.
       | inl : A -> sum A B
       | inr : B -> sum A B.
 
-    Hint Constructors sum : core.
+    #[global] Hint Constructors sum : core.
     Notation "x + y" := (sum x y) : type_scope.
 
   Remark: ideally, constructors would be renamed to [sum_l] and [sum_r];
@@ -35,10 +35,10 @@ Arguments inr {A} {B}.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance sum_inhab_l : forall `{Inhab A} B, Inhab (A + B).
+#[global] Instance sum_inhab_l : forall `{Inhab A} B, Inhab (A + B).
 Proof using. intros. apply (Inhab_of_val (inl arbitrary)). Qed.
 
-Instance sum_inhab_r : forall `{Inhab B} A, Inhab (A + B).
+#[global] Instance sum_inhab_r : forall `{Inhab B} A, Inhab (A + B).
 Proof using. intros. apply (Inhab_of_val (inr arbitrary)). Qed.
 
 Definition Inhab_sum : forall `{Inhab A, Inhab B}, Inhab (A + B).

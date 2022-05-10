@@ -48,7 +48,7 @@ Class Comm_monoid A (m:monoid_op A) : Prop := Comm_monoid_make {
 
 (** Example:
 
-  Instance monoid_plus_zero:
+  #[global] Instance monoid_plus_zero:
     Monoid (monoid_make plus 0).
   Proof using.
     constructor; repeat intro; lia.

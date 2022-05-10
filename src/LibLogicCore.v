@@ -17,7 +17,7 @@ Set Implicit Arguments.
     Inductive True : Prop :=
       | I : True.
 
-    Hint Constructors True : core.
+    #[global] Hint Constructors True : core.
 
   Remark: [constructor] should be renamed to [True_intro].
   Single-letter variable names should be reserved to the user.
@@ -43,7 +43,7 @@ Set Implicit Arguments.
 
   Notation "~ x" := (not x) : type_scope.
 
-  Hint Unfold not : core.
+  #[global] Hint Unfold not : core.
 
 *)
 
@@ -58,7 +58,7 @@ Set Implicit Arguments.
 
     Notation "P /\ Q" := (and P Q) : type_scope.
 
-    Hint Constructors and : core.
+    #[global] Hint Constructors and : core.
 
     Lemma proj1 : forall (P Q : Prop), P /\ Q -> P.
     Proof using. autos*. Qed.
@@ -82,7 +82,7 @@ Set Implicit Arguments.
 
     Notation "A \/ B" := (or A B) : type_scope.
 
-    Hint Constructors or : core.
+    #[global] Hint Constructors or : core.
 
   Remark: to follow conventions, constructors should be [or_l] and [or_r].
 
@@ -97,7 +97,7 @@ Set Implicit Arguments.
 
       Notation "P <-> Q" := (iff P Q) : type_scope.
 
-      Hint Unfold iff.
+      #[global] Hint Unfold iff.
 
 *)
 
@@ -119,7 +119,7 @@ Set Implicit Arguments.
       Arguments eq_rec [A].
       Arguments eq_rect [A].
 
-      Hint Constructors eq : core.
+      #[global] Hint Constructors eq : core.
 
   Remark : to follow conventions, constructors should be named [eq_intro],
   or [refl_eq].
@@ -141,7 +141,7 @@ Set Implicit Arguments.
         format "'[' 'exists'  '/  ' x  :  t ,  '/  ' p ']'")
       : type_scope.
 
-    Hint Constructors ex : core.
+    #[global] Hint Constructors ex : core.
 
 *)
 

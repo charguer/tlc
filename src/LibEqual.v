@@ -57,7 +57,7 @@ Class Extensionality (A:Type) := Extensionality_make {
 Arguments extensionality [A].
 Arguments Extensionality_make [A] [extensionality_hyp].
 
-(** Instance for propositional extensionality *)
+(** #[global] Instance for propositional extensionality *)
 
 Global Instance extensionatity_prop : Extensionality Prop.
 Proof using. intros. apply (Extensionality_make prop_ext). Defined.
@@ -329,7 +329,7 @@ Lemma fun_eta_5 : forall A1 A2 A3 A4 A5 B (f : A1 -> A2 -> A3 -> A4 -> A5 -> B),
   (fun x1 x2 x3 x4 x5 => f x1 x2 x3 x4 x5) = f.
 Proof using. intros. apply~ fun_ext_4. Qed.
 
-Hint Rewrite fun_eta_1 fun_eta_2 fun_eta_3 fun_eta_4 fun_eta_5 : rew_eta.
+#[global] Hint Rewrite fun_eta_1 fun_eta_2 fun_eta_3 fun_eta_4 fun_eta_5 : rew_eta.
 
 
 

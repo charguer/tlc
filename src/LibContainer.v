@@ -135,7 +135,7 @@ Definition foreach `{BagIn A T} (P:A->Prop) (E:T) :=
 
 Local Open Scope Int_scope.
 
-Instance int_index : BagIndex int int.
+#[global] Instance int_index : BagIndex int int.
 Proof using. intros. constructor. exact (fun n (i:int) => 0 <= i < n). Defined.
 
 Lemma int_index_eq : forall (n i : int),
@@ -166,7 +166,7 @@ Qed.
 
 (** Bag update can be defined as bag union with a singleton bag *)
 
-Instance bag_update_as_union_single : forall A B T
+#[global] Instance bag_update_as_union_single : forall A B T
   `{BagSingleBind A B T} `{BagUnion T},
   BagUpdate A B T.
   constructor. apply (fun m k v => m \u (k \:= v)). Defined.
@@ -740,7 +740,7 @@ Proof using. constructor. introv N. rewrite* incl_inter_eq in N. Qed.
 
 (** Local tactic [contain_by_in_double] to prove inclusion *)
 
-Hint Rewrite @in_union_eq @in_inter_eq
+#[local] Hint Rewrite @in_union_eq @in_inter_eq
   @in_empty_eq @in_single_eq : rew_in_eq.
 
 Ltac contain_by_in_double :=

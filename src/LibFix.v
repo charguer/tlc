@@ -19,11 +19,11 @@ Ltac destruct_if_post ::= tryfalse~.
 Ltac auto_tilde ::=
   try solve [ auto | eauto | intros_all; subst_local; simpls; eauto ].
 
-Hint Unfold pred_incl pred_and.
-Hint Resolve rclosure_refl rclosure_of_rel.
-Hint Resolve wf_empty.
-Hint Resolve equiv_refl equiv_sym equiv_trans.
-Hint Resolve refl_rel_incl' rel_incl_tclosure.
+#[global] Hint Unfold pred_incl pred_and.
+#[global] Hint Resolve rclosure_refl rclosure_of_rel.
+#[global] Hint Resolve wf_empty.
+#[global] Hint Resolve equiv_refl equiv_sym equiv_trans.
+#[global] Hint Resolve refl_rel_incl' rel_incl_tclosure.
 
 (* ---------------------------------------------------------------------- *)
 (** ** Post-conditions for functions *)
@@ -34,7 +34,7 @@ Definition post_true {A B:Type} : A -> B -> Prop :=
 Definition post_false {A B:Type} : A -> B -> Prop :=
   fun _ _ => False.
 
-Hint Unfold post_true post_false.
+#[global] Hint Unfold post_true post_false.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -53,14 +53,14 @@ Definition unique_upto_st A (E:binary A) (P : A -> Prop) (x : A) :=
 Definition pfun_equiv A B (E:B->B->Prop) (P:A->Prop) (f f':A->B) :=
   forall x, P x -> E (f x) (f' x).
 
-Hint Unfold pfun_equiv.
+#[global] Hint Unfold pfun_equiv.
 
 (** Same, but specialized to Leibnitz' equality *)
 
 Definition pfun_equal A B (P:A->Prop) (f f':A->B) :=
   pfun_equiv (@eq B) P f f'.
 
-Hint Unfold pfun_equal.
+#[global] Hint Unfold pfun_equal.
 
 (** [pfun_equiv] is an equivalence relation. *)
 
@@ -71,7 +71,7 @@ Proof using.
   introv [RE SE TE]. unfold pfun_equiv. constructor; intros_all*.
 Qed.
 
-Hint Resolve pfun_equiv_equiv.
+#[global] Hint Resolve pfun_equiv_equiv.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -90,7 +90,7 @@ Notation "A --> B" := (partial A B) (right associativity, at level 55).
 (** The type of partial functions is inhabited as soon as the
     return type is inhabited. *)
 
-Instance Inhab_partial : forall A B {I:Inhab B}, Inhab (A-->B).
+#[global] Instance Inhab_partial : forall A B {I:Inhab B}, Inhab (A-->B).
 Proof using. intros. apply (Inhab_of_val (Build_partial arbitrary (fun _ => True))). Qed.
 
 
@@ -461,7 +461,7 @@ Proof using.
   apply~ refl_inv. apply~ sym_inv. apply~ trans_inv.
 Qed.
 
-Hint Resolve similar_equiv.
+#[global] Hint Resolve similar_equiv.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -548,11 +548,11 @@ Definition globally_complete I A (M:family I A) :=
   forall u, globally_coherent M u ->
   exists l, global_limit M u l.
 
-(** -------- Hints for proofs --------- *)
+(** -------- #[global] Hints for proofs --------- *)
 
-Hint Resolve ofe_wf ofe_trans ofe_equiv.
-Hint Resolve cofe_ofe cofe_complete.
-Hint Unfold coherent globally_coherent locally_coherent.
+#[global] Hint Resolve ofe_wf ofe_trans ofe_equiv.
+#[global] Hint Resolve cofe_ofe cofe_complete.
+#[global] Hint Unfold coherent globally_coherent locally_coherent.
 
 Lemma ofe_sim_refl : forall I A (M:family I A) i,
   OFE M ->
@@ -569,7 +569,7 @@ Lemma ofe_sim_sym : forall I A (M:family I A) i,
   sym (family_sim M i).
 Proof using. intros. apply~ equiv_sym. Qed.
 
-Hint Resolve ofe_sim_refl ofe_sim_trans ofe_sim_sym.
+#[global] Hint Resolve ofe_sim_refl ofe_sim_trans ofe_sim_sym.
 
 
 (** -------- Alternative definition of completeness --------- *)
@@ -724,7 +724,7 @@ Lemma make_COFE : forall I A {IA:Inhab A} (M:family I A),
   COFE M.
 Proof using. intros. asserts: (OFE M). constructor~. constructor~. Qed.
 
-Hint Resolve complete_to_locally_complete
+#[global] Hint Resolve complete_to_locally_complete
              complete_to_globally_complete.
 
 
@@ -1119,7 +1119,7 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** COFE for definitions functions mixing recursion and corecursion *)
 
-Hint Unfold lexico2.
+#[global] Hint Unfold lexico2.
 
 (** We define the family used to reason on partial functions mixing
     recursion and co-recursion. More precisely, given a COFE on values
@@ -1294,7 +1294,7 @@ Lemma mixed_fixed_point_generally_consistent :
   (forall i x, P x -> S i x (f x)) ->
   generally_consistent_partial_fixed_point E F (Build_partial f P).
 Proof using.
-  Hint Resolve pfun_equiv_equiv similar_equiv.
+  #[global] Hint Resolve pfun_equiv_equiv similar_equiv.
   introv IB Cofe WfR SimE. introv Conti Contr Fixf Inva.
   subst E. split. unfolds. simpl. apply Fixf.
   intros [f' P'] Fixf'.

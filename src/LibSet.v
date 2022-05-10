@@ -96,7 +96,7 @@ Notation "x \notindom E" := (x \notin ((dom E) : set _))
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance Inhab_set : forall A, Inhab (set A).
+#[global] Instance Inhab_set : forall A, Inhab (set A).
 Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 
 
@@ -106,34 +106,34 @@ Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 Lemma in_inst : forall A, BagIn A (set A).
 Proof using. constructor. exact (@in_impl A). Defined.
 
-Hint Extern 1 (BagIn _ (set _)) => apply in_inst : typeclass_instances.
+#[global] Hint Extern 1 (BagIn _ (set _)) => apply in_inst : typeclass_instances.
 (* -- LATER: could this be an instance like all others ? *)
 
-Instance empty_inst : forall A, BagEmpty (set A).
+#[global] Instance empty_inst : forall A, BagEmpty (set A).
   constructor. apply (@empty_impl A). Defined.
 
-Instance single_inst : forall A, BagSingle A (set A).
+#[global] Instance single_inst : forall A, BagSingle A (set A).
   constructor. rapply (@single_impl A). Defined.
 
-Instance union_inst : forall A, BagUnion (set A).
+#[global] Instance union_inst : forall A, BagUnion (set A).
   constructor. rapply (@union_impl A). Defined.
 
-Instance inter_inst : forall A, BagInter (set A).
+#[global] Instance inter_inst : forall A, BagInter (set A).
   constructor. rapply (@inter_impl A). Defined.
 
-Instance remove_inst : forall A, BagRemove (set A) (set A).
+#[global] Instance remove_inst : forall A, BagRemove (set A) (set A).
   constructor. rapply (@remove_impl A). Defined.
 
-Instance incl_inst : forall A, BagIncl (set A).
+#[global] Instance incl_inst : forall A, BagIncl (set A).
   constructor. rapply (@incl_impl A). Defined.
 
-Instance disjoint_inst : forall A, BagDisjoint (set A).
+#[global] Instance disjoint_inst : forall A, BagDisjoint (set A).
   constructor. rapply (@disjoint_impl A). Defined.
 
-Instance fold_inst : forall A B, BagFold B (A->B) (set A).
+#[global] Instance fold_inst : forall A B, BagFold B (A->B) (set A).
   constructor. rapply (@fold_impl A B). Defined.
 
-Instance card_inst : forall A, BagCard (set A).
+#[global] Instance card_inst : forall A, BagCard (set A).
   constructor. rapply (@card_impl A). Defined.
 
 Global Opaque set finite in_inst empty_inst single_inst union_inst inter_inst
@@ -191,7 +191,7 @@ Implicit Types E F : set A.
 Transparent set finite empty_inst single_inst single_impl in_inst
   incl_inst inter_inst union_inst card_inst fold_inst remove_inst
   disjoint_inst.
-Hint Constructors mem.
+#[local] Hint Constructors mem.
 
 (** Local tactic to help unfolding all intermediate definitions *)
 
@@ -632,7 +632,7 @@ Qed.
 
 End Instances.
 
-Hint Resolve finite_empty finite_single finite_union
+#[global] Hint Resolve finite_empty finite_single finite_union
   finite_inter finite_incl finite_remove : finite.
 
 
@@ -687,7 +687,7 @@ Proof using. apply disjoint_eq. Qed.
 
 End Autorewrite.
 
-Hint Rewrite in_set_st_eq set_in_empty_eq set_in_single_eq
+#[global] Hint Rewrite in_set_st_eq set_in_empty_eq set_in_single_eq
   set_in_inter_eq set_in_union_eq set_in_remove_eq set_in_extens_eq
   set_incl_in_eq set_disjoint_eq : rew_set.
 
@@ -952,7 +952,7 @@ Qed.
 
 (** Rewriting tactics [rew_set] *)
 
-Hint Rewrite in_set_st_eq : rew_set.
+#[global] Hint Rewrite in_set_st_eq : rew_set.
 
 Tactic Notation "rew_set" :=
   autorewrite with rew_set.
@@ -1045,8 +1045,8 @@ Proof using. introv M N I. applys N. applys~ M. Qed.
 
 End ForeachProp.
 
-Hint Resolve foreach_empty foreach_single foreach_union.
-Hint Rewrite foreach_union_eq foreach_single_eq : rew_foreach.
+#[global] Hint Resolve foreach_empty foreach_single foreach_union.
+#[global] Hint Rewrite foreach_union_eq foreach_single_eq : rew_foreach.
 
 Tactic Notation "rew_foreach" :=
   autorewrite with rew_foreach.

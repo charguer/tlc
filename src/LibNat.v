@@ -33,7 +33,7 @@ Global Close Scope positive_scope.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
-Instance Inhab_nat : Inhab nat.
+#[global] Instance Inhab_nat : Inhab nat.
 Proof using. intros. apply (Inhab_of_val 0). Qed.
 
 
@@ -47,7 +47,7 @@ Proof using. intros. apply (Inhab_of_val 0). Qed.
 (** The typeclass instance of [le] on [nat] is defined to be the [le]
     relation on Peano numbers from Coq's standard library. *)
 
-Instance le_nat_inst : Le nat := Build_Le Peano.le.
+#[global] Instance le_nat_inst : Le nat := Build_Le Peano.le.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -79,7 +79,7 @@ Proof using.
   unfold strict, inverse. intros. lia.
 Qed.
 
-Hint Rewrite le_peano lt_peano ge_peano gt_peano : rew_nat_comp.
+#[global] Hint Rewrite le_peano lt_peano ge_peano gt_peano : rew_nat_comp.
 
 Ltac nat_comp_to_peano :=
   autorewrite with rew_nat_comp in *.
@@ -106,24 +106,24 @@ Ltac nat_math :=
 
 Ltac nat_math_hint := nat_math.
 
-Hint Extern 3 (_ = _ :> nat) => nat_math_hint : nat_maths.
-Hint Extern 3 (_ <> _ :> nat) => nat_math_hint : nat_maths.
-Hint Extern 3 (istrue (isTrue (_ = _ :> nat))) => nat_math_hint : nat_maths.
-Hint Extern 3 (istrue (isTrue (_ <> _ :> nat))) => nat_math_hint : nat_maths.
-Hint Extern 3 ((_ <= _)%nat) => nat_math_hint : nat_maths.
-Hint Extern 3 ((_ >= _)%nat) => nat_math_hint : nat_maths.
-Hint Extern 3 ((_ < _)%nat) => nat_math_hint : nat_maths.
-Hint Extern 3 ((_ > _)%nat) => nat_math_hint : nat_maths.
-Hint Extern 3 (@le nat _ _ _) => nat_math_hint : nat_maths.
-Hint Extern 3 (@lt nat _ _ _) => nat_math_hint : nat_maths.
-Hint Extern 3 (@ge nat _ _ _) => nat_math_hint : nat_maths.
-Hint Extern 3 (@gt nat _ _ _) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 (_ = _ :> nat) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 (_ <> _ :> nat) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 (istrue (isTrue (_ = _ :> nat))) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 (istrue (isTrue (_ <> _ :> nat))) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 ((_ <= _)%nat) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 ((_ >= _)%nat) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 ((_ < _)%nat) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 ((_ > _)%nat) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 (@le nat _ _ _) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 (@lt nat _ _ _) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 (@ge nat _ _ _) => nat_math_hint : nat_maths.
+#[global] Hint Extern 3 (@gt nat _ _ _) => nat_math_hint : nat_maths.
 
 
 (* ---------------------------------------------------------------------- *)
 (** ** Total order instance *)
 
-Instance nat_le_total_order : Le_total_order (A:=nat).
+#[global] Instance nat_le_total_order : Le_total_order (A:=nat).
 Proof using.
   constructor. constructor. constructor; unfolds.
   nat_math. nat_math. nat_math.
@@ -216,7 +216,7 @@ Proof using. nat_math. Qed.
 (** [rew_nat] performs some basic simplification on
     expressions involving natural numbers *)
 
-Hint Rewrite plus_zero_r plus_zero_l minus_zero_r
+#[global] Hint Rewrite plus_zero_r plus_zero_l minus_zero_r
   plus_succ minus_zero succ_minus_succ minus_same plus_minus_same
   mult_zero_l mult_zero_r mult_one_l mult_one_r : rew_nat.
 

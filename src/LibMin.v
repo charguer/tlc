@@ -181,7 +181,7 @@ Proof using.
     { eapply (IHk (x + 1)%nat). nat_math. eauto using increment_lower_bound_nat. }
 Qed.
 
-Hint Resolve bounded_has_minimal_nat : bounded_has_minimal.
+#[global] Hint Resolve bounded_has_minimal_nat : bounded_has_minimal.
 
 (* Furthermore, at type [nat], every set admits a lower bound. *)
 
@@ -191,7 +191,7 @@ Proof using.
   exists 0%nat. unfold lower_bound. nat_math.
 Qed.
 
-Hint Resolve admits_lower_bound_nat : admits_lower_bound.
+#[global] Hint Resolve admits_lower_bound_nat : admits_lower_bound.
 
 (* At type [nat], every non-empty set that admits an upper bound
    has a maximal element. *)
@@ -225,7 +225,7 @@ Proof using.
   unfold inverse. nat_math.
 Qed.
 
-Hint Resolve bounded_has_maximal_nat : bounded_has_minimal.
+#[global] Hint Resolve bounded_has_maximal_nat : bounded_has_minimal.
 
 Lemma mmin_spec_nat:
   forall (P:nat->Prop) m,

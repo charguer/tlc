@@ -57,7 +57,7 @@ Declare Scope ltac_scope.
   Lemma test : forall b, b = false.
   time eauto 7. (* takes over 4 seconds to fail! *) *)
 
-Remove Hints Bool.trans_eq_bool : core.
+#[global] Remove Hints Bool.trans_eq_bool : core.
 
 
 (* ********************************************************************** *)
@@ -273,7 +273,7 @@ Ltac list_boxer_of E :=
     [Definition mydatabase := True.]
 
     Then, to map [mykey] to [myvalue], write the hint:
-    [Hint Extern 1 (Register mydatabase mykey) => Provide myvalue.]
+    [#[global] Hint Extern 1 (Register mydatabase mykey) => Provide myvalue.]
 
     Finally, to query the value associated with a key, run the
     tactic [ltac_database_get mydatabase mykey]. This will leave
@@ -620,7 +620,7 @@ Tactic Notation "protects" constr(E) "do" tactic(Tac) "/" :=
 
 Definition eq' := @eq.
 
-Hint Unfold eq' : core.
+#[global] Hint Unfold eq' : core.
 
 Notation "x '='' y" := (@eq' _ x y)
   (at level 70, y at next level).
@@ -3647,7 +3647,7 @@ Tactic Notation "unpack" constr(H) :=
 
 
 (* ********************************************************************** *)
-(** * Tactics to Prove Typeclass Instances *)
+(** * Tactics to Prove Typeclass #[global] Instances *)
 
 (** [typeclass] is an automation tactic specialized for finding
     typeclass instances. *)
@@ -3687,7 +3687,7 @@ Tactic Notation "left" :=
 
 
 (* ---------------------------------------------------------------------- *)
-(** ** [hint] to Add Hints Local to a Lemma *)
+(** ** [hint] to Add #[global] Hints Local to a Lemma *)
 
 (** [hint E] adds [E] as an hypothesis so that automation can use it.
     Syntax [hint E1,..,EN] is available *)

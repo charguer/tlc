@@ -1261,9 +1261,9 @@ Inductive bigredh : nat -> trm -> trm -> Prop :=
       bigredh n (subst x v2 t3) v ->
       bigredh (S n) (trm_app t1 t2) v.
 
-Hint Extern 1 ((_ < _)%nat) => lia.
+#[local] Hint Extern 1 ((_ < _)%nat) => lia.
 
-Hint Constructors bigred bigredh.
+#[local] Hint Constructors bigred bigredh.
 
 Lemma bigredh_lt : forall n n' t v,
   bigredh n t v -> (n < n')%nat -> bigredh n' t v.

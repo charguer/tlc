@@ -241,7 +241,7 @@ Qed.
 
 End Prefix.
 
-Hint Resolve
+#[global] Hint Resolve
   prefix_reflexive
   prefix_nil
   prefix_cons_cons
@@ -339,7 +339,7 @@ Implicit Types xs ys : list A.
 Lemma le_implies_ge: forall x y, x <= y -> y >= x.
 Proof using. math. Qed.
 
-Local Hint Resolve le_implies_ge length_nonneg.
+Local #[global] Hint Resolve le_implies_ge length_nonneg.
 
 (* [prefix], [snoc], and read access.
 

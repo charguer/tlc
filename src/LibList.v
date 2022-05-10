@@ -44,7 +44,7 @@ Notation "[ x ; y ; .. ; z ]" :=  (cons x (cons y .. (cons z nil) ..)) : liblist
 (* ********************************************************************** *)
 (** * Inhabited *)
 
-Instance Inhab_list : forall A, Inhab (list A).
+#[global] Instance Inhab_list : forall A, Inhab (list A).
 Proof using. intros. apply (Inhab_of_val nil). Qed.
 
 
@@ -208,14 +208,14 @@ End App.
 
 Global Opaque app.
 
-Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
+#[global] Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one_r : rew_list.
 (* Note: [app_last_l] may be safely added to [rew_list] *)
 
-Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
+#[global] Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one_r : rew_listx.
 
-Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
+#[global] Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one_r : rew_lists.
 
 
@@ -251,7 +251,7 @@ End FoldRight.
 
 Global Opaque fold_right.
 
-Hint Rewrite fold_right_nil fold_right_cons fold_right_last : rew_listx.
+#[global] Hint Rewrite fold_right_nil fold_right_cons fold_right_last : rew_listx.
 (* Note: [fold_right_app] may be safely added to [rew_listx] *)
 
 
@@ -293,7 +293,7 @@ End FoldLeft.
 
 Global Opaque fold_left.
 
-Hint Rewrite fold_left_nil fold_left_cons
+#[global] Hint Rewrite fold_left_nil fold_left_cons
   fold_left_last : rew_listx.
 (* Note: [fold_left_app] can be safely added to [rew_listx] *)
 
@@ -336,9 +336,9 @@ End Length.
 
 Global Opaque length.
 
-Hint Rewrite length_nil length_cons length_app
+#[global] Hint Rewrite length_nil length_cons length_app
   length_last : rew_list.
-Hint Rewrite length_nil length_cons length_app
+#[global] Hint Rewrite length_nil length_cons length_app
   length_last : rew_listx.
 
 
@@ -611,7 +611,7 @@ Variables (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 
-Hint Constructors mem.
+#[local] Hint Constructors mem.
 
 (** Induction *)
 
@@ -784,7 +784,7 @@ Proof using. introv P. destruct~ l. false P. applys mem_here. Qed.
 
 End Mem.
 
-Hint Rewrite mem_nil_eq mem_cons_eq mem_app_eq mem_last_eq : rew_listx.
+#[global] Hint Rewrite mem_nil_eq mem_cons_eq mem_app_eq mem_last_eq : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -805,7 +805,7 @@ Variables (A : Type).
 Implicit Types l : list A.
 Implicit Types x : A.
 Implicit Types n : nat.
-Hint Constructors mem Nth.
+#[local] Hint Constructors mem Nth.
 
 Lemma Nth_cons_match : forall n l x y,
   Nth n (y::l) x =
@@ -943,7 +943,7 @@ Variables (A:Type).
 Implicit Types n : nat.
 Implicit Types d x : A.
 Implicit Types l : list A.
-Hint Constructors Nth.
+#[local] Hint Constructors Nth.
 
 Lemma nth_default_nil : forall n d,
   nth_default d n nil = d.
@@ -990,7 +990,7 @@ End NthDef.
 
 Arguments nth_default [A] : simpl never.
 
-Hint Rewrite nth_default_nil nth_default_zero nth_default_succ : rew_listx.
+#[global] Hint Rewrite nth_default_nil nth_default_zero nth_default_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1144,7 +1144,7 @@ End NthFuncAux.
 Arguments nth [A] {IA}.
 Global Opaque nth.
 
-Hint Rewrite nth_zero nth_succ : rew_listx.
+#[global] Hint Rewrite nth_zero nth_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1277,8 +1277,8 @@ End Rev.
 
 Global Opaque rev.
 
-Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_list.
-Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_listx.
+#[global] Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_list.
+#[global] Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_listx.
 (* Note: [fold_right_rev] may be safely added to [rew_list] *)
 
 
@@ -1369,7 +1369,7 @@ Lemma Nth_make : forall i n v,
   i < n ->
   Nth i (make n v) v.
 Proof using.
-  Hint Constructors Nth.
+  #[local] Hint Constructors Nth.
   introv. gen n; induction i; introv E; destruct n; try solve [ false; math ].
   { constructors. }
   { rewrite make_succ. applys Nth_succ. applys~ IHi. math. }
@@ -1384,7 +1384,7 @@ End Make.
 
 Global Opaque make.
 
-Hint Rewrite make_zero make_succ length_make : rew_listx.
+#[global] Hint Rewrite make_zero make_succ length_make : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1538,7 +1538,7 @@ End Update.
 
 Global Opaque update.
 
-Hint Rewrite length_update update_nil update_zero update_succ : rew_listx.
+#[global] Hint Rewrite length_update update_nil update_zero update_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1678,7 +1678,7 @@ End Map.
 
 Global Opaque map.
 
-Hint Rewrite map_nil map_cons map_app map_last length_map : rew_listx.
+#[global] Hint Rewrite map_nil map_cons map_app map_last length_map : rew_listx.
 (* Note: [map_rev] and [map_id] may be safely added to [rew_listx] *)
 
 Lemma map_id : forall A (l:list A),
@@ -1713,7 +1713,7 @@ Lemma Nth_map : forall (A B:Type) (f:A->B) (l:list A) n (x:A),
   Nth n l x ->
   Nth n (map f l) (f x).
 Proof using.
-  Hint Constructors Nth.
+  #[local] Hint Constructors Nth.
   introv M. induction M; rew_listx; auto.
 Qed.
 
@@ -1778,7 +1778,7 @@ Lemma mem_concat_eq : forall m x,
     mem x (concat m)
   = exists l, mem l m /\ mem x l.
 Proof using.
-  Hint Constructors mem.
+  #[local] Hint Constructors mem.
   introv. extens. induction m.
   { simpl. iff I. { inverts I. } { destruct I as (?&H&?). inverts H. } }
   { rewrite concat_cons. rewrite mem_app_eq. iff I (l&M&N).
@@ -1806,7 +1806,7 @@ End Concat.
 
 Global Opaque concat.
 
-Hint Rewrite concat_nil concat_cons concat_app concat_last : rew_listx.
+#[global] Hint Rewrite concat_nil concat_cons concat_app concat_last : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1823,7 +1823,7 @@ Variables (A : Type).
 Implicit Types x : A.
 Implicit Types l : list A.
 Implicit Types P : A -> Prop.
-Hint Constructors mem.
+#[local] Hint Constructors mem.
 
 Lemma filter_nil : forall P,
   filter P nil = nil.
@@ -1942,7 +1942,7 @@ End Filter.
 
 Global Opaque filter.
 
-Hint Rewrite filter_nil filter_cons filter_app filter_last filter_rev
+#[global] Hint Rewrite filter_nil filter_cons filter_app filter_last filter_rev
              mem_filter_eq : rew_listx.
 
 
@@ -2029,7 +2029,7 @@ Inductive noduplicates A : list A -> Prop :=
 Section Noduplicates.
 Variables (A : Type).
 Implicit Types l : list A.
-Hint Constructors noduplicates.
+#[local] Hint Constructors noduplicates.
 
 Lemma noduplicates_one : forall (x:A),
   noduplicates (x::nil).
@@ -2053,7 +2053,7 @@ Lemma noduplicates_app : forall l1 l2,
   (forall x, mem x l1 -> mem x l2 -> False) ->
   noduplicates (l1 ++ l2).
 Proof using.
-  Hint Constructors mem.
+  #[local] Hint Constructors mem.
   intros l1. induction l1; introv N1 N2 EQ; rew_list.
   { auto. }
   { inverts N1 as N N1'. constructors.
@@ -2085,7 +2085,7 @@ Lemma noduplicates_length_le : forall l1 l2,
   (forall x, mem x l1 -> mem x l2) ->
   length l1 <= length l2.
 Proof using.
-  Hint Constructors mem.
+  #[local] Hint Constructors mem.
   introv NL ML. gen l2. induction l1 as [|a l1']; intros; rew_list.
   { math. }
   { inverts NL as HM NL'. sets_eq l2': (remove a l2).
@@ -2181,7 +2181,7 @@ Fixpoint remove_duplicates A (l:list A) :=
 Section Remove_duplicates.
 Variables (A : Type).
 Implicit Types l : list A.
-Hint Constructors mem noduplicates.
+#[local] Hint Constructors mem noduplicates.
 
 Lemma remove_duplicates_spec : forall l l',
   l' = remove_duplicates l ->
@@ -2218,7 +2218,7 @@ Proof using. introv. forwards*: remove_duplicates_spec l. Qed.
 
 End Remove_duplicates.
 
-Hint Rewrite mem_remove_duplicates : rew_listx.
+#[global] Hint Rewrite mem_remove_duplicates : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2301,7 +2301,7 @@ Qed.
 
 Global Opaque combine.
 
-Hint Rewrite combine_nil combine_cons : rew_listx.
+#[global] Hint Rewrite combine_nil combine_cons : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2378,7 +2378,7 @@ Lemma Nth_split : forall n l x y r s,
   (r,s) = split l ->
   Nth n r x /\ Nth n s y.
 Proof using.
-  Hint Constructors Nth.
+  #[local] Hint Constructors Nth.
   introv N E. gen_eq p: (x,y). gen r s x y.
   induction N as [l' [x' y']|[x' y'] n' l' [x'' y'']]; intros.
   { inverts EQp. rewrite split_cons_let in E.
@@ -2416,7 +2416,7 @@ End Split.
 
 Global Opaque split.
 
-Hint Rewrite split_nil : rew_listx.
+#[global] Hint Rewrite split_nil : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -2521,7 +2521,7 @@ End Take.
 (* Arguments take [A] : simpl never. *)
 Global Opaque take.
 
-Hint Rewrite take_nil take_zero take_succ : rew_listx.
+#[global] Hint Rewrite take_nil take_zero take_succ : rew_listx.
 (* Note: [take_prefix_length] and [take_full_length]
    may be safely added to [rew_listx]. *)
 
@@ -2616,7 +2616,7 @@ End Drop.
 Global Opaque drop.
 (* Arguments drop [A] : simpl never. *)
 
-Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
+#[global] Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
 (* Note: [drop_prefix_length] and [drop_full_length]
    may be safely added to [rew_list]. *)
 
@@ -2775,7 +2775,7 @@ Section ForallProp.
 Variables A : Type.
 Implicit Types l : list A.
 Implicit Types P : A->Prop.
-Hint Constructors Forall.
+#[local] Hint Constructors Forall.
 
 (* Rewriting *)
 
@@ -2957,7 +2957,7 @@ Qed.
 
 End ForallProp.
 
-Hint Rewrite Forall_nil_eq Forall_cons_eq Forall_app_eq Forall_last_eq
+#[global] Hint Rewrite Forall_nil_eq Forall_cons_eq Forall_app_eq Forall_last_eq
   Forall_rev_eq : rew_listx.
 
 
@@ -2983,7 +2983,7 @@ Implicit Types y : B.
 Implicit Types r : list A.
 Implicit Types s : list B.
 Implicit Types P : A -> B -> Prop.
-Hint Constructors Forall2.
+#[local] Hint Constructors Forall2.
 
 (* Basic *)
 
@@ -3119,7 +3119,7 @@ Lemma Forall2_rev : forall P r s,
   Forall2 P r s ->
   Forall2 P (rev r) (rev s).
 Proof using.
-  Hint Resolve Forall2_last.
+  #[local] Hint Resolve Forall2_last.
   intros P r. induction r; introv M; inverts M; rew_listx~.
 Qed.
 
@@ -3220,7 +3220,7 @@ Section Exists.
 Variables A : Type.
 Implicit Types l : list A.
 Implicit Types P : A -> Prop.
-Hint Constructors Exists.
+#[local] Hint Constructors Exists.
 
 (* Rewriting *)
 
@@ -3304,7 +3304,7 @@ Proof using. introv H. rewrite* Exists_last_eq in H. Qed.
 Lemma Exists_eq_exists_mem : forall P l,
   Exists P l = (exists x, mem x l /\ P x).
 Proof using.
-  Hint Constructors mem.
+  #[local] Hint Constructors mem.
   introv. extens. induction l as [|y l'].
   { iff M (x&M&H). { inverts M. } { inverts M. } }
   { iff M (x&M&H).
@@ -3416,7 +3416,7 @@ Lemma Exists_filter_inv : forall P Q l,
 
 End Exists.
 
-Hint Rewrite Exists_nil_eq Exists_cons_eq Exists_one_eq Exists_app_eq Exists_last_eq : rew_listx.
+#[global] Hint Rewrite Exists_nil_eq Exists_cons_eq Exists_one_eq Exists_app_eq Exists_last_eq : rew_listx.
 
 
 
@@ -3489,7 +3489,7 @@ Proof using. intros. unfold count. rew_listx~. Qed.
 
 End Count.
 
-Hint Rewrite count_nil count_cons count_one count_app count_rev : rew_listx.
+#[global] Hint Rewrite count_nil count_cons count_one count_app count_rev : rew_listx.
 
 Section Count2.
 Variables A : Type.
@@ -3630,7 +3630,7 @@ Qed.
 
 Global Opaque nat_seq.
 
-Hint Rewrite nat_seq_zero nat_seq_succ : rew_listx.
+#[global] Hint Rewrite nat_seq_zero nat_seq_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -3684,7 +3684,7 @@ Lemma fold_congruence : forall m f g l,
   (forall x, mem x l -> f x = g x) ->
   fold m f l = fold m g l.
 Proof using.
-  Hint Constructors mem.
+  #[local] Hint Constructors mem.
   intros. unfold fold.
   induction l as [| x l' ]; intros; simpl.
   { eauto. }
@@ -3754,7 +3754,7 @@ Lemma fold_pointwise : forall B m (leB : B -> B -> Prop),
   (forall x, mem x l -> leB (f x) (f' x)) ->
   leB (fold m f l) (fold m f' l).
 Proof using. (* --TODO: cleanup *)
-  Hint Constructors mem.
+  #[global] Hint Constructors mem.
   introv HM HR HP. induction l; introv HL.
   do 2 rewrite fold_nil. applys HR.
   do 2 rewrite fold_cons. apply HP. applys~ HL. applys~ IHl.
@@ -3762,7 +3762,7 @@ Qed.
 
 Global Opaque fold.
 
-Hint Rewrite fold_nil fold_cons fold_app : rew_listx.
+#[global] Hint Rewrite fold_nil fold_cons fold_app : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -3780,7 +3780,7 @@ Inductive list_sub : list A -> list A -> Prop :=
       list_sub l1 l2 ->
       list_sub l1 (x::l2).
 
-Hint Constructors list_sub.
+#[local] Hint Constructors list_sub.
 
 Lemma list_sub_wf : LibWf.wf list_sub.
 Proof using.
@@ -3792,8 +3792,8 @@ Qed.
 End ListSub.
 
 Arguments list_sub [A].
-Hint Constructors list_sub.
-Hint Resolve list_sub_wf : wf.
+#[global] Hint Constructors list_sub.
+#[global] Hint Resolve list_sub_wf : wf.
 
 (** Induction on all but last item *)
 
