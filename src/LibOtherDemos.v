@@ -191,6 +191,7 @@ Proof using.
   auto. auto. inverts H. inverts~ H1.
 Qed.
 
+#[global]
 Hint Constructors mem.
 
 (** Example of an inductive proof with Mem
@@ -217,6 +218,7 @@ Inductive subtree : binary tree :=
      mem t ts -> subtree t (node ts).
   (* there is typically more than one case here *)
 
+#[global]
 Hint Constructors subtree.
 
 (** Proof of well-foundedness of the subtree relation *)

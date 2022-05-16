@@ -75,36 +75,47 @@ Definition fold_impl A B C (m:monoid_op C) (f:A->B->C) (M:map A B) :=
 (* ---------------------------------------------------------------------- *)
 (** ** Notation through typeclasses *)
 
+#[global]
 Instance empty_inst : forall A B, BagEmpty (map A B).
   constructor. rapply (@empty_impl A B). Defined.
 
+#[global]
 Instance single_bind_inst : forall A B, BagSingleBind A B (map A B).
   constructor. rapply (@single_bind_impl A B). Defined.
 
+#[global]
 Instance binds_inst : forall A B, BagBinds A B (map A B).
   constructor. rapply (@binds_impl A B). Defined.
 
+#[global]
 Instance union_inst : forall A B, BagUnion (map A B).
   constructor. rapply (@union_impl A B). Defined.
 
+#[global]
 Instance remove_inst : forall A B, BagRemove (map A B) (set A).
   constructor. rapply (@remove_impl A B). Defined.
 
+#[global]
 Instance restrict_inst : forall A B, BagRestrict (map A B) (set A).
   constructor. rapply (@restrict_impl A B). Defined.
 
+#[global]
 Instance read_inst : forall A `{Inhab B}, BagRead A B (map A B).
   constructor. rapply (@read_impl A B H). Defined.
 
+#[global]
 Instance dom_inst : forall A B, BagDom (map A B) (set A).
   constructor. rapply (@dom_impl A B). Defined.
 
+#[global]
 Instance disjoint_inst : forall A B, BagDisjoint (map A B).
   constructor. rapply (@disjoint_impl A B). Defined.
 
+#[global]
 Instance index_inst : forall A B, BagIndex A (map A B).
   constructor. rapply (@index_impl A B). Defined.
 
+#[global]
 Instance fold_inst : forall A B C, BagFold C (A->B->C) (map A B).
   constructor. rapply (@fold_impl A B C). Defined.
 
@@ -112,6 +123,7 @@ Global Opaque map empty_inst single_bind_inst binds_inst
  union_inst restrict_inst remove_inst read_inst
  dom_inst disjoint_inst index_inst fold_inst.
 
+#[global]
 Instance Inhab_map : forall A B, Inhab (map A B).
 Proof using. intros. apply (Inhab_of_val (@empty_impl A B)). Qed.
 
@@ -701,6 +713,7 @@ End Properties.
     i.e. one has not been already substituted for the other, then we wish
     to issue a subgoal [i<>j]. *)
 
+#[global]
 Hint Rewrite @indom_update_eq @read_update_neq @read_update_same : rew_map.
 
 Tactic Notation "rew_map" :=

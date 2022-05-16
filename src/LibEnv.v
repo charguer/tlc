@@ -237,6 +237,7 @@ End MoreDefinitions.
 (* ---------------------------------------------------------------------- *)
 (** ** Basic Properties *)
 
+#[global]
 Hint Rewrite empty_def single_def concat_def singles_def keys_def values_def
   dom_def map_def map_keys_def get_def : env_defs.
 
@@ -608,14 +609,20 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Hints and rewriting tactics *)
 
+#[global]
 Hint Constructors ok.
 
+#[global]
 Hint Rewrite dom_empty dom_single dom_concat : rew_env_dom.
+#[global]
 Hint Rewrite map_empty map_single map_concat : rew_env_map.
+#[global]
 Hint Rewrite map_keys_empty map_keys_single
  map_keys_concat : rew_env_map_keys.
+#[global]
 Hint Rewrite get_empty get_single get_concat : rew_evn_get.
 
+#[global]
 Hint Rewrite concat_empty_r concat_empty_l concat_assoc : rew_env_concat.
 
 Tactic Notation "rew_env_concat" :=
@@ -633,6 +640,7 @@ Ltac simpl_dom :=
   rewrite_all dom_single in *;
   rewrite_all dom_empty in *.
 
+#[global]
 Hint Extern 1 (_ # _) => simpl_dom; notin_solve.
 
 (* ---------------------------------------------------------------------- *)
@@ -783,20 +791,25 @@ Arguments ok_middle_inv [A] [E] [F] [x] [v].
 
 (** Automation *)
 
+#[global]
 Hint Resolve ok_middle_inv_l ok_map ok_concat_map ok_singles.
 
+#[global]
 Hint Extern 1 (ok (?E & ?G)) =>
   match goal with H: ok (E & ?F & G) |- _ =>
     apply (ok_remove H) end.
 
+#[global]
 Hint Extern 1 (ok (?E)) =>
   match goal with H: ok (E & _ ~ _) |- _ =>
     apply (ok_push_inv_ok H) end.
 
+#[global]
 Hint Extern 1 (ok (?E)) =>
   match goal with H: ok (E & _) |- _ =>
     apply (ok_concat_inv_l H) end.
 
+#[global]
 Hint Extern 1 (ok (?E)) =>
   match goal with H: ok (_ & E) |- _ =>
     apply (ok_concat_inv_r H) end.
@@ -1108,6 +1121,7 @@ End BindsProperties.
 (* ---------------------------------------------------------------------- *)
 (** ** Tactics *)
 
+#[global]
 Hint Resolve binds_push_eq binds_push_neq
   binds_map binds_concat_left binds_concat_right.
 
@@ -1176,6 +1190,7 @@ Lemma extends_push_reoccur : forall E x v,
 
 End ExtendsProperties.
 
+#[global]
 Hint Resolve extends_refl extends_push.
 
 

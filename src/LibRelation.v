@@ -22,6 +22,7 @@ Definition binary (A : Type) := A -> A -> Prop.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
+#[global]
 Instance Inhab_binary : forall A, Inhab (binary A).
 Proof using. intros. apply (Inhab_of_val (fun _ _ => True)). Qed.
 
@@ -34,6 +35,7 @@ Lemma binary_ext : forall A (R1 R2:binary A),
   R1 = R2.
 Proof using. extens*. Qed.
 
+#[global]
 Instance Extensionality_binary : forall A,
   Extensionality (binary A).
 Proof using. intros. apply (Extensionality_make (@binary_ext A)). Defined.
@@ -1157,6 +1159,7 @@ Proof using. introv H M. destruct* M. Qed.
 
 End Rclosure.
 
+#[global]
 Hint Constructors rclosure : rclosure.
 (* --LATER: here and later, add more hints *)
 
@@ -1265,6 +1268,7 @@ Proof using. introv H M. induction* M. Qed.
 
 End Sclosure.
 
+#[global]
 Hint Constructors sclosure : sclosure.
 
 
@@ -1370,6 +1374,7 @@ Proof using. introv H M. induction* M. Qed.
 
 End Rsclosure.
 
+#[global]
 Hint Constructors rsclosure : rsclosure.
 
 
@@ -1546,6 +1551,7 @@ Proof using. intros R. applys* tclosure_ind_r. Qed.
 
 End Tclosure.
 
+#[global]
 Hint Resolve tclosure_once tclosure_l tclosure_r
   : rtclosure.
 
@@ -1743,6 +1749,7 @@ Proof using. intros R. applys* rtclosure_ind_r. Qed.
 
 End Rtclosure.
 
+#[global]
 Hint Resolve rtclosure_refl rtclosure_once
   rtclosure_l rtclosure_r' : rtclosure.
 
@@ -1837,6 +1844,7 @@ Proof using. introv H M. induction* M. Qed.
 
 End Stclosure.
 
+#[global]
 Hint Constructors stclosure : stclosure.
 
 
@@ -1945,6 +1953,7 @@ Qed.
 
 End Rstclosure.
 
+#[global]
 Hint Constructors rstclosure : rstclosure.
 
 

@@ -73,14 +73,17 @@ Proof using. intros. unfold length. rew_list~. Qed.
 
 End Length.
 
+#[global]
 Hint Rewrite length_nil length_cons length_app
  length_last : rew_list.
+#[global]
 Hint Rewrite length_nil length_cons length_app
  length_last : rew_listx.
  (* --TODO: should we use a separate [rew_listZ] data base? probably so *)
 
 (** Automation for [math], to unfold [length] *)
 
+#[global]
 Hint Rewrite length_eq : rew_maths.
 
 
@@ -144,6 +147,7 @@ End AppInversion.
 Definition index_impl A (l:list A) (i:int) : Prop :=
   index (LibList.length l : int) i.
 
+#[global]
 Instance index_inst : forall A, BagIndex int (list A).
 Proof using. constructor. rapply (@index_impl A). Defined.
 
@@ -189,6 +193,7 @@ Global Opaque index_inst.
 Definition read_impl `{Inhab A} (l:list A) (i:int) : A :=
   If i < 0 then arbitrary else nth (abs i) l.
 
+#[global]
 Instance read_inst : forall `{Inhab A}, BagRead int A (list A).
 Proof using. constructor. rapply (@read_impl A H). Defined.
 
@@ -284,6 +289,7 @@ Global Opaque read_inst.
 Definition update_impl A (l:list A) (i:int) (v:A) : list A :=
   If i < 0 then l else LibList.update (abs i) v l.
 
+#[global]
 Instance update_inst : forall A, BagUpdate int A (list A).
 Proof using. constructor. rapply (@update_impl A). Defined.
 
@@ -530,7 +536,9 @@ Proof using. intros. unfold length. rew_list~. Qed.
 
 End Rev.
 
+#[global]
 Hint Rewrite length_rev : rew_list.
+#[global]
 Hint Rewrite length_rev : rew_listx.
 
 (* ---------------------------------------------------------------------- *)
@@ -589,6 +597,7 @@ Qed.
 
 End Map.
 
+#[global]
 Hint Rewrite length_map index_map_eq : rew_listx.
 
 
@@ -747,6 +756,7 @@ End Take.
 
 (* Arguments take [A] : simpl never. *)
 
+#[global]
 Hint Rewrite take_nil take_zero take_succ : rew_listx.
 (* Note: [take_prefix_length] and [take_full_length]
    may be safely added to [rew_listx]. *)
@@ -838,6 +848,7 @@ End Drop.
 
 (* Arguments drop [A] : simpl never. *)
 
+#[global]
 Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
 (* Note: [drop_prefix_length] and [drop_full_length]
    may be safely added to [rew_list]. *)
@@ -1067,6 +1078,7 @@ End Count.
 
 Opaque count.
 
+#[global]
 Hint Rewrite count_nil count_cons count_app count_last count_rev : rew_listx.
 
 
@@ -1079,6 +1091,7 @@ Hint Rewrite count_nil count_cons count_app count_last count_rev : rew_listx.
 Definition card_impl A (l:list A) : nat :=
   LibList.length l.
 
+#[global]
 Instance card_inst : forall A, BagCard (list A).
 Proof using. constructor. rapply (@card_impl A). Defined.
 
@@ -1090,6 +1103,7 @@ Global Opaque card_inst.
 
 (** [rew_array_nocase] is a light normalization tactic for array *)
 
+#[global]
 Hint Rewrite @read_make @length_make @length_update @read_update_same
   : rew_array_nocase.
 
@@ -1116,6 +1130,7 @@ Tactic Notation "rew_array_nocase" "*" "in" "*" :=
 (** [rew_array] is a normalization tactic for array, which introduces
     case analyses for all read-on-update operations. *)
 
+#[global]
 Hint Rewrite @read_make @length_make @length_update @read_update_same
   @read_update_case @read_cons_case @read_last_case : rew_array.
 

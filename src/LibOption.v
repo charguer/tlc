@@ -31,6 +31,7 @@ Arguments None {A}.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
+#[global]
 Instance Inhab_option : forall A, Inhab (option A).
 Proof using. intros. apply (Inhab_of_val None). Qed.
 

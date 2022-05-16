@@ -241,6 +241,7 @@ Qed.
 
 End Prefix.
 
+#[global]
 Hint Resolve
   prefix_reflexive
   prefix_nil
