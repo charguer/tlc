@@ -50,6 +50,7 @@ Proof.
   intros. destruct l; simpl; rew_bool_eq; auto_false.
 Qed.
 
+#[global]
 Hint Rewrite is_nil_eq is_not_nil_eq : rew_list_exec.
 
 
@@ -63,6 +64,7 @@ Lemma length_eq :
   length = LibList.length.
 Proof using. extens ;=> A l. induction l; simpl; rew_list; auto. Qed.
 
+#[global]
 Hint Rewrite length_eq : rew_list_exec.
 
 
@@ -78,6 +80,7 @@ Proof using.
   extens ;=> A L1 L2. induction L1; simpl; rew_list; congruence.
 Qed.
 
+#[global]
 Hint Rewrite app_eq : rew_list_exec.
 
 
@@ -94,6 +97,7 @@ Proof using.
   { rewrite IHL. rewrite <- app_eq. unfold app. fequals. }
 Qed.
 
+#[global]
 Hint Rewrite rev_eq : rew_list_exec.
 
 
@@ -107,6 +111,7 @@ Lemma fold_right_eq : forall A B (f:B->A->A) (a:A) (l:list B),
   fold_right f a l = LibList.fold_right f a l.
 Proof using. intros. induction l; simpl; rew_listx; fequals. Qed.
 
+#[global]
 Hint Rewrite fold_right_eq : rew_list_exec.
 
 
@@ -122,6 +127,7 @@ Proof using.
   extens ;=> A B f L. induction L; simpl; rew_listx; congruence.
 Qed.
 
+#[global]
 Hint Rewrite map_eq : rew_list_exec.
 
 
@@ -141,6 +147,7 @@ Proof using. (* --LATER: conduct proof using list2_ind *)
   { rew_list in E. rew_listx. simpl. fequals~. }
 Qed.
 
+#[global]
 Hint Rewrite combine_eq : rew_list_exec.
 
 

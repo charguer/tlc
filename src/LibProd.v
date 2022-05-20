@@ -79,6 +79,7 @@ Proof using. intros. subst~. Qed.
 
 End Properties.
 
+#[global]
 Hint Immediate eq_prod2 eq_prod3 eq_prod4.
 
 

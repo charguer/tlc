@@ -44,6 +44,7 @@ Notation "[ x ; y ; .. ; z ]" :=  (cons x (cons y .. (cons z nil) ..)) : liblist
 (* ********************************************************************** *)
 (** * Inhabited *)
 
+#[global]
 Instance Inhab_list : forall A, Inhab (list A).
 Proof using. intros. apply (Inhab_of_val nil). Qed.
 
@@ -208,13 +209,16 @@ End App.
 
 Global Opaque app.
 
+#[global]
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one_r : rew_list.
 (* Note: [app_last_l] may be safely added to [rew_list] *)
 
+#[global]
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one_r : rew_listx.
 
+#[global]
 Hint Rewrite app_cons_l app_nil_l app_nil_r app_assoc
   app_cons_one_r : rew_lists.
 
@@ -251,6 +255,7 @@ End FoldRight.
 
 Global Opaque fold_right.
 
+#[global]
 Hint Rewrite fold_right_nil fold_right_cons fold_right_last : rew_listx.
 (* Note: [fold_right_app] may be safely added to [rew_listx] *)
 
@@ -293,6 +298,7 @@ End FoldLeft.
 
 Global Opaque fold_left.
 
+#[global]
 Hint Rewrite fold_left_nil fold_left_cons
   fold_left_last : rew_listx.
 (* Note: [fold_left_app] can be safely added to [rew_listx] *)
@@ -336,8 +342,10 @@ End Length.
 
 Global Opaque length.
 
+#[global]
 Hint Rewrite length_nil length_cons length_app
   length_last : rew_list.
+#[global]
 Hint Rewrite length_nil length_cons length_app
   length_last : rew_listx.
 
@@ -784,6 +792,7 @@ Proof using. introv P. destruct~ l. false P. applys mem_here. Qed.
 
 End Mem.
 
+#[global]
 Hint Rewrite mem_nil_eq mem_cons_eq mem_app_eq mem_last_eq : rew_listx.
 
 
@@ -990,6 +999,7 @@ End NthDef.
 
 Arguments nth_default [A] : simpl never.
 
+#[global]
 Hint Rewrite nth_default_nil nth_default_zero nth_default_succ : rew_listx.
 
 
@@ -1144,6 +1154,7 @@ End NthFuncAux.
 Arguments nth [A] {IA}.
 Global Opaque nth.
 
+#[global]
 Hint Rewrite nth_zero nth_succ : rew_listx.
 
 
@@ -1277,7 +1288,9 @@ End Rev.
 
 Global Opaque rev.
 
+#[global]
 Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_list.
+#[global]
 Hint Rewrite rev_nil rev_app rev_cons rev_last rev_rev length_rev : rew_listx.
 (* Note: [fold_right_rev] may be safely added to [rew_list] *)
 
@@ -1384,6 +1397,7 @@ End Make.
 
 Global Opaque make.
 
+#[global]
 Hint Rewrite make_zero make_succ length_make : rew_listx.
 
 
@@ -1538,6 +1552,7 @@ End Update.
 
 Global Opaque update.
 
+#[global]
 Hint Rewrite length_update update_nil update_zero update_succ : rew_listx.
 
 
@@ -1678,6 +1693,7 @@ End Map.
 
 Global Opaque map.
 
+#[global]
 Hint Rewrite map_nil map_cons map_app map_last length_map : rew_listx.
 (* Note: [map_rev] and [map_id] may be safely added to [rew_listx] *)
 
@@ -1713,6 +1729,7 @@ Lemma Nth_map : forall (A B:Type) (f:A->B) (l:list A) n (x:A),
   Nth n l x ->
   Nth n (map f l) (f x).
 Proof using.
+#[global]
   Hint Constructors Nth.
   introv M. induction M; rew_listx; auto.
 Qed.
@@ -1806,6 +1823,7 @@ End Concat.
 
 Global Opaque concat.
 
+#[global]
 Hint Rewrite concat_nil concat_cons concat_app concat_last : rew_listx.
 
 
@@ -1942,6 +1960,7 @@ End Filter.
 
 Global Opaque filter.
 
+#[global]
 Hint Rewrite filter_nil filter_cons filter_app filter_last filter_rev
              mem_filter_eq : rew_listx.
 
@@ -2218,6 +2237,7 @@ Proof using. introv. forwards*: remove_duplicates_spec l. Qed.
 
 End Remove_duplicates.
 
+#[global]
 Hint Rewrite mem_remove_duplicates : rew_listx.
 
 
@@ -2301,6 +2321,7 @@ Qed.
 
 Global Opaque combine.
 
+#[global]
 Hint Rewrite combine_nil combine_cons : rew_listx.
 
 
@@ -2416,6 +2437,7 @@ End Split.
 
 Global Opaque split.
 
+#[global]
 Hint Rewrite split_nil : rew_listx.
 
 
@@ -2521,6 +2543,7 @@ End Take.
 (* Arguments take [A] : simpl never. *)
 Global Opaque take.
 
+#[global]
 Hint Rewrite take_nil take_zero take_succ : rew_listx.
 (* Note: [take_prefix_length] and [take_full_length]
    may be safely added to [rew_listx]. *)
@@ -2616,6 +2639,7 @@ End Drop.
 Global Opaque drop.
 (* Arguments drop [A] : simpl never. *)
 
+#[global]
 Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
 (* Note: [drop_prefix_length] and [drop_full_length]
    may be safely added to [rew_list]. *)
@@ -2957,6 +2981,7 @@ Qed.
 
 End ForallProp.
 
+#[global]
 Hint Rewrite Forall_nil_eq Forall_cons_eq Forall_app_eq Forall_last_eq
   Forall_rev_eq : rew_listx.
 
@@ -3416,6 +3441,7 @@ Lemma Exists_filter_inv : forall P Q l,
 
 End Exists.
 
+#[global]
 Hint Rewrite Exists_nil_eq Exists_cons_eq Exists_one_eq Exists_app_eq Exists_last_eq : rew_listx.
 
 
@@ -3489,6 +3515,7 @@ Proof using. intros. unfold count. rew_listx~. Qed.
 
 End Count.
 
+#[global]
 Hint Rewrite count_nil count_cons count_one count_app count_rev : rew_listx.
 
 Section Count2.
@@ -3630,6 +3657,7 @@ Qed.
 
 Global Opaque nat_seq.
 
+#[global]
 Hint Rewrite nat_seq_zero nat_seq_succ : rew_listx.
 
 
@@ -3754,6 +3782,7 @@ Lemma fold_pointwise : forall B m (leB : B -> B -> Prop),
   (forall x, mem x l -> leB (f x) (f' x)) ->
   leB (fold m f l) (fold m f' l).
 Proof using. (* --TODO: cleanup *)
+#[global]
   Hint Constructors mem.
   introv HM HR HP. induction l; introv HL.
   do 2 rewrite fold_nil. applys HR.
@@ -3762,6 +3791,7 @@ Qed.
 
 Global Opaque fold.
 
+#[global]
 Hint Rewrite fold_nil fold_cons fold_app : rew_listx.
 
 
@@ -3792,7 +3822,9 @@ Qed.
 End ListSub.
 
 Arguments list_sub [A].
+#[global]
 Hint Constructors list_sub.
+#[global]
 Hint Resolve list_sub_wf : wf.
 
 (** Induction on all but last item *)

@@ -63,30 +63,38 @@ Definition card_impl A (E:multiset A) :=
 Lemma in_inst : forall A, BagIn A (multiset A).
 Proof using. constructor. exact (@in_impl A). Defined.
 
+#[global]
 Hint Extern 1 (BagIn _ (multiset _)) => apply in_inst
   : typeclass_instances.
 
+#[global]
 Instance empty_inst : forall A, BagEmpty (multiset A).
   constructor. rapply (@empty_impl A). Defined.
 
+#[global]
 Instance single_inst : forall A, BagSingle A (multiset A) .
   constructor. rapply (@single_impl A). Defined.
 
+#[global]
 Instance union_inst : forall A, BagUnion (multiset A).
   constructor. rapply (@union_impl A). Defined.
 
+#[global]
 Instance incl_inst : forall A, BagIncl (multiset A).
   constructor. rapply (@incl_impl A). Defined.
 
+#[global]
 Instance fold_inst : forall A B, BagFold B (A->nat->B) (multiset A).
   constructor. rapply (@fold_impl A B). Defined.
 
+#[global]
 Instance card_inst : forall A, BagCard (multiset A).
   constructor. rapply (@card_impl A). Defined.
 
 Global Opaque multiset empty_inst single_inst in_inst
  union_inst incl_inst fold_inst card_inst.
 
+#[global]
 Instance Inhab_multiset : forall A, Inhab (multiset A).
 Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 
@@ -262,7 +270,9 @@ Proof using. intros. apply union_empty_r. Qed.
 Lemma for_multiset_empty_incl : forall A (E:multiset A), \{} \c E.
 Proof using. intros. apply empty_incl. Qed.
 
+#[global]
 Hint Rewrite <- for_multiset_union_assoc : rew_permut_simpl.
+#[global]
 Hint Rewrite for_multiset_union_empty_l for_multiset_union_empty_r : rew_permut_simpl.
 Ltac rew_permut_simpl :=
   autorewrite with rew_permut_simpl.
@@ -623,6 +633,7 @@ Lemma notin_empty : forall x,
 Proof using. intros. unfold notin. rewrite in_empty_eq. auto. Qed.
 
 End InversionsTactic.
+#[global]
 Hint Resolve notin_empty.
 
 Ltac in_union_meta :=

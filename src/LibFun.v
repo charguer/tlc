@@ -102,6 +102,7 @@ End Combinators.
 (** Tactic for simplifying function compositions *)
 (* --TODO: not used; might become deprecated *)
 
+#[global]
 Hint Rewrite compose_id_l compose_id_r compose_assoc : rew_compose.
 Tactic Notation "rew_compose" :=
   autorewrite with rew_compose.
@@ -198,6 +199,7 @@ Qed.
 
 End FunctionImage.
 
+#[global]
 Hint Resolve finite_image : finite.
 
 

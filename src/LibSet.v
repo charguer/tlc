@@ -96,6 +96,7 @@ Notation "x \notindom E" := (x \notin ((dom E) : set _))
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
+#[global]
 Instance Inhab_set : forall A, Inhab (set A).
 Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 
@@ -106,33 +107,43 @@ Proof using. intros. apply (Inhab_of_val (@empty_impl A)). Qed.
 Lemma in_inst : forall A, BagIn A (set A).
 Proof using. constructor. exact (@in_impl A). Defined.
 
+#[global]
 Hint Extern 1 (BagIn _ (set _)) => apply in_inst : typeclass_instances.
 (* -- LATER: could this be an instance like all others ? *)
 
+#[global]
 Instance empty_inst : forall A, BagEmpty (set A).
   constructor. apply (@empty_impl A). Defined.
 
+#[global]
 Instance single_inst : forall A, BagSingle A (set A).
   constructor. rapply (@single_impl A). Defined.
 
+#[global]
 Instance union_inst : forall A, BagUnion (set A).
   constructor. rapply (@union_impl A). Defined.
 
+#[global]
 Instance inter_inst : forall A, BagInter (set A).
   constructor. rapply (@inter_impl A). Defined.
 
+#[global]
 Instance remove_inst : forall A, BagRemove (set A) (set A).
   constructor. rapply (@remove_impl A). Defined.
 
+#[global]
 Instance incl_inst : forall A, BagIncl (set A).
   constructor. rapply (@incl_impl A). Defined.
 
+#[global]
 Instance disjoint_inst : forall A, BagDisjoint (set A).
   constructor. rapply (@disjoint_impl A). Defined.
 
+#[global]
 Instance fold_inst : forall A B, BagFold B (A->B) (set A).
   constructor. rapply (@fold_impl A B). Defined.
 
+#[global]
 Instance card_inst : forall A, BagCard (set A).
   constructor. rapply (@card_impl A). Defined.
 
@@ -632,6 +643,7 @@ Qed.
 
 End Instances.
 
+#[global]
 Hint Resolve finite_empty finite_single finite_union
   finite_inter finite_incl finite_remove : finite.
 
@@ -687,6 +699,7 @@ Proof using. apply disjoint_eq. Qed.
 
 End Autorewrite.
 
+#[global]
 Hint Rewrite in_set_st_eq set_in_empty_eq set_in_single_eq
   set_in_inter_eq set_in_union_eq set_in_remove_eq set_in_extens_eq
   set_incl_in_eq set_disjoint_eq : rew_set.
@@ -952,6 +965,7 @@ Qed.
 
 (** Rewriting tactics [rew_set] *)
 
+#[global]
 Hint Rewrite in_set_st_eq : rew_set.
 
 Tactic Notation "rew_set" :=
@@ -1045,7 +1059,9 @@ Proof using. introv M N I. applys N. applys~ M. Qed.
 
 End ForeachProp.
 
+#[global]
 Hint Resolve foreach_empty foreach_single foreach_union.
+#[global]
 Hint Rewrite foreach_union_eq foreach_single_eq : rew_foreach.
 
 Tactic Notation "rew_foreach" :=

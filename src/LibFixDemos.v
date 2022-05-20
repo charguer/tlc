@@ -13,11 +13,13 @@ Open Scope fun_scope.
 
 (** Setting up of automation *)
 
+#[global]
 Hint Resolve wf_lt : wf.
 
 Ltac auto_tilde ::= auto with wf.
 Ltac auto_star ::= try solve [ auto | false | math | intuition eauto ].
 
+#[global]
 Hint Resolve equiv_eq equiv_list_equiv.
 
 
@@ -391,7 +393,7 @@ Definition Mem A (x:A) l := Exists (=x) l. (* --TODO: move *)
 Lemma map_congr : forall A B (f1 f2 : A->B) l,
   (forall x, Mem x l -> f1 x = f2 x) ->
   LibList.map f1 l = LibList.map f2 l.
-Proof using. Hint Constructors Exists. Hint Unfold Mem.
+Proof using. #[global] Hint Constructors Exists. #[global] Hint Unfold Mem.
   introv H. induction l. auto. rew_listx. fequals~.
 Qed.
 
@@ -401,6 +403,7 @@ Inductive tree : Type :=
   | leaf : nat -> tree
   | node : list tree -> tree.
 
+#[global]
 Instance Inhab_tree : Inhab tree.
 Proof using. intros. apply (Inhab_of_val (leaf 0)). Qed.
 
@@ -445,6 +448,7 @@ Inductive subtree : binary tree :=
   | subtree_intro : forall t l,
      Mem t l -> subtree t (node l).
 
+#[global]
 Hint Constructors subtree.
 
 Lemma subtree_wf : wf subtree.
@@ -482,6 +486,7 @@ Module DFS.
 
 Parameter marks : Type.
 Parameter marks_inhab : Inhab marks.
+#[global]
 Existing Instance marks_inhab.
 Implicit Type i : nat.
 
@@ -561,17 +566,21 @@ Proof using.
   intros. apply~ bisimilar_mod_take.
 Qed.
 
+#[global]
 Hint Resolve stream_mod_similarity.
 
 Lemma stream_similarity : forall A,
   @bisimilar A = similar (stream_family A).
 Proof using. intros. apply stream_mod_similarity. Qed.
 
+#[global]
 Hint Resolve stream_similarity.
 
 (** Completeness of the OFE *)
 
+#[global]
 Hint Unfold list_equiv.
+#[global]
 Hint Constructors Forall2.
 
 Lemma stream_mod_cofe : forall A {IA:Inhab A} (E:binary A),
@@ -589,6 +598,7 @@ Qed.
 Lemma stream_cofe : forall A {IA:Inhab A}, COFE (stream_family A).
 Proof using. intros. apply~ stream_mod_cofe. Qed.
 
+#[global]
 Hint Resolve stream_cofe.
 
 
@@ -765,6 +775,7 @@ CoInductive itree : Type :=
 
 (** The type [itree] is inhabited *)
 
+#[global]
 Instance Inhab_itree : Inhab itree.
 Proof using. intros. apply (Inhab_of_val (itree_leaf 0)). Qed.
 
@@ -793,7 +804,9 @@ Proof using.
   induction i; intros; simple~. destruct x; destruct y; destruct z; simpls*.
 Qed.
 
+#[global]
 Hint Resolve itree_similar_upto_equiv.
+#[global]
 Hint Extern 1 (itree_similar_upto ?i _ _) =>
   apply (@equiv_refl _ _ (itree_similar_upto_equiv i)).
 
@@ -879,6 +892,7 @@ CoInductive itree_similar : binary itree :=
       itree_similar t12 t22 ->
       itree_similar (itree_node t11 t12) (itree_node t21 t22).
 
+#[global]
 Hint Constructors itree_similar.
 
 Lemma itree_similar_eq : itree_similar = similar itree_family.
@@ -1061,6 +1075,7 @@ Fixpoint normal (r:regexp) : Prop :=
   | regexp_star r1 => productive r1 /\ normal r1
   end.
 
+#[global]
 Hint Unfold productive normal.
 
 (** Definition of the domain *)
@@ -1086,11 +1101,13 @@ Inductive regexp_sub : binary regexp :=
   | regexp_sub_star : forall r1,
       regexp_sub r1 (regexp_star r1).
 
+#[global]
 Hint Constructors regexp_sub.
 
 Lemma regexp_sub_wf : wf regexp_sub.
 Proof using. intros r. induction r; constructor; intros r' le; inverts~ le. Qed.
 
+#[global]
 Hint Resolve regexp_sub_wf : wf.
 
 (** [text_sub] is the transitive closure of the sub-list order *)
@@ -1100,6 +1117,7 @@ Definition text_sub : binary text := tclosure (@list_sub _).
 Lemma text_sub_wf : wf text_sub.
 Proof using. lets: wf_tclosure. unfold text_sub. solve_wf. Qed.
 
+#[global]
 Hint Resolve text_sub_wf : wf.
 
 Lemma text_sub_once : forall s c,
@@ -1109,6 +1127,7 @@ Proof using. intros. apply~ tclosure_once. Qed.
 Lemma trans_text_sub : trans text_sub.
 Proof using. apply trans_tclosure. Qed.
 
+#[global]
 Hint Resolve trans_text_sub text_sub_once.
 
 Lemma text_sub_app : forall s s1 s2,
@@ -1131,7 +1150,9 @@ Definition parse_sub : binary (regexp * text) :=
 Lemma parse_sub_wf : wf parse_sub.
 Proof using. solve_wf. Qed.
 
+#[global]
 Hint Unfold parse_sub.
+#[global]
 Hint Resolve parse_sub_wf : wf.
 
 (** [parse_arg_sub] is similar to [parse_sub] except that
@@ -1148,7 +1169,9 @@ Proof using.
   intros. subst p. constructor. intros [[r2 s2] k2] S. applys~ IH S.
 Qed.
 
+#[global]
 Hint Unfold parse_arg_sub.
+#[global]
 Hint Resolve parse_arg_sub_wf : wf.
 
 
@@ -1385,6 +1408,7 @@ Inductive sem : regexp -> text -> Prop :=
       sem (regexp_star r1) s2 ->
       sem (regexp_star r1) (s1 ++ s2).
 
+#[global]
 Hint Constructors sem.
 
 (** Observe that if a string [s] matches a productive regular
