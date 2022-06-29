@@ -10,6 +10,27 @@ Require Import Coq.micromega.Lia.
 
 
 (* ********************************************************************** *)
+(** ** Demo of [check] *)
+ 
+(* Uncomment to use
+
+Lemma demo_check : True.
+Proof using.
+  (* sucessful check *)
+  check (1 = 2).
+  (* unsucessful check *)
+  Fail check (1 = true).
+  (* disable check *)
+  Ltac check_enabled ::= constr:(false).
+  (* do nothing *)
+  check (1 = true).
+  (* restore default mode *)
+  Ltac check_enabled ::= constr:(true).
+Abort.
+
+*)
+
+(* ********************************************************************** *)
 (** ** Definitions used in demos *)
 
 Parameter H1 H2 H3 H4 H5 H6 : Prop.

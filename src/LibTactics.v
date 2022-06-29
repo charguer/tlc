@@ -626,6 +626,24 @@ Notation "x '='' y" := (@eq' _ x y)
   (at level 70, y at next level).
 
 
+
+(* ********************************************************************** *)
+(** * Check as a tactic instead of a top-level command, with possibility to turn off *)
+
+(** [check E] is like [Check E], but works as a tactic.
+    It can be turned off using [Ltac check_enabled ::= constr:(false)]. *)
+
+Ltac check_enabled := constr:(true).
+
+Tactic Notation "check" uconstr(E) :=
+  lazymatch check_enabled with
+  | false => idtac
+  | true =>
+	  first [ generalize E; match goal with |- ?T -> _ => idtac E; idtac ":" T end; intros _
+	        | idtac E; fail 1 "does not typecheck" ]
+ end.
+
+
 (* ********************************************************************** *)
 (** * Common Tactics for Simplifying Goals Like [intuition] *)
 
