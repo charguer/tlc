@@ -906,13 +906,13 @@ Lemma fold_induction :
 Proof using. (* --todo: cleanup proof *)
   introv Hm Hbase Hstep Hfinite.
   assert (forall xs, LibList.Forall (fun x => x \in E) xs -> P (LibList.fold m f xs)).
-  { induction xs; rew_listx*. } 
+  { induction xs; rew_listx*. }
   forwards: list_repr_to_list_of_finite Hfinite.
   erewrite fold_eq_fold_list_repr by eauto.
   applys H. sets L: (to_list E). destruct H0 as (_&M).
   asserts M': (forall x : A, mem x L -> x \in E). { intros. applys* M. } clear M.
   { induction L. { constructor. } { constructor.
-    { applys* M'. } { applys IHL. introv Lx. applys* M'. } } } 
+    { applys* M'. } { applys IHL. introv Lx. applys* M'. } } }
 Qed.
 
 Lemma fold_congruence : forall A B (m:monoid_op B) (f g:A -> B) (E:set A),

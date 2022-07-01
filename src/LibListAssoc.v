@@ -158,10 +158,10 @@ Global Opaque rem.
 (* ---------------------------------------------------------------------- *)
 (* ** Membership of keys *)
 
-(* LATER: 
+(* LATER:
 
 Definition mem_assoc A B (x:A) (l:list (A*B)) : Prop :=
-  LibList.mem x (LibList.map fst l). 
+  LibList.mem x (LibList.map fst l).
 
 *)
 

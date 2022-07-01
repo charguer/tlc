@@ -36,3 +36,4 @@ Makefile.generated:
 clean::
 	@ rm -f Makefile.generated Makefile.generated.conf
 	@ rm -rf .lia.cache
+	@ rm -rf *.v.d .*.aux

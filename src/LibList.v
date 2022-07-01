@@ -498,10 +498,10 @@ Proof using.
     inverts He. forwards* (->&->): IHl1 H1. }
 Qed.
 
-(* TODO: state and prove consequences of 
+(* TODO: state and prove consequences of
     He : l2 = t1 ++ t2
     Hl : length l2 = length t2
-*) 
+*)
 
 Lemma app_cancel_same_length_r : forall l1 l2 t1 t2,
   l1 ++ l2 = t1 ++ t2 ->

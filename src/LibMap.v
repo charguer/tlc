@@ -219,7 +219,7 @@ Lemma extensionality : forall A B (IB:Inhab B) (M1 M2:map A B),
   M1 = M2.
 Proof using.
   introv HD HE. extens. intros k.
-  specializes HD k. specializes HE k. 
+  specializes HD k. specializes HE k.
   unfold dom_inst, dom_impl, read_inst, read_impl in *. simpls.
   repeat rewrite in_set_st_eq in *.
   case_eq (M1 k); introv Hv1; rewrite Hv1 in HE,HD;
@@ -665,8 +665,8 @@ Lemma read_incl : forall A B (IB:Inhab B) (M N:map A B) i,
 Proof using.
   introv Hi HI. simpls. unfolds read_impl, incl_impl, dom_impl.
   rew_set in *. specializes HI i. destruct (N i) as [v|].
-  { destruct (M i) as [w|]; tryfalse. specializes HI w __. inverts* HI. } 
-  { destruct (M i) as [w|]; tryfalse. specializes HI w __. inverts* HI. }  
+  { destruct (M i) as [w|]; tryfalse. specializes HI w __. inverts* HI. }
+  { destruct (M i) as [w|]; tryfalse. specializes HI w __. inverts* HI. }
 Qed.
 
 End Incl.
@@ -901,7 +901,7 @@ Proof using.
   apply* fold_induction.
   { intros x (i,v) Hx Px. rew_set in Hx. destruct Hx as (i'&v'&E&HB).
     inverts E. rewrite <- (read_of_binds HB). applys* Hstep. }
-  { applys* finite_to_finite_fold_support. } 
+  { applys* finite_to_finite_fold_support. }
 Qed.
 
 

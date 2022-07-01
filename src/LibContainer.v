@@ -715,7 +715,7 @@ Global Instance union_incl_union_same_l_of_union_incl_union_and_incl_refl :
   Incl_refl ->
   Union_incl_union_same_l.
 Proof using.
-  constructor. intros. apply union_incl_union. 
+  constructor. intros. apply union_incl_union.
   { applys* incl_refl. } { auto. }
 Qed.
 

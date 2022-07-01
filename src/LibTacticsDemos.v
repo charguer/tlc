@@ -11,7 +11,7 @@ Require Import Coq.micromega.Lia.
 
 (* ********************************************************************** *)
 (** ** Demo of [check] *)
- 
+
 (* Uncomment to use
 
 Lemma demo_check : True.
