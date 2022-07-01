@@ -3016,7 +3016,7 @@ Hint Rewrite Forall_nil_eq Forall_cons_eq Forall_app_eq Forall_last_eq
 
 
 (* ---------------------------------------------------------------------- *)
-(* **    *)
+(* ** Forall2 *)
 
 (** [Forall2 P L1 L2] asserts that the lists [L1] and [L2]
     have the same length and that elements at corresponding

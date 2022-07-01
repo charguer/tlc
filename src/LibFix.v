@@ -274,7 +274,7 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Existence of the optimal fixed point *)
 
-(** A function [f] is a generally-consistent partial fixed point iff it
+(** A function [f] is a generally consistent partial fixed point iff it
    is a partial fixed point and it is consistent with all other partial
    fixed points. *)
 
@@ -284,7 +284,7 @@ Definition generally_consistent_partial_fixed_point
   /\ forall f', partial_fixed_point E F f' -> consistent E f f'.
 
 (** The optimal fixed point of a functional [F] is a function which
-    is the greatest element of the set of generally-consistent partial
+    is the greatest element of the set of generally consistent partial
     fixed point. *)
 
 Definition optimal_fixed_point A B (E:binary B) (F:(A->B)->(A->B)) (f:A-->B) :=
@@ -377,7 +377,7 @@ End Another.
 
 
 (* ********************************************************************** *)
-(** * Dependently-typed fixed-point combinator,
+(** * Dependently typed fixed-point combinator,
       used in the proof of the fixed point theorem for
       complete ordered families *)
 
@@ -501,8 +501,8 @@ Record COFE I A (M:family I A) := {
 (** ** Alternative definition of completeness *)
 
 (** We prove that completeness is equivalent to the existence
-    of "local"-limits and "global"-limits for every locally-coherent
-    and globally-coherent sequences, respectively. *)
+    of "local"-limits and "global"-limits for every locally coherent
+    and globally coherent sequences, respectively. *)
 
 (** -------- Local completeness --------- *)
 
@@ -518,7 +518,7 @@ Definition locally_coherent I A (M:family I A) (i:I) (u:I->A) :=
 Definition local_limit I A (M:family I A) (i:I) (u:I->A) (l:A) :=
   limit M (inverse (family_r M) i) u l.
 
-(** An ordered family of equiv is locally-complete iff
+(** An ordered family of equiv is locally complete iff
     for every [i], every sequence locally coherent upto index [i]
     admits a limit upto the index [i] *)
 
@@ -540,8 +540,8 @@ Definition globally_coherent I A (M:family I A) (u:I->A) :=
 Definition global_limit I A (M:family I A) (u:I->A) (l:A) :=
   limit M pred_true u l.
 
-(** An ordered family of equiv is globally-complete iff
-    for every [i], every globally-coherent sequence
+(** An ordered family of equiv is globally complete iff
+    for every [i], every globally coherent sequence
     admits a global limit *)
 
 Definition globally_complete I A (M:family I A) :=
@@ -575,8 +575,8 @@ Hint Resolve ofe_sim_refl ofe_sim_trans ofe_sim_sym.
 (** -------- Alternative definition of completeness --------- *)
 
 (** An alternative definition of the completeness of [M]
-    is the fact that [M] is both locally-complete and
-    globally-complete. This alternative definition, despite
+    is the fact that [M] is both locally complete and
+    globally complete. This alternative definition, despite
     the fact that it has two components, is often more convenient to
     exploit, both as a introduction rule or as an elimination rule. *)
 
@@ -607,7 +607,7 @@ Proof using. introv Ofem Comp Cohu. apply~ Comp. Qed.
     and also for the proof of the fixed point theorem, we
     we need to define a sequence [v] where [v i] is defined
     in terms of the values of [v j] for [j] smaller than [i].
-    For Coq to accept this definition, we rely on the dependendly-
+    For Coq to accept this definition, we rely on the dependendly
     typed fixed point combinator [fix_dep]. Also, we rely on the
     following auxiliary definition which is used to pick the
     limit, if it exists, of a family [u] defined only on indices
@@ -623,8 +623,8 @@ Definition local_limit_dep I A {IA:Inhab A} (M:family I A)
               end).
 
 (** The following lemma is used to show that when a sequence
-    [v] (of type [I->A]) is locally-coherent upto index i
-    with respect to a locally-complete family of equivs,
+    [v] (of type [I->A]) is locally coherent upto index i
+    with respect to a locally complete family of equivs,
     then [local_limit_dep M i (fun j _ => v j)] returns a
     value [l] which is a local limit for [v] upto index [i].
     Remark: above, the unnamed argument has type [family_r M j i].
@@ -662,8 +662,8 @@ Qed.
     The key idea to show that [u] admits a limit is to define a sequence [v]
     as follows: [v i] is equal to [u i] if [i] is in the set [K], and
     [v i] is equal to the limit of the values [v j] for [j] smaller than [i].
-    We can show by induction on [i] that [v] is locally-coherent upto index
-    [i], and then that [v] is globally-coherent. Finally, we show that
+    We can show by induction on [i] that [v] is locally coherent upto index
+    [i], and then that [v] is globally coherent. Finally, we show that
     the global limit of [v] is also a limit for [u]. *)
 
 Lemma complete_of_locally_and_globally_complete :
@@ -682,7 +682,7 @@ Proof using.
     apply fix_dep_eq. intros x v1 v2 H. unfold V. destruct_if~.
     apply epsilon_eq. intros i. iff N; intros j; specializes N j;
      destruct (classicT (family_r M j x)); congruence.
-  (* the sequence [v] is locally-coherent up to any index *)
+  (* the sequence [v] is locally coherent up to any index *)
   asserts LocCohv: (forall i, locally_coherent M i v).
     intros i. induction_wf IH: (ofe_wf Ofem) i.
     intros j' j Rij' Rij Rjj'. unfolds inverse.
@@ -691,7 +691,7 @@ Proof using.
       do 2 rewrite Fixv. unfold V. do 2 destruct_if~.
       rewrite (Fixv j'). unfold V. destruct_if~.
       apply~ local_limit_dep_inv.
-  (* the sequence [v] is globally-coherent *)
+  (* the sequence [v] is globally coherent *)
   asserts GloCohv: (globally_coherent M v).
     intros i j _ _ Rji. rewrite (Fixv i). unfold V. destruct_if.
       forwards~ Kj: (>> Down i j). rewrite Fixv. unfold V. destruct_if~.
@@ -817,9 +817,9 @@ Qed.
     The key idea of the proof is to define a sequence [v] such
     that [v i] is equal to the application of [F] to the limit
     of the values [v j], for [j] smaller than [i]. We prove in
-    the same time that [v] is locally-coherent upto index [i]
+    the same time that [v] is locally coherent upto index [i]
     and that [Q i (v i)] holds. We then show that [v] is
-    globally-coherent, and that its limit [l] is such that
+    globally coherent, and that its limit [l] is such that
     [Q i l] for any [i], using the continuity of [Q].
 
     Then, we show that [v] is similar to [F v], and that [v]
@@ -1565,12 +1565,12 @@ Definition FixValModMut2 A1 A2 {IA1:Inhab A1} {IA2:Inhab A2}
 
 (** -------- Recursive functions --------- *)
 
-(** Pick a generally-consistent fixed point of the equation [E f (F f)] *)
+(** Pick a generally consistent fixed point of the equation [E f (F f)] *)
 
 Definition FixFunMod A B {IB:Inhab B} (E:binary B) (F:(A->B)->(A->B)) : A->B :=
   Fix (partial_equiv E) (lesser_fixed_point E F) (partialize F).
 
-(** Pick a generally-consistent fixed point of the equation [f = (F f)]
+(** Pick a generally consistent fixed point of the equation [f = (F f)]
     (note that we drop the domain of the domain of the solution,
     and keep only the support function). *)
 
@@ -1674,7 +1674,7 @@ Lemma FixVal_fix : forall I A {IA:Inhab A}
 Proof using. intros. applys* (@FixValMod_fix _ _ M _ eq). Qed.
 
 
-(** -------- Mutually-recursive values --------- *)
+(** -------- Mutually recursive values --------- *)
 
 Definition valmut2_contractive I A1 A2 (M:family I (A1*A2))
   (F1:A1->A2->A1) (F2:A1->A2->A2) (Q:I->A1->A2->Prop) :=
