@@ -2070,7 +2070,7 @@ Proof using.
   sets F': (fun f' => uncurry2 (F (curry2 f'))).
   forwards~ [H1 H2]: (@FixFunMod_fix_partial_inv (A1*A2)%type R (fun p => P (fst p) (snd p)) B
     (fun p => S (fst p) (snd p)) IB F' E).
-    intros f1 f2 [x1 x2] Px H. simpls. apply~ Cont.
+    intros f1 f2 [x1 x2] Px H. simpls. apply Cont; [assumption|].
     intros y1 y2 Py Ryx. apply~ (H (y1,y2)).
   subst f. split.
     intros x1 x2 Px. apply~ (H1 (x1,x2)).
@@ -2094,7 +2094,7 @@ Proof using.
   sets F': (fun f' => uncurry2 (F (curry2 f'))).
   forwards~ [H1 H2]: (@FixFunMod_fix_partial_inv (A1*A2)%type R (fun p => P (fst p) (snd p)) B
     (fun p => S (fst p) (snd p)) IB F' E).
-    intros f1 f2 [x1 x2] Px H. simpls. apply~ Cont.
+    intros f1 f2 [x1 x2] Px H. simpls. apply Cont; [assumption|].
     intros y1 y2 Py Ryx. apply~ (H (y1,y2)).
   subst f. split.
     intros x1 x2 Px. apply~ (H1 (x1,x2)).
