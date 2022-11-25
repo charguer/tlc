@@ -617,7 +617,7 @@ Ltac jauto_set :=
     anything else *)
 
 Tactic Notation "false_goal" :=
-  elimtype False.
+  exfalso.
 
 (** [false_post] is the underlying tactic used to prove goals
     of the form [False]. In the default implementation, it proves
