@@ -113,7 +113,7 @@ Tactic Notation "rew_array" "~" "in" "*" :=
 Tactic Notation "rew_array" "*" "in" "*" :=
   rew_array in *; auto_star.
 
-Hint Rewrite int_index_eq : rew_array.
+#[global] Hint Rewrite int_index_eq : rew_array.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -125,6 +125,7 @@ Ltac index_prove tt :=
 (* Use [Import IndexHints] for loading hints *)
 
 Module IndexHints.
+  #[global]
   Hint Extern 1 (index _ _) => index_prove tt.
 End IndexHints.
 
@@ -192,20 +193,17 @@ Lemma Forall2_inv_length : forall A B (P:A->B->Prop) r s,
   length r = length s.
 Proof using. introv E. unfold length. lets*: Forall2_inv_length E. Qed.
 
-#[global]
-Hint Rewrite length_nil length_cons length_app
+#[global] Hint Rewrite length_nil length_cons length_app
  length_last : rew_list.
-#[global]
-Hint Rewrite length_nil length_cons length_app
+#[global] Hint Rewrite length_nil length_cons length_app
  length_last : rew_listx.
  (* --TODO: should we use a separate [rew_listZ] data base? probably so *)
 
 (** Automation for [math], to unfold [length] *)
 
-#[global]
-Hint Rewrite length_eq : rew_maths.
-Hint Rewrite length_cons : rew_index.
-Hint Rewrite length_app : rew_index.
+#[global] Hint Rewrite length_eq : rew_maths.
+#[global] Hint Rewrite length_cons : rew_index.
+#[global] Hint Rewrite length_app : rew_index.
 
 (** Demo of automation with maths *)
 
@@ -323,7 +321,7 @@ Proof using. intros. subst. rewrite~ index_eq_index_length. Qed.
 
 End Index.
 
-Hint Rewrite index_eq_index_length int_index_eq index_app_eq : rew_index.
+#[global] Hint Rewrite index_eq_index_length int_index_eq index_app_eq : rew_index.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -459,8 +457,8 @@ Qed.
 
 Global Opaque read_inst.
 
-Hint Rewrite read_zero : rew_list.
-Hint Rewrite read_zero : rew_listx.
+#[global] Hint Rewrite read_zero : rew_list.
+#[global] Hint Rewrite read_zero : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -634,9 +632,9 @@ Qed.
 
 End UpdateNoInhab.
 
-Hint Rewrite update_same length_update : rew_listx.
-Hint Rewrite index_update_eq : rew_array.
-Hint Rewrite index_update_eq : rew_index.
+#[global] Hint Rewrite update_same length_update : rew_listx.
+#[global] Hint Rewrite index_update_eq : rew_array.
+#[global] Hint Rewrite index_update_eq : rew_index.
 
 Global Opaque update_inst.
 
@@ -743,9 +741,9 @@ Qed.
 
 End MakeNoInhab.
 
-Hint Rewrite length_make read_make : rew_listp.
-Hint Rewrite index_make_eq : rew_array.
-Hint Rewrite length_make index_make_eq : rew_index.
+#[global] Hint Rewrite length_make read_make : rew_listp.
+#[global] Hint Rewrite index_make_eq : rew_array.
+#[global] Hint Rewrite length_make index_make_eq : rew_index.
 
 Global Opaque make.
 
@@ -771,11 +769,9 @@ Qed.
 
 End Rev.
 
-#[global]
-Hint Rewrite length_rev : rew_list.
-#[global]
-Hint Rewrite length_rev : rew_listx.
-Hint Rewrite index_rev_eq : rew_index.
+#[global] Hint Rewrite length_rev : rew_list.
+#[global] Hint Rewrite length_rev : rew_listx.
+#[global] Hint Rewrite index_rev_eq : rew_index.
 
 (* ---------------------------------------------------------------------- *)
 (** * [LibList.map]: [map] interactions with [LibListZ] operations *)
@@ -833,9 +829,8 @@ Qed.
 
 End Map.
 
-#[global]
-Hint Rewrite length_map index_map_eq : rew_listx.
-Hint Rewrite length_map index_map_eq : rew_index.
+#[global] Hint Rewrite length_map index_map_eq : rew_listx.
+#[global] Hint Rewrite length_map index_map_eq : rew_index.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1017,8 +1012,7 @@ End Take.
 
 (* Arguments take [A] : simpl never. *)
 
-#[global]
-Hint Rewrite take_nil take_zero take_succ : rew_listx.
+#[global] Hint Rewrite take_nil take_zero take_succ : rew_listx.
 
 (* Note: [take_prefix_length] and [take_full_length]
    may be safely added to [rew_listx]. *)
@@ -1122,13 +1116,10 @@ End Drop.
 
 (* Arguments drop [A] : simpl never. *)
 
-#[global]
-Hint Rewrite drop_at_length drop_nil drop_zero drop_succ : rew_listx.
-#[global]
-Hint Rewrite drop_drop : rew_listp.
+#[global] Hint Rewrite drop_at_length drop_nil drop_zero drop_succ : rew_listx.
+#[global] Hint Rewrite drop_drop : rew_listp.
 
-#[global]
-Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
+#[global] Hint Rewrite drop_nil drop_zero drop_succ : rew_listx.
 (* Note: [drop_prefix_length] and [drop_full_length]
    may be safely added to [rew_list]. *)
 
@@ -1245,7 +1236,7 @@ Arguments take_app_drop_spec [A].
 Arguments take_spec [A].
 Arguments drop_spec [A].
 
-Hint Rewrite read_take read_drop length_take length_drop : rew_listp.
+#[global] Hint Rewrite read_take read_drop length_take length_drop : rew_listp.
 
 (* ---------------------------------------------------------------------- *)
 (** ** [sum], for lists of int values *)
@@ -1261,7 +1252,7 @@ Lemma sum_cons : forall (l:list int) (x:int),
   sum (x::l) = x + sum l.
 Proof using. rew_listx*. Qed.
 
-Hint Rewrite sum_nil sum_cons : rew_listx.
+#[global] Hint Rewrite sum_nil sum_cons : rew_listx.
 
 Lemma sum_app : forall (l1 l2:list int),
   sum (l1 ++ l2) = sum l1 + sum l2.
@@ -1270,7 +1261,7 @@ Proof using. (* TOCLEAN: hints should come at the end of the section *)
   rewrite* IHl1. unfold sum. math.
 Qed.
 
-Hint Rewrite sum_nil sum_cons sum_app : rew_listx.
+#[global] Hint Rewrite sum_nil sum_cons sum_app : rew_listx.
 
 (* Use of [sum] for [concat] *)
 
@@ -1421,8 +1412,8 @@ End Count.
 
 Opaque count.
 
-#[global]
-Hint Rewrite count_nil count_cons count_app count_last count_rev : rew_listx.
+#[global] Hint Rewrite count_nil count_cons count_app count_last count_rev
+  : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -1446,15 +1437,13 @@ Global Opaque card_inst.
 
 (** [rew_array_nocase] is a light normalization tactic for array *)
 
-#[global]
-Hint Rewrite @read_make @length_make @length_update @read_update_same
+#[global] Hint Rewrite @read_make @length_make @length_update @read_update_same
   : rew_array_nocase.
 
 (** [rew_array] is a normalization tactic for array, which introduces
     case analyses for all read-on-update operations. *)
 
-#[global]
-Hint Rewrite @read_make @length_make @length_update @read_update_same
+#[global] Hint Rewrite @read_make @length_make @length_update @read_update_same
   @read_update_case @read_cons_case @read_last_case : rew_array.
 
 
