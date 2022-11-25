@@ -23,6 +23,7 @@ Parameter int : Type.
 
 Parameter val : Type.
 Parameter Inhab_val : Inhab val.
+#[global]
 Existing Instance Inhab_val.
 
 
@@ -152,6 +153,7 @@ Class BagRead A B T := { read : T -> A -> B }.
     the generic [read] operation is performed through an
     instance declaration: *)
 
+#[global]
 Instance read_inst : forall A `{IB:Inhab B}, BagRead A B (map A B).
 Proof. constructor. applys (@read_impl A B IB). Defined.
 

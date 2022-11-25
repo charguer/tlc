@@ -29,6 +29,7 @@ Local Open Scope Int_scope.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited type *)
 
+#[global]
 Instance Inhab_int : Inhab int.
 Proof using. intros. apply (Inhab_of_val 0%Z). Qed.
 
@@ -69,6 +70,7 @@ Open Scope comp_scope.
 (** The typeclass [le] on type [int] is bound to [Zle], from Coq's
     standard library *)
 
+#[global]
 Instance le_int_inst : Le int := Build_Le Z.le.
 
 
@@ -127,6 +129,7 @@ Proof using.
   unfold strict, inverse. intros. lia.
 Qed.
 
+#[global]
 Hint Rewrite le_zarith lt_zarith ge_zarith gt_zarith : rew_int_comp.
 
 Ltac int_comp_to_zarith :=
@@ -233,6 +236,7 @@ Proof using. intros. rewrite <- Z_of_nat_S. fequals~. Qed.
 (** [rew_maths] rewrite any lemma in the base [rew_maths].
     The goal should not contain any evar, otherwise tactic might loop. *)
 
+#[global]
 Hint Rewrite nat_to_Z_eq_Z_of_nat Z_of_nat_O Z_of_nat_S Z_of_nat_plus1 : rew_maths.
 
 Ltac rew_maths :=
@@ -353,49 +357,93 @@ Proof using. intros. ring. Qed.
 
 Ltac math_hint := math.
 
+#[global]
 Hint Extern 3 (_ = _ :> nat) => math_hint : maths.
+#[global]
 Hint Extern 3 (_ = _ :> int) => math_hint : maths.
+#[global]
 Hint Extern 3 (_ <> _ :> nat) => math_hint : maths.
+#[global]
 Hint Extern 3 (_ <> _ :> int) => math_hint : maths.
+#[global]
 Hint Extern 3 (istrue (isTrue (_ = _ :> nat))) => math_hint : maths.
+#[global]
 Hint Extern 3 (istrue (isTrue (_ = _ :> int))) => math_hint : maths.
+#[global]
 Hint Extern 3 (istrue (isTrue (_ <> _ :> nat))) => math_hint : maths.
+#[global]
 Hint Extern 3 (istrue (isTrue (_ <> _ :> int))) => math_hint : maths.
+#[global]
 Hint Extern 3 ((_ <= _)%nat) => math_hint : maths.
+#[global]
 Hint Extern 3 ((_ >= _)%nat) => math_hint : maths.
+#[global]
 Hint Extern 3 ((_ < _)%nat) => math_hint : maths.
+#[global]
 Hint Extern 3 ((_ > _)%nat) => math_hint : maths.
+#[global]
 Hint Extern 3 ((_ <= _)%Z) => math_hint : maths.
+#[global]
 Hint Extern 3 ((_ >= _)%Z) => math_hint : maths.
+#[global]
 Hint Extern 3 ((_ < _)%Z) => math_hint : maths.
+#[global]
 Hint Extern 3 ((_ > _)%Z) => math_hint : maths.
+#[global]
 Hint Extern 3 (@le nat _ _ _) => math_hint : maths.
+#[global]
 Hint Extern 3 (@lt nat _ _ _) => math_hint : maths.
+#[global]
 Hint Extern 3 (@ge nat _ _ _) => math_hint : maths.
+#[global]
 Hint Extern 3 (@gt nat _ _ _) => math_hint : maths.
+#[global]
 Hint Extern 3 (@le int _ _ _) => math_hint : maths.
+#[global]
 Hint Extern 3 (@lt int _ _ _) => math_hint : maths.
+#[global]
 Hint Extern 3 (@ge int _ _ _) => math_hint : maths.
+#[global]
 Hint Extern 3 (@gt int _ _ _) => math_hint : maths.
+#[global]
 Hint Extern 3 (~ @le int _ _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (~ @lt int _ _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (~ @ge int _ _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (~ @gt int _ _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (~ @eq int _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (@le int _ _ _ -> False) => math_hint : maths.
+#[global]
 Hint Extern 3 (@lt int _ _ _ -> False) => math_hint : maths.
+#[global]
 Hint Extern 3 (@ge int _ _ _ -> False) => math_hint : maths.
+#[global]
 Hint Extern 3 (@gt int _ _ _ -> False) => math_hint : maths.
+#[global]
 Hint Extern 3 (@eq int _ _ -> False) => math_hint : maths.
+#[global]
 Hint Extern 3 (~ @le nat _ _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (~ @lt nat _ _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (~ @ge nat _ _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (~ @gt nat _ _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (~ @eq nat _ _) => unfold not; math_hint : maths.
+#[global]
 Hint Extern 3 (@le nat _ _ _ -> False) => math_hint : maths.
+#[global]
 Hint Extern 3 (@lt nat _ _ _ -> False) => math_hint : maths.
+#[global]
 Hint Extern 3 (@ge nat _ _ _ -> False) => math_hint : maths.
+#[global]
 Hint Extern 3 (@gt nat _ _ _ -> False) => math_hint : maths.
+#[global]
 Hint Extern 3 (@eq nat _ _ -> False) => math_hint : maths.
 
 
@@ -488,6 +536,7 @@ Proof using. math. Qed.
 (** [rew_int] performs some basic simplification on
     expressions involving integers *)
 
+#[global]
 Hint Rewrite plus_zero_r plus_zero_l minus_zero_r minus_zero_l
   mult_zero_l mult_zero_r mult_one_l mult_one_r
   minus_self one_plus_minus_one_r plus_one_minus_one_l
@@ -614,6 +663,7 @@ Qed.
 (* -- LATER: is the hint below really necessary?
      if so, there should probably be other hints similar to it *)
 
+#[global]
 Hint Rewrite plus_nat_eq_plus_int : rew_maths.
 
 
@@ -749,6 +799,7 @@ Qed.
 (** ** Tactic [rew_abs_nonneg] to normalize expressions involving [abs]
        issuing side-conditions that arguments are nonnegative *)
 
+#[global]
 Hint Rewrite abs_nat abs_0 abs_1 abs_plus abs_nonneg : rew_abs_nonneg.
 
 Tactic Notation "rew_abs_nonneg" :=
@@ -848,6 +899,7 @@ Proof using. intros. apply~ Z2Nat.inj_sub. Qed.
 (** ** Tactic [rew_to_nat_nonneg] to normalize expressions involving [to_nat]
        issuing side-conditions that arguments are nonnegative *)
 
+#[global]
 Hint Rewrite to_nat_nat to_nat_0 to_nat_1 to_nat_plus to_nat_minus
      to_nat_nonneg : rew_to_nat_nonneg.
 

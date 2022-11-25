@@ -57,6 +57,7 @@ Declare Scope ltac_scope.
   Lemma test : forall b, b = false.
   time eauto 7. (* takes over 4 seconds to fail! *) *)
 
+#[global]
 Remove Hints Bool.trans_eq_bool : core.
 
 
@@ -620,6 +621,7 @@ Tactic Notation "protects" constr(E) "do" tactic(Tac) "/" :=
 
 Definition eq' := @eq.
 
+#[global]
 Hint Unfold eq' : core.
 
 Notation "x '='' y" := (@eq' _ x y)
@@ -1620,7 +1622,7 @@ Tactic Notation "applys_eq" constr(H) :=
     anything else *)
 
 Tactic Notation "false_goal" :=
-  elimtype False.
+  exfalso.
 
 (** [false_post] is the underlying tactic used to prove goals
     of the form [False]. In the default implementation, it proves
@@ -4931,7 +4933,7 @@ Tactic Notation "clears_last" constr(N) :=
 Axiom skip_axiom : False.
 
 Ltac skip_with_axiom :=
-  elimtype False; apply skip_axiom.
+  exfalso; apply skip_axiom.
 
 Tactic Notation "skip" :=
   skip_with_axiom.

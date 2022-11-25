@@ -25,6 +25,7 @@ From TLC Require Import LibTactics LibLogic LibReflect.
 (* ---------------------------------------------------------------------- *)
 (** ** Inhabited *)
 
+#[global]
 Instance Inhab_unit : Inhab unit.
 Proof using. intros. apply (Inhab_of_val tt). Qed.
 

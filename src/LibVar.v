@@ -123,6 +123,7 @@ Fixpoint fresh (L : vars) (n : nat) (xs : list var) {struct xs} : Prop :=
   | _,_ => False
   end.
 
+#[global]
 Hint Extern 1 (fresh _ _ _) => simpl.
 
 (* It is possible to build a list of n fresh variables. *)
@@ -343,8 +344,11 @@ Ltac notin_solve :=
   first [ notin_simpl; try notin_solve_one
         | notin_false ].
 
+#[global]
 Hint Extern 1 (_ \notin _) => notin_solve.
+#[global]
 Hint Extern 1 (_ <> _ :> var) => notin_solve.
+#[global]
 Hint Extern 1 ((_ \notin _) /\ _) => splits.
 
 
@@ -492,6 +496,7 @@ Ltac fresh_solve :=
         | fresh_solve_by_notins
         | idtac ].
 
+#[global]
 Hint Extern 1 (fresh _ _ _) => fresh_solve.
 
 (* --LATER: more automation of fresh_length properties *)

@@ -19,10 +19,15 @@ Ltac destruct_if_post ::= tryfalse~.
 Ltac auto_tilde ::=
   try solve [ auto | eauto | intros_all; subst_local; simpls; eauto ].
 
+#[global]
 Hint Unfold pred_incl pred_and.
+#[global]
 Hint Resolve rclosure_refl rclosure_of_rel.
+#[global]
 Hint Resolve wf_empty.
+#[global]
 Hint Resolve equiv_refl equiv_sym equiv_trans.
+#[global]
 Hint Resolve refl_rel_incl' rel_incl_tclosure.
 
 (* ---------------------------------------------------------------------- *)
@@ -34,6 +39,7 @@ Definition post_true {A B:Type} : A -> B -> Prop :=
 Definition post_false {A B:Type} : A -> B -> Prop :=
   fun _ _ => False.
 
+#[global]
 Hint Unfold post_true post_false.
 
 
@@ -53,6 +59,7 @@ Definition unique_upto_st A (E:binary A) (P : A -> Prop) (x : A) :=
 Definition pfun_equiv A B (E:B->B->Prop) (P:A->Prop) (f f':A->B) :=
   forall x, P x -> E (f x) (f' x).
 
+#[global]
 Hint Unfold pfun_equiv.
 
 (** Same, but specialized to Leibnitz' equality *)
@@ -60,6 +67,7 @@ Hint Unfold pfun_equiv.
 Definition pfun_equal A B (P:A->Prop) (f f':A->B) :=
   pfun_equiv (@eq B) P f f'.
 
+#[global]
 Hint Unfold pfun_equal.
 
 (** [pfun_equiv] is an equivalence relation. *)
@@ -71,6 +79,7 @@ Proof using.
   introv [RE SE TE]. unfold pfun_equiv. constructor; intros_all*.
 Qed.
 
+#[global]
 Hint Resolve pfun_equiv_equiv.
 
 
@@ -90,6 +99,7 @@ Notation "A --> B" := (partial A B) (right associativity, at level 55).
 (** The type of partial functions is inhabited as soon as the
     return type is inhabited. *)
 
+#[global]
 Instance Inhab_partial : forall A B {I:Inhab B}, Inhab (A-->B).
 Proof using. intros. apply (Inhab_of_val (Build_partial arbitrary (fun _ => True))). Qed.
 
@@ -461,6 +471,7 @@ Proof using.
   apply~ refl_inv. apply~ sym_inv. apply~ trans_inv.
 Qed.
 
+#[global]
 Hint Resolve similar_equiv.
 
 
@@ -550,8 +561,11 @@ Definition globally_complete I A (M:family I A) :=
 
 (** -------- Hints for proofs --------- *)
 
+#[global]
 Hint Resolve ofe_wf ofe_trans ofe_equiv.
+#[global]
 Hint Resolve cofe_ofe cofe_complete.
+#[global]
 Hint Unfold coherent globally_coherent locally_coherent.
 
 Lemma ofe_sim_refl : forall I A (M:family I A) i,
@@ -569,6 +583,7 @@ Lemma ofe_sim_sym : forall I A (M:family I A) i,
   sym (family_sim M i).
 Proof using. intros. apply~ equiv_sym. Qed.
 
+#[global]
 Hint Resolve ofe_sim_refl ofe_sim_trans ofe_sim_sym.
 
 
@@ -724,6 +739,7 @@ Lemma make_COFE : forall I A {IA:Inhab A} (M:family I A),
   COFE M.
 Proof using. intros. asserts: (OFE M). constructor~. constructor~. Qed.
 
+#[global]
 Hint Resolve complete_to_locally_complete
              complete_to_globally_complete.
 
@@ -1119,6 +1135,7 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** COFE for definitions functions mixing recursion and corecursion *)
 
+#[global]
 Hint Unfold lexico2.
 
 (** We define the family used to reason on partial functions mixing
@@ -1294,6 +1311,7 @@ Lemma mixed_fixed_point_generally_consistent :
   (forall i x, P x -> S i x (f x)) ->
   generally_consistent_partial_fixed_point E F (Build_partial f P).
 Proof using.
+#[global]
   Hint Resolve pfun_equiv_equiv similar_equiv.
   introv IB Cofe WfR SimE. introv Conti Contr Fixf Inva.
   subst E. split. unfolds. simpl. apply Fixf.
@@ -2052,7 +2070,7 @@ Proof using.
   sets F': (fun f' => uncurry2 (F (curry2 f'))).
   forwards~ [H1 H2]: (@FixFunMod_fix_partial_inv (A1*A2)%type R (fun p => P (fst p) (snd p)) B
     (fun p => S (fst p) (snd p)) IB F' E).
-    intros f1 f2 [x1 x2] Px H. simpls. apply~ Cont.
+    intros f1 f2 [x1 x2] Px H. simpls. apply Cont; [assumption|].
     intros y1 y2 Py Ryx. apply~ (H (y1,y2)).
   subst f. split.
     intros x1 x2 Px. apply~ (H1 (x1,x2)).
@@ -2076,7 +2094,7 @@ Proof using.
   sets F': (fun f' => uncurry2 (F (curry2 f'))).
   forwards~ [H1 H2]: (@FixFunMod_fix_partial_inv (A1*A2)%type R (fun p => P (fst p) (snd p)) B
     (fun p => S (fst p) (snd p)) IB F' E).
-    intros f1 f2 [x1 x2] Px H. simpls. apply~ Cont.
+    intros f1 f2 [x1 x2] Px H. simpls. apply Cont; [assumption|].
     intros y1 y2 Py Ryx. apply~ (H (y1,y2)).
   subst f. split.
     intros x1 x2 Px. apply~ (H1 (x1,x2)).
