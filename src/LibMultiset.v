@@ -440,7 +440,7 @@ Lemma permut_tactic_simpl_incl : forall A (l1 l2 l3 l4:multiset A),
   (l1 \u l3) \c l4 ->
   (l1 \u (l2 \u l3)) \c (l2 \u l4).
 Proof using.
-  introv H. rewrites (>> union_comm l2 l3). rewrite union_assoc.
+  introv H. rewrites (union_comm l2 l3). rewrite union_assoc.
   sets l0: (l1 \u l3). rewrite union_comm. apply union_incl_union.
   { apply incl_refl. } { auto. }
 Qed.
