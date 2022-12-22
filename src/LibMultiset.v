@@ -660,7 +660,7 @@ Ltac fseq_inv_core H :=
   let go L :=
      false L; [ apply H
               | try apply notin_empty
-              | instantiate; try in_union_meta ] in
+              | try in_union_meta ] in
   match type of H with
   | \{} = _ => go empty_eq_single_inv_1
   | _ = \{} => go empty_eq_single_inv_2
