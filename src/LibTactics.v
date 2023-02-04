@@ -679,34 +679,29 @@ Ltac jauto_set :=
 (* ---------------------------------------------------------------------- *)
 (** ** Application *)
 
-Ltac old_refine f :=
-  refine f. (* ; shelve_unifiable. *)
-
 (** [rapply] is a tactic similar to [eapply] except that it is
     based on the [refine] tactics, and thus is strictly more
     powerful (at least in theory :). In short, it is able to perform
     on-the-fly conversions when required for arguments to match,
     and it is able to instantiate existentials when required. *)
-
 Tactic Notation "rapply" constr(t) :=
   first  (* --Note: the @ are not useful *)
-  [ eexact (@t)
-  | old_refine (@t)
-  | old_refine (@t _)
-  | old_refine (@t _ _)
-  | old_refine (@t _ _ _)
-  | old_refine (@t _ _ _ _)
-  | old_refine (@t _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _)
-  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _ _)
+  [ refine (@t)
+  | refine (@t _)
+  | refine (@t _ _)
+  | refine (@t _ _ _)
+  | refine (@t _ _ _ _)
+  | refine (@t _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _ _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _)
+  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _ _)
   ].
 
 (** No-typeclass refine apply, TEMPORARY for Coq < 8.11. *)
@@ -735,27 +730,27 @@ Ltac nrapply H :=
     the arity of function [T]. *)
 
 Tactic Notation "rapply_0" constr(t) :=
-  old_refine (@t).
+  refine (@t).
 Tactic Notation "rapply_1" constr(t) :=
-  old_refine (@t _).
+  refine (@t _).
 Tactic Notation "rapply_2" constr(t) :=
-  old_refine (@t _ _).
+  refine (@t _ _).
 Tactic Notation "rapply_3" constr(t) :=
-  old_refine (@t _ _ _).
+  refine (@t _ _ _).
 Tactic Notation "rapply_4" constr(t) :=
-  old_refine (@t _ _ _ _).
+  refine (@t _ _ _ _).
 Tactic Notation "rapply_5" constr(t) :=
-  old_refine (@t _ _ _ _ _).
+  refine (@t _ _ _ _ _).
 Tactic Notation "rapply_6" constr(t) :=
-  old_refine (@t _ _ _ _ _ _).
+  refine (@t _ _ _ _ _ _).
 Tactic Notation "rapply_7" constr(t) :=
-  old_refine (@t _ _ _ _ _ _ _).
+  refine (@t _ _ _ _ _ _ _).
 Tactic Notation "rapply_8" constr(t) :=
-  old_refine (@t _ _ _ _ _ _ _ _).
+  refine (@t _ _ _ _ _ _ _ _).
 Tactic Notation "rapply_9" constr(t) :=
-  old_refine (@t _ _ _ _ _ _ _ _ _).
+  refine (@t _ _ _ _ _ _ _ _ _).
 Tactic Notation "rapply_10" constr(t) :=
-  old_refine (@t _ _ _ _ _ _ _ _ _ _).
+  refine (@t _ _ _ _ _ _ _ _ _ _).
 
 (** [lets_base H E] adds an hypothesis [H : T] to the context, where [T] is
     the type of term [E]. If [H] is an introduction pattern, it will
