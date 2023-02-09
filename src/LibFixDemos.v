@@ -108,7 +108,7 @@ Definition Log log n :=
 Definition log := FixFun Log.
 
 Lemma fix_log : forall N n,
-  log n = func_iter N Log log n.
+  log n = iter N Log log n.
 Proof using.
   applys~ (FixFun_fix_iter (@lt nat _)).
   introv H. unfolds. case_if~.
@@ -177,7 +177,7 @@ Definition Only_even only_even n :=
 Definition only_even := FixFun Only_even.
 
 Lemma only_even_fix : forall N n, even n ->
-  only_even n = func_iter N Only_even only_even n.
+  only_even n = iter N Only_even only_even n.
 Proof using.
   applys~ (FixFun_fix_partial_iter (@lt nat _)).
   intros f1 f2 n Pn IH. unfolds. case_if~. case_if.
