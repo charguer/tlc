@@ -1926,6 +1926,30 @@ Arguments FixFun_fix_iter [A] _ [B] {IB} [F] [f].
 
 (** -------- Results for Terminating Evaluations --------- *)
 
+(** [f] partial fixed point of [F] implies [f] partial fixed point of any
+    iterate of [F], that is, [f x = iter n F f x]. *)
+
+Lemma partial_fixed_point_iter : 
+   forall (A B : Type) (E : B -> B -> Prop),
+   forall (F : (A -> B) -> A -> B) (f : A --> B) (n:nat),
+  equiv E ->
+  partial_fixed_point E F f ->
+  partial_fixed_point E (iter n F) f.
+Proof using.
+  introv HE M. gen f. induction n; simpl.
+  { intros g Hg x Dx. applys~ equiv_refl. }
+  { intros g Hg x Dx. hnf in Hg.
+    forwards K: IHn (Build_partial (iter n F g) (dom g)).
+
+ skip. unfolds partial_fixed_point. unfolds fixed_point. hnf in K.
+
+Qed.
+  
+  = (forall g, (forall x, P x -> f x = g x) -> forall x, P x -> g x = F g x).
+Proof using. auto. Qed.
+
+
+
 
 (** Specialized version of [FixFunMod_inv] *)
 Lemma FixFunMod_inv' :
