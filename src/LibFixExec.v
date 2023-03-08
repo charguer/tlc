@@ -280,25 +280,31 @@ Qed.
 Definition terminates A B (G:(A->option B)->(A->option B)) (x:A) : Prop :=
   exists n, FixOpt G n x <> None.
 
-(** [captures_dep Fopt R] asserts that, for the functional [G] written in the
+(** [captures_dep f Fopt R] asserts that, for the functional [G] written in the
     error monad, the relation [R] describes (technically over-approximates)
     the recursive call graph: if a call on input [x] involves a recursive on input [y],
-    then [R y x] holds. *)
+    then [R y x] holds. The argument [f] is used by nest-recursive functions,
+    for which the argument of a recursive call might depend on the result of another
+    recursive call. In that case, we need to exploit the information that the 
+    function [g] used for performing recursive calls in [G] indeed corresponds to
+    the optimal fixed point [f] of [F]. *)
 
 Definition captures_dep A B (f:A->B) (G:(A->option B)->(A->option B)) (R : (A->B)->A->A->Prop) : Prop :=
-  forall g x y, R f y x -> G g x <> None -> g y <> None. 
+  forall g, is_monadic_variant f g ->
+  forall x y, R f y x -> G g x <> None -> g y <> None. 
 
 (** [captures_dep G R] guarantees in particular that, when [R y x] holds,
     [FixOpt Fopt (S n) x <> None] implies [FixOpt Fopt n y <> None]. *)
 
-Lemma captures_dep_on_FixOpt : forall A B f (G:(A->option B)->(A->option B)) (R : (A->B)->A->A->Prop),
+Lemma captures_dep_on_FixOpt : forall A B f (G:(A->option B)->(A->option B)) (R : (A->B)->A->A->Prop) (n:nat),
   captures_dep f G R -> 
-  let fopt := FixOpt G in
-  forall n x y, 
+  is_monadic_variant f (FixOpt G n) ->
+  forall x y, 
   R f y x -> 
-  fopt (S n) x <> None -> 
-  fopt n y <> None.
-Proof using. introv M HR HN. applys M HR HN. Qed.
+  FixOpt G (S n) x <> None -> 
+  FixOpt G n y <> None.
+Proof using. introv M Hf HR HN. simpl in HN. applys M Hf HR HN. Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Fixed point theorems for terminating executions *)
@@ -365,16 +371,25 @@ Proof using.
   applys* FixFunMod_inv_at M. { applys equiv_eq. }
 Qed.
 
+Lemma FixFun_is_monadic_variant_FixOpt : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) G,
+  f = FixFun F ->
+  is_ho_monadic_variant F G ->
+  error_monad_monotonic G ->
+  forall n, is_monadic_variant f (FixOpt G n).
+Proof using.
+  introv Hf HFG HG Hxy. rewrites (>> FixFun_eq_iter_on_terminates n x Hf HFG HG f).
+  { auto_false. } { applys iter_of_is_ho_monadic_variant HFG Hxy. }
+Qed.
+
+(** Expanded version of the above *)
+
 Lemma FixFun_eq_FixOpt : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) G (n:nat) (x:A) (z:B),
   f = FixFun F ->
   is_ho_monadic_variant F G ->
   error_monad_monotonic G ->
   FixOpt G n x = Some z ->
   f x = z.
-Proof using.
-  introv Hf HFG HG Hxy. rewrites (>> FixFun_eq_iter_on_terminates n x Hf HFG HG f).
-  { auto_false. } { applys iter_of_is_ho_monadic_variant HFG Hxy. }
-Qed.
+Proof using. introv Hf HFG HG Hxy. applys* FixFun_is_monadic_variant_FixOpt. Qed.
 
 (** Next lemma contains the key proof, factorizing the arguments for the two final 
     induction principles. *)
@@ -425,9 +440,11 @@ Proof using.
   introv Hf HFG HG HR HI Hx. 
   applys FixFun_fix_ter_common Hf HFG HG Hx. 
   { clears x. intros n x Hx h Hy. apply HI. { exists* (S n). }
-    intros y Ryx. lets HGy: captures_dep_on_FixOpt HR Ryx Hx. split.
-    { applys Hy. applys HGy. }
-    { symmetry. applys FixFun_eq_iter_on_terminates Hf HFG HG HGy. } }
+    intros y Ryx. lets HGy: captures_dep_on_FixOpt HR Ryx Hx.
+    { applys FixFun_is_monadic_variant_FixOpt Hf HFG HG. }
+    { split.
+      { applys Hy. applys HGy. }
+      { symmetry. applys FixFun_eq_iter_on_terminates Hf HFG HG HGy. } } }
 Qed.
 
 (** Same statement, without the conjunct for nested recursive functions
@@ -491,6 +508,7 @@ Definition Bind A B (o:option A) (k:A->option B) : option B :=
   | Some a => k a 
   end.
 
+Declare Scope error_monad_scope.
 Notation "'ret%' x" := (Return x) (at level 67) : error_monad_scope.
 Notation "'let%' a := o 'in' k" := (Bind o (fun a => k)) (at level 67) : error_monad_scope.
 Open Scope error_monad_scope.
@@ -503,7 +521,7 @@ Lemma Bind_monotonic : forall A B (o1 o2:option A) (k1 k2:A->option B) r,
   (forall a, k1 a = Some r -> k2 a = Some r) ->
   Bind o2 k2 = Some r.
 Proof using.
-  introv M Ha Hk. destruct o1 as [|a1]; tryfalse.
+  introv M Ha Hk. destruct o1 as [a|]; tryfalse.
   forwards~ ->: Ha a. simpls. auto. 
 Qed.
 
@@ -595,7 +613,7 @@ Definition FibRec (fib:nat->nat) (n':nat) (n:nat) : Prop :=
 (* dependency lemma -- should be automatically generated *)
 Lemma FibRec_dep : captures_dep fib FibOpt FibRec.
 Proof using.
-  intros g n n' HR E. unfolds FibOpt, FibRec.
+  intros g _ n n' HR E. unfolds FibOpt, FibRec.
   case_if. 
   (* { false. } *)
   { lets (a&Ha&E2): Binds_not_None_inv (rm E).
@@ -706,13 +724,10 @@ Definition NestRec (nest:nat->nat) (n':nat) (n:nat) : Prop :=
 (* dependency lemma -- should be automatically generated *)
 Lemma NestRec_dep : captures_dep nest NestOpt NestRec.
 Proof using.
-  intros f n n' HR E. 
-  asserts Hf: (forall x y, f x = Some y -> nest x = y). (* TODO *) skip.
-  unfolds NestOpt, NestRec.
-  case_if. 
-  (* { false. } *)
-  { lets (a&Ha&E2): Binds_not_None_inv (rm E). lets Ea: Hf Ha.
-    lets (b&Hb&E3): Binds_not_None_inv (rm E2). lets Eb: Hf Hb.
+  intros g Hg n n' HR E. unfolds NestOpt, NestRec.
+  case_if. (* 1:{ false. } *)
+  { lets (a&Ha&E2): Binds_not_None_inv (rm E). lets Ea: Hg Ha.
+    lets (b&Hb&E3): Binds_not_None_inv (rm E2). lets Eb: Hg Hb.
     destruct HR as [|[|[|]]]; try congruence. } 
 Qed.
 
