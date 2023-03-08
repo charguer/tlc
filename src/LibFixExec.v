@@ -67,15 +67,6 @@ Qed.
 
 (** On [iter] *)
 
-(*
-Lemma iter_zero : forall A B (F:(A->B)->(A->B)) (f:A->B) (x:A),
-  iter 0 F f x = f x.
-Proof using. auto. Qed.
-
-Lemma iter_succ : forall A B (F:(A->B)->(A->B)) (f:A->B) (n:nat) (x:A),
-  iter (S n) F f x = F (iter n F f) x.
-Proof using. auto. Qed.
-*)
 Lemma iter_zero : forall A B (F:(A->B)->(A->B)) (f:A->B),
   iter 0 F f = f.
 Proof using. auto. Qed.
@@ -217,13 +208,24 @@ Proof using. introv M. destruct n. { false* M. } { math. } Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Monotonicity property for functionals with respect to errors/timeouts *)
 
+(** [option_fun_incl g1 g2], where [g1] and [g2] produce results of type [option],
+    asserts that [g2] returns no less [Some] results than [g1], and always
+    coherent with results produced by [g1]. *)
+
 Definition option_fun_incl A B (g1 g2:(A->option B)) : Prop :=
   forall x y, g1 x = Some y -> g2 x = Some y.
+
+(** [error_monad_monotonic G] asserts that applying [G] to two functions 
+    preserves the [option_fun_incl] property. *)
 
 Definition error_monad_monotonic A B (G:(A->option B)->(A->option B)) : Prop :=
   forall g1 g2, 
   option_fun_incl g1 g2 ->
   option_fun_incl (G g1) (G g2).
+
+(** The monotonicity property [error_monad_monotonic G] is used in our development to 
+    argue that providing a larger recursion depth to [FixOpt] can only produce more
+    results, and never invalidates results obtained at smaller depths. *)
 
 Lemma FixOpt_mono_succ : forall A B (G:(A->option B)->(A->option B)) n x y, 
   error_monad_monotonic G ->
@@ -234,6 +236,7 @@ Proof using.
   { false. }
   { simpls. applys HG EQ. intros g1 g2. applys IHn. }
 Qed.
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Relationship between a function and its monadic reformulation *)
@@ -300,7 +303,9 @@ Proof using. introv M HR HN. applys M HR HN. Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Fixed point theorems for terminating executions *)
 
-(** On the domain where the functional in the non-termination monad terminates in n steps,
+(** Major theorem relating the optimal fixed point combinator [FixFun] with the iterated 
+    fixed point combinators [FixOpt] and [iter]: 
+    on the domain where the functional in the non-termination monad terminates in n steps,
     the functional [iter n F g] is a fixed point of [F], for any continuation [g]. 
     Morever, this fixed point is consistent with any other fixed point of [F]. *)
 
@@ -339,6 +344,14 @@ Proof using.
           applys iter_of_is_ho_monadic_variant HFG Hxy'. } }
       { rewrite~ M. } } }
 Qed.
+
+(** We next state two corollaries of the major theorem. 
+    (1) If [FixOpt G n x] produces a proper output, then the value associated to [x]
+        by the optimal fixed point combinator, namely [FixFun F x], can be computed
+        using the iteration of the functional [F]: the result is equal to
+        [iter n F g x], for an arbitrary [g].
+    (2) Furthermore, if [y] denotes the result produced by [FixOpt G n x], then
+        [iter n F g x] is equal to [y]. *)
 
 Lemma FixFun_eq_iter_on_terminates : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) G (n:nat) (x:A),
   f = FixFun F ->
@@ -445,6 +458,9 @@ Qed.
 (* ********************************************************************** *)
 (** * Error monad constructors *)
 
+(** We use the standard monadic constructors to express functionals in the 
+    non-termination monad. *)
+
 Definition Return A (x:A) : option A :=
   Some x.
 
@@ -458,6 +474,7 @@ Notation "'ret%' x" := (Return x) (at level 67) : error_monad_scope.
 Notation "'let%' a := o 'in' k" := (Bind o (fun a => k)) (at level 67) : error_monad_scope.
 Open Scope error_monad_scope.
 
+(** Inversion lemmas *)
 
 Lemma Bind_monotonic : forall A B (o1 o2:option A) (k1 k2:A->option B) r,
   Bind o1 k1 = Some r ->
@@ -564,7 +581,6 @@ Proof using.
     lets (b&Hb&E3): Binds_not_None_inv (rm E2).
     destruct HR as [|[|]]; congruence. } 
 Qed.
-
 
 (** Demo: computing with FibOpt to derive a result of [fib].
     Here [10%nat] is an arbitrary, sufficiently large bound on the depth. *)
