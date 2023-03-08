@@ -323,7 +323,10 @@ Proof using.
     intros x (Dx&D'x). unfolds pfun_equiv. simpls.
     case_eq (FixOpt G n x); [|auto_false]. intros y Hxy.
     applys eq_trans y. { applys iter_of_is_ho_monadic_variant HFG Hxy. }
-    symmetry. gen x y. gen n. intros n. induction_wf IH: lt_wf n. intros.
+    symmetry. gen x y. gen n. intros n. 
+    (* forall n x Y, FixOpt G n x <> None -> D' x -> FixOpt G n x = Some y -> h x = y
+       -- Where [D'] is the domain of another arbitrary fixed point named [h] *)
+    induction_wf IH: lt_wf n. intros.
     { set (h' := fun x => If D' x then h x else iter n F g x).
       specializes Hh h' __.
       { clears x y. unfolds pfun_equiv. simpls. intros x D'x. unfold h'. case_if; auto. }
@@ -335,19 +338,6 @@ Proof using.
         { lets Hxy': FixOpt_mono_succ HG Hxy.
           applys iter_of_is_ho_monadic_variant HFG Hxy'. } }
       { rewrite~ M. } } }
-Qed.
-
-(* TODO: move *)
-Lemma FixFunMod_inv_at :
-  forall A (P:A->Prop) B {IB:Inhab B} (F:(A->B)->(A->B)) (E:binary B) (f f':A->B) (x:A),
-  f = FixFunMod E F ->
-  equiv E ->
-  generally_consistent_partial_fixed_point E F (Build_partial f' P) ->
-  P x ->
-  E (f x) (f' x).
-Proof using.
-  introv Deff Equiv Gcf' Px. lets EQ: FixFunMod_inv Deff Equiv Gcf'.
-  applys* equiv_sym Equiv.
 Qed.
 
 Lemma FixFun_eq_iter_on_terminates : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) G (n:nat) (x:A),
@@ -373,25 +363,39 @@ Proof using.
   { auto_false. } { applys iter_of_is_ho_monadic_variant HFG Hxy. }
 Qed.
 
-Lemma partial_fixed_point_iter_on_terminates : forall A B (F:(A->B)->(A->B)) G (n:nat),
+(** Next lemma contains the key proof, factorizing the arguments for the two final 
+    induction principles. *)
+
+Lemma FixFun_fix_ter_common : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B->Prop)
+   (G:(A->option B)->(A->option B)),
+  f = FixFun F ->
   is_ho_monadic_variant F G ->
   error_monad_monotonic G ->
-  let D x := FixOpt G n x <> None in
-  forall g, partial_fixed_point eq F (Build_partial (iter n F g) D).
+  (forall n x, FixOpt G (S n) x <> None -> 
+    let h := iter n F f in
+    (forall y, FixOpt G n y <> None -> P y (h y)) ->
+    P x (F h x)) ->
+  forall x, terminates G x -> P x (f x).
 Proof using.
-  introv HFG HG. intros D g h Hh. simpls. unfolds pfun_equiv.
-  intros x Dx. case_eq (FixOpt G n x); [|auto_false]. intros y Hxy.
-  applys eq_trans y.
-  { rewrite~ <- Hh. applys iter_of_is_ho_monadic_variant HFG Hxy. }
-  { lets M: HFG h (FixOpt G n) x y.
-    { clears x y. intros x y Hxy. rewrite <- Hh; [|auto_false]. 
-      applys iter_of_is_ho_monadic_variant HFG Hxy. }
-  rewrite~ M. applys FixOpt_mono_succ HG Hxy. }
+  introv Hf HFG HG HI Hx. 
+  destruct Hx as (n&Hx). case_eq (FixOpt G n x); [|auto_false]. intros y Hy.
+  lets MG: iter_of_is_ho_monadic_variant HFG.
+  asserts HFnx: (FixFun_iter_indep F n x).
+  { intros g1 g2. rewrites (>> MG g1 Hy). rewrites* (>> MG g2 Hy). }
+  rewrites~ (>> FixFun_eq_iter_on_terminates x Hf HFG HG Hx f).
+  lets Hn: FixOpt_eq_Some_inv_pos Hx.
+  clear Hy HFnx y. gen Hn x.
+  (* forall (n > 0), forall x, FixOpt G n x <> None -> P x (iter n F f x) *)
+  induction_wf IH: wf_lt n. intros Hn x Hx.
+  destruct n as [| n']; [false;math|]. simpl. applys* HI.
+  intros y Hy. lets Hn': FixOpt_eq_Some_inv_pos Hy.
+  applys IH Hy; try math.
 Qed.
 
 (** The following fixed point induction principle asserts that, on the domain of input
-    values [x] on which [FixFun Fopt] terminates with a proper output, one can reason
-    about behaviors of the fixed point by induction over the graph of recursive calls. *)
+    values [x] on which [FixFun Fopt] terminates with a proper output, one can prove a
+    property [P] about the fixed point [f] by assuming the property to hold of 
+    recursive calls. These recursive calls as captured by the relation [R]. *)
 
 Lemma FixFun_fix_ter : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B->Prop)
    (G:(A->option B)->(A->option B)) (R:A->A->Prop),
@@ -399,24 +403,60 @@ Lemma FixFun_fix_ter : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B->Pro
   is_ho_monadic_variant F G ->
   error_monad_monotonic G ->
   captures_dep G R ->
-  (forall h x,
+  (forall h x, terminates G x ->
     (forall y, R y x -> P y (h y)) ->
     P x (F h x)) ->
   forall x, terminates G x -> P x (f x).
 Proof using.
   introv Hf HFG HG HR HI Hx. 
-  destruct Hx as (n&Hx). case_eq (FixOpt G n x); [|auto_false]. intros y Hy.
-  lets MG: iter_of_is_ho_monadic_variant HFG.
-  asserts HFnx: (FixFun_iter_indep F n x).
-  { intros g1 g2. rewrites (>> MG g1 Hy). rewrites* (>> MG g2 Hy). }
-  rewrites~ (>> FixFun_eq_iter_on_terminates x Hf HFG HG Hx f).
-  lets Hn: FixOpt_eq_Some_inv_pos Hx.
-  clear Hy HFnx y. gen Hn x. induction_wf IH: wf_lt n. intros Hn x Hx.
-  destruct n as [| n']; [false;math|]. simpl. applys HI.
-  intros y HRy. lets Hy: captures_dep_on_FixOpt HR HRy Hx.
-  lets Hn': FixOpt_eq_Some_inv_pos Hy.
-  applys IH Hy; try math.
+  applys FixFun_fix_ter_common Hf HFG HG Hx. 
+  { clears x. intros n x Hx h Hy. apply HI. { exists* (S n). }
+    intros y Ryx. applys Hy. applys captures_dep_on_FixOpt HR Ryx Hx. }
 Qed.
+
+(** The following fixed point induction principle is a variant of the former, that does
+    not need to worry about characterizing recursive calls using a relation [R],
+    provided that the property [P] of interest is "satisfiable", in the sense that the
+    user is able to provide a function [h] satisfying [forall x, P x (h x)]. *)
+
+Lemma FixFun_fix_ter_sat : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B->Prop)
+   (G:(A->option B)->(A->option B)),
+  f = FixFun F ->
+  (exists h, forall x, P x (h x)) ->
+  is_ho_monadic_variant F G ->
+  error_monad_monotonic G ->
+  (forall h x, (forall y, P y (h y)) -> P x (F h x)) ->
+  forall x, terminates G x -> P x (f x).
+Proof using.
+  introv Hf (h0&Hh0) HFG HG HI. 
+  applys FixFun_fix_ter_common Hf HFG HG.
+  { intros n x Hx h Hy. lets Px: HI (fun y => If FixOpt G n y <> None then h y else h0 y) x __.
+    { intros y. case_if. { applys* Hy. } { applys Hh0. } }
+    { applys_eq Px. clear Px. subst h.
+      case_eq (FixOpt G (S n) x); [|auto_false]. intros z Hz.
+      applys eq_trans z.
+      { applys iter_of_is_ho_monadic_variant HFG (S n) f Hz. }
+      { symmetry. simpl in Hz. applys HFG Hz. intros a b Hab.
+        case_if. applys iter_of_is_ho_monadic_variant HFG n Hab. } } }
+Qed.
+
+
+
+
+
+
+(* ********************************************************************** *)
+(** * Demo *)
+
+
+
+
+
+
+
+
+(* ********************************************************************** *)
+(* *FUTURE
 
     (* alternative:
        asserts HFnx: (FixFun_iter_indep F n x).

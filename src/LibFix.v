@@ -1752,7 +1752,7 @@ Arguments FixValModMut2_fix [I] [A1] [A2] {IA1} {IA2} M E1 E2 [F1] [F2] [x1] [x2
 
 (** -------- Recursive functions --------- *)
 
-(* --TODO: comment and use in the next proof *)
+(* --LATER: comment and use in FixFunMod_fix_partial_inv, if possible *)
 
 Lemma FixFunMod_inv :
   forall A (P:A->Prop) B {IB:Inhab B} (F:(A->B)->(A->B)) (E:binary B) (f f':A->B),
@@ -1769,6 +1769,18 @@ Proof using.
   lets Fixf: (proj1 Gcf').
   rewrite partial_fixed_point_definitions in Fixf.
   lets [ED MG]: (Bestg _ Fixf). forwards~ [Dom Equ]: ED.
+Qed.
+
+Lemma FixFunMod_inv_at :
+  forall A (P:A->Prop) B {IB:Inhab B} (F:(A->B)->(A->B)) (E:binary B) (f f':A->B) (x:A),
+  f = FixFunMod E F ->
+  equiv E ->
+  generally_consistent_partial_fixed_point E F (Build_partial f' P) ->
+  P x ->
+  E (f x) (f' x).
+Proof using.
+  introv Deff Equiv Gcf' Px. lets EQ: FixFunMod_inv Deff Equiv Gcf'.
+  applys* equiv_sym Equiv.
 Qed.
 
 (** To show that [FixFun E F] is a fixed point modulo [E], on a domain [P],

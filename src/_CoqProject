@@ -15,6 +15,7 @@ LibEpsilon.v
 LibEqual.v
 LibExec.v
 LibFix.v
+LibFixExec.v
 LibFixDemos.v
 LibFset.v
 LibFun.v
