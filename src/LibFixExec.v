@@ -557,7 +557,7 @@ Definition FibRec (n':nat) (n:nat) : Prop :=
 (* dependency lemma -- should be automatically generated *)
 Lemma FibRec_dep : captures_dep FibOpt FibRec.
 Proof using.
-  intros f n n' HR E. unfolds FibOpt, FibRec.
+  intros g n n' HR E. unfolds FibOpt, FibRec.
   case_if. 
   (* { false. } *)
   { lets (a&Ha&E2): Binds_not_None_inv (rm E).
@@ -607,4 +607,118 @@ Proof using.
     (* same as the line above using more automation:  { do 2 FixCall h. math. }  *)
 Qed.
 
+End Fib.
+
+(* ---------------------------------------------------------------------- *)
+(** ** Nested recursion *)
+
+Section Nest.
+Open Scope nat_scope.
+
+Definition Nest nest (n:nat) : nat :=
+  if le_dec n 1
+    then 0
+    else nest (nest (n-1) + nest (n-2)).
+
+Definition nest := FixFun Nest.
+
+(* monadic version -- should be automatically generated *)
+Definition NestOpt nest (n:nat) : option nat :=
+  if le_dec n 1 
+    then ret% 0
+    else let% a := nest (n-1) in
+         let% b := nest (n-2) in
+         nest (a + b).
+
+(* monotonicity lemma -- should be automatically generated *)
+Lemma NestOpt_mono : error_monad_monotonic NestOpt.
+Proof using.
+  intros g1 g2 M n r E. unfolds NestOpt. 
+  case_if.
+  { auto. }
+  { applys Bind_monotonic (rm E). { applys M. } intros a E.
+    applys Bind_monotonic (rm E). { applys M. } intros b E.
+    auto. }
+Qed.
+
+(* simulation lemma -- should be automatically generated *)
+Lemma NestOpt_simu : is_ho_monadic_variant Nest NestOpt.
+Proof using.
+  intros f g M. intros n r E. unfolds NestOpt, Nest.
+  case_if.
+  { lets ?: Return_Some_inv (rm E). congruence. }
+  { lets (a&Ha&E2): Binds_Some_inv (rm E).
+    lets Ea: M Ha.
+    lets (b&Hb&E3): Binds_Some_inv (rm E2).
+    lets Eb: M Hb.
+    lets Ec: M E3.
+    congruence. } 
+Qed.
+
+(* dependency relation -- should be automatically generated *)
+Definition NestRec (n':nat) (n:nat) : Prop :=
+  if le_dec n 1 
+    then False
+    else (n' = n-1) \/
+         let a := nest (n-1) in
+         (n' = n-2) \/
+         let b := nest (n-2) in
+         (n' = a+b) \/
+         False.
+
+(* dependency lemma -- should be automatically generated *)
+Lemma NestRec_dep : captures_dep NestOpt NestRec.
+Proof using.
+  intros f n n' HR E. unfolds NestOpt, NestRec.
+  case_if. 
+  (* { false. } *)
+  { lets (a&Ha&E2): Binds_not_None_inv (rm E).
+    lets (b&Hb&E3): Binds_not_None_inv (rm E2).
+    destruct HR as [|[|[|]]]; try congruence. skip. (* TODO *) } 
+Qed.
+
+
+(** Demo: computing with NestOpt to derive a result of [nest].
+    Here [10%nat] is an arbitrary, sufficiently large bound on the depth. *)
+
+Lemma nest5 : exists r, nest 2 = r.
+Proof using.
+  exists. applys FixFun_eq_FixOpt 10%nat NestOpt_simu NestOpt_mono; [reflexivity|].
+  cbv. (* evaluates [FixOpt NestOpt 10 5] to [Some 0] *)
+  reflexivity.
+Qed.
+
+(** Demo: proving a property of [nest], e.g. that it returns zero values,
+    whenever the computation using [NestOpt] terminates at some finite depth. *)
+
+Lemma nest_zero : forall n, terminates NestOpt n -> nest n = 0.
+Proof using.
+  intros.
+  applys FixFun_fix_ter (fun (x y:nat) => y = 0) NestOpt_simu NestOpt_mono NestRec_dep; auto.
+  clears n. intros h n _ IH. unfolds Nest, NestRec.
+  case_if. 
+  { math. } 
+  { forwards* IH1: IH (n-1).  
+    forwards* IH2: IH (n-2).
+    forwards* IH3: IH 0. skip. (* TODO *)
+    rewrite IH1, IH2. auto. }
+Qed.
+
+(** Demo: variant of the above proof, exploiting the fact that the property
+    [f n = 0] is satisfiable by at least one function [f]. This alternative
+    proof does not require reasoning about dependencies of recursive calls, 
+    and does not need the statement of [NestRec] and [NestRec_dep].  *)
+
+Lemma nest_zero' : forall n, terminates NestOpt n -> nest n = 0.
+Proof using.
+  intros.
+  applys FixFun_fix_ter_sat (fun (x y:nat) => y = 0) NestOpt_simu NestOpt_mono; auto.
+  { exists (fun (_:nat) => 0). math. } 
+  clears n. intros h n IH. unfolds Nest.
+  case_if. 
+  { math. }
+  { applys IH. } (* Observe that we don't even need to reason about the inner recursive calls! *)
+Qed.
+
+End Nest.
 
