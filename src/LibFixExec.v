@@ -6,7 +6,7 @@
 Set Implicit Arguments.
 Generalizable Variables A B.
 From TLC Require Import LibTactics LibLogic LibReflect LibFun LibList
-  LibInt LibNat LibWf LibFix.
+  LibInt LibNat LibRelation LibWf LibFix.
 
 (* ********************************************************************** *)
 (** * Function interation *)
@@ -14,46 +14,115 @@ From TLC Require Import LibTactics LibLogic LibReflect LibFun LibList
 (* ---------------------------------------------------------------------- *)
 (** ** Definition of iteration *)
 
+(** Definition with an eta-expansion, to avoid undesirable creation of  
+    numerous closures. *)
+
 Fixpoint iter n A B (F:(A->B)->(A->B)) (f:A->B) (x:A) : B :=
   match n with
   | O => f x
   | S n' => F (iter n' F f) x
   end.
 
+(** Alternative version, without the eta-expansion *)
+
+Fixpoint iter' n A B (F:(A->B)->(A->B)) (f:A->B) : A -> B :=
+  match n with
+  | O => f
+  | S n' => F (iter' n' F f)
+  end.
+
+Lemma iter'_eq_iter : iter' = iter.
+Proof using. 
+  extens. intros n A B F f. induction n.
+  { auto. }
+  { extens. intros x. rewrite* IHn. }
+Qed.
+
 (* LATER: define exponentiation for improved efficiency *)
+
 
 (* ---------------------------------------------------------------------- *)
 (** ** Properties of iteration *)
 
-Lemma iter_zero : forall n A B (F:(A->B)->(A->B)) (f:A->B) x,
+(** On [iter'] *)
+
+Lemma iter'_zero : forall A B (F:(A->B)->(A->B)) (f:A->B),
+  iter' 0 F f = f.
+Proof using. auto. Qed.
+
+Lemma iter'_one : forall A B (F:(A->B)->(A->B)),
+  iter' 1 F = F.
+Proof using. auto. Qed.
+
+Lemma iter'_succ : forall A B (F:(A->B)->(A->B)) (f:A->B) (n:nat),
+  iter' (S n) F f = F (iter' n F f).
+Proof using. auto. Qed.
+
+Lemma iter'_succ_cont : forall A B (F:(A->B)->(A->B)) (f:A->B) (n:nat),
+  iter' (S n) F f = iter' n F (F f).
+Proof using.
+  intros. induction n. { auto. }
+  { rewrite iter'_succ. rewrite* IHn. }
+Qed.
+
+(** On [iter] *)
+
+(*
+Lemma iter_zero : forall A B (F:(A->B)->(A->B)) (f:A->B) (x:A),
   iter 0 F f x = f x.
 Proof using. auto. Qed.
 
-Lemma iter_succ : forall n A B (F:(A->B)->(A->B)) (f:A->B) x,
+Lemma iter_succ : forall A B (F:(A->B)->(A->B)) (f:A->B) (n:nat) (x:A),
   iter (S n) F f x = F (iter n F f) x.
 Proof using. auto. Qed.
+*)
+Lemma iter_zero : forall A B (F:(A->B)->(A->B)) (f:A->B),
+  iter 0 F f = f.
+Proof using. auto. Qed.
 
-Lemma iter_succ_assoc : forall n A B (F:(A->B)->(A->B)) (f:A->B) x,
-  iter (S n) F f x = iter n (F f) x.
-Proof using. induction n. Qed.
+Lemma iter_one : forall A B (F:(A->B)->(A->B)),
+  iter 1 F = F.
+Proof using. auto. Qed.
+
+Lemma iter_succ : forall A B (F:(A->B)->(A->B)) (f:A->B) (n:nat),
+  iter (S n) F f = F (iter n F f).
+Proof using. auto. Qed.
+
+Lemma iter_succ_cont : forall A B (F:(A->B)->(A->B)) (f:A->B) (n:nat),
+  iter (S n) F f = iter n F (F f).
+Proof using. intros. rewrite <- iter'_eq_iter. apply iter'_succ_cont. Qed.
+
+Lemma iter_swap : forall A B (F:(A->B)->(A->B)) (f:A->B) (n:nat),
+  F (iter n F f) = iter n F (F f).
+Proof using. intros. rewrite* <- iter_succ_cont. Qed.
+
+Lemma iter_plus : forall A B (F:(A->B)->(A->B)) (f:A->B) (n m:nat),
+  iter (n + m) F f = iter n F (iter m F f).
+Proof using.
+  intros. gen m. induction n; intros.
+  { auto. }
+  { simpl Nat.add. rewrite iter_succ. rewrite* IHn. }
+Qed.
 
 (** A partial fixed point of [F] is also a partial fixed point of [iter n F]. *)
 
 Lemma iter_partial_fixed_point : forall A B (E:binary B) (F:(A->B)->(A->B)) (f:A-->B),
   partial_fixed_point E F f ->
-  forall n,
+  equiv E ->
+  forall n, (n > 0)%nat ->
   partial_fixed_point E (iter n F) f.
 Proof using.
-  induction n.
+  introv M HE. intros n. induction_wf IH: wf_lt n. intros Hn.
+  tests Cn: (n = 1)%nat.
+  { rewrite* iter_one. }
+  { destruct n as [|n']. { false; math. }
+    lets HE': pfun_equiv_equiv (dom f) HE.
+    unfolds partial_fixed_point, fixed_point. 
+    intros g Hg. rewrite iter_succ_cont.
+    specializes M g Hg.
+    forwards~ N: (rm IH) n' (F g); try math. { applys* equiv_trans Hg M. }
+    applys* equiv_trans M N. }
 Qed.
-
-(*
-  partial_fixed_point E F (Build_partial g D) ->
-  (*     forall g,  g =D f  ->  f =D (F g) *)
-  forall n,
-  partial_fixed_point E (iter n F) (Build_partial g D) ->
-
-*)
 
 
 (* ********************************************************************** *)
@@ -106,12 +175,10 @@ Definition FixFun_iter_indep A B (F:(A->B)->(A->B)) (n:nat) (x:A) : Prop :=
 
 (** Alternative characterization of [FixFun_iter_indep] *)
 
-Lemma FixFun_iter_indep_of_image : forall A B f (F:(A->B)->(A->B)) (n:nat) (x:A) (y:B),
+Lemma FixFun_iter_indep_of_image : forall A B (F:(A->B)->(A->B)) (n:nat) (x:A) (y:B),
   (forall g, iter n F g x = y) ->
   FixFun_iter_indep F n x.
-Proof using.
-  transitivity y
-Qed.
+Proof using. introv Hy. intros g1 g2. do 2 rewrite Hy. auto. Qed.
 
 (** If [FixFun_iter_indep F n x] holds, then the fixed point equation holds
     at [x]. *)
@@ -119,77 +186,14 @@ Qed.
 Lemma FixFun_iter_indep_fix : forall A B (F:(A->B)->(A->B)) (n:nat) (x:A),
   FixFun_iter_indep F n x ->
   forall g, iter n F g x = F (iter n F g) x.
-Proof using.
-(*
-   car F (F^n arb) x = F^n (F arb) x    (parenthésage de l'itération)
-   et que F^n arb x = F^n (F arb) x   (par H)
-*)
-Qed.
-
-
-(** If [FixFun_iter_indep F n x] holds, then [x] belongs to the domain
-    of the optimal fixed point of [F], and [iter n F g] for an arbitrary [g]
-    provides the image associated to [x] by the fixed point. *)
-
-Lemma FixFun_iter_indep_fix : forall A B f (F:(A->B)->(A->B)) (n:nat) (x:A),
-  f = FixFun F ->
-  FixFun_iter_indep F n x ->
-  forall g, f x = iter n F g x.
-Proof using.
-(*
-   let h be another fixed point.
-   by iter_partial_fixed_point we have:
-   h x = iter n F h x.
-   by FixFun_iter_indep
-   iter n F h x = iter n F g x
-
-exploit
-Lemma FixFunMod_inv :
-  forall A (P:A->Prop) B {IB:Inhab B} (F:(A->B)->(A->B)) (E:binary B) (f f':A->B),
-  f = FixFunMod E F ->
-  equiv E ->
-  generally_consistent_partial_fixed_point E F (Build_partial f' P) ->
-  pfun_equiv E P f' f.
-
-to show that on the x, the intersection of the domains,
-
-  let f := Build_partial (iter n F g) (dom_singleton x) in
-  partial_fixed_point eq F f.
-      by FixFun_iter_indep_fix.
-
-*)
-Qed.
-
+Proof using. introv Hx. intros g. rewrite iter_swap. applys Hx. Qed.
 
 
 (* ********************************************************************** *)
 (** * Executing functions using variants in the non-termination monad *)
 
-
-Definition is_monadic_variant A B (f : A -> B) (g : A -> option B) : Prop :=
-  forall x z, g x = Some z -> f x = z.
-
-Definition is_monadic_variant A B
- (F : (A->B)->(A->B)) (Fopt : (A->option B)->(A->option B)) : Prop :=
-  forall f fopt,
-  is_monadic_variant_of f fopt ->
-  is_monadic_variant_of (F f) (Fopt fopt).
-
-Lemma iter_of_is_ho_monadic_variant : forall A B
- (F : (A->B)->(A->B)) (Fopt : (A->option B)->(A->option B)),
-  is_ho_monadic_variant_of F Fopt ->
-  forall n x y,
-  fopt n x = Some y ->
-  forall g, iter n F g x = y.
-Proof using.
- induction n.
-Qed.
-
-Definition captures_dep A B (f g : (A->option B)) (R : A->A->Prop) : Prop :=
-  forall x y, R y x -> f x <> None -> g y <> None.
-
-Definition terminates A B (fopt:nat->A->option B) (x:A) : Prop :=
-  exists n, fopt n x <> None.
+(** [FixOpt] takes a functional expressed in the error monad, and returns
+    its fixed point expressed in the non-termination monad. *)
 
 Definition FixOpt A B (Fopt:(A->option B)->(A->option B)) : nat->A->option B :=
   fix fopt (n:nat) (x:A) : option B :=
@@ -198,16 +202,109 @@ Definition FixOpt A B (Fopt:(A->option B)->(A->option B)) : nat->A->option B :=
     | S n' => Fopt (fopt n') x
     end.
 
-Lemma FixFun_fix_ter : forall A B (F:(A->B)->(A->B)) (P:A->B->Prop)
-   (Fopt:(A->option B)->(A->option B)) (R:A->A->Prop),
+(** [is_monadic_variant f g] asserts that [g] is a reformulation of the function [f]
+    in the error monad (with respect to correctness only, not w.r.t. to completeness). *)
+
+Definition is_monadic_variant A B (f : A -> B) (g : A -> option B) : Prop :=
+  forall x z, g x = Some z -> f x = z.
+
+(** [is_ho_monadic_variant F G] asserts that the functional [G] is a reformulation of 
+    the functional [F], as a combinator in the error monad (again, w.r.t. correctness only). *)
+
+Definition is_ho_monadic_variant A B
+ (F : (A->B)->(A->B)) (Fopt : (A->option B)->(A->option B)) : Prop :=
+  forall f fopt,
+  is_monadic_variant f fopt ->
+  is_monadic_variant (F f) (Fopt fopt).
+
+(** The following lemma asserts that if [is_ho_monadic_variant F G], then
+    [FixOpt Fopt n x] is the monadic reformulation of [iter n F h], for any [h]. *)
+
+Lemma iter_of_is_ho_monadic_variant : forall A B
+ (F : (A->B)->(A->B)) (G : (A->option B)->(A->option B)),
+  is_ho_monadic_variant F G ->
+  forall n h,
+  is_monadic_variant (iter n F h) (FixOpt G n).
+Proof using.
+ introv HF. intros n. induction n; intros h x y EQ.
+  { false. }
+  { simpls. applys HF EQ. intros a b Hab. applys* IHn. }
+Qed.
+
+(** [terminates G x] asserts that the function [FixOpt Fopt] returns a
+    proper output on the input [x], meaning that its execution does not 
+    run out of fuel. *)
+
+Definition terminates A B (G:(A->option B)->(A->option B)) (x:A) : Prop :=
+  exists n, FixOpt G n x <> None.
+
+(** [captures_dep Fopt R] asserts that, for the functional [G] written in the
+    error monad, the relation [R] describes (technically over-approximates)
+    the recursive call graph: if a call on input [x] involves a recursive on input [y],
+    then [R y x] holds. *)
+
+Definition captures_dep A B (G:(A->option B)->(A->option B)) (R : A->A->Prop) : Prop :=
+  forall h x y, R y x -> G h x <> None -> h y <> None. 
+
+(** [captures_dep G R] guarantees in particular that, when [R y x] holds,
+    [FixOpt Fopt (S n) x <> None] implies [FixOpt Fopt n y <> None]. *)
+
+Lemma captures_dep_on_FixOpt : forall A B (G:(A->option B)->(A->option B)) (R : A->A->Prop),
+  captures_dep G R -> 
+  let fopt := FixOpt G in
+  forall n x y, 
+  R y x -> 
+  fopt (S n) x <> None -> 
+  fopt n y <> None.
+Proof using. introv M HR HN. applys M HR HN. Qed.
+
+Lemma FixOpt_eq_Some_inv_pos : forall A B (G:(A->option B)->(A->option B)) n x,
+  FixOpt G n x <> None ->
+  (n > 0)%nat.
+Proof using. introv M. destruct n. { false* M. } { math. } Qed.
+
+(** The following fixed point induction principle asserts that, on the domain of input
+    values [x] on which [FixFun Fopt] terminates with a proper output, one can reason
+    about behaviors of the fixed point by induction over the graph of recursive calls. *)
+
+Lemma FixFun_fix_ter : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B->Prop)
+   (G:(A->option B)->(A->option B)) (R:A->A->Prop),
   f = FixFun F ->
-  let fopt := FixOpt Fopt in
-  captures_dep (fopt (S n)) (fopt n) R ->
-  is_ho_monadic_variant F Fopt ->
+  is_ho_monadic_variant F G ->
+  captures_dep G R ->
   (forall h x,
     (forall y, R y x -> P y (h y)) ->
     P x (F h x)) ->
-  forall x, terminates fopt x -> P x (f x).
+  forall x, terminates G x -> P x (f x).
+Proof using.
+  introv Hf HG HR HI Hx. 
+  destruct Hx as (n&Hx). case_eq (FixOpt G n x); [|auto_false]. intros y Hy.
+  lets MG: iter_of_is_ho_monadic_variant (rm HG).
+  asserts HFnx: (FixFun_iter_indep F n x).
+  { intros g1 g2. rewrites (>> MG g1 Hy). rewrites* (>> MG g2 Hy). }
+    (* alternative: { applys FixFun_iter_indep_of_image. intros g. rewrites* (>> MG g Hy). } *)
+  asserts Ef: (f x = iter n F f x). skip. (* TODO *)
+  rewrite Ef. clear Ef.
+  lets Hn: FixOpt_eq_Some_inv_pos Hx.
+  clear Hy HFnx y. gen Hn x. induction_wf IH: wf_lt n. intros Hn x Hx.
+  destruct n as [| n']; [false;math|]. simpl. applys HI.
+  intros y HRy. lets Hy: captures_dep_on_FixOpt HR HRy Hx.
+  lets Hn': FixOpt_eq_Some_inv_pos Hy.
+  applys IH Hy; try math.
+Qed.
+
+
+
+
+Lemma FixFun_fix_ter : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B->Prop)
+   (Fopt:(A->option B)->(A->option B)) (R:A->A->Prop),
+  f = FixFun F ->
+  is_ho_monadic_variant F Fopt ->
+  captures_dep Fopt R ->
+  (forall h x,
+    (forall y, R y x -> P y (h y)) ->
+    P x (F h x)) ->
+  forall x, terminates Fopt x -> P x (f x).
 Proof using.
   forall g, iter n F g x = y.
   FixFun_iter_indep F n x ->
@@ -384,5 +481,76 @@ Qed.
     fixed point of [F] on that input. *)
 
 
+(** If [FixFun_iter_indep F n x] holds, then the fixed point equation holds
+    at [x]. *)
 
+Lemma FixFun_iter_indep_fix : forall A B (F:(A->B)->(A->B)) (n:nat) (x:A),
+  FixFun_iter_indep F n x ->
+  forall g, iter n F g x = F (iter n F g) x.
+Proof using. introv Hx. intros g. rewrite iter_swap. applys Hx. Qed.
+
+(** As a corollary, if [FixFun_iter_indep F n x] holds, then the function
+    [iter n F g] for an arbitrary [g] is a partial fixed point on the domain
+    made of the singleton element [x]. *)
+
+Lemma FixFun_iter_indep_partial_fixed_point : forall A B (F:(A->B)->(A->B)) (n:nat) (x:A),
+  FixFun_iter_indep F n x ->
+  forall g, partial_fixed_point eq F (Build_partial (iter n F g) (= x)).
+Proof using.
+  introv Hx. intros g. intros h Hh. simpls.
+  unfolds pfun_equiv. intros ? ->.
+  specializes Hh x __.
+ 
+  asserts M: (h = iter n F g). { extens. intros y. rewrite* Hh.
+
+
+
+ rewrite iter_swap. applys Hx. Qed.
+
+Build_partial (iter n F g) (dom_singleton x) in
+   eq F f.
+
+
+(** If [FixFun_iter_indep F n x] holds, then [x] belongs to the domain
+    of the optimal fixed point of [F], and [iter n F g] for an arbitrary [g]
+    provides the image associated to [x] by the fixed point. *)
+
+Lemma FixFun_iter_indep_fix : forall A B f (F:(A->B)->(A->B)) (n:nat) (x:A),
+  f = FixFun F ->
+  FixFun_iter_indep F n x ->
+  forall g, f x = iter n F g x.
+Proof using.
+(*
+   let h be another fixed point.
+   by iter_partial_fixed_point we have:
+   h x = iter n F h x.
+   by FixFun_iter_indep
+   iter n F h x = iter n F g x
+
+exploit
+Lemma FixFunMod_inv :
+  forall A (P:A->Prop) B {IB:Inhab B} (F:(A->B)->(A->B)) (E:binary B) (f f':A->B),
+  f = FixFunMod E F ->
+  equiv E ->
+  generally_consistent_partial_fixed_point E F (Build_partial f' P) ->
+  pfun_equiv E P f' f.
+
+to show that on the x, the intersection of the domains,
+
+  let f := Build_partial (iter n F g) (dom_singleton x) in
+  partial_fixed_point eq F f.
+      by FixFun_iter_indep_fix.
+
+*)
+Qed.
+
+(** [captures_dep f g R] asserts that the relation [R x y] ensures that
+    if [f] . *)
+
+Definition captures_dep A B (f g : (A->option B)) (R : A->A->Prop) : Prop :=
+  forall x y, R y x -> f x <> None -> g y <> None.
+
+
+Definition captures_dep A B (fopt : nat->A->option B) (R : A->A->Prop) : Prop :=
+  forall n x y, R y x -> fopt (S n) x <> None -> fopt n y <> None.
 *)
