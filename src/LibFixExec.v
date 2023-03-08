@@ -248,10 +248,10 @@ Definition is_monadic_variant A B (f : A -> B) (g : A -> option B) : Prop :=
     the functional [F], as a combinator in the error monad (again, w.r.t. correctness only). *)
 
 Definition is_ho_monadic_variant A B
- (F : (A->B)->(A->B)) (Fopt : (A->option B)->(A->option B)) : Prop :=
-  forall f fopt,
-  is_monadic_variant f fopt ->
-  is_monadic_variant (F f) (Fopt fopt).
+ (F : (A->B)->(A->B)) (G : (A->option B)->(A->option B)) : Prop :=
+  forall f g,
+  is_monadic_variant f g ->
+  is_monadic_variant (F f) (G g).
 
 (** The following lemma asserts that if [is_ho_monadic_variant F G], then
     [FixOpt Fopt n x] is the monadic reformulation of [iter n F h], for any [h]. *)
@@ -442,267 +442,169 @@ Qed.
 
 
 
+(* ********************************************************************** *)
+(** * Error monad constructors *)
 
+Definition Return A (x:A) : option A :=
+  Some x.
+
+Definition Bind A B (o:option A) (k:A->option B) : option B :=
+  match o with
+  | None => None
+  | Some a => k a 
+  end.
+
+Notation "'ret%' x" := (Return x) (at level 67) : error_monad_scope.
+Notation "'let%' a := o 'in' k" := (Bind o (fun a => k)) (at level 67) : error_monad_scope.
+Open Scope error_monad_scope.
+
+
+Lemma Bind_monotonic : forall A B (o1 o2:option A) (k1 k2:A->option B) r,
+  Bind o1 k1 = Some r ->
+  (forall s, o1 = Some s -> o2 = Some s) ->
+  (forall a, k1 a = Some r -> k2 a = Some r) ->
+  Bind o2 k2 = Some r.
+Proof using.
+  introv M Ha Hk. destruct o1 as [|a1]; tryfalse.
+  forwards~ ->: Ha a. simpls. auto. 
+Qed.
+
+Lemma Return_Some_inv : forall A (x r:A),
+  Return x = Some r ->
+  x = r.
+Proof using. introv E. inverts* E. Qed.
+
+Lemma Binds_Some_inv : forall A B o (k:A->option B) r,
+  Bind o k = Some r ->
+  exists a, o = Some a /\ k a = Some r.
+Proof using. introv E. destruct o; tryfalse. { inverts* E. } Qed.
+
+Lemma Binds_not_None_inv : forall A B o (k:A->option B),
+  Bind o k <> None ->
+  exists a, o = Some a /\ k a <> None.
+Proof using. introv E. destruct o; tryfalse*. { exists* a. } Qed.
+
+
+(* ********************************************************************** *)
+(** * Tactics *)
+
+(** [FixCall h] is a helper tactic for exploiting assumptions about recursive calls. *)
+
+Ltac FixCall h :=
+  match goal with IH: context [h] |- context[h ?x] => 
+    forwards: IH x; try eauto end.
 
 
 (* ********************************************************************** *)
 (** * Demo *)
 
+(* ---------------------------------------------------------------------- *)
+(** ** Fib *)
 
+Section Fib.
+Open Scope nat_scope.
 
+Definition Fib fib (n:nat) : nat :=
+  if le_dec n 1 
+    then 1
+    else fib (n-1) + fib (n-2).
 
+Definition fib := FixFun Fib.
 
+(* monadic version -- should be automatically generated *)
+Definition FibOpt fib (n:nat) : option nat :=
+  if le_dec n 1 
+    then ret% 1
+    else let% a := fib (n-1) in
+         let% b := fib (n-2) in
+         ret% a + b.
 
-
-
-(* ********************************************************************** *)
-(* *FUTURE
-
-    (* alternative:
-       asserts HFnx: (FixFun_iter_indep F n x).
-       { applys FixFun_iter_indep_of_image. intros g. rewrites* (>> MG g Hy). } *)
-
-(*
-
-Definition maximal_dep A B (f g : (A->option B)) : (A->A->Prop) :=
-  fun x y => f x <> None -> g y <> None.
-
-Lemma FixFun_fix_ter_sat : forall A B (F:(A->B)->(A->B)) (P:A->B->Prop),
-  f = FixFun F ->
-  let fopt := FixOpt Fopt in
-  (exists g, forall x, P x (g x)) ->
-  is_ho_monadic_variant F Fopt ->
-  (forall h x, (forall y, P y (h y)) -> P x (F h x)) ->
-  forall x, terminates fopt x -> P x (f x).
+(* monotonicity lemma -- should be automatically generated *)
+Lemma FibOpt_mono : error_monad_monotonic FibOpt.
 Proof using.
-  def fdep x y := forall n, fopt (S n) x <> None -> fopt n y <> None.
-  def hxSn := fun y => if fdep x y then fopt n y else g y.
-Qed.
-*)
-
-
-(* ********************************************************************** *)
-(* DEPRECATED
-
-
-(** -------- Results for Terminating Evaluations --------- *)
-
-(** [f] partial fixed point of [F] implies [f] partial fixed point of any
-    iterate of [F], that is, [f x = iter n F f x]. *)
-
-Lemma partial_fixed_point_iter :
-   forall (A B : Type) (E : B -> B -> Prop),
-   forall (F : (A -> B) -> A -> B) (f : A --> B) (n:nat),
-  equiv E ->
-  partial_fixed_point E F f ->
-  partial_fixed_point E (iter n F) f.
-Proof using.
-  introv HE M. gen f. induction n; simpl.
-  { intros g Hg x Dx. applys~ equiv_refl. }
-  { intros g Hg x Dx. hnf in Hg.
-    forwards K: IHn (Build_partial (iter n F g) (dom g)).
-
- . unfolds partial_fixed_point. unfolds fixed_point. hnf in K.
-
+  intros g1 g2 M n r E. unfolds FibOpt. 
+  case_if.
+  { auto. }
+  { applys Bind_monotonic (rm E). { applys M. } intros a E.
+    applys Bind_monotonic (rm E). { applys M. } intros b E.
+    auto. }
 Qed.
 
-  = (forall g, (forall x, P x -> f x = g x) -> forall x, P x -> g x = F g x).
-Proof using. auto. Qed.
-
-
-
-
-(** Specialized version of [FixFunMod_inv] *)
-Lemma FixFunMod_inv' :
-  forall A (P:A->Prop) B {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B),
-  let fp := Build_partial f P in
-  partial_fixed_point eq F fp ->
-  (forall fp', partial_fixed_point eq F fp' -> consistent eq fp fp') ->
-  (forall x, P x -> FixFun F x = f x).
+(* simulation lemma -- should be automatically generated *)
+Lemma FibOpt_simu : is_ho_monadic_variant Fib FibOpt.
 Proof using.
-  introv M1 M2 Px. symmetry. applys* FixFunMod_inv. split*.
+  intros f g M. intros n r E. unfolds FibOpt, Fib.
+  case_if.
+  { lets ?: Return_Some_inv (rm E). congruence. }
+  { lets (a&Ha&E2): Binds_Some_inv (rm E).
+    lets Ea: M Ha.
+    lets (b&Hb&E3): Binds_Some_inv (rm E2).
+    lets Eb: M Hb.
+    lets E4: Return_Some_inv (rm E3).
+    congruence. } 
 Qed.
 
-(** We let [Terminates F n] denote the set of input values [x] such that [F^n f x]
-    does not depend on [f]. Intuitively, this corresponds to the set of input
-    for which the recursive function described by the functional [F] terminates
-    with maximal recursion depth [n]. Technically, the recursive function might
-    not terminate in cornercases, such as when the return value of a recursive
-    call is irrelevant to the final result. Examples include
-    [let rec f (x : unit) = f x] and [let rec f x = ignore (f x)]. But in practice,
-    as programmers, we are only interested in making recursive calls in cases
-    where the value produced by that recursive call effectively matters to the
-    final result. Therefore, for all practical applications, it makes sense
-    to think of [Terminates F n] as characterized by termination at depth at most [n]. *)
+(* dependency relation -- should be automatically generated *)
+Definition FibRec (n':nat) (n:nat) : Prop :=
+  if le_dec n 1 
+    then False
+    else (n' = n-1) \/
+         let a := fib (n-1) in
+         (n' = n-2) \/
+         let b := fib (n-2) in
+         False.
 
-Definition Terminates A B (F:(A->B)->(A->B)) (n:nat) : A -> Prop :=
-  fun (x:A) => forall f1 f2, iter n F f1 x = iter n F f2 x.
-
-(** The sets [Terminates F n] get larger as [n] grows. The limit of this series
-    is the optimal fixed point. LATER: prove this limit theorem? *)
-
-(** As we show next, given an arbitrary [f],
-    the function [F^n f] is a partial fixed point on the domain [Terminates F n]
-    for any n > 0. *)
-
-(* Specialized def *)
-Lemma partial_fixed_point_eq : forall (A B : Type) (F : (A -> B) -> A -> B) (P : A -> Prop) (f : A -> B),
-    partial_fixed_point eq F (Build_partial f P)
-  = (forall g, (forall x, P x -> f x = g x) -> forall x, P x -> g x = F g x).
-Proof using. auto. Qed.
-(*
-
-Lemma Iter_partial_fixed_point :  forall A B (F:(A->B)->(A->B)) (n:nat) (f:A->B),
-  n > 0%nat ->
-  partial_fixed_point eq F (Build_partial (iter n F f) (Terminates F n)).
-Proof.
-  intros A B F n. induction n; intros. { false. math. }
-  destruct n as [|n].
-  { rewrite partial_fixed_point_eq. intros g Hg x Px.
-    unfolds Terminates. simpls. rewrite <- Hg. applys Px. intros. applys Px. }
-  { sets_eq m: (S n). rewrite partial_fixed_point_eq. intros g Hg x Px.
-    forwards R: IHn f. math. rewrite partial_fixed_point_eq in R.
-    rewrite~ <- Hg. simpl. unfolds in Px. simpl in Px.
-    specializes R (iter m F f) __. applys Px.
-rewrite Px.
-Qed.
-
-*)
-
-
-
-(** Contraction property for [iter F n f_arbitrary] on the domain [Terminates F n] *)
-
-(* ??
-Lemma Terminates_contractive : forall A B (F:(A->B)->(A->B)) (n:nat) (f farb:A->B),
-  f = iter n F farb ->
-  forall x, Terminates F n x ->
-  forall f1 f2,
-  (forall y m, m < n -> Terminates F m y -> f1 y = f2 y) ->
-  F f1 x = F f2 x.
+(* dependency lemma -- should be automatically generated *)
+Lemma FibRec_dep : captures_dep FibOpt FibRec.
 Proof using.
-  intros A B F n. induction n; introv Eqf Hx M.
-  specializes Hx f1 f2. simpls.
-Qed.
-*)
-
-
-FixFun_fix_partial
-
-
-
-(** Because the function is contractive on its domain
-    it follows that if [F^n f x] admits a value [y] that does not depend on [f],
-    then the optimal fixed point maps [x] to [y], that is, [FixFun F x = y]. *)
-
-Lemma FixFun_fix_iter_inv :
- forall A B {IB:Inhab B} (F:(A->B)->(A->B)) (f:A->B) (x:A) (y:B) (n:nat),
-  f = FixFun F ->
-  y = iter n F f x ->
-  (forall f', iter n F f' x = y) ->
-  f x = y.
-Proof using.
-
-
-
-
-(** Auxiliary result for [FixFun_fix_iter_inv]: if [f] is an arbitrary fixed point
-   of [F] on a domain [D], then for any [x] in that domain [D], we have [f x = F^n f x] *)
-Lemma FixFun_iter_fix :
- forall A B (F:(A->B)->(A->B)) (D:A->Prop) (f:A->B) (x:A) (n:nat),
-  D x ->
-  (forall a, D a -> f a = F f a) ->
-  f x = iter n F f x.
-Proof using.
-v  introv Dx Hf. set (g n a := If D a then f a else iter n F f a).
-  cuts M: (forall n a, f a = iter n F f a).
-  { specializes M n x. unfold g in M. case_if. apply M. }
-  { clears n x. intro n. subst g. induction n; intros; case_if; simpl; auto.
-    rewrite~ Hf. fequals. extens. intros b. specializes IHn b. case_if; auto.
-
-  introv Dx Hf. set (g n a := If D a then f a else iter n F f a).
-  cuts M: (forall n a, g n a = iter n F f a).
-  { specializes M n x. unfold g in M. case_if. apply M. }
-  { clears n x. intro n. subst g. induction n; intros; case_if; simpl; auto.
-    rewrite~ Hf. fequals. extens. intros b. specializes IHn b. case_if; auto.
+  intros f n n' HR E. unfolds FibOpt, FibRec.
+  case_if. 
+  (* { false. } *)
+  { lets (a&Ha&E2): Binds_not_None_inv (rm E).
+    lets (b&Hb&E3): Binds_not_None_inv (rm E2).
+    destruct HR as [|[|]]; congruence. } 
 Qed.
 
 
-(** If on an input [x] the value of [F^n f x] ion of the functional returns a result [y]
-    that does not depend on the continuation [f], then [y] is the value of the optimal
-    fixed point of [F] on that input. *)
+(** Demo: computing with FibOpt to derive a result of [fib].
+    Here [10%nat] is an arbitrary, sufficiently large bound on the depth. *)
 
-
-(** If [FixFun_iter_indep F n x] holds, then the fixed point equation holds
-    at [x]. *)
-
-Lemma FixFun_iter_indep_fix : forall A B (F:(A->B)->(A->B)) (n:nat) (x:A),
-  FixFun_iter_indep F n x ->
-  forall g, iter n F g x = F (iter n F g) x.
-Proof using. introv Hx. intros g. rewrite iter_swap. applys Hx. Qed.
-
-(** As a corollary, if [FixFun_iter_indep F n x] holds, then the function
-    [iter n F g] for an arbitrary [g] is a partial fixed point on the domain
-    made of the singleton element [x]. *)
-
-Lemma FixFun_iter_indep_partial_fixed_point : forall A B (F:(A->B)->(A->B)) (n:nat) (x:A),
-  FixFun_iter_indep F n x ->
-  forall g, partial_fixed_point eq F (Build_partial (iter n F g) (= x)).
+Lemma fib5 : exists r, fib 5 = r.
 Proof using.
-  introv Hx. intros g. intros h Hh. simpls.
-  unfolds pfun_equiv. intros ? ->.
-  specializes Hh x __.
- 
-  asserts M: (h = iter n F g). { extens. intros y. rewrite* Hh.
-
-
-
- rewrite iter_swap. applys Hx. Qed.
-
-Build_partial (iter n F g) (dom_singleton x) in
-   eq F f.
-
-
-(** If [FixFun_iter_indep F n x] holds, then [x] belongs to the domain
-    of the optimal fixed point of [F], and [iter n F g] for an arbitrary [g]
-    provides the image associated to [x] by the fixed point. *)
-
-Lemma FixFun_iter_indep_fix : forall A B f (F:(A->B)->(A->B)) (n:nat) (x:A),
-  f = FixFun F ->
-  FixFun_iter_indep F n x ->
-  forall g, f x = iter n F g x.
-Proof using.
-(*
-   let h be another fixed point.
-   by iter_partial_fixed_point we have:
-   h x = iter n F h x.
-   by FixFun_iter_indep
-   iter n F h x = iter n F g x
-
-exploit
-Lemma FixFunMod_inv :
-  forall A (P:A->Prop) B {IB:Inhab B} (F:(A->B)->(A->B)) (E:binary B) (f f':A->B),
-  f = FixFunMod E F ->
-  equiv E ->
-  generally_consistent_partial_fixed_point E F (Build_partial f' P) ->
-  pfun_equiv E P f' f.
-
-to show that on the x, the intersection of the domains,
-
-  let f := Build_partial (iter n F g) (dom_singleton x) in
-  partial_fixed_point eq F f.
-      by FixFun_iter_indep_fix.
-
-*)
+  exists. applys FixFun_eq_FixOpt 10%nat FibOpt_simu FibOpt_mono; [reflexivity|].
+  cbv. (* evaluates [FixOpt FibOpt 10 5] to [Some 8] *)
+  reflexivity.
 Qed.
 
-(** [captures_dep f g R] asserts that the relation [R x y] ensures that
-    if [f] . *)
+(** Demo: proving a property of [fib], e.g. that it returns nonzero values,
+    whenever the computation using [FibOpt] terminates at some finite depth. *)
 
-Definition captures_dep A B (f g : (A->option B)) (R : A->A->Prop) : Prop :=
-  forall x y, R y x -> f x <> None -> g y <> None.
+Lemma fib_pos : forall n, terminates FibOpt n -> fib n > 0.
+Proof using.
+  intros.
+  applys FixFun_fix_ter (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono FibRec_dep; auto.
+  clears n. intros h n _ IH. unfolds Fib, FibRec.
+  case_if. 
+  { math. } 
+  { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
+    (* same as the line above using more automation:  { do 2 FixCall h. math. }  *)
+Qed.
+
+(** Demo: variant of the above proof, exploiting the fact that the property
+    [f n > 0] is satisfiable by at least one function [f]. This alternative
+    proof does not require reasoning about dependencies of recursive calls, 
+    and does not need the statement of [FibRec] and [FibRec_dep].  *)
+
+Lemma fib_pos' : forall n, terminates FibOpt n -> fib n > 0.
+Proof using.
+  intros.
+  applys FixFun_fix_ter_sat (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono; auto.
+  { exists (fun (_:nat) => 1). math. } 
+  clears n. intros h n IH. unfolds Fib.
+  case_if. 
+  { math. }
+  { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
+    (* same as the line above using more automation:  { do 2 FixCall h. math. }  *)
+Qed.
 
 
-Definition captures_dep A B (fopt : nat->A->option B) (R : A->A->Prop) : Prop :=
-  forall n x y, R y x -> fopt (S n) x <> None -> fopt n y <> None.
-*)
