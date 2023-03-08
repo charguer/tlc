@@ -448,7 +448,11 @@ Proof using.
 Qed.
 
 (** Same statement, without the conjunct for nested recursive functions
-    ---the extra conjunction typically gets in the way of automation. *)
+    ---the extra conjunction typically gets in the way of automation.
+    In this statement and the next one, it is not clear whether providing
+    [terminates G x] as assumption after [forall h x, ..] is very useful
+    in practice, but let's include it for now. *)
+
 Lemma FixFun_fix_ter : forall A B {IB:Inhab B} (f:A->B) (F:(A->B)->(A->B)) (P:A->B->Prop)
    (G:(A->option B)->(A->option B)) (R:(A->B)->A->A->Prop),
   f = FixFun F ->
@@ -476,12 +480,13 @@ Lemma FixFun_fix_ter_sat : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B-
   (exists h, forall x, P x (h x)) ->
   is_ho_monadic_variant F G ->
   error_monad_monotonic G ->
-  (forall h x, (forall y, P y (h y)) -> P x (F h x)) ->
+  (forall h x, terminates G x -> (forall y, P y (h y)) -> P x (F h x)) ->
   forall x, terminates G x -> P x (f x).
 Proof using.
-  introv Hf (h0&Hh0) HFG HG HI. 
-  applys FixFun_fix_ter_common Hf HFG HG.
-  { intros n x Hx h Hy. lets Px: HI (fun y => If FixOpt G n y <> None then h y else h0 y) x __.
+  introv Hf (h0&Hh0) HFG HG HI Hx. 
+  applys FixFun_fix_ter_common Hf HFG HG Hx. clears x.
+  { intros n x Hx h Hy. lets Px: HI (fun y => If FixOpt G n y <> None then h y else h0 y) x __ __.
+    { exists* (S n). }
     { intros y. case_if. { applys* Hy. } { applys Hh0. } }
     { applys_eq Px. clear Px. subst h.
       case_eq (FixOpt G (S n) x); [|auto_false]. intros z Hz.
@@ -491,6 +496,22 @@ Proof using.
         case_if. applys iter_of_is_ho_monadic_variant HFG n Hab. } } }
 Qed.
 
+(* ---------------------------------------------------------------------- *)
+(** ** Another theorem, not involving the error monad *)
+
+(** Assume that the property [P] is satisfied by an arbitrary function [h].
+    Then, one can establish the property [P] for [iter n F], simply by showing
+    the implication: forall [h] satisfying [P], it is the case that [F h] satisfies [P]. *)
+
+Lemma iter_fix_sat : forall A B (F:(A->B)->(A->B)) (P:A->B->Prop) (h:A->B),
+  (forall x, P x (h x)) ->
+  (forall h x, (forall y, P y (h y)) -> P x (F h x)) ->
+  forall n x, P x (iter n F h x).
+Proof using.
+  introv Hh HI. induction n; intros; simpl.
+  { applys Hh. }
+  { applys HI. applys IHn. }
+Qed.
 
 
 (* ********************************************************************** *)
@@ -655,11 +676,22 @@ Proof using.
   intros.
   applys FixFun_fix_ter_sat (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono; auto.
   { exists (fun (_:nat) => 1). math. } 
-  clears n. intros h n IH. unfolds Fib.
+  clears n. intros h n Hn IH. unfolds Fib.
   case_if. 
   { math. }
   { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
     (* same as the line above using more automation:  { do 2 FixCall h. math. }  *)
+Qed.
+
+(** Demo: using [iter_fix_sat] to prove properties of [iter m Fib]. *)
+
+Lemma iter_Fib_pos : forall m n, iter m Fib (fun (_:nat) => 1) n > 0.
+Proof using.
+  intros. applys iter_fix_sat. { math. }
+  clear n. intros h n IH. unfold Fib.
+  case_if.
+  { math. }
+  { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
 Qed.
 
 End Fib.
@@ -768,7 +800,7 @@ Proof using.
   intros.
   applys FixFun_fix_ter_sat (fun (x y:nat) => y = 0) NestOpt_simu NestOpt_mono; auto.
   { exists (fun (_:nat) => 0). math. } 
-  clears n. intros h n IH. unfolds Nest.
+  clears n. intros h n Hn IH. unfolds Nest.
   case_if. 
   { math. }
   { applys IH. } (* Observe that we don't even need to reason about the inner recursive calls! *)
