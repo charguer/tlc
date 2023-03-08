@@ -285,17 +285,17 @@ Definition terminates A B (G:(A->option B)->(A->option B)) (x:A) : Prop :=
     the recursive call graph: if a call on input [x] involves a recursive on input [y],
     then [R y x] holds. *)
 
-Definition captures_dep A B (G:(A->option B)->(A->option B)) (R : A->A->Prop) : Prop :=
-  forall h x y, R y x -> G h x <> None -> h y <> None. 
+Definition captures_dep A B (f:A->B) (G:(A->option B)->(A->option B)) (R : (A->B)->A->A->Prop) : Prop :=
+  forall g x y, R f y x -> G g x <> None -> g y <> None. 
 
 (** [captures_dep G R] guarantees in particular that, when [R y x] holds,
     [FixOpt Fopt (S n) x <> None] implies [FixOpt Fopt n y <> None]. *)
 
-Lemma captures_dep_on_FixOpt : forall A B (G:(A->option B)->(A->option B)) (R : A->A->Prop),
-  captures_dep G R -> 
+Lemma captures_dep_on_FixOpt : forall A B f (G:(A->option B)->(A->option B)) (R : (A->B)->A->A->Prop),
+  captures_dep f G R -> 
   let fopt := FixOpt G in
   forall n x y, 
-  R y x -> 
+  R f y x -> 
   fopt (S n) x <> None -> 
   fopt n y <> None.
 Proof using. introv M HR HN. applys M HR HN. Qed.
@@ -410,14 +410,14 @@ Qed.
     property [P] about the fixed point [f] by assuming the property to hold of 
     recursive calls. These recursive calls as captured by the relation [R]. *)
 
-Lemma FixFun_fix_ter : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B->Prop)
-   (G:(A->option B)->(A->option B)) (R:A->A->Prop),
+Lemma FixFun_fix_ter : forall A B {IB:Inhab B} (f:A->B) (F:(A->B)->(A->B)) (P:A->B->Prop)
+   (G:(A->option B)->(A->option B)) (R:(A->B)->A->A->Prop),
   f = FixFun F ->
   is_ho_monadic_variant F G ->
   error_monad_monotonic G ->
-  captures_dep G R ->
+  captures_dep f G R ->
   (forall h x, terminates G x ->
-    (forall y, R y x -> P y (h y)) ->
+    (forall y, R f y x -> P y (h y)) ->
     P x (F h x)) ->
   forall x, terminates G x -> P x (f x).
 Proof using.
@@ -562,7 +562,7 @@ Proof using.
 Qed.
 
 (* dependency relation -- should be automatically generated *)
-Definition FibRec (n':nat) (n:nat) : Prop :=
+Definition FibRec (fib:nat->nat) (n':nat) (n:nat) : Prop :=
   if le_dec n 1 
     then False
     else (n' = n-1) \/
@@ -572,7 +572,7 @@ Definition FibRec (n':nat) (n:nat) : Prop :=
          False.
 
 (* dependency lemma -- should be automatically generated *)
-Lemma FibRec_dep : captures_dep FibOpt FibRec.
+Lemma FibRec_dep : captures_dep fib FibOpt FibRec.
 Proof using.
   intros g n n' HR E. unfolds FibOpt, FibRec.
   case_if. 
@@ -598,7 +598,7 @@ Qed.
 Lemma fib_pos : forall n, terminates FibOpt n -> fib n > 0.
 Proof using.
   intros.
-  applys FixFun_fix_ter (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono FibRec_dep; auto.
+  applys FixFun_fix_ter (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono FibRec_dep; auto. 
   clears n. intros h n _ IH. unfolds Fib, FibRec.
   case_if. 
   { math. } 
@@ -672,7 +672,7 @@ Proof using.
 Qed.
 
 (* dependency relation -- should be automatically generated *)
-Definition NestRec (n':nat) (n:nat) : Prop :=
+Definition NestRec (nest:nat->nat) (n':nat) (n:nat) : Prop :=
   if le_dec n 1 
     then False
     else (n' = n-1) \/
@@ -683,16 +683,17 @@ Definition NestRec (n':nat) (n:nat) : Prop :=
          False.
 
 (* dependency lemma -- should be automatically generated *)
-Lemma NestRec_dep : captures_dep NestOpt NestRec.
+Lemma NestRec_dep : captures_dep nest NestOpt NestRec.
 Proof using.
-  intros f n n' HR E. unfolds NestOpt, NestRec.
+  intros f n n' HR E. 
+  asserts Hf: (forall x y, f x = Some y -> nest x = y). (* TODO *) skip.
+  unfolds NestOpt, NestRec.
   case_if. 
   (* { false. } *)
-  { lets (a&Ha&E2): Binds_not_None_inv (rm E).
-    lets (b&Hb&E3): Binds_not_None_inv (rm E2).
-    destruct HR as [|[|[|]]]; try congruence. skip. (* TODO *) } 
+  { lets (a&Ha&E2): Binds_not_None_inv (rm E). lets Ea: Hf Ha.
+    lets (b&Hb&E3): Binds_not_None_inv (rm E2). lets Eb: Hf Hb.
+    destruct HR as [|[|[|]]]; try congruence. } 
 Qed.
-
 
 (** Demo: computing with NestOpt to derive a result of [nest].
     Here [10%nat] is an arbitrary, sufficiently large bound on the depth. *)
@@ -711,12 +712,17 @@ Lemma nest_zero : forall n, terminates NestOpt n -> nest n = 0.
 Proof using.
   intros.
   applys FixFun_fix_ter (fun (x y:nat) => y = 0) NestOpt_simu NestOpt_mono NestRec_dep; auto.
-  clears n. intros h n _ IH. unfolds Nest, NestRec.
+  clears n. intros h n _ IH.
+  asserts IH': (forall y : nat, NestRec nest y n -> h y = 0 /\ h y = nest y). (* TODO *) skip.
+  unfolds Nest, NestRec.
   case_if. 
   { math. } 
-  { forwards* IH1: IH (n-1).  
+  { (*forwards* IH1: IH (n-1).
     forwards* IH2: IH (n-2).
-    forwards* IH3: IH 0. skip. (* TODO *)
+    forwards* IH3: IH 0.*)
+    forwards* (IH1&E1): IH' (n-1).
+    forwards* (IH2&E2): IH' (n-2).
+    forwards* (IH3&E3): IH' 0. { rewrite <- E1,IH1. rewrite <- E2,IH2. eauto. }
     rewrite IH1, IH2. auto. }
 Qed.
 
