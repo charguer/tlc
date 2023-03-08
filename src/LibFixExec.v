@@ -381,7 +381,7 @@ Proof using.
   { auto_false. } { applys iter_of_is_ho_monadic_variant HFG Hxy. }
 Qed.
 
-(** Expanded version of the above *)
+(** Expanded version of the above, useful for the end-user *)
 
 Lemma FixFun_eq_FixOpt : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) G (n:nat) (x:A) (z:B),
   f = FixFun F ->
@@ -423,35 +423,7 @@ Qed.
 (** The following fixed point induction principle asserts that, on the domain of input
     values [x] on which [FixFun Fopt] terminates with a proper output, one can prove a
     property [P] about the fixed point [f] by assuming the property to hold of 
-    recursive calls. These recursive calls as captured by the relation [R].
-    The assumption [.. /\ h y = f y] is useful for nested-recursive functions. *)
-
-Lemma FixFun_fix_ter_nested : forall A B {IB:Inhab B} (f:A->B) (F:(A->B)->(A->B)) (P:A->B->Prop)
-   (G:(A->option B)->(A->option B)) (R:(A->B)->A->A->Prop),
-  f = FixFun F ->
-  is_ho_monadic_variant F G ->
-  error_monad_monotonic G ->
-  captures_dep f G R ->
-  (forall h x, terminates G x ->
-    (forall y, R f y x -> P y (h y) /\ h y = f y) ->
-    P x (F h x)) ->
-  forall x, terminates G x -> P x (f x).
-Proof using.
-  introv Hf HFG HG HR HI Hx. 
-  applys FixFun_fix_ter_common Hf HFG HG Hx. 
-  { clears x. intros n x Hx h Hy. apply HI. { exists* (S n). }
-    intros y Ryx. lets HGy: captures_dep_on_FixOpt HR Ryx Hx.
-    { applys FixFun_is_monadic_variant_FixOpt Hf HFG HG. }
-    { split.
-      { applys Hy. applys HGy. }
-      { symmetry. applys FixFun_eq_iter_on_terminates Hf HFG HG HGy. } } }
-Qed.
-
-(** Same statement, without the conjunct for nested recursive functions
-    ---the extra conjunction typically gets in the way of automation.
-    In this statement and the next one, it is not clear whether providing
-    [terminates G x] as assumption after [forall h x, ..] is very useful
-    in practice, but let's include it for now. *)
+    recursive calls. These recursive calls as captured by the relation [R]. *)
 
 Lemma FixFun_fix_ter : forall A B {IB:Inhab B} (f:A->B) (F:(A->B)->(A->B)) (P:A->B->Prop)
    (G:(A->option B)->(A->option B)) (R:(A->B)->A->A->Prop),
@@ -459,14 +431,22 @@ Lemma FixFun_fix_ter : forall A B {IB:Inhab B} (f:A->B) (F:(A->B)->(A->B)) (P:A-
   is_ho_monadic_variant F G ->
   error_monad_monotonic G ->
   captures_dep f G R ->
-  (forall h x, terminates G x ->
-    (forall y, R f y x -> P y (h y)) ->
-    P x (F h x)) ->
+  (forall x, terminates G x ->
+    (forall y, R f y x -> P y (f y)) ->
+    P x (F f x)) ->
   forall x, terminates G x -> P x (f x).
 Proof using.
   introv Hf HFG HG HR HI Hx. 
-  applys FixFun_fix_ter_nested Hf HFG HG HR Hx. 
-  { clears x. introv Dx Hh. applys* HI. intros y Hyx. forwards*: Hh y. }
+  applys FixFun_fix_ter_common Hf HFG HG Hx. 
+  { clears x. intros n x Hx h Hy. applys_eq HI.
+    { case_eq (FixOpt G (S n) x); [|auto_false]. intros z Hz.
+      subst h. applys eq_trans z.
+      { applys iter_of_is_ho_monadic_variant HFG f Hz. }
+      { symmetry. simpl in Hz. applys HFG Hz. applys* FixFun_is_monadic_variant_FixOpt. } }
+    { exists* (S n). }
+    { intros y Ryx. lets HGy: captures_dep_on_FixOpt HR Ryx Hx.
+      { applys FixFun_is_monadic_variant_FixOpt Hf HFG HG. }
+      { applys_eq (>> Hy HGy). applys FixFun_eq_iter_on_terminates Hf HFG HG HGy. } } }
 Qed.
 
 (** The following fixed point induction principle is a variant of the former, that does
@@ -659,7 +639,7 @@ Lemma fib_pos : forall n, terminates FibOpt n -> fib n > 0.
 Proof using.
   intros.
   applys FixFun_fix_ter (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono FibRec_dep; auto. 
-  clears n. intros h n _ IH. unfolds Fib, FibRec.
+  clears n. intros n _ IH. unfolds Fib, FibRec.
   case_if. 
   { math. } 
   { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
@@ -779,15 +759,12 @@ Qed.
 Lemma nest_zero : forall n, terminates NestOpt n -> nest n = 0.
 Proof using.
   intros.
-  applys FixFun_fix_ter_nested (fun (x y:nat) => y = 0) NestOpt_simu NestOpt_mono NestRec_dep; auto.
-  clears n. intros h n _ IH.
+  applys FixFun_fix_ter (fun (x y:nat) => y = 0) NestOpt_simu NestOpt_mono NestRec_dep; auto.
+  clears n. intros n _ IH.
   unfolds Nest, NestRec.
   case_if. 
   { math. } 
-  { forwards* (IH1&E1): IH (n-1).
-    forwards* (IH2&E2): IH (n-2).
-    forwards* (IH3&E3): IH 0. { rewrite <- E1,IH1. rewrite <- E2,IH2. eauto. }
-    rewrite IH1, IH2. auto. }
+  { apply IH. eauto. } (* no need to investigate all branches *)
 Qed.
 
 (** Demo: variant of the above proof, exploiting the fact that the property
@@ -803,7 +780,7 @@ Proof using.
   clears n. intros h n Hn IH. unfolds Nest.
   case_if. 
   { math. }
-  { applys IH. } (* Observe that we don't even need to reason about the inner recursive calls! *)
+  { applys IH. } 
 Qed.
 
 End Nest.
