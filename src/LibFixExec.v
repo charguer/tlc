@@ -1213,6 +1213,7 @@ Abort.
 
 Inductive big : trm -> val -> Prop :=
   | big_val : forall v,
+      v <> val_error ->
       big (trm_val v) v
   | big_abs : forall x t,
       big (trm_abs x t) (val_clo x t)
@@ -1222,7 +1223,7 @@ Inductive big : trm -> val -> Prop :=
       big (subst x v2 t3) v ->
       big (trm_app t1 t2) v.
 
-Lemma eval_pos : forall t, terminates EvalOpt t -> 
+Lemma eval_big : forall t, terminates EvalOpt t -> 
     let v := eval t in
     v <> val_error ->
     big t v.
@@ -1232,11 +1233,11 @@ Proof using.
    EvalOpt_simu EvalOpt_mono EvalRec_dep; auto.
   clears t. intros t _ IH Ht. sets v: (Eval eval t).
   unfolds Eval. destruct t. 
-  { subst v. constructor. }
+  { subst v. constructor. auto. }
   { subst v. false. }
   { subst v. constructor. }
   { subst v. case_if. sets_eq v1: (eval t1). sets_eq v2: (eval t2).
-     destruct v1; tryfalse.
+     destruct v1; tryfalse. (* TODO: beautify proof case *)
      renames v to x, t to t3.
      applys big_app x t3 v2.
      { rewrite EQv1. applys IH.
@@ -1249,6 +1250,73 @@ Proof using.
         { hnf. right. intros. right. intros. subst v0. subst v2. case_if.
           subst v1. rewrite <- EQv1. auto. }
         { auto. } } } 
+Qed.
+
+
+(** Demo: proving a property of [eval], e.g. if [eval t] terminates on an 
+    output value [v], possibly an error, then [bigx t v] holds, where [bigx] 
+    denotes the standard big-step relation extended with error behaviors. *)
+
+Definition is_closure (t:trm) : bool :=
+  match t with
+  | val_clo x t3 => true
+  | _ => false
+  end.
+
+Inductive bigx : trm -> val -> Prop :=
+  | bigx_val : forall v, (* including the case [v = val_error] *)
+      bigx (trm_val v) v
+  | bigx_abs : forall x t,
+      bigx (trm_abs x t) (val_clo x t)
+  | bigx_var : forall x,
+      bigx (trm_var x) val_error
+  | bigx_app : forall t1 t2 x t3 v2 v,
+      bigx t1 (val_clo x t3) ->
+      bigx t2 v2 ->
+      bigx (subst x v2 t3) v ->
+      bigx (trm_app t1 t2) v
+  | bigx_app_err1 : forall t1 t2 v2 v1,
+      bigx t2 v2 ->
+      v2 <> val_error ->
+      bigx t1 v1 ->
+      ~ is_closure v1 ->
+      bigx (trm_app t1 t2) val_error
+  | bigx_app_err2 : forall t1 t2,
+      bigx t2 val_error ->
+      bigx (trm_app t1 t2) val_error.
+
+
+Lemma eval_bigx : forall t, terminates EvalOpt t -> 
+  let v := eval t in
+  bigx t v.
+Proof using.
+  intros.
+  applys FixFun_fix_ter (fun t v => bigx t v) 
+   EvalOpt_simu EvalOpt_mono EvalRec_dep; auto.
+  clears v t. intros t _ IH. sets v: (Eval eval t).
+  unfolds Eval. destruct t. 
+  { subst v. constructor. }
+  { subst v. constructors. }
+  { subst v. constructor. }
+  { subst v. sets_eq v2: (eval t2). case_if. (* TODO: beautify this case *)
+    { applys bigx_app_err2. destruct v2; tryfalse.
+      rewrite EQv2. applys IH. { hnf. eauto. } }
+    { sets_eq v1: (eval t1). tests: (is_closure v1).
+      { destruct v1; tryfalse. renames v to x, t to t3.
+        applys bigx_app x t3 v2.
+        { rewrite EQv1. applys IH. { hnf. eauto. } }
+        { rewrite EQv2. applys IH. { hnf. eauto. } }
+        { applys IH. { hnf. right. intros. right. intros. subst v0. subst v2. case_if.
+          subst v1. rewrite <- EQv1. auto. } } } 
+      { asserts_rewrite (match v1 with
+          | val_clo x t3 => eval (subst x v2 t3)
+          | _ => val_error
+          end = val_error). { destruct v1; unfolds is_closure; tryfalse; auto. } 
+        applys bigx_app_err1 v2 v1.
+        { rewrite EQv2. applys IH. { hnf. eauto. } }
+        { unfolds is_error. destruct v2; congruence. }
+        { rewrite EQv1. applys IH. { hnf. eauto. } }
+        { unfolds is_error. destruct v1; congruence. } } } }
 Qed.
 
 End Evaluator.
