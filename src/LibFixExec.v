@@ -622,7 +622,7 @@ Proof using.
     destruct HR as [|[|]]; congruence. }
 Qed.
 
-(** Demo: computing with FibOpt to derive a result of [fib].
+(** Demo: computing with (FibOpt] to derive a result of [fib].
     Here [10%nat] is an arbitrary, sufficiently large bound on the depth. *)
 
 Lemma fib5 : exists r, fib 5 = r.
@@ -743,7 +743,7 @@ Proof using.
     destruct HR as [|[|]]; congruence. }
 Qed.
 
-(** Demo: computing with FibOpt to derive a result of [fib].
+(** Demo: computing with [FibOpt] to derive a result of [fib].
     Here [10%nat] is an arbitrary, sufficiently large bound on the depth. *)
 
 Lemma fib5 : exists r, fib 5 = r.
@@ -864,7 +864,7 @@ Proof using.
     destruct HR as [|[|[|]]]; try congruence. }
 Qed.
 
-(** Demo: computing with NestOpt to derive a result of [nest].
+(** Demo: computing with [NestOpt] to derive a result of [nest].
     Here [10%nat] is an arbitrary, sufficiently large bound on the depth. *)
 
 Lemma nest5 : exists r, nest 2 = r.
@@ -986,7 +986,7 @@ Proof using.
   { lets (a&Ha&E2): Binds_not_None_inv (rm E). congruence. }
 Qed.
 
-(** Demo: computing with SyrOpt to derive a result of [syr].
+(** Demo: computing with [SyrOpt] to derive a result of [syr].
     Here [100%nat] is an arbitrary, sufficiently large bound on the depth. 
     
     7 -> 22 -> 11 -> 34 -> 17 -> 52 -> 26 -> 13 -> 40 ->
@@ -1027,4 +1027,259 @@ Proof using.
 Qed.
 
 End Syracuse.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Lambda-term evaluator -- undecidable termination *)
+
+Module Evaluator.
+
+(** Representation of variables by names (numbers, for simplicity) *)
+
+Definition var : Type := nat.
+
+Definition var_eq := eq_nat_dec.
+
+(** Grammar of values and terms *)
+
+Inductive val : Type :=
+  | val_nat : nat -> val
+  | val_clo : var -> trm -> val
+  | val_error : val
+
+with trm : Type :=
+  | trm_val : val -> trm
+  | trm_var : var -> trm
+  | trm_abs : var -> trm -> trm
+  | trm_app : trm -> trm -> trm.
+
+Coercion trm_val : val >-> trm.
+
+#[global]
+Instance Inhab_val : Inhab val.
+Proof using. intros. apply (Inhab_of_val val_error). Qed.
+
+(** Substitution *)
+
+Fixpoint subst (x:var) (v:val) (t:trm) : trm :=
+  let s := subst x v in
+  match t with
+  | trm_val v => t
+  | trm_var y => if var_eq x y then trm_val v else t
+  | trm_abs y t3 => trm_abs y (if var_eq x y then t3 else s t3)
+  | trm_app t1 t2 => trm_app (s t1) (s t2)  
+  end.
+
+(** Evaluation function *)
+
+Definition is_error (v:val) : bool :=
+  match v with 
+  | val_error => true
+  | _ => false
+  end.
+
+Definition Eval eval (t:trm) : val :=
+  match t with
+  | trm_val v => v
+  | trm_abs x t1 => val_clo x t1
+  | trm_var x => val_error (* unbound variable *)
+  | trm_app t1 t2 => 
+      let v1 := eval t1 in
+      let v2 := eval t2 in
+      if is_error v2 then val_error else
+      match v1 with
+      | val_clo x t3 => eval (subst x v2 t3)
+      | _ => val_error (* application of a non-functional value *)
+      end
+  end.
+
+Definition eval := FixFun Eval.
+
+(* monadic version -- should be automatically generated *)
+Definition EvalOpt eval (t:trm) : option val :=
+  match t with
+  | trm_val v => ret% v
+  | trm_abs x t1 => ret% (val_clo x t1)
+  | trm_var x => ret% val_error 
+  | trm_app t1 t2 => 
+      let% v1 := eval t1 in
+      let% v2 := eval t2 in
+      if is_error v2 then ret% val_error else
+      match v1 with
+      | val_clo x t3 => eval (subst x v2 t3)
+      | _ => ret% val_error 
+      end
+  end.
+
+(* Note: alternatively, one could simply return None instead of producing val_error.
+   However, doing so would not distinguish between non-terminating terms and terms
+   that terminate on an error. *)
+
+
+(* monotonicity lemma -- should be automatically generated *)
+Lemma EvalOpt_mono : error_monad_monotonic EvalOpt.
+Proof using.
+  intros g1 g2 M t r E. unfolds EvalOpt.
+  destruct t; auto.
+  { applys* Bind_monotonic (rm E). intros a Ea. 
+    applys* Bind_monotonic (rm Ea). intros b Eb.
+    case_if.
+    { auto. }
+    { destruct a; auto. } } 
+Qed.
+
+(* simulation lemma -- should be automatically generated *)
+Lemma EvalOpt_simu : is_ho_monadic_variant Eval EvalOpt.
+Proof using.
+  intros f g M. intros t r E. unfolds EvalOpt, Eval.
+  destruct t; try (lets*: Return_Some_inv (rm E)).
+  { lets (a&Ha&E2): Binds_Some_inv (rm E). lets Ea: M Ha.
+    lets (b&Hb&E3): Binds_Some_inv (rm E2). lets Eb: M Hb.
+    rewrite Eb. case_if.
+    { lets*: Return_Some_inv (rm E3). }
+    { rewrite Ea. destruct a. 
+      { lets*: Return_Some_inv (rm E3). }
+      { applys M. congruence. }
+      { lets*: Return_Some_inv (rm E3). } } }
+Qed.
+
+(* dependency relation -- should be automatically generated *)
+Definition EvalRec (eval:trm->val) (t':trm) (t:trm) : Prop :=
+  match t with
+  | trm_val v => False
+  | trm_abs x t1 => False
+  | trm_var x => False
+  | trm_app t1 t2 => 
+      (t' = t1) \/
+      let v1 := eval t1 in
+      (t' = t2) \/
+      let v2 := eval t2 in
+      if is_error v2 then False else
+      match v1 with
+      | val_clo x t3 => (t' = subst x v2 t3)
+      | _ => False
+      end
+  end.
+
+(* dependency lemma -- should be automatically generated *)
+Lemma EvalRec_dep : captures_dep eval EvalOpt EvalRec.
+Proof using.
+  intros g Hg t t' HR E. unfolds EvalOpt, EvalRec.
+  destruct t; try congruence.
+  (* { false. } *)
+  { lets (a&Ha&E2): Binds_not_None_inv (rm E). lets Ea: Hg Ha.
+    lets (b&Hb&E3): Binds_not_None_inv (rm E2). lets Eb: Hg Hb.
+    rewrite Eb in HR. case_if.
+    { destruct HR as [|[|]]; try congruence. }
+    { rewrite Ea in HR. destruct a; 
+      destruct HR as [|[|]]; try congruence. } }
+Qed.
+
+(** Demo: computing with [EvalOpt] to derive a result of [eval].
+    Here [100%nat] is an arbitrary, sufficiently large bound on the depth.
+    Let's evaluation [((fun x -> x) (fun x -> x)) 3]. In concrete syntax:
+    [trm_app (trm_app (id id) (val_nat 3)] where [id := trm_abs x (trm_var x)]
+    evaluates to [val_nat 3] *)
+
+Lemma evalAppIdId3 : 
+  let x := 0%nat in (* an arbitrary identifier *)
+  let id := trm_abs x (trm_var x) in
+  let t := trm_app (trm_app id id) (val_nat 3) in
+  exists r, eval t = r.
+Proof using.
+  exists. applys FixFun_eq_FixOpt 100%nat EvalOpt_simu EvalOpt_mono; [reflexivity|].
+  cbv. (* evaluates [val_nat 3] *)
+  reflexivity.
+Qed.
+
+(** Demo: computing [eval omega] which loops infinitely, where [omega] = [delta delta]
+    and [delta = trm_abs x (trm_app x x)].
+    Here [100%nat] is an arbitrary depth. After 100 calls, the function [EvalOpt]
+    returns [None]. *)
+
+Lemma evalOmega : 
+  let x := 0%nat in (* an arbitrary identifier *)
+  let delta := trm_abs x (trm_app (trm_var x) (trm_var x)) in
+  let omega := trm_app delta delta in
+  exists r, eval omega = r.
+Proof using.
+  exists. applys FixFun_eq_FixOpt 100%nat EvalOpt_simu EvalOpt_mono; [reflexivity|].
+  cbv. (* produces the unprovable goal [None = Some ?r] *)
+Abort.
+
+(** Demo: proving a property of [eval], e.g. if [eval t] terminates on an 
+    output value [v] which is not an error, then [big t v] holds, where [big] 
+    denotes the standard big-step relation. *)
+
+Inductive big : trm -> val -> Prop :=
+  | big_val : forall v,
+      big (trm_val v) v
+  | big_abs : forall x t,
+      big (trm_abs x t) (val_clo x t)
+  | big_app : forall t1 t2 x t3 v2 v,
+      big t1 (val_clo x t3) ->
+      big t2 v2 ->
+      big (subst x v2 t3) v ->
+      big (trm_app t1 t2) v.
+
+Lemma eval_pos : forall t, terminates EvalOpt t -> 
+    let v := eval t in
+    v <> val_error ->
+    big t v.
+Proof using.
+  intros t Ht.
+  applys FixFun_fix_ter (fun t v => v <> val_error -> big t v) 
+   EvalOpt_simu EvalOpt_mono EvalRec_dep; auto.
+  clears t. intros t _ IH Ht. sets v: (Eval eval t).
+  unfolds Eval. destruct t. 
+  { subst v. constructor. }
+  { subst v. false. }
+  { subst v. constructor. }
+  { subst v. case_if. sets_eq v1: (eval t1). sets_eq v2: (eval t2).
+     destruct v1; tryfalse.
+     renames v to x, t to t3.
+     applys big_app x t3 v2.
+     { rewrite EQv1. applys IH.
+       { hnf. eauto. }
+       { congruence. } }
+     { rewrite EQv2. applys IH.
+       { hnf. eauto. }
+       { unfolds is_error. destruct v2; congruence. } }
+     { applys IH. 
+        { hnf. right. intros. right. intros. subst v0. subst v2. case_if.
+          subst v1. rewrite <- EQv1. auto. }
+        { auto. } } } 
+Qed.
+
+End Evaluator.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
