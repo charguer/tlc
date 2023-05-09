@@ -14,7 +14,7 @@ From TLC Require Import LibTactics LibLogic LibReflect LibFun LibList
 (* ---------------------------------------------------------------------- *)
 (** ** Definition of iteration *)
 
-(** Definition with an eta-expansion, to avoid undesirable creation of  
+(** Definition with an eta-expansion, to avoid undesirable creation of
     numerous closures. *)
 
 Fixpoint iter n A B (F:(A->B)->(A->B)) (f:A->B) (x:A) : B :=
@@ -32,7 +32,7 @@ Fixpoint iter' n A B (F:(A->B)->(A->B)) (f:A->B) : A -> B :=
   end.
 
 Lemma iter'_eq_iter : iter' = iter.
-Proof using. 
+Proof using.
   extens. intros n A B F f. induction n.
   { auto. }
   { extens. intros x. rewrite* IHn. }
@@ -108,7 +108,7 @@ Proof using.
   { rewrite* iter_one. }
   { destruct n as [|n']. { false; math. }
     lets HE': pfun_equiv_equiv (dom f) HE.
-    unfolds partial_fixed_point, fixed_point. 
+    unfolds partial_fixed_point, fixed_point.
     intros g Hg. rewrite iter_succ_cont.
     specializes M g Hg.
     forwards~ N: (rm IH) n' (F g); try math. { applys* equiv_trans Hg M. }
@@ -215,24 +215,24 @@ Proof using. introv M. destruct n. { false* M. } { math. } Qed.
 Definition option_fun_incl A B (g1 g2:(A->option B)) : Prop :=
   forall x y, g1 x = Some y -> g2 x = Some y.
 
-(** [error_monad_monotonic G] asserts that applying [G] to two functions 
+(** [error_monad_monotonic G] asserts that applying [G] to two functions
     preserves the [option_fun_incl] property. *)
 
 Definition error_monad_monotonic A B (G:(A->option B)->(A->option B)) : Prop :=
-  forall g1 g2, 
+  forall g1 g2,
   option_fun_incl g1 g2 ->
   option_fun_incl (G g1) (G g2).
 
-(** The monotonicity property [error_monad_monotonic G] is used in our development to 
+(** The monotonicity property [error_monad_monotonic G] is used in our development to
     argue that providing a larger recursion depth to [FixOpt] can only produce more
     results, and never invalidates results obtained at smaller depths. *)
 
-Lemma FixOpt_mono_succ : forall A B (G:(A->option B)->(A->option B)) n x y, 
+Lemma FixOpt_mono_succ : forall A B (G:(A->option B)->(A->option B)) n x y,
   error_monad_monotonic G ->
   FixOpt G n x = Some y ->
   FixOpt G (S n) x = Some y.
 Proof using.
-  introv HG EQ. gen x y. induction n; introv EQ. 
+  introv HG EQ. gen x y. induction n; introv EQ.
   { false. }
   { simpls. applys HG EQ. intros g1 g2. applys IHn. }
 Qed.
@@ -247,7 +247,7 @@ Qed.
 Definition is_monadic_variant A B (f : A -> B) (g : A -> option B) : Prop :=
   forall x z, g x = Some z -> f x = z.
 
-(** [is_ho_monadic_variant F G] asserts that the functional [G] is a reformulation of 
+(** [is_ho_monadic_variant F G] asserts that the functional [G] is a reformulation of
     the functional [F], as a combinator in the error monad (again, w.r.t. correctness only). *)
 
 Definition is_ho_monadic_variant A B
@@ -274,7 +274,7 @@ Qed.
 (** ** Termination property and call-dependencies in the non-termination monad *)
 
 (** [terminates G x] asserts that the function [FixOpt Fopt] returns a
-    proper output on the input [x], meaning that its execution does not 
+    proper output on the input [x], meaning that its execution does not
     run out of fuel. *)
 
 Definition terminates A B (G:(A->option B)->(A->option B)) (x:A) : Prop :=
@@ -285,23 +285,23 @@ Definition terminates A B (G:(A->option B)->(A->option B)) (x:A) : Prop :=
     the recursive call graph: if a call on input [x] involves a recursive on input [y],
     then [R y x] holds. The argument [f] is used by nest-recursive functions,
     for which the argument of a recursive call might depend on the result of another
-    recursive call. In that case, we need to exploit the information that the 
+    recursive call. In that case, we need to exploit the information that the
     function [g] used for performing recursive calls in [G] indeed corresponds to
     the optimal fixed point [f] of [F]. *)
 
 Definition captures_dep A B (f:A->B) (G:(A->option B)->(A->option B)) (R : (A->B)->A->A->Prop) : Prop :=
   forall g, is_monadic_variant f g ->
-  forall x y, R f y x -> G g x <> None -> g y <> None. 
+  forall x y, R f y x -> G g x <> None -> g y <> None.
 
 (** [captures_dep G R] guarantees in particular that, when [R y x] holds,
     [FixOpt Fopt (S n) x <> None] implies [FixOpt Fopt n y <> None]. *)
 
 Lemma captures_dep_on_FixOpt : forall A B f (G:(A->option B)->(A->option B)) (R : (A->B)->A->A->Prop) (n:nat),
-  captures_dep f G R -> 
+  captures_dep f G R ->
   is_monadic_variant f (FixOpt G n) ->
-  forall x y, 
-  R f y x -> 
-  FixOpt G (S n) x <> None -> 
+  forall x y,
+  R f y x ->
+  FixOpt G (S n) x <> None ->
   FixOpt G n y <> None.
 Proof using. introv M Hf HR HN. simpl in HN. applys M Hf HR HN. Qed.
 
@@ -309,10 +309,10 @@ Proof using. introv M Hf HR HN. simpl in HN. applys M Hf HR HN. Qed.
 (* ---------------------------------------------------------------------- *)
 (** ** Fixed point theorems for terminating executions *)
 
-(** Major theorem relating the optimal fixed point combinator [FixFun] with the iterated 
-    fixed point combinators [FixOpt] and [iter]: 
+(** Major theorem relating the optimal fixed point combinator [FixFun] with the iterated
+    fixed point combinators [FixOpt] and [iter]:
     on the domain where the functional in the non-termination monad terminates in n steps,
-    the functional [iter n F g] is a fixed point of [F], for any continuation [g]. 
+    the functional [iter n F g] is a fixed point of [F], for any continuation [g].
     Morever, this fixed point is consistent with any other fixed point of [F]. *)
 
 Lemma generally_consistent_partial_fixed_point_on_terminates : forall A B (F:(A->B)->(A->B)) G (n:nat),
@@ -327,14 +327,14 @@ Proof using.
     applys eq_trans y.
     { rewrite~ <- Hh. applys iter_of_is_ho_monadic_variant HFG Hxy. }
     { lets M: HFG h (FixOpt G n) x y.
-      { clears x y. intros x y Hxy. rewrite <- Hh; [|auto_false]. 
+      { clears x y. intros x y Hxy. rewrite <- Hh; [|auto_false].
         applys iter_of_is_ho_monadic_variant HFG Hxy. }
     rewrite~ M. applys FixOpt_mono_succ HG Hxy. } }
-  { intros [h D'] Hh. 
+  { intros [h D'] Hh.
     intros x (Dx&D'x). unfolds pfun_equiv. simpls.
     case_eq (FixOpt G n x); [|auto_false]. intros y Hxy.
     applys eq_trans y. { applys iter_of_is_ho_monadic_variant HFG Hxy. }
-    symmetry. gen x y. gen n. intros n. 
+    symmetry. gen x y. gen n. intros n.
     (* forall n x Y, FixOpt G n x <> None -> D' x -> FixOpt G n x = Some y -> h x = y
        -- Where [D'] is the domain of another arbitrary fixed point named [h] *)
     induction_wf IH: lt_wf n. intros.
@@ -351,7 +351,7 @@ Proof using.
       { rewrite~ M. } } }
 Qed.
 
-(** We next state two corollaries of the major theorem. 
+(** We next state two corollaries of the major theorem.
     (1) If [FixOpt G n x] produces a proper output, then the value associated to [x]
         by the optimal fixed point combinator, namely [FixFun F x], can be computed
         using the iteration of the functional [F]: the result is equal to
@@ -391,7 +391,7 @@ Lemma FixFun_eq_FixOpt : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) G (n:nat) 
   f x = z.
 Proof using. introv Hf HFG HG Hxy. applys* FixFun_is_monadic_variant_FixOpt. Qed.
 
-(** Next lemma contains the key proof, factorizing the arguments for the two final 
+(** Next lemma contains the key proof, factorizing the arguments for the two final
     induction principles. *)
 
 Lemma FixFun_fix_ter_common : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B->Prop)
@@ -399,13 +399,13 @@ Lemma FixFun_fix_ter_common : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A-
   f = FixFun F ->
   is_ho_monadic_variant F G ->
   error_monad_monotonic G ->
-  (forall n x, FixOpt G (S n) x <> None -> 
+  (forall n x, FixOpt G (S n) x <> None ->
     let h := iter n F f in
     (forall y, FixOpt G n y <> None -> P y (h y)) ->
     P x (F h x)) ->
   forall x, terminates G x -> P x (f x).
 Proof using.
-  introv Hf HFG HG HI Hx. 
+  introv Hf HFG HG HI Hx.
   destruct Hx as (n&Hx). case_eq (FixOpt G n x); [|auto_false]. intros y Hy.
   lets MG: iter_of_is_ho_monadic_variant HFG.
   asserts HFnx: (FixFun_iter_indep F n x).
@@ -422,7 +422,7 @@ Qed.
 
 (** The following fixed point induction principle asserts that, on the domain of input
     values [x] on which [FixFun Fopt] terminates with a proper output, one can prove a
-    property [P] about the fixed point [f] by assuming the property to hold of 
+    property [P] about the fixed point [f] by assuming the property to hold of
     recursive calls. These recursive calls as captured by the relation [R]. *)
 
 Lemma FixFun_fix_ter : forall A B {IB:Inhab B} (f:A->B) (F:(A->B)->(A->B)) (P:A->B->Prop)
@@ -436,8 +436,8 @@ Lemma FixFun_fix_ter : forall A B {IB:Inhab B} (f:A->B) (F:(A->B)->(A->B)) (P:A-
     P x (F f x)) ->
   forall x, terminates G x -> P x (f x).
 Proof using.
-  introv Hf HFG HG HR HI Hx. 
-  applys FixFun_fix_ter_common Hf HFG HG Hx. 
+  introv Hf HFG HG HR HI Hx.
+  applys FixFun_fix_ter_common Hf HFG HG Hx.
   { clears x. intros n x Hx h Hy. applys_eq HI.
     { case_eq (FixOpt G (S n) x); [|auto_false]. intros z Hz.
       subst h. applys eq_trans z.
@@ -463,7 +463,7 @@ Lemma FixFun_fix_ter_sat : forall A B {IB:Inhab B} f (F:(A->B)->(A->B)) (P:A->B-
   (forall h x, terminates G x -> (forall y, P y (h y)) -> P x (F h x)) ->
   forall x, terminates G x -> P x (f x).
 Proof using.
-  introv Hf (h0&Hh0) HFG HG HI Hx. 
+  introv Hf (h0&Hh0) HFG HG HI Hx.
   applys FixFun_fix_ter_common Hf HFG HG Hx. clears x.
   { intros n x Hx h Hy. lets Px: HI (fun y => If FixOpt G n y <> None then h y else h0 y) x __ __.
     { exists* (S n). }
@@ -497,7 +497,7 @@ Qed.
 (* ********************************************************************** *)
 (** * Error monad constructors *)
 
-(** We use the standard monadic constructors to express functionals in the 
+(** We use the standard monadic constructors to express functionals in the
     non-termination monad. *)
 
 Definition Return A (x:A) : option A :=
@@ -506,7 +506,7 @@ Definition Return A (x:A) : option A :=
 Definition Bind A B (o:option A) (k:A->option B) : option B :=
   match o with
   | None => None
-  | Some a => k a 
+  | Some a => k a
   end.
 
 Declare Scope error_monad_scope.
@@ -523,7 +523,7 @@ Lemma Bind_monotonic : forall A B (o1 o2:option A) (k1 k2:A->option B) r,
   Bind o2 k2 = Some r.
 Proof using.
   introv M Ha Hk. destruct o1 as [a|]; tryfalse.
-  forwards~ ->: Ha a. simpls. auto. 
+  forwards~ ->: Ha a. simpls. auto.
 Qed.
 
 Lemma Return_Some_inv : forall A (x r:A),
@@ -548,7 +548,7 @@ Proof using. introv E. destruct o; tryfalse*. { exists* a. } Qed.
 (** [FixCall h] is a helper tactic for exploiting assumptions about recursive calls. *)
 
 Ltac FixCall h :=
-  match goal with IH: context [h] |- context[h ?x] => 
+  match goal with IH: context [h] |- context[h ?x] =>
     forwards: IH x; try eauto end.
 
 
@@ -556,13 +556,13 @@ Ltac FixCall h :=
 (** * Demo *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** Fib *)
+(** ** Fib with boolean definition *)
 
-Section Fib.
+Module Fib.
 Open Scope nat_scope.
 
 Definition Fib fib (n:nat) : nat :=
-  if le_dec n 1 
+  if le_dec n 1
     then 1
     else fib (n-1) + fib (n-2).
 
@@ -570,7 +570,7 @@ Definition fib := FixFun Fib.
 
 (* monadic version -- should be automatically generated *)
 Definition FibOpt fib (n:nat) : option nat :=
-  if le_dec n 1 
+  if le_dec n 1
     then ret% 1
     else let% a := fib (n-1) in
          let% b := fib (n-2) in
@@ -579,7 +579,7 @@ Definition FibOpt fib (n:nat) : option nat :=
 (* monotonicity lemma -- should be automatically generated *)
 Lemma FibOpt_mono : error_monad_monotonic FibOpt.
 Proof using.
-  intros g1 g2 M n r E. unfolds FibOpt. 
+  intros g1 g2 M n r E. unfolds FibOpt.
   case_if.
   { auto. }
   { applys Bind_monotonic (rm E). { applys M. } intros a E.
@@ -598,12 +598,12 @@ Proof using.
     lets (b&Hb&E3): Binds_Some_inv (rm E2).
     lets Eb: M Hb.
     lets E4: Return_Some_inv (rm E3).
-    congruence. } 
+    congruence. }
 Qed.
 
 (* dependency relation -- should be automatically generated *)
 Definition FibRec (fib:nat->nat) (n':nat) (n:nat) : Prop :=
-  if le_dec n 1 
+  if le_dec n 1
     then False
     else (n' = n-1) \/
          let a := fib (n-1) in
@@ -615,11 +615,11 @@ Definition FibRec (fib:nat->nat) (n':nat) (n:nat) : Prop :=
 Lemma FibRec_dep : captures_dep fib FibOpt FibRec.
 Proof using.
   intros g _ n n' HR E. unfolds FibOpt, FibRec.
-  case_if. 
+  case_if.
   (* { false. } *)
   { lets (a&Ha&E2): Binds_not_None_inv (rm E).
     lets (b&Hb&E3): Binds_not_None_inv (rm E2).
-    destruct HR as [|[|]]; congruence. } 
+    destruct HR as [|[|]]; congruence. }
 Qed.
 
 (** Demo: computing with FibOpt to derive a result of [fib].
@@ -638,26 +638,26 @@ Qed.
 Lemma fib_pos : forall n, terminates FibOpt n -> fib n > 0.
 Proof using.
   intros.
-  applys FixFun_fix_ter (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono FibRec_dep; auto. 
+  applys FixFun_fix_ter (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono FibRec_dep; auto.
   clears n. intros n _ IH. unfolds Fib, FibRec.
-  case_if. 
-  { math. } 
+  case_if.
+  { math. }
   { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
     (* same as the line above using more automation:  { do 2 FixCall h. math. }  *)
 Qed.
 
 (** Demo: variant of the above proof, exploiting the fact that the property
     [f n > 0] is satisfiable by at least one function [f]. This alternative
-    proof does not require reasoning about dependencies of recursive calls, 
+    proof does not require reasoning about dependencies of recursive calls,
     and does not need the statement of [FibRec] and [FibRec_dep].  *)
 
 Lemma fib_pos' : forall n, terminates FibOpt n -> fib n > 0.
 Proof using.
   intros.
   applys FixFun_fix_ter_sat (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono; auto.
-  { exists (fun (_:nat) => 1). math. } 
+  { exists (fun (_:nat) => 1). math. }
   clears n. intros h n Hn IH. unfolds Fib.
-  case_if. 
+  case_if.
   { math. }
   { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
     (* same as the line above using more automation:  { do 2 FixCall h. math. }  *)
@@ -677,6 +677,127 @@ Qed.
 End Fib.
 
 (* ---------------------------------------------------------------------- *)
+(** ** Fib with non-constructive definition *)
+
+Module FibClassical.
+Open Scope nat_scope.
+
+Definition Fib fib (n:nat) : nat :=
+  If n <= 1 (* instead of: if le_dec n 1 *)
+    then 1
+    else fib (n-1) + fib (n-2).
+
+Definition fib := FixFun Fib.
+
+(* monadic version -- should be automatically generated *)
+Definition FibOpt fib (n:nat) : option nat :=
+  if le_dec n 1
+    then ret% 1
+    else let% a := fib (n-1) in
+         let% b := fib (n-2) in
+         ret% a + b.
+
+(* monotonicity lemma -- should be automatically generated *)
+Lemma FibOpt_mono : error_monad_monotonic FibOpt.
+Proof using.
+  intros g1 g2 M n r E. unfolds FibOpt.
+  case_if.
+  { auto. }
+  { applys Bind_monotonic (rm E). { applys M. } intros a E.
+    applys Bind_monotonic (rm E). { applys M. } intros b E.
+    auto. }
+Qed.
+
+(* simulation lemma -- should be automatically generated *)
+Lemma FibOpt_simu : is_ho_monadic_variant Fib FibOpt.
+Proof using.
+  intros f g M. intros n r E. unfolds FibOpt, Fib.
+  do 2 case_if.
+  { lets ?: Return_Some_inv (rm E). congruence. }
+  { lets (a&Ha&E2): Binds_Some_inv (rm E).
+    lets Ea: M Ha.
+    lets (b&Hb&E3): Binds_Some_inv (rm E2).
+    lets Eb: M Hb.
+    lets E4: Return_Some_inv (rm E3).
+    congruence. }
+Qed.
+
+(* dependency relation -- should be automatically generated *)
+Definition FibRec (fib:nat->nat) (n':nat) (n:nat) : Prop :=
+  if le_dec n 1
+    then False
+    else (n' = n-1) \/
+         let a := fib (n-1) in
+         (n' = n-2) \/
+         let b := fib (n-2) in
+         False.
+
+(* dependency lemma -- should be automatically generated *)
+Lemma FibRec_dep : captures_dep fib FibOpt FibRec.
+Proof using.
+  intros g _ n n' HR E. unfolds FibOpt, FibRec.
+  case_if.
+  (* { false. } *)
+  { lets (a&Ha&E2): Binds_not_None_inv (rm E).
+    lets (b&Hb&E3): Binds_not_None_inv (rm E2).
+    destruct HR as [|[|]]; congruence. }
+Qed.
+
+(** Demo: computing with FibOpt to derive a result of [fib].
+    Here [10%nat] is an arbitrary, sufficiently large bound on the depth. *)
+
+Lemma fib5 : exists r, fib 5 = r.
+Proof using.
+  exists. applys FixFun_eq_FixOpt 10%nat FibOpt_simu FibOpt_mono; [reflexivity|].
+  cbv. (* evaluates [FixOpt FibOpt 10 5] to [Some 8] *)
+  reflexivity.
+Qed.
+
+(** Demo: proving a property of [fib], e.g. that it returns nonzero values,
+    whenever the computation using [FibOpt] terminates at some finite depth. *)
+
+Lemma fib_pos : forall n, terminates FibOpt n -> fib n > 0.
+Proof using.
+  intros.
+  applys FixFun_fix_ter (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono FibRec_dep; auto.
+  clears n. intros n _ IH. unfolds Fib, FibRec.
+  do 2 case_if.
+  { math. }
+  { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
+    (* same as the line above using more automation:  { do 2 FixCall h. math. }  *)
+Qed.
+
+(** Demo: variant of the above proof, exploiting the fact that the property
+    [f n > 0] is satisfiable by at least one function [f]. This alternative
+    proof does not require reasoning about dependencies of recursive calls,
+    and does not need the statement of [FibRec] and [FibRec_dep].  *)
+
+Lemma fib_pos' : forall n, terminates FibOpt n -> fib n > 0.
+Proof using.
+  intros.
+  applys FixFun_fix_ter_sat (fun (x y:nat) => y > 0) FibOpt_simu FibOpt_mono; auto.
+  { exists (fun (_:nat) => 1). math. }
+  clears n. intros h n Hn IH. unfolds Fib.
+  case_if.
+  { math. }
+  { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
+    (* same as the line above using more automation:  { do 2 FixCall h. math. }  *)
+Qed.
+
+(** Demo: using [iter_fix_sat] to prove properties of [iter m Fib]. *)
+
+Lemma iter_Fib_pos : forall m n, iter m Fib (fun (_:nat) => 1) n > 0.
+Proof using.
+  intros. applys iter_fix_sat. { math. }
+  clear n. intros h n IH. unfold Fib.
+  case_if.
+  { math. }
+  { forwards* IH1: IH (n-1). forwards* IH2: IH (n-2). math. }
+Qed.
+
+End FibClassical.
+
+(* ---------------------------------------------------------------------- *)
 (** ** Nested recursion *)
 
 Section Nest.
@@ -691,7 +812,7 @@ Definition nest := FixFun Nest.
 
 (* monadic version -- should be automatically generated *)
 Definition NestOpt nest (n:nat) : option nat :=
-  if le_dec n 1 
+  if le_dec n 1
     then ret% 0
     else let% a := nest (n-1) in
          let% b := nest (n-2) in
@@ -700,7 +821,7 @@ Definition NestOpt nest (n:nat) : option nat :=
 (* monotonicity lemma -- should be automatically generated *)
 Lemma NestOpt_mono : error_monad_monotonic NestOpt.
 Proof using.
-  intros g1 g2 M n r E. unfolds NestOpt. 
+  intros g1 g2 M n r E. unfolds NestOpt.
   case_if.
   { auto. }
   { applys Bind_monotonic (rm E). { applys M. } intros a E.
@@ -719,12 +840,12 @@ Proof using.
     lets (b&Hb&E3): Binds_Some_inv (rm E2).
     lets Eb: M Hb.
     lets Ec: M E3.
-    congruence. } 
+    congruence. }
 Qed.
 
 (* dependency relation -- should be automatically generated *)
 Definition NestRec (nest:nat->nat) (n':nat) (n:nat) : Prop :=
-  if le_dec n 1 
+  if le_dec n 1
     then False
     else (n' = n-1) \/
          let a := nest (n-1) in
@@ -740,7 +861,7 @@ Proof using.
   case_if. (* 1:{ false. } *)
   { lets (a&Ha&E2): Binds_not_None_inv (rm E). lets Ea: Hg Ha.
     lets (b&Hb&E3): Binds_not_None_inv (rm E2). lets Eb: Hg Hb.
-    destruct HR as [|[|[|]]]; try congruence. } 
+    destruct HR as [|[|[|]]]; try congruence. }
 Qed.
 
 (** Demo: computing with NestOpt to derive a result of [nest].
@@ -762,26 +883,148 @@ Proof using.
   applys FixFun_fix_ter (fun (x y:nat) => y = 0) NestOpt_simu NestOpt_mono NestRec_dep; auto.
   clears n. intros n _ IH.
   unfolds Nest, NestRec.
-  case_if. 
-  { math. } 
+  case_if.
+  { math. }
   { apply IH. eauto. } (* no need to investigate all branches *)
 Qed.
 
 (** Demo: variant of the above proof, exploiting the fact that the property
     [f n = 0] is satisfiable by at least one function [f]. This alternative
-    proof does not require reasoning about dependencies of recursive calls, 
+    proof does not require reasoning about dependencies of recursive calls,
     and does not need the statement of [NestRec] and [NestRec_dep].  *)
 
 Lemma nest_zero' : forall n, terminates NestOpt n -> nest n = 0.
 Proof using.
   intros.
   applys FixFun_fix_ter_sat (fun (x y:nat) => y = 0) NestOpt_simu NestOpt_mono; auto.
-  { exists (fun (_:nat) => 0). math. } 
+  { exists (fun (_:nat) => 0). math. }
   clears n. intros h n Hn IH. unfolds Nest.
-  case_if. 
+  case_if.
   { math. }
-  { applys IH. } 
+  { applys IH. }
 Qed.
 
 End Nest.
+
+
+(* ---------------------------------------------------------------------- *)
+(** ** Syracuse sequence -- conjectured termination *)
+
+Module Syracuse.
+Open Scope nat_scope.
+Import Nat.
+
+Definition Syr syr (n:nat) : nat :=
+  if eq_nat_dec n 1 then
+    0
+  else if even n then
+    1 + syr(n/2)
+  else 
+    1 + syr(3*n+1).
+
+(* ALTERNATIVE
+Definition Syr syr (n:nat) : nat :=
+  if eq_nat_dec n 1 
+    then 0
+    else 1 + syr (if even n then (n/2) else (3*n+1)).*)
+
+Definition syr := FixFun Syr.
+
+(* monadic version -- should be automatically generated *)
+Definition SyrOpt syr (n:nat) : option nat :=
+  if eq_nat_dec n 1 then
+    ret% 0
+  else if even n then
+    let% r := syr(n/2) in
+    ret% 1 + r
+  else 
+    let% r := syr(3*n+1) in
+    ret% 1 + r.
+
+(* monotonicity lemma -- should be automatically generated *)
+Lemma SyrOpt_mono : error_monad_monotonic SyrOpt.
+Proof using.
+  intros g1 g2 M n r E. unfolds SyrOpt.
+  repeat case_if.
+  { auto. }
+  { applys* Bind_monotonic E. }
+  { applys* Bind_monotonic E. }
+Qed.
+
+(* simulation lemma -- should be automatically generated *)
+Lemma SyrOpt_simu : is_ho_monadic_variant Syr SyrOpt.
+Proof using.
+  intros f g M. intros n r E. unfolds SyrOpt, Syr.
+  repeat case_if.
+  { lets*: Return_Some_inv (rm E). }
+  { lets (a&Ha&E2): Binds_Some_inv (rm E).
+    lets Ea: M Ha.
+    lets E4: Return_Some_inv (rm E2).
+    congruence. }
+  { lets (a&Ha&E2): Binds_Some_inv (rm E).
+    lets Ea: M Ha.
+    lets E4: Return_Some_inv (rm E2).
+    congruence. }
+Qed.
+
+(* dependency relation -- should be automatically generated *)
+Definition SyrRec (syr:nat->nat) (n':nat) (n:nat) : Prop :=
+  if eq_nat_dec n 1 then
+    False
+  else if even n then
+    (n' = n/2)
+  else
+    (n' = 3*n+1).
+
+(* dependency lemma -- should be automatically generated *)
+Lemma SyrRec_dep : captures_dep syr SyrOpt SyrRec.
+Proof using.
+  intros g _ n n' HR E. unfolds SyrOpt, SyrRec.
+  repeat case_if.
+  (* { false. } *)
+  { lets (a&Ha&E2): Binds_not_None_inv (rm E). congruence. }
+  { lets (a&Ha&E2): Binds_not_None_inv (rm E). congruence. }
+Qed.
+
+(** Demo: computing with SyrOpt to derive a result of [syr].
+    Here [100%nat] is an arbitrary, sufficiently large bound on the depth. 
+    
+    7 -> 22 -> 11 -> 34 -> 17 -> 52 -> 26 -> 13 -> 40 ->
+     20 -> 10 -> 5 -> 16 -> 8 -> 4 -> 2 -> 1
+    reaches 1 in 16 steps, therefore  [syr 7 = 16] *)
+
+Lemma syr7 : exists r, syr 7 = r.
+Proof using.
+  exists. applys FixFun_eq_FixOpt 100%nat SyrOpt_simu SyrOpt_mono; [reflexivity|].
+  cbv. (* evaluates [FixOpt SyrOpt 10 5] to [Some 8] *)
+  reflexivity.
+Qed.
+
+(** Demo: computing [syr 0] which loops infinitely, as [0] is not equal to one,
+    is even, and thus leads to the recursive evaluation of [syr 0].
+    Here [100%nat] is an arbitrary depth. After 100 calls, the function [SyrOpt]
+    returns [None]. *)
+
+Lemma syr0 : exists r, syr 0 = r.
+Proof using.
+  exists. applys FixFun_eq_FixOpt 100%nat SyrOpt_simu SyrOpt_mono; [reflexivity|].
+  cbv. (* produces the unprovable goal [None = Some ?r] *)
+Abort.
+
+(** Demo: proving a property of [syr], e.g. that it returns nonzero values,
+    whenever its input is greater than 1, and [SyrOpt] terminates at some finite depth. *)
+
+Lemma syr_pos : forall n, n > 1 -> terminates SyrOpt n -> syr n > 0.
+Proof using.
+  intros.
+  applys FixFun_fix_ter (fun (x y:nat) => x > 1 -> y > 0) 
+   SyrOpt_simu SyrOpt_mono SyrRec_dep; auto.
+  clears n. intros n _ IH Hn. unfolds Syr, SyrRec.
+  repeat case_if.
+  { false. math. }
+  { math. }
+  { math. }
+Qed.
+
+End Syracuse.
 
