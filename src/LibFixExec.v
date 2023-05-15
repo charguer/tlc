@@ -227,15 +227,26 @@ Definition error_monad_monotonic A B (G:(A->option B)->(A->option B)) : Prop :=
     argue that providing a larger recursion depth to [FixOpt] can only produce more
     results, and never invalidates results obtained at smaller depths. *)
 
-Lemma FixOpt_mono_succ : forall A B (G:(A->option B)->(A->option B)) n x y,
+Lemma FixOpt_mono : forall A B (G:(A->option B)->(A->option B)) n x y,
   error_monad_monotonic G ->
   FixOpt G n x = Some y ->
-  FixOpt G (S n) x = Some y.
+  forall m, m >= n ->
+  FixOpt G m x = Some y.
 Proof using.
   introv HG EQ. gen x y. induction n; introv EQ.
   { false. }
-  { simpls. applys HG EQ. intros g1 g2. applys IHn. }
+  { intros m Hm. destruct m as [|m']; try (false; math).
+    simpls. applys HG EQ. intros g1 g2 Eg. applys IHn Eg. math. }
 Qed.
+
+(** Specialization of the monotonicity property for one additional iteration.
+    Note: this lemmas is currently not used further in the development. *)
+
+Lemma FixOpt_mono_succ : forall A B (G:(A->option B)->(A->option B)) n x y,
+  error_monad_monotonic G ->
+  FixOpt G n x = Some y ->
+  G (FixOpt G n) x = Some y.
+Proof using. introv HG EQ. applys FixOpt_mono n HG EQ (S n). math. Qed.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -329,7 +340,7 @@ Proof using.
     { lets M: HFG h (FixOpt G n) x y.
       { clears x y. intros x y Hxy. rewrite <- Hh; [|auto_false].
         applys iter_of_is_ho_monadic_variant HFG Hxy. }
-    rewrite~ M. applys FixOpt_mono_succ HG Hxy. } }
+    rewrite~ M. applys FixOpt_mono HG Hxy (S n). { math. } } }
   { intros [h D'] Hh.
     intros x (Dx&D'x). unfolds pfun_equiv. simpls.
     case_eq (FixOpt G n x); [|auto_false]. intros y Hxy.
@@ -346,7 +357,7 @@ Proof using.
       lets M: HFG h' (FixOpt G n') x y.
       { clears x y. intros x y Hxy. unfold h'. case_if.
         { applys IH n'; auto_false. }
-        { lets Hxy': FixOpt_mono_succ HG Hxy.
+        { lets Hxy': FixOpt_mono HG Hxy (S n') __. { math. }
           applys iter_of_is_ho_monadic_variant HFG Hxy'. } }
       { rewrite~ M. } } }
 Qed.
@@ -540,6 +551,18 @@ Lemma Binds_not_None_inv : forall A B o (k:A->option B),
   Bind o k <> None ->
   exists a, o = Some a /\ k a <> None.
 Proof using. introv E. destruct o; tryfalse*. { exists* a. } Qed.
+
+Lemma Binds_Some : forall A B o (k:A->option B) a b,
+  o = Some a ->
+  k a = Some b ->
+  Bind o k = Some b .
+Proof using. introv H1 H2. subst o. simpl. congruence. Qed.
+
+Lemma Binds_not_None : forall A B o (k:A->option B),
+  o <> None ->
+  (forall a, o = Some a -> k a <> None ) ->
+  Bind o k <> None.
+Proof using. introv H1 H2. destruct o; tryfalse. { applys* H2. } Qed.
 
 
 (* ********************************************************************** *)
@@ -1070,7 +1093,7 @@ Fixpoint subst (x:var) (v:val) (t:trm) : trm :=
   | trm_app t1 t2 => trm_app (s t1) (s t2)  
   end.
 
-(** Evaluation function *)
+(** Characterization of errors *)
 
 Definition is_error (v:val) : bool :=
   match v with 
@@ -1078,13 +1101,24 @@ Definition is_error (v:val) : bool :=
   | _ => false
   end.
 
+Lemma is_error_eq_eq_val_error : forall v,
+  istrue (is_error v) = (v = val_error).
+Proof using. extens. destruct v; simpls; iff; congruence. Qed.
+
+Lemma not_is_error_eq_neq_val_error : forall v,
+  (~ is_error v) = (v <> val_error).
+Proof using. extens. destruct v; simpls; iff; congruence. Qed.
+
+(** Evaluation function *)
+
 Definition Eval eval (t:trm) : val :=
   match t with
-  | trm_val v => v
+  | trm_val v => v 
   | trm_abs x t1 => val_clo x t1
   | trm_var x => val_error (* unbound variable *)
   | trm_app t1 t2 => 
       let v1 := eval t1 in
+      if is_error v1 then val_error else
       let v2 := eval t2 in
       if is_error v2 then val_error else
       match v1 with
@@ -1103,6 +1137,7 @@ Definition EvalOpt eval (t:trm) : option val :=
   | trm_var x => ret% val_error 
   | trm_app t1 t2 => 
       let% v1 := eval t1 in
+      if is_error v1 then ret% val_error else
       let% v2 := eval t2 in
       if is_error v2 then ret% val_error else
       match v1 with
@@ -1121,11 +1156,11 @@ Lemma EvalOpt_mono : error_monad_monotonic EvalOpt.
 Proof using.
   intros g1 g2 M t r E. unfolds EvalOpt.
   destruct t; auto.
-  { applys* Bind_monotonic (rm E). intros a Ea. 
+  { applys* Bind_monotonic (rm E). intros a Ea.
+    case_if*. 
     applys* Bind_monotonic (rm Ea). intros b Eb.
-    case_if.
-    { auto. }
-    { destruct a; auto. } } 
+    case_if*.
+    destruct a; auto. } 
 Qed.
 
 (* simulation lemma -- should be automatically generated *)
@@ -1134,10 +1169,11 @@ Proof using.
   intros f g M. intros t r E. unfolds EvalOpt, Eval.
   destruct t; try (lets*: Return_Some_inv (rm E)).
   { lets (a&Ha&E2): Binds_Some_inv (rm E). lets Ea: M Ha.
+    rewrite Ea. case_if. { inverts* E2. }
     lets (b&Hb&E3): Binds_Some_inv (rm E2). lets Eb: M Hb.
     rewrite Eb. case_if.
     { lets*: Return_Some_inv (rm E3). }
-    { rewrite Ea. destruct a. 
+    { destruct a. 
       { lets*: Return_Some_inv (rm E3). }
       { applys M. congruence. }
       { lets*: Return_Some_inv (rm E3). } } }
@@ -1152,6 +1188,7 @@ Definition EvalRec (eval:trm->val) (t':trm) (t:trm) : Prop :=
   | trm_app t1 t2 => 
       (t' = t1) \/
       let v1 := eval t1 in
+      if is_error v1 then False else
       (t' = t2) \/
       let v2 := eval t2 in
       if is_error v2 then False else
@@ -1168,11 +1205,11 @@ Proof using.
   destruct t; try congruence.
   (* { false. } *)
   { lets (a&Ha&E2): Binds_not_None_inv (rm E). lets Ea: Hg Ha.
+    rewrite Ea in HR. case_if. { destruct HR as [|]; try congruence. }
     lets (b&Hb&E3): Binds_not_None_inv (rm E2). lets Eb: Hg Hb.
     rewrite Eb in HR. case_if.
     { destruct HR as [|[|]]; try congruence. }
-    { rewrite Ea in HR. destruct a; 
-      destruct HR as [|[|]]; try congruence. } }
+    { destruct a; destruct HR as [|[|]]; try congruence. } }
 Qed.
 
 (** Demo: computing with [EvalOpt] to derive a result of [eval].
@@ -1236,7 +1273,7 @@ Proof using.
   { subst v. constructor. auto. }
   { subst v. false. }
   { subst v. constructor. }
-  { subst v. case_if. sets_eq v1: (eval t1). sets_eq v2: (eval t2).
+  { subst v. case_if. case_if. sets_eq v1: (eval t1). sets_eq v2: (eval t2).
      destruct v1; tryfalse. (* TODO: beautify proof case *)
      renames v to x, t to t3.
      applys big_app x t3 v2.
@@ -1244,11 +1281,11 @@ Proof using.
        { hnf. eauto. }
        { congruence. } }
      { rewrite EQv2. applys IH.
-       { hnf. eauto. }
-       { unfolds is_error. destruct v2; congruence. } }
+       { hnf. rewrite <- EQv1. simpl. case_if. eauto. }
+       { rewrite <- EQv2. rewrite* <- not_is_error_eq_neq_val_error. } }
      { applys IH. 
-        { hnf. right. intros. right. intros. subst v0. subst v2. case_if.
-          subst v1. rewrite <- EQv1. auto. }
+        { hnf. right. rewrite <- EQv1. intros. right. intros. subst v0. subst v2. case_if.
+          subst v1. simpl. auto. }
         { auto. } } } 
 Qed.
 
@@ -1273,16 +1310,23 @@ Inductive bigx : trm -> val -> Prop :=
   | bigx_app : forall t1 t2 x t3 v2 v,
       bigx t1 (val_clo x t3) ->
       bigx t2 v2 ->
+      v2 <> val_error ->
       bigx (subst x v2 t3) v ->
       bigx (trm_app t1 t2) v
-  | bigx_app_err1 : forall t1 t2 v2 v1,
-      bigx t2 v2 ->
-      v2 <> val_error ->
+  | bigx_app_err1 : forall t1 t2 v1,
+      bigx t1 v1 ->
+      v1 = val_error ->
+      bigx (trm_app t1 t2) val_error
+  | bigx_app_err2 : forall v1 t1 t2,
+      bigx t1 v1 ->
+      v1 <> val_error ->
+      bigx t2 val_error ->
+      bigx (trm_app t1 t2) val_error
+  | bigx_app_err3 : forall t1 t2 v2 v1,
       bigx t1 v1 ->
       ~ is_closure v1 ->
-      bigx (trm_app t1 t2) val_error
-  | bigx_app_err2 : forall t1 t2,
-      bigx t2 val_error ->
+      bigx t2 v2 ->
+      v2 <> val_error ->
       bigx (trm_app t1 t2) val_error.
 
 
@@ -1298,32 +1342,113 @@ Proof using.
   { subst v. constructor. }
   { subst v. constructors. }
   { subst v. constructor. }
-  { subst v. sets_eq v2: (eval t2). case_if. (* TODO: beautify this case *)
-    { applys bigx_app_err2. destruct v2; tryfalse.
-      rewrite EQv2. applys IH. { hnf. eauto. } }
-    { sets_eq v1: (eval t1). tests: (is_closure v1).
-      { destruct v1; tryfalse. renames v to x, t to t3.
-        applys bigx_app x t3 v2.
-        { rewrite EQv1. applys IH. { hnf. eauto. } }
-        { rewrite EQv2. applys IH. { hnf. eauto. } }
-        { applys IH. { hnf. right. intros. right. intros. subst v0. subst v2. case_if.
-          subst v1. rewrite <- EQv1. auto. } } } 
-      { asserts_rewrite (match v1 with
+  { subst v. sets_eq v1: (eval t1). sets_eq v2: (eval t2).
+    sets_eq res: (match v1 with
           | val_clo x t3 => eval (subst x v2 t3)
           | _ => val_error
-          end = val_error). { destruct v1; unfolds is_closure; tryfalse; auto. } 
-        applys bigx_app_err1 v2 v1.
-        { rewrite EQv2. applys IH. { hnf. eauto. } }
-        { unfolds is_error. destruct v2; congruence. }
-        { rewrite EQv1. applys IH. { hnf. eauto. } }
-        { unfolds is_error. destruct v1; congruence. } } } }
-Qed.
+          end).
+    tests C1: (is_error v1).
+    { asserts_rewrite (res = val_error). { destruct v1; tryfalse; auto. }
+      asserts_rewrite ((if is_error v2 then val_error else val_error) = val_error). { case_if*. }
+      asserts_rewrite ((if is_error v1 then val_error else val_error) = val_error). { case_if*. }
+      rewrite is_error_eq_eq_val_error in C1. applys* bigx_app_err1 v1.
+      { rewrite EQv1. applys IH. { hnf. eauto. } } }
+    { rewrite not_is_error_eq_neq_val_error in C1.
+      case_if. (* TODO: beautify this case *)
+      { rewrite is_error_eq_eq_val_error in C. applys* bigx_app_err2. }
+      case_if.
+      { rewrite is_error_eq_eq_val_error in C0. applys* bigx_app_err2. 
+          { rewrite EQv1. applys IH. { hnf. eauto. } }
+          { rewrite <- C0, -> EQv2. applys IH. { hnf. rewrite <- EQv1. simpl. case_if. eauto. } } }
+      { tests: (is_closure v1).
+        { destruct v1; tryfalse. renames v to x, t to t3.
+          applys bigx_app x t3 v2.
+          { rewrite EQv1. applys IH. { hnf. eauto. } }
+          { rewrite EQv2. applys IH. { hnf. rewrite <- EQv1. simpl. case_if. eauto. } }
+          { rewrite* <- not_is_error_eq_neq_val_error. }
+          { subst res. applys IH. { hnf. right. rewrite <- EQv1. simpl. intros. right. intros. 
+            subst v2. case_if. auto. } } } 
+       { asserts_rewrite (res = val_error) in *.
+         { destruct v1; unfolds is_closure; tryfalse; auto. } 
+         applys bigx_app_err3 v2 v1.
+         { rewrite EQv1. applys IH. { hnf. eauto. } }
+         { auto. } 
+         { rewrite EQv2. applys IH. { hnf. rewrite <- EQv1. simpl. case_if. eauto. } }
+        { rewrite* <- not_is_error_eq_neq_val_error. } } } } }
+Abort. (* TODO *)
+
+(** Note: if [bigx t v] holds, then [terminates EvalOpt t] holds.
+    This result is provable because [bigx] corresponds to a finitely-branching
+    semantics (in fact, it is here deterministic). It would not be provable
+    for an infinitely-branching semantics, e.g., with a rule of the form
+    [forall t n, big (trm_app trm_rand val_unit) (val_int n)] without constraint on [n]. *)
+
+Lemma bigx_terminates : forall t v, 
+  bigx t v ->
+  exists n : nat, FixOpt EvalOpt n t = Some v.
+Proof using.
+  hint EvalOpt_mono.
+  introv R. induction R;
+    try solve [ exists 1%nat; simpl; unfold Return; congruence ].
+  { lets (n1&IH1): (rm IHR1). lets (n2&IH2): (rm IHR2). lets (n3&IH3): (rm IHR3).
+    exists (1+n1+n2+n3)%nat. simpl.
+    applys Binds_Some. { applys* FixOpt_mono. math. }
+    applys Binds_Some. { applys* FixOpt_mono. math. }
+    case_if. 
+    { simpl; unfold Return. rewrite* is_error_eq_eq_val_error in C. }
+    { applys* FixOpt_mono. math. } }
+  { lets (n1&IH1): (rm IHR).
+     exists (1+n1)%nat. simpl.
+     applys* Binds_Some.
+     case_if. { auto. } { subst. false*. } }
+Admitted.
+(*
+    applys* Binds_Some. { applys* FixOpt_mono. math. }
+    case_if. 
+    { simpl; unfold Return. rewrite* is_error_eq_eq_val_error in C. }
+    { asserts_rewrite (match v1 with
+         | val_clo x t3 => FixOpt EvalOpt (n1 + n2) (subst x v2 t3)
+         | _ => ret% val_error
+          end = ret% val_error). { destruct v1; unfolds is_closure; tryfalse; auto. }
+      auto. } }
+
+  { lets (n1&IH1): (rm IHR1). lets (n2&IH2): (rm IHR2). 
+    exists (1+n1+n2)%nat. simpl.
+    applys Binds_Some. { applys* FixOpt_mono. math. }
+    applys Binds_Some. { applys* FixOpt_mono. math. }
+    case_if. 
+    { simpl; unfold Return. rewrite* is_error_eq_eq_val_error in C. }
+    { asserts_rewrite (match v1 with
+         | val_clo x t3 => FixOpt EvalOpt (n1 + n2) (subst x v2 t3)
+         | _ => ret% val_error
+          end = ret% val_error). { destruct v1; unfolds is_closure; tryfalse; auto. }
+      auto. } }
+
+   
+      unfold Return.
+
+applys* FixOpt_mono. math. } }
+  { exists (1+n)%nat.
+
+    { destruct r1; try solve [simpl; unfold Return; congruence].
+      intros Hr3. congruence. 
+
+    applys Binds_Some. { applys* FixOpt_mono. math. }
+
+    applys Binds_not_None. { applys* FixOpt_mono_not_None. math. }
+    intros r2 Hr2.
+    
+
+  { exists 1%nat. simpl. unfold Return. congruence. }
+
+
+
+Lemma bigx_terminates : forall t v, 
+  bigx t v ->
+  terminates EvalOpt t.
+*)
 
 End Evaluator.
-
-
-
-
 
 
 
