@@ -1178,7 +1178,7 @@ Hint Resolve parse_arg_sub_wf : wf.
 (* ---------------------------------------------------------------------- *)
 (** ** Auxiliary recursive function *)
 
-(** [parse'] is a function equivalen to [parse] except that it includes
+(** [parse'] is a function equivalent to [parse] except that it includes
     some assertions in order to make termination more obvious.
     Those assertions appear in-between [##] symbols. *)
 
