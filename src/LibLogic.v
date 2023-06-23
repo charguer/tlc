@@ -954,12 +954,12 @@ Definition ex_unique (A : Type) (P : A -> Prop) :=
 (** [exists! x, P] is the notation for [ex_unique P]. *)
 
 Notation "'exists' ! x , P" := (ex_unique (fun x => P))
-  (at level 200, x ident, right associativity,
+  (at level 200, x name, right associativity,
     format "'[' 'exists' !  '/  ' x ,  '/  ' P ']'") : type_scope.
 
 Notation "'exists' ! x : A , P" :=
   (ex_unique (fun x:A => P))
-  (at level 200, x ident, right associativity,
+  (at level 200, x name, right associativity,
     format "'[' 'exists' !  '/  ' x  :  A ,  '/  ' P ']'") : type_scope.
 
 (** [at_most_one P] asserts that there exists at most one element for

@@ -175,21 +175,21 @@ Definition list_covers A (E:set A) (L:list A) :=
 Declare Scope set_scope.
 
 Notation "\set{ x | P }" := (@set_st _ (fun x => P))
- (at level 0, x ident, P at level 200) : set_scope.
+ (at level 0, x name, P at level 200) : set_scope.
 Notation "\set{ x : A | P }" := (@set_st A (fun x => P))
- (at level 0, x ident, P at level 200) : set_scope.
+ (at level 0, x name, P at level 200) : set_scope.
 Notation "\set{ x '\in' E | P }" := (@set_st _ (fun x => x \in E /\ P))
- (at level 0, x ident, P at level 200) : set_scope.
+ (at level 0, x name, P at level 200) : set_scope.
 
 Notation "\set{= e | x '\in' E }" :=
  (@set_st _ (fun a => exists_ x \in E, a = e ))
- (at level 0, x ident, E at level 200) : set_scope.
+ (at level 0, x name, E at level 200) : set_scope.
 Notation "\set{= e | x '\in' E , y ''\in' F }" :=
  (@set_st _ (fun a => exists_ x \in E, exists_ y \in F, a = e ))
- (at level 0, x ident, F at level 200) : set_scope.
+ (at level 0, x name, F at level 200) : set_scope.
 Notation "\set{= e | x y '\in' E }" :=
  (@set_st _ (fun a => exists_ x y \in E, a = e ))
- (at level 0, x ident, y ident, E at level 200) : set_scope.
+ (at level 0, x name, y name, E at level 200) : set_scope.
 
 
 (* ********************************************************************** *)

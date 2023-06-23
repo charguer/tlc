@@ -100,13 +100,13 @@ Notation "M \-- i" := (M \- \{i}) (at level 35) : container_scope.
 
 Notation "'forall_' x '\in' E ',' P" :=
   (forall x, x \in E -> P)
-  (at level 200, x ident) : container_scope.
+  (at level 200, x name) : container_scope.
 Notation "'forall_' x y '\in' E ',' P" :=
   (forall x y, x \in E -> y \in E -> P)
-  (at level 200, x ident, y ident) : container_scope.
+  (at level 200, x name, y name) : container_scope.
 Notation "'forall_' x y z '\in' E ',' P" :=
   (forall x y z, x \in E -> y \in E -> z \in E -> P)
-  (at level 200, x ident, y ident, z ident) : container_scope.
+  (at level 200, x name, y name, z name) : container_scope.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -114,13 +114,13 @@ Notation "'forall_' x y z '\in' E ',' P" :=
 
 Notation "'exists_' x '\in' E ',' P" :=
   (exists x, x \in E /\ P)
-  (at level 200, x ident) : container_scope.
+  (at level 200, x name) : container_scope.
 Notation "'exists_' x y '\in' E ',' P" :=
   (exists x, x \in E /\ y \in E /\ P)
-  (at level 200, x ident, y ident) : container_scope.
+  (at level 200, x name, y name) : container_scope.
 Notation "'exists_' x y z '\in' E ',' P" :=
   (exists x, x \in E /\ y \in E /\ z \in E /\ P)
-  (at level 200, x ident, y ident, z ident) : container_scope.
+  (at level 200, x name, y name, z name) : container_scope.
 
 
 (* ---------------------------------------------------------------------- *)

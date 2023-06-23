@@ -1,8 +1,6 @@
 -Q . TLC
 
--arg -w -arg -implicit-core-hint-db,-deprecated-ident-entry
-
-# ,-omega-is-deprecated,-deprecated-hint-without-locality,,-deprecated-instance-without-locality,-deprecated-hint-rewrite-without-locality
+-arg -w -arg -implicit-core-hint-db
 
 LibAxioms.v
 LibBool.v
