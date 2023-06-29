@@ -168,7 +168,7 @@ End DisequalityProp.
 (* ---------------------------------------------------------------------- *)
 (** ** Symmetrized induction principles *)
 
-(* Note that it is not clear if these results are any useful in practice. *)
+(* Remark: it is not clear if these results are any useful in practice. *)
 
 Section EqInductionSym.
 Variables (A : Type) (x : A).
@@ -277,8 +277,8 @@ End FuncExtDep.
 (* ---------------------------------------------------------------------- *)
 (** ** Non-dependent functional extensionality *)
 
-(* LATER: check whether these lemmas are any useful, given that they are
-  subsumed by their more general versions above? Probably could do without. *)
+(* Remark: are these lemmas really useful, given that they are subsumed
+   by their more general versions above? Probably could do without. *)
 
 Lemma fun_ext_nondep_1 : forall A1 B (f g : A1 -> B),
   (forall x1, f x1 = g x1) ->

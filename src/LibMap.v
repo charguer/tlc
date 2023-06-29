@@ -239,7 +239,7 @@ End Reformulation.
 
 (* ********************************************************************** *)
 (** * Properties of maps *)
-(*TODO: under construction *)
+(* -- TODO: under construction *)
 
 Section Properties.
 Transparent map empty_inst single_bind_inst binds_inst
@@ -332,15 +332,15 @@ Qed.
 
 Lemma dom_map : forall A B (IB:Inhab B) C (f:A->B->C) M,
   dom (map_ f M) = dom M.
-Proof using. 
-  intros. simpl. unfold dom_impl, map_. 
+Proof using.
+  intros. simpl. unfold dom_impl, map_.
   rew_set. intros x. rew_set. destruct (M x); iff*.
 Qed.
 
 Lemma dom_filter : forall A B (IB:Inhab B) (f:A->B->Prop) M,
   dom (filter f M) \c dom M.
 Proof using.
-  intros. simpl. unfold dom_impl, filter. 
+  intros. simpl. unfold dom_impl, filter.
   rew_set. intros x. rew_set. destruct* (M x).
 Qed.
 
@@ -475,10 +475,10 @@ Qed.
 
 Lemma read_single : forall A B (IB:Inhab B) (k:A) (x:B),
   (k \:= x)[k] = x.
-Proof using. 
+Proof using.
   intros. unfold read, read_inst, read_impl.
   unfold single_bind, single_bind_inst, single_bind_impl.
-  case_if*. 
+  case_if*.
 Qed.
 
 (* ---------------------------------------------------------------------- *)
@@ -875,8 +875,8 @@ Proof using. introv IB H. rewrite* indom_map_eq in H. Qed.
 Lemma read_map : forall A B C (IB:Inhab B) (IC:Inhab C) (f:A->B->C) M x,
   x \indom M ->
   (map_ f M)[x] = f x (M[x]).
-Proof using. 
-  introv Hx. (* TODO bug? rewrite @indom_eq_app_neq_none in M. ; also further on *)
+Proof using.
+  introv Hx. (* --TODO bug? rewrite @indom_eq_app_neq_none in M. ; also further on *)
   lets Hx': indom_inv_app_neq_none (rm Hx).
   unfold map_. simpls. unfolds read_impl.
   destruct (M x); auto_false.
@@ -889,10 +889,10 @@ Proof using. auto. Qed.
 Lemma map_single : forall A B C (IB:Inhab B) (IC:Inhab C) (f:A->B->C) x y,
   map_ f (x \:= y) = (x \:= f x y).
 Proof using.
-  intros. applys extensionality_of_dom_eq. 
+  intros. applys extensionality_of_dom_eq.
   { rewrite dom_single. repeat rewrite* dom_map. rewrite* dom_single. }
   { intros k Hk. rewrite* dom_map in Hk.
-    lets Hk': Hk. rewrite* dom_single in Hk'. rew_set in Hk'. subst x. 
+    lets Hk': Hk. rewrite* dom_single in Hk'. rew_set in Hk'. subst x.
     repeat rewrite* (@read_map A B C IB).
     do 2 rewrite read_single. auto. }
 Qed.
@@ -900,10 +900,10 @@ Qed.
 Lemma map_union : forall A B C (IB:Inhab B) (IC:Inhab C) (f:A->B->C) M1 M2,
   map_ f (M1 \u M2) = (map_ f M1) \u (map_ f M2).
 Proof using.
-  intros. applys extensionality_of_dom_eq. 
+  intros. applys extensionality_of_dom_eq.
   { rewrite dom_union. repeat rewrite* dom_map. rewrite* dom_union. }
   { intros k Hk. rewrite* dom_map in Hk.
-    lets Hk': Hk. rewrite* dom_union in Hk'. rew_set in Hk'. 
+    lets Hk': Hk. rewrite* dom_union in Hk'. rew_set in Hk'.
     repeat rewrite* (@read_map A B C IB).
     repeat rewrite read_union_cases. rewrite* dom_map.
     case_if.
@@ -930,7 +930,7 @@ Lemma read_filter : forall A B (IB:Inhab B) (f:A->B->Prop) M x,
   x \indom M ->
   f x (M[x]) ->
   (filter f M)[x] = M[x].
-Proof using. 
+Proof using.
   introv Hx. lets Hx': indom_inv_app_neq_none (rm Hx).
   unfold filter. simpls. unfolds read_impl.
   destruct (M x); auto_false. case_if*.
@@ -961,9 +961,9 @@ Proof using. introv H. hint read_filter. rewrite* (@indom_filter_eq A B IB) in H
 Lemma filter_none : forall A B (IB:Inhab B) (f:A->B->Prop) M,
   (forall x, x \indom M -> ~ f x (M[x])) ->
   filter f M = empty.
-Proof using. 
+Proof using.
   introv H. symmetry. applys extensionality.
-  { intros k. rewrite dom_empty. rew_set. iff R; tryfalse. 
+  { intros k. rewrite dom_empty. rew_set. iff R; tryfalse.
     forwards* (Hk&Hfk&_): indom_filter_inv R. }
   { intros k. rewrite dom_empty. rew_set. auto_false. }
 Qed.
@@ -971,7 +971,7 @@ Qed.
 Lemma filter_all : forall A B (IB:Inhab B) (f:A->B->Prop) M,
   (forall x, x \indom M -> f x (M[x])) ->
   filter f M = M.
-Proof using. 
+Proof using.
   introv H. symmetry. applys extensionality.
   { intros k. rewrite (@indom_filter_eq A B IB). iff*. }
   { intros k Hk. rewrite* read_filter. }
@@ -979,9 +979,9 @@ Qed.
 
 Lemma filter_idempotent : forall A B (IB:Inhab B) (f:A->B->Prop) M,
   filter f (filter f M) = filter f M.
-Proof using. 
+Proof using.
   introv IB. symmetry. applys extensionality.
-  { intros k. repeat rewrite (@indom_filter_eq A B IB). iff* (Hk&Hfk). 
+  { intros k. repeat rewrite (@indom_filter_eq A B IB). iff* (Hk&Hfk).
     { split*. rewrite* read_filter. } }
   { intros k Hk. lets (?&?&?): indom_filter_inv Hk.
     repeat rewrite* read_filter. }
@@ -989,9 +989,9 @@ Qed.
 
 Lemma filter_swap : forall A B (IB:Inhab B) (f1 f2:A->B->Prop) M,
   filter f1 (filter f2 M) = filter f2 (filter f1 M).
-Proof using. 
+Proof using.
   introv IB. intros. applys extensionality.
-  { intros k. repeat rewrite (@indom_filter_eq A B IB). iff* ((Hk&Hfka)&Hfkb). 
+  { intros k. repeat rewrite (@indom_filter_eq A B IB). iff* ((Hk&Hfka)&Hfkb).
     { rewrite* read_filter in Hfkb. repeat split*. rewrite* read_filter. }
     { rewrite* read_filter in Hfkb. repeat split*. rewrite* read_filter. } }
   { intros k Hk. lets (Hk'&E&?): indom_filter_inv Hk. lets (Hk''&?&?): indom_filter_inv Hk'.
@@ -1001,7 +1001,7 @@ Qed.
 Lemma filter_incompatible : forall A B (IB:Inhab B) (f1 f2:A->B->Prop) M,
   (forall x y, x \indom M -> y = M[x] -> f1 x y -> f2 x y -> False) ->
   filter f1 (filter f2 M) = empty.
-Proof using. 
+Proof using.
   introv R. applys filter_none. intros k Hk Hf1.
   lets (Hk'&Hf2&E): indom_filter_inv Hk.
   rewrite* read_filter in Hf1.
@@ -1047,7 +1047,7 @@ Qed.
 Lemma filter_union : forall A B (IB:Inhab B) (f:A->B->Prop) M1 M2,
   disjoint M1 M2 ->
   filter f (M1 \u M2) = (filter f M1) \u (filter f M2).
-Proof using. 
+Proof using.
   introv IB D. extens. intros x.
   unfold disjoint, disjoint_inst, disjoint_impl, dom, dom_inst, dom_impl in D.
   rew_set in D. specializes D x. rew_set in D.

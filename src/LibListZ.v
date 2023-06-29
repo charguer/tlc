@@ -625,7 +625,7 @@ Lemma Forall_update : forall P l i x,
   Forall P (l[i:=x]).
 Proof using.
   introv. gen i. induction l; introv HL Hx Hi; rew_listx.
-  { (* TODO: lemma *) rew_index in Hi. rew_list in *. false. math. }
+  { (* --TODO: lemma *) rew_index in Hi. rew_list in *. false. math. }
   { rew_index in *. rew_listx* in HL. destruct HL.
     rewrite* update_cons_case. case_if*; rew_listx*. }
 Qed.
@@ -941,12 +941,10 @@ Proof using.
   { applys* take_cons_pos. math. }
 Qed.
 
-(* TODO: add take_pos_cons *)
-
 Lemma take_pos_last : forall (IA:Inhab A) l i,
-  index l (i-1) -> (* TODO: check if this is the right precondition *)
+  index l (i-1) ->
   take i l = take (i-1) l & l[i-1].
-Proof using. (* TOCLEAN *)
+Proof using. 
   introv Hi. gen i. induction l; intros; rew_index in Hi; rew_list in Hi.
   { math. }
   { rewrite take_cons_pos; try math.
@@ -1171,7 +1169,7 @@ Lemma read_take : forall (IA:Inhab A) l s i,
   s <= length l ->
   index s i ->
   (take s l)[i] = l[i].
-Proof using. (* TODO: could be proved without take_spec *)
+Proof using. (* Note: could be proved without take_spec *)
   introv Hs Hi. rew_index in *.
   lets (l'&Hl&Hl'): take_spec s l. { math. }
   rewrite Hl' at 2. rewrite read_app. case_if*.

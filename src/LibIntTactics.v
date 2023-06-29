@@ -24,26 +24,6 @@ From TLC Require Export LibInt.
 (** * Tactics *)
 
 (* ---------------------------------------------------------------------- *)
-(** ** [math_lia] tactic *)
-
-(* TODO: DEPRECATED, simply use [math] *)
-
-(** [math_lia] supports linear arithmetic; it roughly provides the
-    combined power of [ring_simplify] and [lia]. *)
-
-Ltac math_lia_core tt :=
-  math_setup; lia.
-
-Tactic Notation "math_lia" :=
-  math_lia_core tt.
-
-(** Binding for [nat] --TODO: is it useful? *)
-
-Ltac nat_math_lia :=
-  nat_math_setup; lia.
-
-
-(* ---------------------------------------------------------------------- *)
 (** ** [math_nia] tactic *)
 
 (** [math_nia] supports non-linear integer arithmetic.
