@@ -799,9 +799,7 @@ Tactic Notation "constructors" :=
 (** ** Assertions *)
 
 (** [asserts H: T] is another syntax for [assert (H : T)], which
-    also works with introduction patterns. For instance, one can write:
-    [asserts \[x P\] (exists n, n = 3)], or
-    [asserts \[H|H\] (n = 0 \/ n = 1). *)
+    also works with introduction patterns. *)
 
 Tactic Notation "asserts" simple_intropattern(I) ":" constr(T) :=
   let H := fresh "TEMP" in assert (H : T);
@@ -1448,7 +1446,7 @@ Tactic Notation "puts" ":" constr(E) :=
 (** ** Application of Tautologies *)
 
 (** [logic E], where [E] is a fact, is equivalent to
-    [assert H:E; [tauto | eapply H; clear H]. It is useful for instance
+    [assert H:E; [tauto | eapply H; clear H]]. It is useful for instance
     to prove a conjunction [A /\ B] by showing first [A] and then [A -> B],
     through the command [logic (foral A B, A -> (A -> B) -> A /\ B)] *)
 
