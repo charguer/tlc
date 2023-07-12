@@ -9,7 +9,7 @@ From TLC Require Import LibTactics LibReflect.
 From TLC Require Export LibNat LibList.
 
 (** This module shadows the function from LibList. Hence, it is not meant
-    to be "imported". Instead, just use [Import RewListExec.] *)
+    to be "imported". Instead, just use [Import LibListExec.RewListExec.] *)
 
 (* ---------------------------------------------------------------------- *)
 (* ** Autorewrite *)
