@@ -8,9 +8,13 @@ Generalizable Variables A B.
 From TLC Require Import LibTactics LibReflect.
 From TLC Require Export LibNat LibList.
 
+(** This module shadows the function from LibList. Hence, it is not meant
+    to be "imported". Instead, just use [Import RewListExec.] *)
 
 (* ---------------------------------------------------------------------- *)
 (* ** Autorewrite *)
+
+Module Import RewListExec.
 
 Tactic Notation "rew_list_exec" :=
   autorewrite with rew_list_exec.
@@ -19,6 +23,8 @@ Tactic Notation "rew_list_exec" "in" "*" :=
   (* autorewrite with rew_list_exec in *. *)
 Tactic Notation "rew_list_exec" "in" hyp(H) :=
   autorewrite with rew_list_exec in H.
+
+End RewListExec.
 
 
 (* ---------------------------------------------------------------------- *)
@@ -153,7 +159,7 @@ Lemma filter_eq : forall A (p:A->bool) (P:A->Prop) l,
   filter p l = LibList.filter P l.
 Proof using.
   Local Transparent LibList.filter.
-  introv E. unfold filter, LibList.filter. rew_list_exec. 
+  introv E. unfold filter, LibList.filter. rew_list_exec.
   fequals. extens. intros. rewrite E. rewrite* if_isTrue.
 Qed.
 
@@ -306,7 +312,7 @@ Qed.
 (* ---------------------------------------------------------------------- *)
 (* ** [fold_right] *)
 
-(** [LibList.fold_right] computes well. Here, we prove that it matches 
+(** [LibList.fold_right] computes well. Here, we prove that it matches
     Coq's standard library [fold_right]. *)
 
 Lemma fold_right_eq : forall A B,
