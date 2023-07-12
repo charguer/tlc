@@ -1,5 +1,4 @@
-(* ---under construction
-
+(*--under construction
 (**************************************************************************
 * TLC: A library for Coq                                                  *
 * Sorted lists                                                            *
@@ -51,9 +50,10 @@ Lemma permut_sym : forall l1 l2,
   permut l1 l2 ->
   permut l2 l1.
 Proof using.
-  intros. induction H.
+  intros. unfold permut. gen l1 l2. applys rtclosure_ind_r.
   { apply permut_refl. }
-  { applys rtclosure_last. apply IHrtclosure. inverts~ H. }
+  { intros. applys rtclosure'r_step. apply IHrtclosure. inverts~ H. }
+
 Qed.
 
 Lemma permut_sym_eq : forall l1 l2,

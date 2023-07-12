@@ -142,8 +142,18 @@ Proof using. apply (Extensionality_make bool_ext). Defined.
 (* ---------------------------------------------------------------------- *)
 (** ** Specification of boolean equality *)
 
-Definition is_beq A (beq:A->A->bool) :=
-  forall x y, beq x y = isTrue (x = y).
+(** [isTrue_pred p P] asserts that [p] is a boolean function that implements
+    the predicate [P], in the sense that [p x] returns [true] iff [P x] holds. *)
+
+Definition isTrue_pred A (p:A->bool) (P:A->Prop) : Prop :=
+  forall x, p x = isTrue (P x).
+
+(** [is_beq f] asserts that [f] is a boolean comparison function
+    that implements logical equality: [f x y] returns [true] iff
+    [x = y]. *)
+
+Definition is_beq A (f:A->A->bool) :=
+  forall x y, f x y = isTrue (x = y).
 
 
 (* ********************************************************************** *)

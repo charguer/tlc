@@ -1593,7 +1593,7 @@ Hint Rewrite length_update update_nil update_zero update_succ : rew_listx.
 
 
 (* ---------------------------------------------------------------------- *)
-(** **   *)
+(** ** Map *)
 
 Definition map A B (f:A->B) (l:list A) : list B :=
   fold_right (fun x acc => (f x)::acc) (@nil B) l.
@@ -1869,7 +1869,7 @@ Hint Rewrite concat_nil concat_cons concat_app concat_last : rew_listx.
 (** [filter P l] produces a list [l'] that is the sublist of [l]
     made exactly of the elements of [l] that satisfy [P]. *)
 
-Definition filter A (P:A->Prop) l :=
+Definition filter A (P:A->Prop) (l:list A) : list A :=
   fold_right (fun x acc => If P x then x::acc else acc) (@nil A) l.
 
 Section Filter.
@@ -2004,7 +2004,7 @@ Hint Rewrite filter_nil filter_cons filter_app filter_last filter_rev
 (* ---------------------------------------------------------------------- *)
 (** ** Remove *)
 
-Definition remove A (a:A) (l:list A) :=
+Definition remove A (a:A) (l:list A) : list A :=
   filter (<> a) l.
 
 Section Remove.
@@ -2085,6 +2085,14 @@ Section Noduplicates.
 Variables (A : Type).
 Implicit Types l : list A.
 Hint Constructors noduplicates.
+
+Lemma noduplicates_nil_eq :
+  noduplicates (@nil A) = True.
+Proof using. extens. iff M; inverts* M. Qed.
+
+Lemma noduplicates_cons_eq : forall x l,
+  noduplicates (x::l) = (~ (LibList.mem x l) /\ noduplicates l).
+Proof using. extens. iff M; inverts* M. Qed.
 
 Lemma noduplicates_one : forall (x:A),
   noduplicates (x::nil).
@@ -2220,6 +2228,8 @@ Qed.
 
 End Noduplicates.
 
+#[global] Hint Rewrite noduplicates_nil_eq noduplicates_cons_eq : rew_listx.
+
 
 (* ---------------------------------------------------------------------- *)
 (* ** remove_duplicates *)
@@ -2227,7 +2237,7 @@ End Noduplicates.
 (** [remove_duplicates l] produces a list [l'] that is the sublist of [l]
     obtained by keeping only the first occurence of every item. *)
 
-Fixpoint remove_duplicates A (l:list A) :=
+Fixpoint remove_duplicates A (l:list A) : list A :=
   match l with
   | nil => nil
   | x::l' => x :: (remove x (remove_duplicates l'))
