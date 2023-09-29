@@ -44,15 +44,15 @@ Lemma demo_false_1 :
 Proof using.
   intros n P. dup 5.
   (* [false_goal] replaces the current goal by [False] *)
-  false. eapply P. reflexivity.
+  { false. eapply P. reflexivity. }
   (* [false E] proves the goal if [E] has type [False] *)
-  false (P n (refl_equal n)).
+  { false (P n (refl_equal n)). }
   (* [false E] is in fact the same as [false; apply E] *)
-  false P. reflexivity.
+  { false P. reflexivity. }
   (* [false*] is short for [false; eauto] *)
-  false*.
+  { false*. }
   (* [false] also tries and call [congruence] *)
-  lets: (P n). false.
+  { lets: (P n). false. }
 Qed.
 
 Lemma demo_false_2 :

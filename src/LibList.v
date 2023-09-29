@@ -29,12 +29,12 @@ Arguments cons {A}.
 
 Declare Scope liblist_scope.
 Open Scope liblist_scope.
-Delimit Scope liblist_scope with list.
+Delimit Scope liblist_scope with mylist.
 Bind Scope liblist_scope with list.
 
-Infix "::" := cons (at level 60, right associativity) : liblist_scope.
+Infix "::" := cons (at level 60, right associativity) :     liblist_scope.
 
-(* Notations are not loaded by default *)
+(* Bracket notations are not loaded by default *)
 Module LibListNotation.
 Notation "[ ]" := nil (format "[ ]") : liblist_scope.
 Notation "[ x ]" := (cons x nil) : liblist_scope.
