@@ -32,7 +32,7 @@ Open Scope liblist_scope.
 Delimit Scope liblist_scope with mylist.
 Bind Scope liblist_scope with list.
 
-Infix "::" := cons (at level 60, right associativity) :     liblist_scope.
+Infix "::" := cons (at level 60, right associativity) : liblist_scope.
 
 (* Bracket notations are not loaded by default *)
 Module LibListNotation.
