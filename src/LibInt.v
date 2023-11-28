@@ -138,6 +138,12 @@ Ltac int_comp_to_zarith :=
 (* ---------------------------------------------------------------------- *)
 (** ** Hypothesis selection *)
 
+(** [is_additional_arith_type T] allows for extending the behavior of
+    [is_arith_type]. *)
+
+Ltac is_additional_arith_type T :=
+  constr:(false).
+
 (** [is_arity_type T] returns a boolean indicating whether
     [T] is equal to [nat] or [int] *)
 
@@ -145,7 +151,7 @@ Ltac is_arith_type T :=
   match T with
   | nat => constr:(true)
   | int => constr:(true)
-  | _ => constr:(false)
+  | _ => is_additional_arith_type T
   end.
 
 (** [is_arity E] returns a boolean indicating whether

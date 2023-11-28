@@ -1684,9 +1684,8 @@ Tactic Notation "false_invert" constr(H) :=
 
 Ltac false_invert_iter :=
   match goal with H:_ |- _ =>
-    solve [ inversion H; false
-          | clear H; false_invert_iter
-          | fail 2 ] end.
+    first [ solve [ inversion H; false ]
+          | clear H; false_invert_iter ] end.
 
 Tactic Notation "false_invert" :=
   intros; solve [ false_invert_iter | false ].
@@ -1708,7 +1707,6 @@ Tactic Notation "tryfalse_invert" :=
 Ltac false_neq_self_hyp :=
   match goal with H: ?x <> ?x |- _ =>
     false_goal; apply H; reflexivity end.
-
 
 
 (* ********************************************************************** *)
@@ -2906,6 +2904,51 @@ Tactic Notation "lets_inverts" constr(E) "as" simple_intropattern(I1)
  simple_intropattern(I2) simple_intropattern(I3) simple_intropattern(I4) :=
   lets_inverts_base E ltac:(fun H => inverts H as I1 I2 I3 I4).
 
+
+(* ---------------------------------------------------------------------- *)
+(** ** Inversion with Pattern Matching on Head of Hypothesis *)
+
+(** [invert_post] is invoked after [false_inverts] and [invert_if_head].
+    --LATER: could be also called after [invert]. *)
+
+Ltac invert_post tt :=
+  try discriminate.
+
+(** [inverts_post] is invoked after [false_inverts] and [inverts_if_head].
+    --LATER: could be also called after [inverts]. *)
+
+Ltac inverts_post tt :=
+  try discriminate.
+
+(** [false_inverts] is like [false_invert] but with substitutions. *)
+
+Ltac false_inverts_iter :=
+  match goal with H:_ |- _ =>
+    first [ solve [ inversion H; try subst; false; inverts_post tt ] (* could be inverts *)
+          | clear H; false_inverts_iter ] end.
+
+Tactic Notation "false_inverts" :=
+  intros; solve [ false_inverts_iter | false ].
+
+(** [invert_if_head E] calls [invert] on an assumption whose head symbol is [E].
+    It then calls [invert_post tt] to attempt discarding absurd goals *)
+
+Ltac invert_if_head E :=
+  match goal with H: ?T |- _ =>
+    match get_head T with E =>
+      invert H; invert_post tt
+    end
+  end.
+
+(** [inverts_if_head E] calls [inverts] an assumption whose head symbol is [E].
+    It then calls [inverts_post tt] to attempt discarding absurd goals *)
+
+Ltac inverts_if_head E :=
+  match goal with H: ?T |- _ =>
+    match get_head T with E =>
+      inverts H; inverts_post tt
+    end
+  end.
 
 
 (* ---------------------------------------------------------------------- *)
