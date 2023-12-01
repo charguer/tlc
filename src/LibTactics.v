@@ -1,3 +1,7 @@
+(* This file is extracted from the TLC library.
+   http://github.com/charguer/tlc
+   DO NOT EDIT. *)
+
 (**************************************************************************
 * Useful General-Purpose Tactics for Coq                                  *
 * Arthur Chargueraud                                                      *
