@@ -15,7 +15,6 @@ it to the repository.
 
 Finally, assuming `make release` has succeeded, run `make opam` and follow the
 interactive instructions. (This requires `opam-publish`.) At the end, a pull
-request on the [opam repository](https://github.com/ocaml/opam-repository/)
-will be opened. [You may need to create your own fork of this repository. You
-may also need to create a GitHub authentication token for use by `opam
-publish`.]
+request on the [opam Coq archive](https://github.com/coq/opam) will be opened.
+[You may need to create your own fork of this repository. You may also need to
+create a GitHub authentication token for use by `opam publish`.]
