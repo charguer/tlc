@@ -48,15 +48,16 @@ archive-check: archive
 
 # Compiling under various versions of Coq.
 
-# This assumes that the opam switches coq813, coq814, etc. exist.
+# This assumes that the opam switches coq818, coq819, etc. exist.
 
 VERSIONS := \
-  coq814 \
-  coq813 \
+  coq818 \
+  coq819 \
 
 .PHONY: versions
 versions:
 	for v in $(VERSIONS) ; do \
+		echo "===== Testing compilation for $$v =====" ; \
 	  opam switch $$v && eval $$(opam env) && make clean && make -j ; \
 	done
 

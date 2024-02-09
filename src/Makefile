@@ -25,8 +25,9 @@ export COQBIN
 
 -include Makefile.generated
 
-Makefile.generated:
+Makefile.generated: Makefile
 	@ $(COQBIN)coq_makefile -f _CoqProject -o $@
+
 
 ############################################################################
 # Clean rules
