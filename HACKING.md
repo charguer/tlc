@@ -34,11 +34,16 @@ Run `make release`. This creates a git tag and pushes it to the repository.
 
 Assuming `make release` has succeeded.
 
+For the first time, you need a fork of the opam repository.
+(More documentation on https://coq.inria.fr/opam-packaging.html)
+go to the GitHub page of [opam-coq-archive](https://github.com/coq/opam) and make a fork.
+
+For the first time, you may also need to create a GitHub authentication
+token for use by `opam publish`. (On github, settings, developer settings,
+personal access tokens.)
+
 Check that you have the package `opam-publish` in the current switch.
 If not, `opam install opam-publish`.
-
-[You may need to create your own fork of this repository. You may also need to
-create a GitHub authentication token for use by `opam publish`.]
 
 Run `make opam` and follow the interactive instructions.
 At the end, a pull request on the [opam Coq archive](https://github.com/coq/opam)
