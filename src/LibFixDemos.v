@@ -7,6 +7,7 @@ Set Implicit Arguments.
 Generalizable Variables A B.
 From TLC Require Import LibTactics LibLogic LibReflect LibFun LibEpsilon LibList
   LibInt LibNat LibProd LibSum LibRelation LibWf LibFix LibStream.
+Require Import ZifyNat.
 Open Scope nat_scope.
 Open Scope comp_scope.
 Open Scope fun_scope.
