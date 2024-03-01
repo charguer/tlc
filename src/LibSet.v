@@ -713,7 +713,7 @@ Lemma set_in_extens_eq : forall E F,
 Proof using.
   extens. iff M.
   subst*.
-  applys @in_extens_eq. typeclass. intros. extens*.
+  applys @in_extens_eq. intros. extens*.
 Qed.
 
 Lemma set_incl_in_eq : forall E F,
