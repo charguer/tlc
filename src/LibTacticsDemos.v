@@ -1,7 +1,6 @@
 (**************************************************************************
 * Useful General-Purpose Tactics for Coq - Demo scripts                   *
-* Arthur Chargueraud                                                      *
-* Distributed under the terms of the LGPL-v3 license                      *
+* Arthur Charguéraud                                                      *
 ***************************************************************************)
 
 Set Implicit Arguments.
