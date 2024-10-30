@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-From Stdlib Require Export ZArith.
+From Coq Require Export ZArith.
 From TLC Require Import LibTactics LibLogic LibReflect LibRelation.
 Export LibTacticsCompatibility.
 From TLC Require Export LibNat.

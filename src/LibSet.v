@@ -5,7 +5,7 @@
 
 Set Implicit Arguments.
 Generalizable Variables A B.
-Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
+From Coq Require Import Classes.Morphisms. (* for [Proper] instances *)
 From TLC Require Import LibTactics LibLogic LibReflect LibList
   LibOperation LibMonoid LibInt LibNat
   LibEpsilon LibRelation LibMin.

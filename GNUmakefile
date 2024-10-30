@@ -8,6 +8,10 @@ include Makefile
 DATE     := $(shell /bin/date +%Y%m%d)
 DATEDASH := $(shell /bin/date +%Y-%m-%d)
 
+DATE     := 20240209
+DATEDASH := 2024-02-09
+
+
 # An abbreviation.
 THIS     := coq-tlc
 

@@ -15,7 +15,7 @@
 
 
 Set Implicit Arguments.
-From Stdlib Require Import Psatz.
+From Coq Require Import Psatz.
 From TLC Require Import LibTactics.
 From TLC Require Export LibInt.
 

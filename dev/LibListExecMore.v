@@ -8,7 +8,7 @@
 
 Set Implicit Arguments.
 Generalizable Variables A B.
-Require Import Coq.Classes.Morphisms. (* for [Proper] instances *)
+From Coq Require Import Classes.Morphisms. (* for [Proper] instances *)
 From TLC Require Import LibTactics LibLogic LibReflect LibOperation
  LibProd LibOption LibNat LibInt LibWf LibMonoid LibRelation LibList.
 Local Open Scope nat_scope.
@@ -20,9 +20,9 @@ Global Close Scope list_scope.
 (* ---------------------------------------------------------------------- *)
 (** ** [rew_lists] for set and map operations on lists *)
 
-(** Normalize 
+(** Normalize
   - [++]
-  - [mem] 
+  - [mem]
   - [keys]
   - [assoc]
 *)
@@ -95,24 +95,24 @@ Lemma filterb_nil : forall f,
 Proof using. auto. Qed.
 
 Lemma filterb_cons : forall f x l,
-    filterb f (x::l) 
+    filterb f (x::l)
   = if f x then x :: filterb f l else filterb f l.
 Proof using. auto. Qed.
 
 Lemma filterb_app : forall f l1 l2,
   filterb f (l1 ++ l2) = filterb f l1 ++ filterb f l2.
-Proof using.  
+Proof using.
   (* --LATER: investigate how to factorise with proof of map_app *)
   intros. unfold filterb.
   assert (forall accu,
     fold_right (fun x acc => if f x then x::acc else acc) accu (l1 ++ l2) =
     fold_right (fun x acc => if f x then x::acc else acc) nil l1 ++
      fold_right (fun x acc => if f x then x::acc else acc) nil l2 ++ accu).
-  { induction l1; intros; simpl. 
+  { induction l1; intros; simpl.
     do 2 rewrite app_nil_l. gen accu.
     induction l2; intros.
     { auto. }
-    { do 2 rewrite fold_right_cons. 
+    { do 2 rewrite fold_right_cons.
       case_if. rew_list. fequals. rewrite IHl2. fequals. }
     { rew_listx. case_if. rew_list. fequals. rewrite IHl1. fequals. } }
   specializes H (@nil A). rewrite~ app_nil_r in H.
@@ -126,7 +126,7 @@ Proof using. intros. rewrite~ filterb_app. Qed.
 
 End Filterb.
 
-Opaque filterb.  
+Opaque filterb.
 
 
 
