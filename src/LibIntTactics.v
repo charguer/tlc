@@ -15,7 +15,7 @@
 
 
 Set Implicit Arguments.
-Require Import Coq.micromega.Psatz.
+From Stdlib Require Import Psatz.
 From TLC Require Import LibTactics.
 From TLC Require Export LibInt.
 

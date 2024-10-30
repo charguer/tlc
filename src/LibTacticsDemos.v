@@ -5,7 +5,7 @@
 
 Set Implicit Arguments.
 From TLC Require Import LibTactics.
-Require Import Coq.micromega.Lia.
+From Stdlib.micromega Require Import Lia.
 
 
 (* ********************************************************************** *)

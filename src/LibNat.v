@@ -4,7 +4,7 @@
 **************************************************************************)
 
 Set Implicit Arguments.
-Require Export Coq.Arith.Arith Coq.micromega.Lia.
+From Stdlib Require Export Arith Lia.
 From TLC Require Import LibTactics LibReflect LibBool LibOperation LibRelation LibOrder.
 From TLC Require Export LibOrder.
 Global Close Scope positive_scope.
