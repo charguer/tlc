@@ -1,6 +1,6 @@
 -Q . TLC
 
--arg -w -arg -implicit-core-hint-db
+-arg -w -arg -implicit-core-hint-db,-notation-incompatible-prefix,-automatic-prop-lowering
 
 LibAxioms.v
 LibBool.v
