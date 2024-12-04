@@ -1287,11 +1287,12 @@ Ltac applys_build Ei :=
   let args := args_unfold_head_if_not_product_but_params args in
   build_app args ltac:(fun R =>
    first [ apply R | eapply R | rapply R ]).
+   (* TODO: is apply needed? *)
 
 Ltac applys_base E :=
   match type of E with
   | list Boxer => applys_build E
-  | _ => first [ rapply E | applys_build E ]
+  | _ => first [ eapply E | rapply E | applys_build E ]
   end; fast_rm_inside E.
 
 Tactic Notation "applys" constr(E) :=
