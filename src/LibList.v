@@ -1615,18 +1615,9 @@ Proof using. auto. Qed.
 Lemma map_app : forall f l1 l2,
   map f (l1 ++ l2) = map f l1 ++ map f l2.
 Proof using.
-  intros. unfold map.
-  assert (forall accu,
-    fold_right (fun x acc => f x :: acc) accu (l1 ++ l2) =
-    fold_right (fun x acc => f x :: acc) nil l1 ++
-     fold_right (fun x acc => f x :: acc) nil l2 ++ accu).
-  { induction l1; intros; simpl.
-     { rew_list. gen accu.
-       induction l2; intros.
-       { auto. }
-       { rew_listx. rewrite~ IHl2. } }
-     { rew_listx. fequals. } }
-  specializes H (@nil B). rew_list~ in H.
+  intros. induction l1.
+  { auto. }
+  { rew_list. do 2 rewrite map_cons. rew_list. rewrite* IHl1. }
 Qed.
 
 Lemma map_last : forall f x l,
