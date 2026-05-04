@@ -121,7 +121,7 @@ Ltac tautob_post tt :=
 Ltac tautob_core tt :=
   let rec aux tt :=
     (try intros_all); match goal with
-    | b : bool |- _ => destruct b; clear b; aux tt
+    | b : bool |- _ => destruct b; try clear b; aux tt
     | _ => tautob_post tt
     end in
   aux tt.
